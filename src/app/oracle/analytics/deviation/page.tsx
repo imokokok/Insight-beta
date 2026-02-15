@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import {
   TrendingUp,
   Activity,
@@ -19,9 +18,8 @@ import { Input } from '@/components/ui/input';
 import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
 import { StatCardSkeleton, ChartSkeleton, CardSkeleton, SkeletonList } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAutoRefreshWithCountdown, useDataCache } from '@/hooks';
-import { logger } from '@/shared/logger';
-import { fetchApiData, cn } from '@/shared/utils';
+import { useDeviationAnalytics } from '@/features/oracle/analytics/deviation/hooks';
+import { cn } from '@/shared/utils';
 import {
   SummaryStats,
   TrendList,
@@ -31,89 +29,38 @@ import {
   DeviationDistributionChart,
   AnalysisPeriodCard,
 } from '@/features/oracle/analytics/deviation';
-import type { DeviationReport, DeviationTrend, PriceDeviationPoint } from '@/features/oracle/analytics/deviation/types/deviation';
 
 export default function DeviationAnalyticsPage() {
-  const [loading, setLoading] = useState(true);
-  const [report, setReport] = useState<DeviationReport | null>(null);
-  const [selectedTrend, setSelectedTrend] = useState<DeviationTrend | null>(null);
-  const [selectedAnomaly, setSelectedAnomaly] = useState<PriceDeviationPoint | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [symbolData, setSymbolData] = useState<PriceDeviationPoint[]>([]);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const { toasts, removeToast, success, error: showError } = useToast();
-  const { getCachedData, setCachedData } = useDataCache<{ report: DeviationReport }>({ key: 'deviation_dashboard', ttl: 5 * 60 * 1000 });
-
-  const { isEnabled: autoRefreshEnabled, setIsEnabled: setAutoRefreshEnabled, refreshInterval, setRefreshInterval, timeUntilRefresh, refresh } = useAutoRefreshWithCountdown({
-    onRefresh: () => fetchReport(false),
-    interval: 60000,
-    enabled: true,
-    pauseWhenHidden: true,
-  });
-
-  const fetchReport = useCallback(
-    async (showToast = true) => {
-      try {
-        setLoading(true);
-        setError(null);
-        const cached = getCachedData();
-        if (cached && !lastUpdated) {
-          setReport(cached.report);
-          setLoading(false);
-        }
-        const response = await fetchApiData<{ data: DeviationReport }>('/api/oracle/analytics/deviation?type=report');
-        setReport(response.data);
-        setLastUpdated(new Date());
-        setCachedData({ report: response.data });
-        if (showToast) success('Data refreshed', 'Deviation report has been updated');
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch deviation report';
-        setError(errorMessage);
-        showError('Failed to refresh', errorMessage);
-        logger.error('Failed to fetch deviation report', { error: err });
-      } finally {
-        setLoading(false);
-      }
-    },
-    [getCachedData, setCachedData, lastUpdated, success, showError],
-  );
-
-  const fetchSymbolTrend = useCallback(async (symbol: string) => {
-    try {
-      const response = await fetchApiData<{ data: { dataPoints: PriceDeviationPoint[] } }>(
-        `/api/oracle/analytics/deviation?type=trend&symbol=${symbol}`,
-      );
-      setSymbolData(response.data.dataPoints || []);
-    } catch (err) {
-      logger.error('Failed to fetch symbol trend', { error: err, symbol });
-    }
-  }, []);
-
-  const filteredTrends = report?.trends.filter(
-    (trend) =>
-      !searchQuery ||
-      trend.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      trend.recommendation.toLowerCase().includes(searchQuery.toLowerCase()),
-  ) || [];
-
-  const handleExport = () => {
-    if (!report) return;
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `deviation-report-${new Date().toISOString()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const { toasts, removeToast } = useToast();
+  
+  const {
+    loading,
+    report,
+    selectedTrend,
+    setSelectedTrend,
+    selectedAnomaly,
+    setSelectedAnomaly,
+    activeTab,
+    setActiveTab,
+    searchQuery,
+    setSearchQuery,
+    symbolData,
+    lastUpdated,
+    error,
+    autoRefreshEnabled,
+    setAutoRefreshEnabled,
+    refreshInterval,
+    setRefreshInterval,
+    timeUntilRefresh,
+    refresh,
+    filteredTrends,
+    handleExport,
+  } = useDeviationAnalytics({ showRefreshToast: false });
 
   if (error && !loading && !report) {
     return (
       <div className="container mx-auto p-6">
-        <ErrorBanner error={new Error(error)} onRetry={() => fetchReport()} title="Failed to load deviation report" isRetrying={loading} />
+        <ErrorBanner error={new Error(error)} onRetry={() => refresh()} title="Failed to load deviation report" isRetrying={loading} />
       </div>
     );
   }
@@ -188,7 +135,7 @@ export default function DeviationAnalyticsPage() {
             <Card>
               <CardHeader><CardTitle>Deviation Trends</CardTitle><CardDescription>Showing {filteredTrends.length} of {report?.trends.length || 0} symbols</CardDescription></CardHeader>
               <CardContent>
-                <TrendList trends={filteredTrends} isLoading={loading} onSelect={(trend) => { setSelectedTrend(trend); fetchSymbolTrend(trend.symbol); }} />
+                <TrendList trends={filteredTrends} isLoading={loading} onSelect={(trend) => { setSelectedTrend(trend); }} />
               </CardContent>
             </Card>
             <div className="space-y-6">

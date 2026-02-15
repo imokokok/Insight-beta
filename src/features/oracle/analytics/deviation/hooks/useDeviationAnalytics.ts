@@ -9,7 +9,12 @@ import { fetchApiData } from '@/shared/utils';
 import { deviationConfigService } from '@/features/oracle/services/deviationConfig';
 import type { DeviationReport, DeviationTrend, PriceDeviationPoint } from '../types/deviation';
 
-export function useDeviationAnalytics() {
+export interface UseDeviationAnalyticsOptions {
+  showRefreshToast?: boolean;
+}
+
+export function useDeviationAnalytics(options: UseDeviationAnalyticsOptions = {}) {
+  const { showRefreshToast = true } = options;
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<DeviationReport | null>(null);
   const [selectedTrend, setSelectedTrend] = useState<DeviationTrend | null>(null);
@@ -21,6 +26,7 @@ export function useDeviationAnalytics() {
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const refreshToastShown = useRef(false);
 
   const { t } = useI18n();
 
@@ -36,14 +42,14 @@ export function useDeviationAnalytics() {
     timeUntilRefresh,
     refresh,
   } = useAutoRefreshWithCountdown({
-    onRefresh: () => fetchReport(false),
+    onRefresh: () => fetchReport(showRefreshToast),
     interval: deviationConfigService.getConfig().refreshIntervalMs,
     enabled: true,
     pauseWhenHidden: true,
   });
 
   const fetchReport = useCallback(
-    async (_showToast = true) => {
+    async (showToast = false) => {
       try {
         setLoading(true);
         setError(null);
@@ -52,6 +58,10 @@ export function useDeviationAnalytics() {
         if (cached && !lastUpdated) {
           setReport(cached.report);
           setLoading(false);
+          if (showToast && !refreshToastShown.current) {
+            refreshToastShown.current = true;
+          }
+          return;
         }
 
         const config = deviationConfigService.getConfig();
@@ -75,7 +85,7 @@ export function useDeviationAnalytics() {
         setLoading(false);
       }
     },
-    [getCachedData, setCachedData, lastUpdated],
+    [getCachedData, setCachedData, lastUpdated, showRefreshToast],
   );
 
   const fetchSymbolTrend = useCallback(async (symbol: string) => {

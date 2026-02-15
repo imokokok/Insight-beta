@@ -3,6 +3,7 @@
 import { ChevronRight, BarChart3 } from 'lucide-react';
 import { TrendDirectionBadge } from './TrendDirectionBadge';
 import { DeviationSeverityBadge } from './DeviationSeverityBadge';
+import { useI18n } from '@/i18n';
 import type { DeviationTrend } from '../types/deviation';
 
 interface TrendListProps {
@@ -12,6 +13,8 @@ interface TrendListProps {
 }
 
 export function TrendList({ trends, isLoading, onSelect }: TrendListProps) {
+  const { t } = useI18n();
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -26,8 +29,8 @@ export function TrendList({ trends, isLoading, onSelect }: TrendListProps) {
     return (
       <div className="py-12 text-center">
         <BarChart3 className="mx-auto mb-4 h-16 w-16 text-orange-500" />
-        <h3 className="text-lg font-semibold">No Trend Data</h3>
-        <p className="mt-1 text-muted-foreground">Deviation analysis data will appear here</p>
+        <h3 className="text-lg font-semibold">{t('analytics:deviation.trends.empty')}</h3>
+        <p className="mt-1 text-muted-foreground">{t('analytics:deviation.trends.emptyDescription')}</p>
       </div>
     );
   }
@@ -52,9 +55,9 @@ export function TrendList({ trends, isLoading, onSelect }: TrendListProps) {
               </div>
               <p className="text-sm text-muted-foreground">{trend.recommendation}</p>
               <div className="flex items-center gap-4 text-xs text-gray-500">
-                <span>Avg Deviation: {(trend.avgDeviation * 100).toFixed(2)}%</span>
-                <span>Max: {(trend.maxDeviation * 100).toFixed(2)}%</span>
-                <span>Volatility: {(trend.volatility * 100).toFixed(2)}%</span>
+                <span>{t('analytics:deviation.trends.avgDeviation')}: {(trend.avgDeviation * 100).toFixed(2)}%</span>
+                <span>{t('analytics:deviation.trends.max')}: {(trend.maxDeviation * 100).toFixed(2)}%</span>
+                <span>{t('analytics:deviation.trends.volatility')}: {(trend.volatility * 100).toFixed(2)}%</span>
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
