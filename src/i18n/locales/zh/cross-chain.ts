@@ -39,7 +39,7 @@ export const crossChain = {
   },
   dashboard: {
     title: '跨链概览',
-    description: '监控 {{count}} 个资产',
+    description: '分析 {{count}} 个资产',
     loading: '加载仪表板...',
     activeAlerts: '活跃告警',
     opportunities: '套利机会',

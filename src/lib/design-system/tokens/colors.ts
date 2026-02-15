@@ -385,7 +385,7 @@ export const CHAIN_COLORS = {
 } as const;
 
 // ============================================================================
-// 监控状态颜色 - 用于监控平台
+// 监控状态颜色 - 用于数据分析平台
 // ============================================================================
 
 export type MonitorStatus = 'operational' | 'degraded' | 'down' | 'maintenance' | 'investigating';

@@ -12,11 +12,11 @@ export const getApiDocs = () => {
     definition: {
       openapi: '3.0.0',
       info: {
-        title: 'OracleMonitor API',
+        title: 'OracleInsight API',
         version: '1.0.0',
-        description: 'Universal Oracle Monitoring Platform API',
+        description: 'Universal Oracle Analytics Platform API',
         contact: {
-          name: 'OracleMonitor Team',
+          name: 'OracleInsight Team',
         },
       },
       servers: [
@@ -25,7 +25,7 @@ export const getApiDocs = () => {
           description: 'Development server',
         },
         {
-          url: 'https://api.oracle-monitor.example.com/api',
+          url: 'https://api.oracle-insight.example.com/api',
           description: 'Production server',
         },
       ],

@@ -133,7 +133,7 @@ export const comparison = {
   },
   realtime: {
     title: '实时价格对比',
-    description: '跨协议实时价格监控与对比分析',
+    description: '跨协议实时价格分析与对比',
     updatedAt: '更新于',
     activeProtocols: '活跃协议',
     maxSpread: '最大价差',

@@ -67,8 +67,8 @@ export class WalletConnectProvider implements WalletProvider {
       events: ['chainChanged', 'accountsChanged'],
       optionalEvents: ['connect', 'disconnect'],
       metadata: {
-        name: 'Insight Beta - Oracle Monitoring Platform',
-        description: 'Universal Oracle Monitoring Platform',
+        name: 'Insight Beta - Oracle Analytics Platform',
+        description: 'Universal Oracle Analytics Platform',
         url: typeof window !== 'undefined' ? window.location.origin : '',
         icons: [
           typeof window !== 'undefined' ? `${window.location.origin}/icons/icon-192x192.png` : '',

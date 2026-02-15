@@ -48,7 +48,7 @@ export default function OptimizedOracleDashboard() {
         <main className="flex flex-1 flex-col overflow-hidden">
           <DashboardPageHeader
             title="Oracle Operations Overview"
-            description="Real-time health and risk monitoring"
+            description="Real-time health and risk analytics"
             icon={<Activity className="h-5 w-5 text-primary" />}
             statusBadge={
               <HealthStatusBadge activeAlerts={stats?.activeAlerts ?? 0} isConnected={isConnected} />

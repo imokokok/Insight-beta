@@ -3,6 +3,7 @@
 import useSWR from 'swr';
 
 import { buildApiUrl } from '@/shared/utils';
+import type { GasPriceData, GasPriceHistoryEntry, GasPriceStatistics, GasPriceTrend, ProviderHealth } from '@/types/gasPriceTypes';
 
 import type { SWRConfiguration } from 'swr';
 
@@ -20,72 +21,6 @@ const fetcher = async (url: string) => {
   }
   return res.json();
 };
-
-export interface GasPriceData {
-  chain: string;
-  provider: string;
-  slow: number;
-  average: number;
-  fast: number;
-  fastest: number;
-  timestamp: string;
-  baseFee?: number;
-  priorityFee?: number;
-  currency: string;
-}
-
-export interface GasPriceHistoryEntry {
-  chain: string;
-  provider: string;
-  priceLevel: 'slow' | 'average' | 'fast' | 'fastest';
-  price: number;
-  timestamp: string;
-}
-
-export interface GasPriceStatistics {
-  chain: string;
-  provider: string;
-  priceLevel: 'slow' | 'average' | 'fast' | 'fastest';
-  min: number;
-  max: number;
-  avg: number;
-  median: number;
-  stdDev: number;
-  p25: number;
-  p75: number;
-  p90: number;
-  p95: number;
-  p99: number;
-  count: number;
-  startTime: string;
-  endTime: string;
-}
-
-export interface GasPriceTrend {
-  chain: string;
-  priceLevel: 'slow' | 'average' | 'fast' | 'fastest';
-  direction: 'up' | 'down' | 'stable';
-  changePercent: number;
-  changeValue: number;
-  ma7: number;
-  ma24: number;
-  ma168: number;
-  volatility: number;
-  timestamp: string;
-}
-
-export interface ProviderHealth {
-  provider: string;
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  successRate: number;
-  avgLatencyMs: number;
-  lastSuccessTime: string;
-  lastFailureTime?: string;
-  consecutiveFailures: number;
-  totalRequests: number;
-  totalSuccesses: number;
-  totalFailures: number;
-}
 
 export interface GasPriceHealthResponse {
   ok: boolean;

@@ -6,16 +6,16 @@
 ![Tailwind](https://img.shields.io/badge/Tailwind-3.4-cyan)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
 
-Insight is a universal multi-protocol oracle data analytics platform, supporting real-time aggregation and analysis of oracle data from 4 protocols.
+Insight is a professional **Oracle Data Analytics Platform** designed for DeFi protocols and data providers. It provides comprehensive real-time aggregation, analysis, and monitoring of oracle data from multiple protocols.
 
 ## ✨ Features
 
 ### Multi-Protocol Support (4 Protocols Integrated)
 
-- **UMA** - Optimistic Oracle with assertion and dispute mechanisms
 - **Chainlink** - Industry-standard price feeds and data oracles
 - **Pyth** - Low-latency financial data from institutional sources
-- **RedStone** - Modular oracle with on-demand data
+- **RedStone** - Modular oracle optimized for L2s and rollups
+- **UMA** - Optimistic Oracle with assertion and dispute mechanisms
 
 ### Architecture Highlights
 
@@ -27,13 +27,13 @@ Insight is a universal multi-protocol oracle data analytics platform, supporting
 ### Core Capabilities
 
 - 🔴 **Real-time Price Aggregation** - Aggregate prices from multiple protocols with intelligent outlier detection
-- 📊 **Cross-Protocol Comparison** - Compare prices across different oracle networks
+- 📊 **Deviation Analytics** - Advanced price deviation analysis with trend detection and anomaly identification
 - 🔔 **Smart Alerting** - Price deviation alerts, staleness detection, sync health monitoring
 - 🌐 **WebSocket Streaming** - Real-time price updates via WebSocket
 - 📈 **Unified Dashboard** - Single pane of glass for all oracle protocols
 - 🔒 **Enterprise Security** - RBAC, API key management, audit logging
 - 🚀 **Serverless Ready** - Optimized for Vercel + Supabase
-- 🌍 **Multi-language Support** - 5 languages (English, Chinese, Spanish, French, Korean)
+- 🌍 **Multi-language Support** - 3 languages (English, Chinese, Spanish)
 
 ## 🚀 Quick Start
 

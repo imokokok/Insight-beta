@@ -39,7 +39,7 @@ export const crossChain = {
   },
   dashboard: {
     title: 'Resumen Multi-Cadena',
-    description: 'Monitorea {{count}} activos entre cadenas',
+    description: 'Analiza {{count}} activos entre cadenas',
     loading: 'Cargando panel...',
     activeAlerts: 'Alertas Activas',
     opportunities: 'Oportunidades',

@@ -4,7 +4,7 @@ export const nav = {
   dashboard: 'Dashboard',
   unifiedOracle: 'Unified Oracle',
   security: 'Security',
-  monitoring: 'Monitoring',
+  monitoring: 'Analytics',
   trends: 'Trends',
   anomalies: 'Anomalies',
   deviation: 'Deviation',
@@ -12,7 +12,7 @@ export const nav = {
   protocols: 'Protocols',
   groups: {
     main: 'Main',
-    monitor: 'Monitor',
+    monitor: 'Analytics',
     analytics: 'Analytics',
     operations: 'Operations',
     protocolsGroup: 'Protocols'
@@ -20,7 +20,7 @@ export const nav = {
   descriptions: {
     dashboard: 'Overview of your system',
     unifiedOracle: 'Unified Oracle view',
-    security: 'Security monitoring',
+    security: 'Security analysis',
     trends: 'Trend analysis',
     anomalies: 'Anomaly detection',
     deviation: 'Price deviation',

@@ -78,18 +78,14 @@ event AssertionSettled(
 );
 ```
 
-### Other Oracle Protocols
+### Supported Oracle Protocols
 
-Insight also supports analysis of the following protocols (read-only):
+Insight integrates with the following oracle protocols for price data aggregation and analysis:
 
-- **Chainlink** - Price feed contracts
-- **Pyth** - Low-latency price updates
-- **Band** - Cross-chain data oracle
-- **API3** - First-party oracle network
-- **RedStone** - Modular oracle design
-- **Switchboard** - Permissionless oracle network
-- **Flux** - Decentralized oracle aggregator
-- **DIA** - Transparent data feeds
+- **Chainlink** - Industry-standard decentralized oracle network with comprehensive data feeds
+- **Pyth** - Low-latency financial data from institutional sources
+- **RedStone** - Modular oracle optimized for L2s and rollups
+- **UMA** - Optimistic Oracle with assertion and dispute mechanisms
 
 ## Configuration
 

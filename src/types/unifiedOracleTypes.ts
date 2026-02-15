@@ -1,5 +1,5 @@
 /**
- * Unified Oracle Types - 通用预言机监控平台类型定义
+ * Unified Oracle Types - 通用预言机数据分析平台类型定义
  *
  * 支持多预言机协议的统一抽象层
  */

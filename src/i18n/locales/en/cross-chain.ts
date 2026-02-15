@@ -39,7 +39,7 @@ export const crossChain = {
   },
   dashboard: {
     title: 'Cross-Chain Overview',
-    description: 'Monitor {{count}} assets across chains',
+    description: 'Analyze {{count}} assets across chains',
     loading: 'Loading dashboard...',
     activeAlerts: 'Active Alerts',
     opportunities: 'Opportunities',

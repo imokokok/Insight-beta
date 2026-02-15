@@ -49,13 +49,13 @@ export class APIRegistry {
     return {
       openapi: '3.0.3',
       info: {
-        title: 'OracleMonitor API',
+        title: 'OracleInsight API',
         version: '1.0.0',
         description:
-          'Universal Oracle Monitoring Platform API supporting Chainlink, Pyth, API3, DIA, Band, RedStone and more',
+          'Universal Oracle Analytics Platform API supporting Chainlink, Pyth, API3, DIA, Band, RedStone and more',
         contact: {
           name: 'API Support',
-          email: 'api@oracle-monitor.foresight.build',
+          email: 'api@oracle-insight.foresight.build',
         },
       },
       servers: [

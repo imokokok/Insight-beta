@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
-import type { GasPriceData } from '../hooks/useGasPrice';
+import type { GasPriceData } from '../hooks';
 
 interface GasPriceListProps {
   gasPrices: { ok: boolean; data: GasPriceData[] } | undefined;

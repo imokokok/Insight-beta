@@ -6,6 +6,8 @@
 
 import { z } from 'zod';
 
+import { logger } from '@/shared/logger';
+
 // ============================================================================
 // 辅助函数
 // ============================================================================
@@ -256,7 +258,7 @@ function parseEnv() {
       throw new Error(errorMessage);
     }
 
-    console.warn(`\nWARN [${timestamp}] Environment validation warnings\n${errors.join('\n')}\n`);
+    logger.warn(`Environment validation warnings: ${errors.join(', ')}`, { timestamp });
 
     return envSchema.parse(undefined);
   }

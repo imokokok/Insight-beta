@@ -1,5 +1,5 @@
 /**
- * Oracle Types - 统一预言机监控平台类型定义
+ * Oracle Types - 统一预言机数据分析平台类型定义
  *
  * 注意：此模块正在逐步迁移到 unifiedOracleTypes.ts
  * 请优先使用 @/lib/types/unifiedOracleTypes

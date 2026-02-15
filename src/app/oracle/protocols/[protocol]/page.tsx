@@ -45,7 +45,7 @@ export default function ProtocolsPage({ params }: { params: Promise<{ protocol: 
     <ErrorBoundary>
       <div className="container mx-auto space-y-6 p-4 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl"><Globe className="h-6 w-6 text-blue-600" /><span className="capitalize">{protocolName}</span> Protocols</h1><p className="mt-1 text-sm text-muted-foreground">Monitor oracle protocols and their performance</p></div>
+          <div><h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl"><Globe className="h-6 w-6 text-blue-600" /><span className="capitalize">{protocolName}</span> Protocols</h1><p className="mt-1 text-sm text-muted-foreground">Analyze oracle protocols and their performance</p></div>
           <Button variant="outline" size="sm" onClick={fetchProtocols} disabled={loading}><RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />Refresh</Button>
         </div>
 

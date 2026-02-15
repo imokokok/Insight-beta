@@ -1,6 +1,6 @@
 const onboarding = {
-  title: 'Bienvenido a OracleMonitor',
-  description: 'Solución integral de monitoreo de oracle para múltiples protocolos.',
+  title: 'Bienvenido a OracleInsight',
+  description: 'Solución integral de análisis de oracle para múltiples protocolos.',
   getStarted: 'Comenzar',
   skipTour: 'Omitir recorrido',
   next: 'Siguiente',
@@ -9,8 +9,8 @@ const onboarding = {
   cancel: 'Cancelar',
   confirm: 'Confirmar',
   stepOf: 'Paso {{current}} de {{total}}',
-  welcome: 'Bienvenido a OracleMonitor',
-  welcomeDesc: 'Tu plataforma universal de monitoreo de oracle',
+  welcome: 'Bienvenido a OracleInsight',
+  welcomeDesc: 'Tu plataforma universal de análisis de oracle',
   selectRole: 'Selecciona tu rol para comenzar',
   continueAsGeneral: 'Continuar como usuario general',
   viewAgain: 'Ver recorrido de nuevo',
@@ -37,15 +37,15 @@ const onboarding = {
         description: 'Usa nuestro SDK para integrar datos de oracle en minutos',
       },
       monitoring: {
-        title: 'Monitoreo en tiempo real',
+        title: 'Análisis en tiempo real',
         description: 'Rastrea el rendimiento del oracle y la calidad de los datos en tiempo real',
       },
     },
     protocol: {
       monitoring: {
-        title: 'Monitoreo de oracle',
+        title: 'Análisis de oracle',
         description:
-          'Monitorea la salud del oracle, el estado de los nodos y las métricas de rendimiento',
+          'Analiza la salud del oracle, el estado de los nodos y las métricas de rendimiento',
       },
       disputes: {
         title: 'Gestión de disputas',
@@ -83,7 +83,7 @@ const onboarding = {
     },
     general: {
       title: 'Usuario general',
-      description: 'Monitorear y analizar datos de oracle',
+      description: 'Analizar y gestionar datos de oracle',
     },
   },
   tour: {
@@ -109,7 +109,7 @@ const onboarding = {
     },
     settings: {
       title: 'Configuración',
-      description: 'Personaliza tus preferencias de monitoreo y configuraciones de notificación.',
+      description: 'Personaliza tus preferencias de análisis y configuraciones de notificación.',
     },
   },
   emptyStates: {

@@ -4,7 +4,7 @@ export const nav = {
   dashboard: '仪表盘',
   unifiedOracle: '统一预言机',
   security: '安全',
-  monitoring: '监控',
+  monitoring: '分析',
   trends: '趋势',
   anomalies: '异常',
   deviation: '偏差',
@@ -12,7 +12,7 @@ export const nav = {
   protocols: '协议',
   groups: {
     main: '主要',
-    monitor: '监控',
+    monitor: '分析',
     analytics: '分析',
     operations: '运营',
     protocolsGroup: '协议'
@@ -20,7 +20,7 @@ export const nav = {
   descriptions: {
     dashboard: '系统概览',
     unifiedOracle: '统一预言机视图',
-    security: '安全监控',
+    security: '安全分析',
     trends: '趋势分析',
     anomalies: '异常检测',
     deviation: '价格偏差',

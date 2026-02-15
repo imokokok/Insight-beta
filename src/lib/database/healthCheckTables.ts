@@ -4,6 +4,8 @@
  * 定义健康检查监控所需的数据库表结构
  */
 
+import { logger } from '@/shared/logger';
+
 // ============================================================================
 // Oracle Health Checks Table
 // ============================================================================
@@ -250,9 +252,9 @@ export async function createHealthCheckTables(
   for (const table of tables) {
     try {
       await query(table.sql);
-      console.log(`✓ Table ${table.name} created or already exists`);
+      logger.info(`Table ${table.name} created or already exists`);
     } catch (error) {
-      console.error(`✗ Failed to create table ${table.name}:`, error);
+      logger.error(`Failed to create table ${table.name}`, { error });
       throw error;
     }
   }

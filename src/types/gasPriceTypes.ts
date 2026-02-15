@@ -100,3 +100,14 @@ export interface GasPriceHistoryRequest {
   interval?: '1min' | '5min' | '15min' | '1hour' | '6hour' | '1day';
   priceLevels?: ('slow' | 'average' | 'fast' | 'fastest')[];
 }
+
+export interface GasPriceHealthResponse {
+  ok: boolean;
+  data: ProviderHealth[];
+  meta: {
+    totalProviders: number;
+    healthyCount: number;
+    degradedCount: number;
+    unhealthyCount: number;
+  };
+}

@@ -9,8 +9,8 @@
 
 ## Core Features
 
-- **Multi-Protocol Price Monitoring** - Real-time aggregation of 9+ protocol price data
-- **Price Comparison** - Cross-protocol price comparison and deviation analysis
+- **Multi-Protocol Price Monitoring** - Real-time aggregation of oracle price data from 4 protocols
+- **Deviation Analytics** - Advanced price deviation analysis with trend detection and anomaly identification
 - **UMA Assertions** - Create, dispute, and settle assertions
 - **Alert Notifications** - Price deviation alerts and notifications
 - **Security Monitoring** - Price manipulation detection and security alerts
@@ -31,15 +31,10 @@
 
 ## Supported Protocols
 
-- **UMA** - Optimistic Oracle
-- **Chainlink** - Industry-standard price feeds
-- **Pyth** - Low-latency financial data
-- **Band** - Cross-chain data oracle
-- **API3** - First-party oracle
-- **RedStone** - Modular oracle
-- **Switchboard** - Solana and EVM compatible
-- **Flux** - Decentralized aggregator
-- **DIA** - Transparent verifiable data
+- **Chainlink** - Industry-standard price feeds and data oracles
+- **Pyth** - Low-latency financial data from institutional sources
+- **RedStone** - Modular oracle optimized for L2s and rollups
+- **UMA** - Optimistic Oracle with assertion and dispute mechanisms
 
 ## FAQ
 
@@ -69,7 +64,7 @@
 
 **What languages are supported?**
 
-- Chinese, English, Spanish, French, Korean
+- Chinese, English, Spanish
 - Switch language in the top right of the page
 
 ## Keyboard Shortcuts

@@ -1,6 +1,6 @@
 const onboarding = {
-  title: 'Welcome to OracleMonitor',
-  description: 'Comprehensive oracle monitoring solution for multiple protocols.',
+  title: 'Welcome to OracleInsight',
+  description: 'Comprehensive oracle analytics solution for multiple protocols.',
   getStarted: 'Get Started',
   skipTour: 'Skip Tour',
   next: 'Next',
@@ -9,8 +9,8 @@ const onboarding = {
   cancel: 'Cancel',
   confirm: 'Confirm',
   stepOf: 'Step {{current}} of {{total}}',
-  welcome: 'Welcome to OracleMonitor',
-  welcomeDesc: 'Your universal oracle monitoring platform',
+  welcome: 'Welcome to OracleInsight',
+  welcomeDesc: 'Your universal oracle analytics platform',
   selectRole: 'Select your role to get started',
   continueAsGeneral: 'Continue as General User',
   viewAgain: 'View Tour Again',
@@ -35,14 +35,14 @@ const onboarding = {
         description: 'Use our SDK to integrate oracle data in minutes',
       },
       monitoring: {
-        title: 'Real-time Monitoring',
+        title: 'Real-time Analytics',
         description: 'Track oracle performance and data quality in real-time',
       },
     },
     protocol: {
       monitoring: {
-        title: 'Oracle Monitoring',
-        description: 'Monitor oracle health, node status, and performance metrics',
+        title: 'Oracle Analytics',
+        description: 'Analyze oracle health, node status, and performance metrics',
       },
       disputes: {
         title: 'Dispute Management',
@@ -79,7 +79,7 @@ const onboarding = {
     },
     general: {
       title: 'General User',
-      description: 'Monitor and analyze oracle data',
+      description: 'Analyze and manage oracle data',
     },
   },
   tour: {
@@ -104,7 +104,7 @@ const onboarding = {
     },
     settings: {
       title: 'Settings',
-      description: 'Customize your monitoring preferences and notification settings.',
+      description: 'Customize your analytics preferences and notification settings.',
     },
   },
   emptyStates: {

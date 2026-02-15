@@ -68,7 +68,7 @@ export function GasProviderHealthCard({ data, isLoading }: GasProviderHealthCard
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Gas Provider Health</CardTitle>
-          <CardDescription>Monitor gas price provider status</CardDescription>
+          <CardDescription>Analyze gas price provider status</CardDescription>
         </CardHeader>
         <CardContent className="flex h-64 items-center justify-center text-muted-foreground">
           <Activity className="mr-2 h-5 w-5" />
@@ -84,7 +84,7 @@ export function GasProviderHealthCard({ data, isLoading }: GasProviderHealthCard
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-lg font-semibold">Gas Provider Health</CardTitle>
-            <CardDescription className="text-sm">Monitor gas price provider status</CardDescription>
+            <CardDescription className="text-sm">Analyze gas price provider status</CardDescription>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">

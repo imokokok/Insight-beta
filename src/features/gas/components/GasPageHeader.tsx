@@ -39,9 +39,9 @@ export function GasPageHeader({
     <div className="mb-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Gas Price Monitor</h1>
+          <h1 className="text-3xl font-bold">Gas Price Analytics</h1>
           <p className="mt-1 text-muted-foreground">
-            Real-time gas price tracking across multiple chains
+            Real-time gas price analysis across multiple chains
           </p>
         </div>
         <div className="flex items-center gap-3">

@@ -74,7 +74,7 @@ export default function DeviationAnalyticsPage() {
           <h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl">
             <span className="text-orange-600">Price Deviation Analytics</span>
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">Cross-protocol price deviation analysis and trend monitoring</p>
+          <p className="mt-1 text-sm text-muted-foreground">Cross-protocol price deviation analysis and trend analytics</p>
         </div>
         <div className="flex flex-col items-start gap-2 sm:items-end">
           <div className="flex flex-wrap items-center gap-2">

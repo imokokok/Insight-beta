@@ -1,6 +1,6 @@
 const onboarding = {
-  title: '欢迎使用 OracleMonitor',
-  description: '适用于多种协议的综合预言机监控解决方案。',
+  title: '欢迎使用 OracleInsight',
+  description: '适用于多种协议的综合预言机数据分析解决方案。',
   getStarted: '开始使用',
   skipTour: '跳过引导',
   next: '下一步',
@@ -9,8 +9,8 @@ const onboarding = {
   cancel: '取消',
   confirm: '确认',
   stepOf: '第 {{current}} 步，共 {{total}} 步',
-  welcome: '欢迎使用 OracleMonitor',
-  welcomeDesc: '您的通用预言机监控平台',
+  welcome: '欢迎使用 OracleInsight',
+  welcomeDesc: '您的通用预言机数据分析平台',
   selectRole: '选择您的角色以开始',
   continueAsGeneral: '继续作为普通用户',
   viewAgain: '重新查看引导',
@@ -35,14 +35,14 @@ const onboarding = {
         description: '使用 SDK 几分钟内完成预言机数据集成',
       },
       monitoring: {
-        title: '实时监控',
+        title: '实时分析',
         description: '实时跟踪预言机性能和数据质量',
       },
     },
     protocol: {
       monitoring: {
-        title: '预言机监控',
-        description: '监控预言机健康状况、节点状态和性能指标',
+        title: '预言机分析',
+        description: '分析预言机健康状况、节点状态和性能指标',
       },
       disputes: {
         title: '争议管理',
@@ -79,7 +79,7 @@ const onboarding = {
     },
     general: {
       title: '普通用户',
-      description: '监控和分析预言机数据',
+      description: '分析和管理预言机数据',
     },
   },
   tour: {
@@ -92,7 +92,7 @@ const onboarding = {
       description: '在这里查看和管理所有系统告警，包括价格偏差、节点离线等重要通知。',
     },
     protocols: {
-      title: 'Protocols - 协议监控',
+      title: 'Protocols - 协议分析',
       description: '查看 Chainlink、Pyth、Band 等多个预言机协议的实时数据和性能指标。',
     },
     sidebar: {
@@ -101,7 +101,7 @@ const onboarding = {
     },
     settings: {
       title: '设置',
-      description: '自定义您的监控偏好和通知设置。',
+      description: '自定义您的分析偏好和通知设置。',
     },
   },
   emptyStates: {

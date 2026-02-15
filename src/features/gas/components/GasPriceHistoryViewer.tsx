@@ -40,14 +40,14 @@ function formatPrice(value: number): string {
   return `$${(value / 1e9).toFixed(2)}`;
 }
 
-function formatTime(timestamp: string): string {
+function formatTime(timestamp: string | Date): string {
   return new Date(timestamp).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
   });
 }
 
-function formatDate(timestamp: string): string {
+function formatDate(timestamp: string | Date): string {
   return new Date(timestamp).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',

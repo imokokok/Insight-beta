@@ -133,7 +133,7 @@ export const comparison = {
   },
   realtime: {
     title: 'Realtime Price Comparison',
-    description: 'Cross-protocol real-time price monitoring and comparison',
+    description: 'Cross-protocol real-time price analysis and comparison',
     updatedAt: 'Updated at',
     activeProtocols: 'Active Protocols',
     maxSpread: 'Max Spread',

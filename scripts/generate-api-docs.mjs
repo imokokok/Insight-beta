@@ -140,12 +140,12 @@ function generateOpenAPISpec(routes) {
   const spec = {
     openapi: "3.0.3",
     info: {
-      title: "OracleMonitor API",
+      title: "OracleInsight API",
       version: "1.0.0",
-      description: "Universal Oracle Monitoring Platform API",
+      description: "Universal Oracle Analytics Platform API",
       contact: {
         name: "API Support",
-        email: "api@oracle-monitor.foresight.build",
+        email: "api@oracle-insight.foresight.build",
       },
     },
     servers: [
