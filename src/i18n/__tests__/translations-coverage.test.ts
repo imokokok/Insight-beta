@@ -1,9 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { enTranslations } from '../locales/en';
 import { zhTranslations } from '../locales/zh';
-import { esTranslations } from '../locales/es';
 
-// Helper to get all keys from an object recursively
 function getAllKeys(obj: Record<string, unknown>, prefix = ''): string[] {
   const keys: string[] = [];
 
@@ -19,7 +17,6 @@ function getAllKeys(obj: Record<string, unknown>, prefix = ''): string[] {
   return keys;
 }
 
-// Helper to get value at path
 function getValueAtPath(obj: Record<string, unknown>, path: string): unknown {
   const parts = path.split('.');
   let current: unknown = obj;
@@ -35,7 +32,6 @@ function getValueAtPath(obj: Record<string, unknown>, path: string): unknown {
   return current;
 }
 
-// Helper to check if a value is a leaf (string) value
 function isLeafValue(value: unknown): boolean {
   return typeof value === 'string';
 }
@@ -44,7 +40,6 @@ describe('Translation Coverage', () => {
   const enKeys = getAllKeys(enTranslations);
   const allTranslations = {
     zh: { translations: zhTranslations, name: 'Chinese' },
-    es: { translations: esTranslations, name: 'Spanish' },
   };
 
   describe('English (source)', () => {
@@ -101,7 +96,6 @@ describe('Translation Coverage', () => {
             console.warn(`Missing ${name} translations:`, missingKeys);
           }
 
-          // Allow up to 10% missing keys (gradual migration)
           const missingPercentage = (missingKeys.length / enKeys.length) * 100;
           expect(missingPercentage).toBeLessThanOrEqual(10);
         });
@@ -158,7 +152,6 @@ describe('Translation Coverage', () => {
         console.warn('Empty translations found:', emptyKeys);
       }
 
-      // Allow some empty strings during development
       for (const keys of Object.values(emptyKeys)) {
         expect(keys.length).toBeLessThanOrEqual(5);
       }
@@ -198,7 +191,6 @@ describe('Translation Coverage', () => {
       }
       console.log('═══════════════════════════════════════\n');
 
-      // All languages should have at least 50% coverage
       for (const stat of Object.values(stats)) {
         expect(stat.percentage).toBeGreaterThanOrEqual(50);
       }

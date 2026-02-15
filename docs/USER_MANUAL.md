@@ -64,7 +64,7 @@
 
 **What languages are supported?**
 
-- Chinese, English, Spanish
+- Chinese, English
 - Switch language in the top right of the page
 
 ## Keyboard Shortcuts

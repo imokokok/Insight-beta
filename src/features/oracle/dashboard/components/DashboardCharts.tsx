@@ -7,6 +7,7 @@ import { CHART_COLORS } from '@/components/charts';
 import { ChartCard } from '@/components/common/ChartCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatNumber } from '@/shared/utils';
+import { useI18n } from '@/i18n/LanguageProvider';
 
 import type { ChartDataPoint, ComparisonDataPoint } from '../types/dashboard';
 
@@ -35,23 +36,25 @@ export function DashboardCharts({
   comparisonData,
   latencyData,
 }: DashboardChartsProps) {
+  const { t } = useI18n();
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
       <TabsList className="w-full justify-start overflow-x-auto lg:w-auto">
         <TabsTrigger value="overview" className="gap-1 sm:gap-2">
           <Zap className="h-4 w-4" />
-          <span className="hidden sm:inline">Overview</span>
-          <span className="sm:hidden">Overview</span>
+          <span className="hidden sm:inline">{t('dashboard.tabs.overview')}</span>
+          <span className="sm:hidden">{t('dashboard.tabs.overview')}</span>
         </TabsTrigger>
         <TabsTrigger value="trends" className="gap-1 sm:gap-2">
           <TrendingUp className="h-4 w-4" />
-          <span className="hidden sm:inline">Trends</span>
-          <span className="sm:hidden">Trends</span>
+          <span className="hidden sm:inline">{t('dashboard.tabs.trends')}</span>
+          <span className="sm:hidden">{t('dashboard.tabs.trends')}</span>
         </TabsTrigger>
         <TabsTrigger value="comparison" className="gap-1 sm:gap-2">
           <BarChart3 className="h-4 w-4" />
-          <span className="hidden sm:inline">Comparison</span>
-          <span className="sm:hidden">Compare</span>
+          <span className="hidden sm:inline">{t('dashboard.tabs.comparison')}</span>
+          <span className="sm:hidden">{t('dashboard.tabs.compare')}</span>
         </TabsTrigger>
       </TabsList>
 
@@ -59,8 +62,8 @@ export function DashboardCharts({
         <div className="grid gap-3 sm:gap-4 xl:grid-cols-3">
           <div className="order-2 xl:order-1 xl:col-span-2">
             <ChartCard
-              title="Price Trends"
-              description="Real-time price updates across all protocols"
+              title={t('dashboard.charts.priceTrends')}
+              description={t('dashboard.charts.priceTrendsDesc')}
               icon={<TrendingUp className="h-5 w-5" />}
             >
               <EnhancedAreaChart
@@ -78,25 +81,25 @@ export function DashboardCharts({
 
           <div className="order-1 xl:order-2">
             <ChartCard
-              title="Quick Stats"
-              description="Key metrics at a glance"
+              title={t('dashboard.charts.quickStats')}
+              description={t('dashboard.charts.quickStatsDesc')}
               icon={<Activity className="h-5 w-5" />}
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
-                  <span className="text-sm text-muted-foreground">Active Protocols</span>
+                  <span className="text-sm text-muted-foreground">{t('dashboard.metrics.activeProtocols')}</span>
                   <span className="text-lg font-bold text-foreground">{stats?.totalProtocols ?? 8}</span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
-                  <span className="text-sm text-muted-foreground">Total Feeds</span>
+                  <span className="text-sm text-muted-foreground">{t('dashboard.metrics.totalFeeds')}</span>
                   <span className="text-lg font-bold text-foreground">{stats?.totalPriceFeeds ?? 156}</span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
-                  <span className="text-sm text-muted-foreground">Avg Update Time</span>
+                  <span className="text-sm text-muted-foreground">{t('dashboard.metrics.avgUpdateTime')}</span>
                   <span className="text-lg font-bold text-foreground">{stats?.avgLatency ?? 450}ms</span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
-                  <span className="text-sm text-muted-foreground">Health Score</span>
+                  <span className="text-sm text-muted-foreground">{t('dashboard.metrics.healthScore')}</span>
                   <span className="text-lg font-bold text-success">98.5%</span>
                 </div>
               </div>
@@ -106,8 +109,8 @@ export function DashboardCharts({
 
         <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
           <ChartCard
-            title="Latency Distribution"
-            description="Response time across protocols"
+            title={t('dashboard.charts.latencyDistribution')}
+            description={t('dashboard.charts.latencyDistributionDesc')}
             icon={<Clock className="h-5 w-5" />}
           >
             <EnhancedLineChart
@@ -120,8 +123,8 @@ export function DashboardCharts({
           </ChartCard>
 
           <ChartCard
-            title="Protocol Comparison"
-            description="Performance metrics by protocol"
+            title={t('dashboard.charts.protocolComparison')}
+            description={t('dashboard.charts.protocolComparisonDesc')}
             icon={<BarChart3 className="h-5 w-5" />}
           >
             <EnhancedBarChart
@@ -138,8 +141,8 @@ export function DashboardCharts({
       <TabsContent value="trends" className="space-y-4">
         <div className="grid gap-4 lg:grid-cols-2">
           <ChartCard
-            title="24h Price Movement"
-            description="Price changes over the last 24 hours"
+            title={t('dashboard.charts.priceMovement24h')}
+            description={t('dashboard.charts.priceMovement24hDesc')}
             icon={<TrendingUp className="h-5 w-5" />}
           >
             <EnhancedAreaChart
@@ -154,8 +157,8 @@ export function DashboardCharts({
           </ChartCard>
 
           <ChartCard
-            title="Latency Trends"
-            description="Network latency over time"
+            title={t('dashboard.charts.latencyTrends')}
+            description={t('dashboard.charts.latencyTrendsDesc')}
             icon={<Clock className="h-5 w-5" />}
           >
             <EnhancedLineChart
@@ -163,7 +166,7 @@ export function DashboardCharts({
               lines={[
                 {
                   dataKey: 'value',
-                  name: 'Latency',
+                  name: t('dashboard.metrics.latency'),
                   color: CHART_COLORS.semantic.warning.DEFAULT,
                 },
               ]}
@@ -177,16 +180,16 @@ export function DashboardCharts({
 
       <TabsContent value="comparison" className="space-y-4">
         <ChartCard
-          title="Protocol Performance Comparison"
-          description="Compare key metrics across protocols"
+          title={t('dashboard.charts.protocolPerformanceComparison')}
+          description={t('dashboard.charts.protocolPerformanceComparisonDesc')}
           icon={<BarChart3 className="h-5 w-5" />}
         >
           <EnhancedBarChart
             data={comparisonData}
             bars={[
-              { dataKey: 'latency', name: 'Latency (ms)', color: CHART_COLORS.series[0] },
-              { dataKey: 'accuracy', name: 'Accuracy (%)', color: CHART_COLORS.series[1] },
-              { dataKey: 'uptime', name: 'Uptime (%)', color: CHART_COLORS.series[2] },
+              { dataKey: 'latency', name: t('dashboard.metrics.latencyMs'), color: CHART_COLORS.series[0] },
+              { dataKey: 'accuracy', name: t('dashboard.metrics.accuracyPercent'), color: CHART_COLORS.series[1] },
+              { dataKey: 'uptime', name: t('dashboard.metrics.uptimePercent'), color: CHART_COLORS.series[2] },
             ]}
             height={400}
             valueFormatter={(v) => formatNumber(v, 1)}

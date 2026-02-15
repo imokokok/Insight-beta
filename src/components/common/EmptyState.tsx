@@ -34,10 +34,7 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/shared/utils';
-
-// ============================================================================
-// Types
-// ============================================================================
+import { useI18n } from '@/i18n/LanguageProvider';
 
 interface UnifiedEmptyStateProps {
   icon?: LucideIcon;
@@ -59,10 +56,6 @@ interface UnifiedEmptyStateProps {
   animated?: boolean;
   children?: ReactNode;
 }
-
-// ============================================================================
-// Animation Variants
-// ============================================================================
 
 const containerVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -98,10 +91,6 @@ const iconVariants: Variants = {
     },
   },
 };
-
-// ============================================================================
-// Variant Configurations
-// ============================================================================
 
 const variantStyles = {
   default: {
@@ -177,10 +166,6 @@ const sizeStyles = {
     description: 'text-base',
   },
 };
-
-// ============================================================================
-// Main Component
-// ============================================================================
 
 export function UnifiedEmptyState({
   icon: Icon,
@@ -280,10 +265,6 @@ export function UnifiedEmptyState({
   );
 }
 
-// ============================================================================
-// Legacy Components (Backward Compatibility)
-// ============================================================================
-
 export function EmptyState(props: Omit<UnifiedEmptyStateProps, 'animated'>) {
   return <UnifiedEmptyState {...props} animated={false} />;
 }
@@ -293,10 +274,6 @@ export function EmptyStateEnhanced(props: UnifiedEmptyStateProps) {
 }
 
 export const EnhancedEmptyState = UnifiedEmptyState;
-
-// ============================================================================
-// Predefined Empty States
-// ============================================================================
 
 export function EmptySearchState({
   searchTerm,
@@ -309,18 +286,19 @@ export function EmptySearchState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={Search}
-      title={searchTerm ? `No results for "${searchTerm}"` : 'No results found'}
-      description="Try adjusting your search or filters to find what you're looking for."
+      title={searchTerm ? `${t('common.noResults')} "${searchTerm}"` : t('common.noResults')}
+      description={t('common.clearFilters')}
       variant="info"
       className={className}
       animated={animated}
       action={
         onClear
           ? {
-              label: 'Clear filters',
+              label: t('common.clearFilters'),
               onClick: onClear,
             }
           : undefined
@@ -338,18 +316,19 @@ export function EmptySecurityState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={ShieldCheck}
-      title="System Secure"
-      description="No suspicious activities detected. The system is actively monitoring and will alert you immediately when threats are identified."
+      title={t('security.emptyStates.systemSecure')}
+      description={t('security.emptyStates.systemSecureDesc')}
       variant="healthy"
       className={className}
       animated={animated}
       action={
         onRefresh
           ? {
-              label: 'Refresh',
+              label: t('common.refresh'),
               onClick: onRefresh,
             }
           : undefined
@@ -357,7 +336,7 @@ export function EmptySecurityState({
     >
       <div className="flex items-center gap-2 rounded-lg bg-emerald-100/50 px-4 py-2 text-sm text-emerald-700">
         <Sparkles className="h-4 w-4" />
-        <span>All systems operational</span>
+        <span>{t('security.emptyStates.allSystemsOperational')}</span>
       </div>
     </UnifiedEmptyState>
   );
@@ -372,18 +351,19 @@ export function EmptyAnomalyState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={Brain}
-      title="No Anomalies Detected"
-      description="ML models are actively monitoring price feeds. When anomalies are detected, they will appear here with detailed analysis and confidence scores."
+      title={t('security.emptyStates.noAnomaliesDetected')}
+      description={t('security.emptyStates.noAnomaliesDesc')}
       variant="healthy"
       className={className}
       animated={animated}
       action={
         onRefresh
           ? {
-              label: 'Refresh',
+              label: t('common.refresh'),
               onClick: onRefresh,
             }
           : undefined
@@ -401,18 +381,19 @@ export function EmptyDeviationState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={BarChart3}
-      title="No Deviation Data"
-      description="Price deviation analysis will appear here once data is collected. This helps identify when different oracle protocols report significantly different prices."
+      title={t('analytics.deviation.trends.empty')}
+      description={t('analytics.deviation.trends.emptyDescription')}
       variant="info"
       className={className}
       animated={animated}
       action={
         onRefresh
           ? {
-              label: 'Refresh',
+              label: t('common.refresh'),
               onClick: onRefresh,
             }
           : undefined
@@ -430,18 +411,19 @@ export function EmptyAlertsState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={ShieldCheck}
-      title="All Systems Healthy"
-      description="No active alerts at the moment. All oracle protocols are running normally. Configure alert rules to get notified of anomalies."
+      title={t('security.emptyStates.allSystemsHealthy')}
+      description={t('security.emptyStates.allSystemsHealthyDesc')}
       variant="healthy"
       className={className}
       animated={animated}
       action={
         onSetAlertRules
           ? {
-              label: 'Configure Alerts',
+              label: t('security.emptyStates.configureAlerts'),
               onClick: onSetAlertRules,
             }
           : undefined
@@ -449,7 +431,7 @@ export function EmptyAlertsState({
     >
       <div className="flex items-center gap-2 rounded-lg bg-emerald-100/50 px-4 py-2 text-sm text-emerald-700">
         <Sparkles className="h-4 w-4" />
-        <span>Everything is running smoothly</span>
+        <span>{t('security.emptyStates.everythingRunningSmoothly')}</span>
       </div>
     </UnifiedEmptyState>
   );
@@ -466,18 +448,19 @@ export function EmptyErrorState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={AlertCircle}
-      title="Failed to Load Data"
-      description={error || 'Something went wrong while loading the data. Please try again.'}
+      title={t('dashboard.emptyStates.failedToLoadData')}
+      description={error || t('dashboard.emptyStates.failedToLoadDataDesc')}
       variant="error"
       className={className}
       animated={animated}
       action={
         onRetry
           ? {
-              label: 'Try Again',
+              label: t('common.tryAgain'),
               onClick: onRetry,
             }
           : undefined
@@ -495,18 +478,19 @@ export function EmptyConnectionState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={WifiOff}
-      title="Connection Lost"
-      description="Unable to connect to the server. Please check your internet connection and try again."
+      title={t('dashboard.emptyStates.connectionLost')}
+      description={t('dashboard.emptyStates.connectionLostDesc')}
       variant="warning"
       className={className}
       animated={animated}
       action={
         onRetry
           ? {
-              label: 'Reconnect',
+              label: t('common.reconnect'),
               onClick: onRetry,
             }
           : undefined
@@ -524,18 +508,19 @@ export function EmptyDashboardState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={LayoutDashboard}
-      title="Dashboard Ready"
-      description="Data is being synchronized. The dashboard will display all key metrics and real-time data shortly."
+      title={t('dashboard.emptyStates.dashboardReady')}
+      description={t('dashboard.emptyStates.dashboardReadyDesc')}
       variant="info"
       className={className}
       animated={animated}
       action={
         onRefresh
           ? {
-              label: 'Refresh Data',
+              label: t('common.refreshData'),
               onClick: onRefresh,
             }
           : undefined
@@ -543,7 +528,7 @@ export function EmptyDashboardState({
     >
       <div className="flex items-center gap-2">
         <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
-        <span className="text-sm text-blue-600">Syncing data...</span>
+        <span className="text-sm text-blue-600">{t('dashboard.emptyStates.syncingData')}</span>
       </div>
     </UnifiedEmptyState>
   );
@@ -558,18 +543,19 @@ export function EmptyProtocolsState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={Globe}
-      title="Explore Oracle Protocols"
-      description="View real-time data and performance metrics from Chainlink, Pyth, Band, and other major oracle protocols."
+      title={t('protocol.emptyStates.exploreProtocols')}
+      description={t('protocol.emptyStates.exploreProtocolsDesc')}
       variant="action"
       className={className}
       animated={animated}
       action={
         onExplore
           ? {
-              label: 'Explore Protocols',
+              label: t('protocol.emptyStates.exploreProtocols'),
               onClick: onExplore,
             }
           : undefined
@@ -597,14 +583,15 @@ export function EmptyPriceDataState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={TrendingUp}
-      title={pair ? `${pair} Data Unavailable` : 'Select a Trading Pair'}
+      title={pair ? t('protocol.emptyStates.dataUnavailable', { pair }) : t('protocol.emptyStates.selectTradingPair')}
       description={
         pair
-          ? 'Data for this pair is being synchronized. Please try again later.'
-          : 'Select a trading pair to view real-time price data and analysis charts.'
+          ? t('protocol.emptyStates.dataSynchronizing')
+          : t('protocol.emptyStates.selectPairDesc')
       }
       variant="info"
       className={className}
@@ -612,7 +599,7 @@ export function EmptyPriceDataState({
       action={
         onSelectPair
           ? {
-              label: 'Select Pair',
+              label: t('common.selectPair'),
               onClick: onSelectPair,
             }
           : undefined
@@ -640,18 +627,19 @@ export function EmptyEventsState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={Activity}
-      title="No Active Events"
-      description="There are no ongoing disputes or assertions at the moment. View history to see past events."
+      title={t('common.noData')}
+      description={t('protocol.emptyStates.noDataDesc')}
       variant="healthy"
       className={className}
       animated={animated}
       action={
         onViewHistory
           ? {
-              label: 'View History',
+              label: t('common.viewHistory'),
               onClick: onViewHistory,
             }
           : undefined
@@ -659,31 +647,31 @@ export function EmptyEventsState({
     >
       <div className="flex items-center gap-2 rounded-lg bg-emerald-100/50 px-4 py-2 text-sm text-emerald-700">
         <Zap className="h-4 w-4" />
-        <span>System running smoothly</span>
+        <span>{t('security.emptyStates.systemRunningSmoothly')}</span>
       </div>
     </UnifiedEmptyState>
   );
 }
 
 export function EmptyFirstItemState({
-  itemName,
   description,
   onAdd,
   className,
   animated = true,
 }: {
-  itemName: string;
+  itemName?: string;
   description?: string;
   onAdd?: () => void;
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={Plus}
-      title={`Add Your First ${itemName}`}
+      title={t('common.createNew')}
       description={
-        description || `Start by adding a ${itemName.toLowerCase()} to use this feature.`
+        description || t('protocol.emptyStates.noDataDesc')
       }
       variant="action"
       className={className}
@@ -691,7 +679,7 @@ export function EmptyFirstItemState({
       action={
         onAdd
           ? {
-              label: `Add ${itemName}`,
+              label: t('common.createNew'),
               onClick: onAdd,
             }
           : undefined
@@ -701,8 +689,8 @@ export function EmptyFirstItemState({
 }
 
 export function EmptyDataState({
-  title = 'No Data Available',
-  description = 'There is no data to display at the moment.',
+  title,
+  description,
   onRefresh,
   className,
   animated = true,
@@ -713,18 +701,19 @@ export function EmptyDataState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={Database}
-      title={title}
-      description={description}
+      title={title || t('protocol.emptyStates.noDataAvailable')}
+      description={description || t('protocol.emptyStates.noDataDesc')}
       variant="default"
       className={className}
       animated={animated}
       action={
         onRefresh
           ? {
-              label: 'Refresh',
+              label: t('common.refresh'),
               onClick: onRefresh,
             }
           : undefined
@@ -742,18 +731,19 @@ export function EmptyFileState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={FileX}
-      title="No Files Found"
-      description="Upload files to get started. Supported formats include CSV, JSON, and Excel."
+      title={t('common.noData')}
+      description={t('protocol.emptyStates.noDataDesc')}
       variant="default"
       className={className}
       animated={animated}
       action={
         onUpload
           ? {
-              label: 'Upload File',
+              label: t('common.uploadFile'),
               onClick: onUpload,
             }
           : undefined
@@ -763,10 +753,10 @@ export function EmptyFileState({
 }
 
 export function EmptyBoxState({
-  title = 'Nothing Here Yet',
-  description = 'This area is empty. Check back later or create something new.',
+  title,
+  description,
   onAction,
-  actionLabel = 'Create New',
+  actionLabel,
   className,
   animated = true,
 }: {
@@ -777,18 +767,19 @@ export function EmptyBoxState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={Box}
-      title={title}
-      description={description}
+      title={title || t('common.noData')}
+      description={description || t('protocol.emptyStates.noDataDesc')}
       variant="default"
       className={className}
       animated={animated}
       action={
         onAction
           ? {
-              label: actionLabel,
+              label: actionLabel || t('common.createNew'),
               onClick: onAction,
             }
           : undefined

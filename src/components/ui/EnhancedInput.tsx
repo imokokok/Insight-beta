@@ -89,8 +89,8 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
           onValidationChange?.(result);
         } catch {
           setValidationState('invalid');
-          setValidationMessage('验证失败');
-          onValidationChange?.({ state: 'invalid', message: '验证失败' });
+          setValidationMessage('common.validationFailed');
+          onValidationChange?.({ state: 'invalid', message: 'common.validationFailed' });
         }
       },
       [validation, onValidationChange],
@@ -309,7 +309,7 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
       onSelectSuggestion,
       onChange,
       loading,
-      emptyMessage = '无搜索结果',
+      emptyMessage = 'common.noSearchResults',
       maxSuggestions = 5,
       ...props
     },
@@ -595,7 +595,7 @@ const EnhancedSelect = React.forwardRef<HTMLDivElement, EnhancedSelectProps>(
   (
     {
       label,
-      placeholder = '请选择...',
+      placeholder = 'common.selectPlaceholder',
       options,
       value,
       defaultValue,
@@ -743,7 +743,7 @@ const EnhancedSelect = React.forwardRef<HTMLDivElement, EnhancedSelectProps>(
                     <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <input
                       type="text"
-                      placeholder="搜索..."
+                      placeholder="common.searchPlaceholder"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => setIsFocused(true)}
@@ -795,7 +795,7 @@ const EnhancedSelect = React.forwardRef<HTMLDivElement, EnhancedSelectProps>(
                     </li>
                   ))
                 ) : (
-                  <li className="px-3 py-4 text-center text-sm text-gray-500">无匹配选项</li>
+                  <li className="px-3 py-4 text-center text-sm text-gray-500">common.noMatchingOptions</li>
                 )}
               </ul>
             </motion.div>

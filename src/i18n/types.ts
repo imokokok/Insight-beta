@@ -1,26 +1,23 @@
-export type Lang = 'zh' | 'en' | 'es';
+export type Lang = 'zh' | 'en';
 
 export const languages: Array<{ code: Lang; label: string }> = [
   { code: 'zh', label: '中文' },
   { code: 'en', label: 'English' },
-  { code: 'es', label: 'Español' },
 ];
 
 export const LANG_STORAGE_KEY = 'oracle-monitor_lang';
 
 export function isLang(value: unknown): value is Lang {
-  return value === 'zh' || value === 'en' || value === 'es';
+  return value === 'zh' || value === 'en';
 }
 
 export const langToHtmlLang: Record<Lang, string> = {
   en: 'en',
-  es: 'es',
   zh: 'zh-CN',
 };
 
 export const langToLocale: Record<Lang, string> = {
   en: 'en-US',
-  es: 'es-ES',
   zh: 'zh-CN',
 };
 
@@ -70,7 +67,6 @@ export function detectLangFromAcceptLanguage(value: string | null | undefined): 
   for (const { lang } of parsed) {
     if (lang.startsWith('zh')) return 'zh';
     if (lang.startsWith('en')) return 'en';
-    if (lang.startsWith('es')) return 'es';
   }
 
   return 'en';
@@ -92,10 +88,6 @@ export interface FormatOptions {
   relative?: Intl.RelativeTimeFormatOptions;
 }
 
-/**
- * 翻译值类型
- * 支持各种动态翻译值类型
- */
 export type TranslationValue =
   | string
   | { plural: PluralOptions }
@@ -103,10 +95,6 @@ export type TranslationValue =
   | TranslationValue[]
   | { [key: string]: TranslationValue };
 
-/**
- * 翻译命名空间类型
- * 支持扩展的动态翻译键
- */
 export type TranslationNamespace = Record<string, TranslationValue>;
 
 export type Translations = Record<Lang, TranslationNamespace>;

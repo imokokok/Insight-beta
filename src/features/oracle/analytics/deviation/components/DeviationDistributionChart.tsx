@@ -12,6 +12,7 @@ import {
   Bar,
   Cell,
 } from 'recharts';
+import { useI18n } from '@/i18n/LanguageProvider';
 import type { DeviationTrend } from '../types/deviation';
 
 interface DeviationDistributionChartProps {
@@ -19,6 +20,8 @@ interface DeviationDistributionChartProps {
 }
 
 export function DeviationDistributionChart({ trends }: DeviationDistributionChartProps) {
+  const { t } = useI18n();
+  
   const data = trends
     .slice(0, 10)
     .sort((a, b) => b.avgDeviation - a.avgDeviation)
@@ -32,9 +35,9 @@ export function DeviationDistributionChart({ trends }: DeviationDistributionChar
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5" />
-          Deviation Distribution
+          {t('analytics.deviation.chart.deviationDistribution')}
         </CardTitle>
-        <CardDescription>Average deviation by symbol</CardDescription>
+        <CardDescription>{t('analytics.deviation.chart.deviationDistributionDesc')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-64">
@@ -55,7 +58,7 @@ export function DeviationDistributionChart({ trends }: DeviationDistributionChar
                   border: 'none',
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                 }}
-                formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Avg Deviation']}
+                formatter={(value) => [`${Number(value).toFixed(2)}%`, t('common.avgDeviation')]}
               />
               <Bar dataKey="deviation" fill="#f97316" radius={[4, 4, 0, 0]}>
                 {data.map((entry, index) => (

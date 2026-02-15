@@ -8,6 +8,7 @@ import {
   StatCardGroup,
   DashboardStatsSection,
 } from '@/components/common/StatCard';
+import { useI18n } from '@/i18n/LanguageProvider';
 import type { StatCardStatus } from '@/components/common/StatCard';
 
 interface StatCardData {
@@ -38,12 +39,14 @@ const icons = {
 };
 
 export function DashboardStats({ statCardsData, scaleCardsData, isRefreshing, stats }: DashboardStatsProps) {
+  const { t } = useI18n();
+
   return (
     <StaggerContainer className="mb-4 space-y-3" staggerChildren={0.05}>
       <StaggerItem>
         <DashboardStatsSection
-          title="System Health"
-          description="Real-time health and risk metrics"
+          title={t('dashboard.stats.systemHealth')}
+          description={t('dashboard.stats.systemHealthDesc')}
           icon={<Activity className="h-4 w-4" />}
           color="amber"
         >
@@ -67,8 +70,8 @@ export function DashboardStats({ statCardsData, scaleCardsData, isRefreshing, st
 
       <StaggerItem>
         <DashboardStatsSection
-          title="Network Scale"
-          description="Protocol scale and data volume"
+          title={t('dashboard.stats.networkScale')}
+          description={t('dashboard.stats.networkScaleDesc')}
           icon={<Globe className="h-4 w-4" />}
           color="blue"
         >

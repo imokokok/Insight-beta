@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { EmptyDeviationState } from '@/components/common/EmptyState';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { formatTime } from '@/shared/utils';
+import { useI18n } from '@/i18n/LanguageProvider';
 import type { PriceDeviationPoint } from '../types/deviation';
 
 interface AnomalyListProps {
@@ -14,6 +15,8 @@ interface AnomalyListProps {
 }
 
 export function AnomalyList({ anomalies, isLoading, onSelect }: AnomalyListProps) {
+  const { t } = useI18n();
+  
   if (isLoading) {
     return <SkeletonList count={5} />;
   }
@@ -37,7 +40,7 @@ export function AnomalyList({ anomalies, isLoading, onSelect }: AnomalyListProps
                 <span className="font-semibold">{anomaly.symbol}</span>
                 <Badge variant="outline" className="border-red-500 text-red-500">
                   <AlertTriangle className="mr-1 h-3 w-3" />
-                  {anomaly.outlierProtocols.length} Outliers
+                  {anomaly.outlierProtocols.length} {t('common.outliers')}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">{formatTime(anomaly.timestamp)}</p>
@@ -53,7 +56,7 @@ export function AnomalyList({ anomalies, isLoading, onSelect }: AnomalyListProps
               <p className="text-lg font-bold text-red-500">
                 {(anomaly.maxDeviationPercent * 100).toFixed(2)}%
               </p>
-              <p className="text-xs text-muted-foreground">Max Deviation</p>
+              <p className="text-xs text-muted-foreground">{t('common.maxDeviation')}</p>
             </div>
           </div>
         </button>

@@ -51,7 +51,6 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 const fallbackTranslations: Record<Lang, TranslationNamespace> = {
   en: {},
   zh: {},
-  es: {},
 };
 
 function getInitialLang(serverLang?: Lang): Lang {

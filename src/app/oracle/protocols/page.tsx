@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { fetchApiData } from '@/shared/utils';
+import { useI18n } from '@/i18n/LanguageProvider';
 
 interface PriceFeed {
   id: string;
@@ -23,17 +24,16 @@ interface PriceFeed {
 }
 
 export default function PriceFeedsPage() {
+  const { t } = useI18n();
   const [feeds, setFeeds] = useState<PriceFeed[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchFeeds = useCallback(async () => {
     try {
       setLoading(true);
-      // Try to fetch from API, fallback to mock data
       const data = await fetchApiData<PriceFeed[]>('/api/oracle/price-feeds');
       setFeeds(data);
     } catch {
-      // Use mock data if API fails
       setFeeds(generateMockFeeds());
     } finally {
       setLoading(false);
@@ -44,9 +44,8 @@ export default function PriceFeedsPage() {
     fetchFeeds();
   }, [fetchFeeds]);
 
-  // 页面优化：键盘快捷键
   usePageOptimizations({
-    pageName: '价格源',
+    pageName: t('protocol.priceFeeds.pageTitle'),
     onRefresh: async () => {
       await fetchFeeds();
     },
@@ -57,44 +56,41 @@ export default function PriceFeedsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Price Feeds</h1>
-          <p className="mt-2 text-gray-600">Real-time price data from multiple oracle protocols</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('protocol.priceFeeds.pageTitle')}</h1>
+          <p className="mt-2 text-gray-600">{t('protocol.priceFeeds.pageDescription')}</p>
         </div>
 
-        {/* Stats */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Total Feeds"
+            title={t('protocol.priceFeeds.totalFeeds')}
             value={feeds.length || 150}
             icon={<TrendingUp className="h-5 w-5" />}
             loading={loading}
           />
           <StatCard
-            title="Active Sources"
+            title={t('protocol.priceFeeds.activeSources')}
             value={10}
             icon={<Globe className="h-5 w-5" />}
             loading={loading}
           />
           <StatCard
-            title="Avg Update Time"
+            title={t('protocol.priceFeeds.avgUpdateTime')}
             value="~500ms"
             icon={<Activity className="h-5 w-5" />}
             loading={loading}
           />
           <StatCard
-            title="24h Updates"
+            title={t('protocol.priceFeeds.updates24h')}
             value="1.2M+"
             icon={<Activity className="h-5 w-5" />}
             loading={loading}
           />
         </div>
 
-        {/* Price Feeds Grid */}
         <Card>
           <CardHeader>
-            <CardTitle>Live Price Feeds</CardTitle>
+            <CardTitle>{t('protocol.priceFeeds.livePriceFeeds')}</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -112,7 +108,7 @@ export default function PriceFeedsPage() {
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {feeds.map((feed) => (
-                  <PriceFeedCard key={feed.id} feed={feed} />
+                  <PriceFeedCard key={feed.id} feed={feed} t={t} />
                 ))}
               </div>
             )}
@@ -123,7 +119,7 @@ export default function PriceFeedsPage() {
   );
 }
 
-function PriceFeedCard({ feed }: { feed: PriceFeed }) {
+function PriceFeedCard({ feed, t }: { feed: PriceFeed; t: (key: string) => string }) {
   const isPositive = feed.change24h >= 0;
 
   return (
@@ -134,7 +130,7 @@ function PriceFeedCard({ feed }: { feed: PriceFeed }) {
           <p className="text-sm text-gray-500">{feed.name}</p>
         </div>
         <Badge variant="secondary" className="text-xs">
-          {feed.sources.length} sources
+          {feed.sources.length} {t('protocol.priceFeeds.sources')}
         </Badge>
       </div>
 
@@ -147,12 +143,12 @@ function PriceFeedCard({ feed }: { feed: PriceFeed }) {
             {isPositive ? '+' : ''}
             {feed.change24h.toFixed(2)}%
           </span>
-          <span className="ml-2 text-gray-400">24h</span>
+          <span className="ml-2 text-gray-400">{t('protocol.priceFeeds.hours24')}</span>
         </div>
       </div>
 
       <div className="mt-4 flex items-center justify-between text-xs text-gray-400">
-        <span>Vol: ${(feed.volume24h / 1e9).toFixed(2)}B</span>
+        <span>{t('protocol.priceFeeds.vol')}: ${(feed.volume24h / 1e9).toFixed(2)}B</span>
         <span>{new Date(feed.lastUpdated).toLocaleTimeString()}</span>
       </div>
     </div>
@@ -194,7 +190,6 @@ function StatCard({
   );
 }
 
-// Mock data generator
 function generateMockFeeds(): PriceFeed[] {
   const symbols = [
     { symbol: 'BTC/USD', name: 'Bitcoin' },

@@ -9,8 +9,10 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { HealthStatusBadge, useOracleDashboard } from '@/features/oracle/dashboard';
 import { DashboardCharts } from '@/features/oracle/dashboard/components/DashboardCharts';
 import { DashboardStats as DashboardStatsComponent } from '@/features/oracle/dashboard/components/DashboardStats';
+import { useI18n } from '@/i18n/LanguageProvider';
 
 export default function OptimizedOracleDashboard() {
+  const { t } = useI18n();
   const {
     activeTab,
     setActiveTab,
@@ -47,8 +49,8 @@ export default function OptimizedOracleDashboard() {
 
         <main className="flex flex-1 flex-col overflow-hidden">
           <DashboardPageHeader
-            title="Oracle Operations Overview"
-            description="Real-time health and risk analytics"
+            title={t('dashboard.pageTitle')}
+            description={t('dashboard.pageDescription')}
             icon={<Activity className="h-5 w-5 text-primary" />}
             statusBadge={
               <HealthStatusBadge activeAlerts={stats?.activeAlerts ?? 0} isConnected={isConnected} />
@@ -64,14 +66,14 @@ export default function OptimizedOracleDashboard() {
           />
 
           <div className="relative flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4">
-            {isRefreshing && !stats && <LoadingOverlay message="Loading dashboard data..." />}
+            {isRefreshing && !stats && <LoadingOverlay message={t('dashboard.loadingMessage')} />}
 
             {isError && error && (
               <div className="mb-6">
                 <ErrorBanner
                   error={error}
                   onRetry={refresh}
-                  title="Failed to load dashboard data"
+                  title={t('dashboard.failedToLoad')}
                   isRetrying={isRefreshing}
                 />
               </div>

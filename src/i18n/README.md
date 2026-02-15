@@ -4,7 +4,7 @@
 
 ## 特性
 
-- 🌍 **3 种语言支持**：中文、英语、西班牙语
+- 🌍 **2 种语言支持**：中文、英语
 - 📝 **TypeScript 完整类型支持**：翻译键类型安全
 - 🚀 **懒加载支持**：翻译文件按需加载（推荐）
 - 🧪 **自动化测试**：翻译覆盖率测试
@@ -65,7 +65,7 @@ export function MyComponent() {
 ### 3. 使用语言切换器组件
 
 ```tsx
-import { LanguageSwitcher } from '@/components/features/common/LanguageSwitcher';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 
 export function Header() {
   return (
@@ -93,9 +93,7 @@ src/i18n/
 │   └── translations-coverage.test.ts
 └── locales/                   # 翻译文件
     ├── en/                    # 英语（源语言）
-    ├── zh/                    # 中文
-    ├── es/                    # 西班牙语
-
+    └── zh/                    # 中文
 ```
 
 ## API 参考
@@ -167,7 +165,7 @@ npm test -- src/i18n/__tests__/translations-coverage.test.ts
 1. 在 `src/i18n/types.ts` 中添加语言代码：
 
 ```ts
-export type Lang = 'zh' | 'en' | 'es' | 'ja'; // 添加 'ja'
+export type Lang = 'zh' | 'en' | 'ja'; // 添加 'ja'
 ```
 
 2. 在 `languages` 数组中添加语言信息：
@@ -377,7 +375,7 @@ const message = getUiErrorMessage('wallet_not_connected', t);
 import { preloadTranslationsLazy } from '@/i18n';
 
 // 在用户可能切换语言前预加载
-preloadTranslationsLazy('es');
+preloadTranslationsLazy('zh');
 ```
 
 ### 代码分割
@@ -388,7 +386,6 @@ preloadTranslationsLazy('es');
 dist/
 ├── en-translations.js  # 英语翻译（首屏加载）
 ├── zh-translations.js  # 中文翻译（按需加载）
-├── es-translations.js  # 西班牙语翻译（按需加载）
 └── ...
 ```
 

@@ -21,6 +21,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn, fetchApiData } from '@/shared/utils';
 import { PROTOCOL_DISPLAY_NAMES, ORACLE_PROTOCOLS } from '@/types/oracle';
+import { useI18n } from '@/i18n/LanguageProvider';
 import type { OracleProtocol } from '@/types/unifiedOracleTypes';
 
 interface ProtocolHealthGridProps {
@@ -29,7 +30,6 @@ interface ProtocolHealthGridProps {
 
 type HealthStatus = 'excellent' | 'good' | 'degraded' | 'critical';
 
-// 本地类型定义（兼容组件需求）
 interface ProtocolPerformanceRanking {
   protocol: OracleProtocol;
   rank: number;
@@ -52,6 +52,7 @@ interface ProtocolHealth extends ProtocolPerformanceRanking {
 }
 
 export function ProtocolHealthGrid({ className }: ProtocolHealthGridProps) {
+  const { t } = useI18n();
   const [healthData, setHealthData] = useState<ProtocolHealth[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -67,7 +68,6 @@ export function ProtocolHealthGrid({ className }: ProtocolHealthGridProps) {
         }));
         setHealthData(healthWithStatus);
       } catch {
-        // 使用模拟数据
         setHealthData(generateMockHealthData());
       } finally {
         setLoading(false);
@@ -87,31 +87,19 @@ export function ProtocolHealthGrid({ className }: ProtocolHealthGridProps) {
     <Card className={cn('overflow-hidden', className)}>
       <CardHeader className="px-3 pb-2 sm:px-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="text-base font-semibold sm:text-lg">Protocol Health</CardTitle>
+          <CardTitle className="text-base font-semibold sm:text-lg">{t('protocol.health.title')}</CardTitle>
           <div className="flex flex-wrap gap-1 sm:gap-2">
-            <StatusLegend
-              status="excellent"
-              count={healthData.filter((h) => h.status === 'excellent').length}
-            />
-            <StatusLegend
-              status="good"
-              count={healthData.filter((h) => h.status === 'good').length}
-            />
-            <StatusLegend
-              status="degraded"
-              count={healthData.filter((h) => h.status === 'degraded').length}
-            />
-            <StatusLegend
-              status="critical"
-              count={healthData.filter((h) => h.status === 'critical').length}
-            />
+            <StatusLegend status="excellent" count={healthData.filter((h) => h.status === 'excellent').length} t={t} />
+            <StatusLegend status="good" count={healthData.filter((h) => h.status === 'good').length} t={t} />
+            <StatusLegend status="degraded" count={healthData.filter((h) => h.status === 'degraded').length} t={t} />
+            <StatusLegend status="critical" count={healthData.filter((h) => h.status === 'critical').length} t={t} />
           </div>
         </div>
       </CardHeader>
       <CardContent className="p-0">
         <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 sm:gap-4 sm:p-4 lg:grid-cols-3">
           {healthData.map((protocol) => (
-            <ProtocolHealthCard key={protocol.protocol} data={protocol} />
+            <ProtocolHealthCard key={protocol.protocol} data={protocol} t={t} />
           ))}
         </div>
       </CardContent>
@@ -119,35 +107,35 @@ export function ProtocolHealthGrid({ className }: ProtocolHealthGridProps) {
   );
 }
 
-function ProtocolHealthCard({ data }: { data: ProtocolHealth }) {
+function ProtocolHealthCard({ data, t }: { data: ProtocolHealth; t: (key: string) => string }) {
   const statusConfig = {
     excellent: {
       color: 'text-green-600',
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200',
       icon: CheckCircle2,
-      label: 'Excellent',
+      labelKey: 'protocol.health.excellent',
     },
     good: {
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200',
       icon: CheckCircle2,
-      label: 'Good',
+      labelKey: 'protocol.health.good',
     },
     degraded: {
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50',
       borderColor: 'border-yellow-200',
       icon: AlertTriangle,
-      label: 'Degraded',
+      labelKey: 'protocol.health.degraded',
     },
     critical: {
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200',
       icon: XCircle,
-      label: 'Critical',
+      labelKey: 'protocol.health.critical',
     },
   };
 
@@ -186,7 +174,7 @@ function ProtocolHealthCard({ data }: { data: ProtocolHealth }) {
               {PROTOCOL_DISPLAY_NAMES[data.protocol]}
             </h4>
             <Badge variant="secondary" className="mt-0.5 text-xs">
-              {config.label}
+              {t(config.labelKey)}
             </Badge>
           </div>
         </div>
@@ -198,7 +186,7 @@ function ProtocolHealthCard({ data }: { data: ProtocolHealth }) {
 
       <div className="mb-2 sm:mb-3">
         <div className="mb-1 flex items-center justify-between text-xs sm:text-sm">
-          <span className="text-muted-foreground">Health Score</span>
+          <span className="text-muted-foreground">{t('protocol.health.metrics.healthScore')}</span>
           <span className={cn('font-bold', config.color)}>{data.score}/100</span>
         </div>
         <Progress value={data.score} className="h-1.5 sm:h-2" />
@@ -208,28 +196,28 @@ function ProtocolHealthCard({ data }: { data: ProtocolHealth }) {
         <div className="flex items-center gap-2">
           <Activity className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
           <div>
-            <div className="text-[10px] uppercase text-muted-foreground">Accuracy</div>
+            <div className="text-[10px] uppercase text-muted-foreground">{t('protocol.health.metrics.accuracy')}</div>
             <div className="font-medium">{data.accuracy.toFixed(1)}%</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Shield className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
           <div>
-            <div className="text-[10px] uppercase text-muted-foreground">Uptime</div>
+            <div className="text-[10px] uppercase text-muted-foreground">{t('protocol.health.metrics.uptime')}</div>
             <div className="font-medium">{data.uptime.toFixed(1)}%</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Zap className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
           <div>
-            <div className="text-[10px] uppercase text-muted-foreground">Latency</div>
+            <div className="text-[10px] uppercase text-muted-foreground">{t('protocol.health.metrics.latency')}</div>
             <div className="font-medium">{data.latency.toFixed(0)}ms</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Clock className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
           <div>
-            <div className="text-[10px] uppercase text-muted-foreground">Feeds</div>
+            <div className="text-[10px] uppercase text-muted-foreground">{t('protocol.health.metrics.feeds')}</div>
             <div className="font-medium">{data.totalFeeds}</div>
           </div>
         </div>
@@ -238,7 +226,7 @@ function ProtocolHealthCard({ data }: { data: ProtocolHealth }) {
   );
 }
 
-function StatusLegend({ status, count }: { status: HealthStatus; count: number }) {
+function StatusLegend({ status, count, t }: { status: HealthStatus; count: number; t: (key: string) => string }) {
   const colors = {
     excellent: 'bg-green-100 text-green-700',
     good: 'bg-blue-100 text-blue-700',
@@ -246,9 +234,16 @@ function StatusLegend({ status, count }: { status: HealthStatus; count: number }
     critical: 'bg-red-100 text-red-700',
   };
 
+  const labelKeys = {
+    excellent: 'protocol.health.excellent',
+    good: 'protocol.health.good',
+    degraded: 'protocol.health.degraded',
+    critical: 'protocol.health.critical',
+  };
+
   return (
     <Badge variant="secondary" className={cn('text-xs', colors[status])}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}: {count}
+      {t(labelKeys[status])}: {count}
     </Badge>
   );
 }
@@ -293,7 +288,6 @@ function ProtocolHealthGridSkeleton({ className }: { className?: string }) {
   );
 }
 
-// 模拟数据生成器
 function generateMockHealthData(): ProtocolHealth[] {
   return ORACLE_PROTOCOLS.map((protocol) => {
     const score = Math.floor(Math.random() * 40) + 60;

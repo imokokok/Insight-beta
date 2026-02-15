@@ -33,7 +33,7 @@ Insight is a professional **Oracle Data Analytics Platform** designed for DeFi p
 - 📈 **Unified Dashboard** - Single pane of glass for all oracle protocols
 - 🔒 **Enterprise Security** - RBAC, API key management, audit logging
 - 🚀 **Serverless Ready** - Optimized for Vercel + Supabase
-- 🌍 **Multi-language Support** - 3 languages (English, Chinese, Spanish)
+- 🌍 **Multi-language Support** - 2 languages (English, Chinese)
 
 ## 🚀 Quick Start
 

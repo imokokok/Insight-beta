@@ -38,22 +38,22 @@ describe('TranslationLoader', () => {
         `export const common = { hello: 'Hello', world: 'World' };`,
       );
 
-      // Create Spanish translations
-      const esDir = path.join(localesDir, 'es');
-      await fs.promises.mkdir(esDir, { recursive: true });
+      // Create Chinese translations
+      const zhDir = path.join(localesDir, 'zh');
+      await fs.promises.mkdir(zhDir, { recursive: true });
       await fs.promises.writeFile(
-        path.join(esDir, 'index.ts'),
-        `import { common } from './common';\nexport const es = { common };`,
+        path.join(zhDir, 'index.ts'),
+        `import { common } from './common';\nexport const zh = { common };`,
       );
       await fs.promises.writeFile(
-        path.join(esDir, 'common.ts'),
-        `export const common = { hello: 'Hola' };`,
+        path.join(zhDir, 'common.ts'),
+        `export const common = { hello: '你好' };`,
       );
 
       const langKeys = await loader.loadAllTranslations();
 
       expect(langKeys.has('en')).toBe(true);
-      expect(langKeys.has('es')).toBe(true);
+      expect(langKeys.has('zh')).toBe(true);
 
       const enKeys = langKeys.get('en');
       expect(enKeys?.has('common.hello')).toBe(true);
@@ -128,16 +128,14 @@ describe('TranslationLoader', () => {
     it('should return statistics for all languages', () => {
       const langKeys = new Map([
         ['en', new Set(['a', 'b', 'c'])],
-        ['es', new Set(['a', 'b'])],
-        ['fr', new Set(['a'])],
+        ['zh', new Set(['a', 'b'])],
       ]);
 
       const stats = loader.getStats(langKeys);
 
-      expect(stats).toHaveLength(3);
+      expect(stats).toHaveLength(2);
       expect(stats.find((s) => s.language === 'en')?.keyCount).toBe(3);
-      expect(stats.find((s) => s.language === 'es')?.keyCount).toBe(2);
-      expect(stats.find((s) => s.language === 'fr')?.keyCount).toBe(1);
+      expect(stats.find((s) => s.language === 'zh')?.keyCount).toBe(2);
     });
   });
 

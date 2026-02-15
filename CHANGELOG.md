@@ -48,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Oracle monitoring and dispute resolution interface
 - Real-time visualization of oracle data trends
 - Multi-chain support (Polygon, Arbitrum, Optimism, Base, Avalanche, BSC)
-- Internationalization support (English, Chinese, Spanish, French, Korean)
+- Internationalization support (English, Chinese)
 - Web3 wallet integration via viem
 - Comprehensive API documentation
 - Complete test suite with Vitest and Playwright

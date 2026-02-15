@@ -52,7 +52,7 @@ export function mockI18n() {
 export function mockTranslations() {
   return {
     getUiErrorMessage: () => '',
-    langToLocale: { zh: 'zh-CN', en: 'en-US', es: 'es-ES' },
+    langToLocale: { zh: 'zh-CN', en: 'en-US' },
   };
 }
 

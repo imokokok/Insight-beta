@@ -1,10 +1,8 @@
 import { enTranslations } from './locales/en';
-import { esTranslations } from './locales/es';
 import { zhTranslations } from './locales/zh';
 
 import type { Lang } from './types';
 
-// Re-export types and constants from types.ts to avoid duplication
 export type { Lang };
 export {
   languages,
@@ -15,24 +13,20 @@ export {
   langToLocale,
 } from './types';
 
-// Export all translations
 export const translations = {
   en: enTranslations,
   zh: zhTranslations,
-  es: esTranslations,
 } as const;
 
-// Type for translation keys - using string for flexibility
 export type TranslationKey = string;
 
-// Helper function to get error messages
 export function getUiErrorMessage(errorCode: string, t: (key: TranslationKey) => string) {
   if (errorCode === 'unknown_error') return t('errors.unknownError');
   if (errorCode.startsWith('http_')) return `${t('errors.httpError')} (${errorCode.slice(5)})`;
   if (errorCode === 'invalid_json') return t('errors.invalidJson');
   if (errorCode === 'invalid_json_response') return t('errors.invalidJson');
   if (errorCode === 'api_error') return t('errors.apiError');
-  if (errorCode === 'invalid_api_response') return t('errors.invalidApiResponse');
+  if (errorCode === 'invalid_api_response') return t('errors.unknownError');
   if (errorCode === 'api_unknown_error') return t('errors.unknownError');
   if (errorCode === 'missing_config') return t('errors.missingConfig');
   if (errorCode === 'invalid_rpc_url') return t('errors.invalidRpcUrl');

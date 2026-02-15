@@ -6,6 +6,7 @@ import { Virtuoso } from 'react-virtuoso';
 import { ChevronRight, BarChart3, Search, Filter } from 'lucide-react';
 import { TrendDirectionBadge } from './TrendDirectionBadge';
 import { DeviationSeverityBadge } from './DeviationSeverityBadge';
+import { useI18n } from '@/i18n/LanguageProvider';
 import type { DeviationTrend } from '../types/deviation';
 
 interface VirtualTrendListProps {
@@ -15,6 +16,7 @@ interface VirtualTrendListProps {
 }
 
 export function VirtualTrendList({ trends, isLoading, onSelect }: VirtualTrendListProps) {
+  const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
 
@@ -57,9 +59,9 @@ export function VirtualTrendList({ trends, isLoading, onSelect }: VirtualTrendLi
           </div>
           <p className="text-sm text-muted-foreground">{trend.recommendation}</p>
           <div className="flex items-center gap-4 text-xs text-gray-500">
-            <span>Avg Deviation: {(trend.avgDeviation * 100).toFixed(2)}%</span>
-            <span>Max: {(trend.maxDeviation * 100).toFixed(2)}%</span>
-            <span>Volatility: {(trend.volatility * 100).toFixed(2)}%</span>
+            <span>{t('common.avgDeviation')}: {(trend.avgDeviation * 100).toFixed(2)}%</span>
+            <span>{t('analytics.deviation.trends.max')}: {(trend.maxDeviation * 100).toFixed(2)}%</span>
+            <span>{t('analytics.deviation.trends.volatility')}: {(trend.volatility * 100).toFixed(2)}%</span>
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
@@ -84,8 +86,8 @@ export function VirtualTrendList({ trends, isLoading, onSelect }: VirtualTrendLi
     return (
       <div className="py-12 text-center">
         <BarChart3 className="mx-auto mb-4 h-16 w-16 text-orange-500" />
-        <h3 className="text-lg font-semibold">No Trend Data</h3>
-        <p className="mt-1 text-muted-foreground">Deviation analysis data will appear here</p>
+        <h3 className="text-lg font-semibold">{t('analytics.deviation.trends.empty')}</h3>
+        <p className="mt-1 text-muted-foreground">{t('analytics.deviation.trends.emptyDescription')}</p>
       </div>
     );
   }
@@ -97,7 +99,7 @@ export function VirtualTrendList({ trends, isLoading, onSelect }: VirtualTrendLi
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search symbols..."
+            placeholder={t('common.searchSymbols')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-lg border pl-10 pr-4 py-2 text-sm focus:border-orange-500 focus:outline-none"
@@ -110,17 +112,17 @@ export function VirtualTrendList({ trends, isLoading, onSelect }: VirtualTrendLi
             onChange={(e) => setFilterSeverity(e.target.value)}
             className="rounded-lg border px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
           >
-            <option value="all">All</option>
-            <option value="critical">Critical</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value="all">{t('common.all')}</option>
+            <option value="critical">{t('common.critical')}</option>
+            <option value="high">{t('common.high')}</option>
+            <option value="medium">{t('common.medium')}</option>
+            <option value="low">{t('common.low')}</option>
           </select>
         </div>
       </div>
 
       <div className="text-sm text-muted-foreground mb-2">
-        Showing {filteredTrends.length} of {trends.length} trends
+        {t('common.showingOf', { count: filteredTrends.length, total: trends.length })}
       </div>
 
       <div className="flex-1 min-h-0">

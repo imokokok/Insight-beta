@@ -4,15 +4,11 @@ import type { Lang, TranslationNamespace } from './types';
 
 export type TranslationModule = () => Promise<{ default: TranslationNamespace }>;
 
-// Lazy load translations from the modular translation files
-// This allows for code splitting while keeping translations organized by module
 const translationLoaders: Record<Lang, TranslationModule> = {
   en: () =>
     import('./locales/en').then((m) => ({ default: m.enTranslations as TranslationNamespace })),
   zh: () =>
     import('./locales/zh').then((m) => ({ default: m.zhTranslations as TranslationNamespace })),
-  es: () =>
-    import('./locales/es').then((m) => ({ default: m.esTranslations as TranslationNamespace })),
 };
 
 const loadedTranslations: Partial<Record<Lang, TranslationNamespace>> = {};

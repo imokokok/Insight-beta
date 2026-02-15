@@ -4,7 +4,6 @@ const PLURAL_RULES: Record<Lang, Intl.PluralRules> = {} as Record<Lang, Intl.Plu
 
 const localeMap: Record<Lang, string> = {
   en: 'en-US',
-  es: 'es-ES',
   zh: 'zh-CN',
 };
 

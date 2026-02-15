@@ -3,8 +3,8 @@
 import { ArrowRightLeft, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/shared/utils';
-import { formatTime } from '@/shared/utils';
+import { cn, formatTime } from '@/shared/utils';
+import { useI18n } from '@/i18n/LanguageProvider';
 import type { PriceDeviationPoint } from '../types/deviation';
 
 interface ProtocolPriceComparisonProps {
@@ -12,20 +12,22 @@ interface ProtocolPriceComparisonProps {
 }
 
 export function ProtocolPriceComparison({ dataPoint }: ProtocolPriceComparisonProps) {
+  const { t } = useI18n();
+  
   if (!dataPoint) {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ArrowRightLeft className="h-5 w-5" />
-            Protocol Price Comparison
+            {t('analytics.priceComparison.title')}
           </CardTitle>
-          <CardDescription>Select a data point to view details</CardDescription>
+          <CardDescription>{t('analytics.priceComparison.description')}</CardDescription>
         </CardHeader>
         <CardContent className="py-12 text-center">
           <BarChart3 className="mx-auto mb-4 h-12 w-12 text-gray-300" />
           <p className="text-muted-foreground">
-            Click on a deviation point to see protocol comparison
+            {t('analytics.priceComparison.emptyHint')}
           </p>
         </CardContent>
       </Card>
@@ -47,7 +49,7 @@ export function ProtocolPriceComparison({ dataPoint }: ProtocolPriceComparisonPr
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ArrowRightLeft className="h-5 w-5" />
-          Protocol Price Comparison
+          {t('analytics.priceComparison.title')}
         </CardTitle>
         <CardDescription>
           {dataPoint.symbol} at {formatTime(dataPoint.timestamp)}
@@ -57,11 +59,11 @@ export function ProtocolPriceComparison({ dataPoint }: ProtocolPriceComparisonPr
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-lg bg-green-50 p-3">
-              <p className="text-xs text-muted-foreground">Average Price</p>
+              <p className="text-xs text-muted-foreground">{t('common.averagePrice')}</p>
               <p className="text-lg font-bold">${dataPoint.avgPrice.toFixed(4)}</p>
             </div>
             <div className="rounded-lg bg-orange-50 p-3">
-              <p className="text-xs text-muted-foreground">Max Deviation</p>
+              <p className="text-xs text-muted-foreground">{t('common.maxDeviation')}</p>
               <p className="text-lg font-bold">
                 {(dataPoint.maxDeviationPercent * 100).toFixed(2)}%
               </p>
@@ -83,7 +85,7 @@ export function ProtocolPriceComparison({ dataPoint }: ProtocolPriceComparisonPr
                     <span className="font-medium capitalize">{protocol}</span>
                     {isOutlier && (
                       <Badge variant="outline" className="border-red-500 text-red-500">
-                        Outlier
+                        {t('common.outlier')}
                       </Badge>
                     )}
                   </div>
@@ -104,7 +106,7 @@ export function ProtocolPriceComparison({ dataPoint }: ProtocolPriceComparisonPr
           </div>
 
           <div className="rounded-lg bg-gray-50 p-3">
-            <p className="text-xs text-muted-foreground">Price Spread</p>
+            <p className="text-xs text-muted-foreground">{t('common.priceSpread')}</p>
             <p className="text-lg font-bold">
               ${(maxPrice - minPrice).toFixed(4)} (
               {(((maxPrice - minPrice) / minPrice) * 100).toFixed(2)}%)

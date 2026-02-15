@@ -203,13 +203,10 @@ const data = await cachedJson('cache-key', 60000, async () => {
 
 ## 8. Internationalization
 
-Translation files are located in `src/i18n/locales/`, supporting 5 languages:
+Translation files are located in `src/i18n/locales/`, supporting 2 languages:
 
 - English (`en`)
 - Chinese (`zh`)
-- Spanish (`es`)
-- French (`fr`)
-- Korean (`ko`)
 
 ### Usage
 

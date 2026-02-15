@@ -17,19 +17,17 @@ export default function GlobalError({
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      // 开发环境记录错误
     }
 
     if (typeof navigator !== 'undefined' && navigator.language) {
       const browserLang = navigator.language.toLowerCase();
       if (browserLang.includes('zh')) setLang('zh');
-      else if (browserLang.includes('es')) setLang('es');
       else setLang('en');
     }
   }, [error]);
 
   const t = translations[lang].errorPage;
-  const htmlLang = lang === 'zh' ? 'zh-CN' : lang === 'es' ? 'es' : 'en';
+  const htmlLang = lang === 'zh' ? 'zh-CN' : 'en';
 
   return (
     <html lang={htmlLang}>

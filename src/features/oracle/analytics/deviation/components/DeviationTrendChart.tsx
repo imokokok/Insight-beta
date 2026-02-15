@@ -11,6 +11,7 @@ import {
   AreaChart,
   Area,
 } from 'recharts';
+import { useI18n } from '@/i18n/LanguageProvider';
 import type { PriceDeviationPoint } from '../types/deviation';
 
 interface DeviationTrendChartProps {
@@ -18,6 +19,8 @@ interface DeviationTrendChartProps {
 }
 
 export function DeviationTrendChart({ dataPoints }: DeviationTrendChartProps) {
+  const { t } = useI18n();
+  
   const data = dataPoints
     .slice()
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
@@ -33,9 +36,9 @@ export function DeviationTrendChart({ dataPoints }: DeviationTrendChartProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          Deviation Trend
+          {t('analytics.deviation.chart.deviationTrend')}
         </CardTitle>
-        <CardDescription>Maximum price deviation over time</CardDescription>
+        <CardDescription>{t('analytics.deviation.chart.deviationDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-64">
@@ -56,7 +59,7 @@ export function DeviationTrendChart({ dataPoints }: DeviationTrendChartProps) {
                   border: 'none',
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                 }}
-                formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Max Deviation']}
+                formatter={(value) => [`${Number(value).toFixed(2)}%`, t('common.maxDeviation')]}
               />
               <Area
                 type="monotone"

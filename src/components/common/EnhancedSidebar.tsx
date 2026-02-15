@@ -53,15 +53,16 @@ export interface NavItem {
   id: string;
   label: string;
   labelEn?: string;
-  href: string;
+  href?: string;
   icon: React.ElementType;
   badge?: number | string;
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline';
-  children?: NavItem[];
+  items?: NavItem[];
   disabled?: boolean;
   external?: boolean;
   description?: string;
   keywords?: string[];
+  defaultExpanded?: boolean;
 }
 
 export interface NavGroup {
@@ -142,9 +143,53 @@ export const defaultNavConfig: SidebarConfig = {
         {
           id: 'crossChain',
           label: 'nav.crossChain',
-          href: '/cross-chain',
           icon: Network,
           description: 'nav.descriptions.crossChain',
+          defaultExpanded: true,
+          items: [
+            {
+              id: 'crossChainOverview',
+              label: 'nav.crossChainOverview',
+              href: '/cross-chain/overview',
+              icon: LayoutDashboard,
+              description: 'nav.descriptions.crossChainOverview',
+            },
+            {
+              id: 'crossChainComparison',
+              label: 'nav.crossChainComparison',
+              href: '/cross-chain/comparison',
+              icon: Globe,
+              description: 'nav.descriptions.crossChainComparison',
+            },
+            {
+              id: 'crossChainHistory',
+              label: 'nav.crossChainHistory',
+              href: '/cross-chain/history',
+              icon: BarChart3,
+              description: 'nav.descriptions.crossChainHistory',
+            },
+            {
+              id: 'crossChainAlerts',
+              label: 'nav.crossChainAlerts',
+              href: '/cross-chain/alerts',
+              icon: AlertTriangle,
+              description: 'nav.descriptions.crossChainAlerts',
+            },
+            {
+              id: 'crossChainArbitrage',
+              label: 'nav.crossChainArbitrage',
+              href: '/cross-chain/arbitrage',
+              icon: Activity,
+              description: 'nav.descriptions.crossChainArbitrage',
+            },
+            {
+              id: 'crossChainSettings',
+              label: 'nav.crossChainSettings',
+              href: '/cross-chain/settings',
+              icon: Layers,
+              description: 'nav.descriptions.crossChainSettings',
+            },
+          ],
         },
       ],
     },
@@ -230,15 +275,16 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
   const { favorites, toggleFavorite, collapsed: sidebarCollapsed } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
   const { t } = useI18n();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(item.defaultExpanded ?? false);
 
   const isActive = useMemo(() => {
-    if (!pathname) return false;
+    if (!pathname || !item.href) return false;
     return pathname === item.href || pathname.startsWith(item.href + '/');
   }, [pathname, item.href]);
 
   const isFavorite = favorites.has(item.id);
-  const hasChildren = item.children && item.children.length > 0;
+  const hasChildren = item.items && item.items.length > 0;
+  const hasHref = item.href !== undefined && item.href !== null && item.href !== '';
 
   const handleClick = useCallback(() => {
     if (hasChildren) {
@@ -281,46 +327,74 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
             />
           )}
 
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              toggleFavorite(item.id);
-            }}
-            className={cn(
-              'ml-2 opacity-0 transition-opacity group-hover:opacity-100',
-              isFavorite && 'opacity-100',
-            )}
-          >
-            <Star
+          {hasHref && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFavorite(item.id);
+              }}
               className={cn(
-                'h-4 w-4',
-                isFavorite ? 'fill-yellow-500 text-yellow-500' : 'text-muted-foreground',
+                'ml-2 opacity-0 transition-opacity group-hover:opacity-100',
+                isFavorite && 'opacity-100',
               )}
-            />
-          </button>
+            >
+              <Star
+                className={cn(
+                  'h-4 w-4',
+                  isFavorite ? 'fill-yellow-500 text-yellow-500' : 'text-muted-foreground',
+                )}
+              />
+            </button>
+          )}
         </>
       )}
     </>
   );
 
+  const baseClassName = cn(
+    'flex items-center rounded-lg px-3 py-2 transition-all duration-200',
+    'hover:bg-muted',
+    isActive && 'bg-primary/5 hover:bg-primary/10',
+    level > 0 && 'ml-4',
+    item.disabled && 'cursor-not-allowed opacity-50',
+  );
+
   if (collapsed) {
+    if (!hasHref && hasChildren) {
+      return null;
+    }
     return (
       <Tooltip delayDuration={0}>
         <TooltipTrigger asChild>
-          <Link
-            href={item.href as Route}
-            onClick={handleClick}
-            data-tour={item.id}
-            className={cn(
-              'flex h-10 w-10 items-center justify-center rounded-lg transition-all',
-              isActive
-                ? 'text-primary-dark bg-primary/10'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-            )}
-          >
-            <item.icon className="h-5 w-5" />
-          </Link>
+          {hasHref ? (
+            <Link
+              href={item.href as Route}
+              onClick={handleClick}
+              data-tour={item.id}
+              className={cn(
+                'flex h-10 w-10 items-center justify-center rounded-lg transition-all',
+                isActive
+                  ? 'text-primary-dark bg-primary/10'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+            </Link>
+          ) : (
+            <button
+              onClick={handleClick}
+              data-tour={item.id}
+              className={cn(
+                'flex h-10 w-10 items-center justify-center rounded-lg transition-all',
+                isActive
+                  ? 'text-primary-dark bg-primary/10'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+            </button>
+          )}
         </TooltipTrigger>
         <TooltipContent side="right">{t(item.label)}</TooltipContent>
       </Tooltip>
@@ -329,20 +403,24 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
 
   return (
     <div className="group">
-      <Link
-        href={item.href as Route}
-        onClick={handleClick}
-        data-tour={item.id}
-        className={cn(
-          'flex items-center rounded-lg px-3 py-2 transition-all duration-200',
-          'hover:bg-muted',
-          isActive && 'bg-primary/5 hover:bg-primary/10',
-          level > 0 && 'ml-4',
-          item.disabled && 'cursor-not-allowed opacity-50',
-        )}
-      >
-        {content}
-      </Link>
+      {hasHref ? (
+        <Link
+          href={item.href as Route}
+          onClick={handleClick}
+          data-tour={item.id}
+          className={baseClassName}
+        >
+          {content}
+        </Link>
+      ) : (
+        <button
+          onClick={handleClick}
+          data-tour={item.id}
+          className={baseClassName}
+        >
+          {content}
+        </button>
+      )}
 
       {/* Submenu */}
       <AnimatePresence>
@@ -355,7 +433,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
             className="overflow-hidden"
           >
             <div className="mt-1 space-y-1">
-              {item.children!.map((child) => (
+              {item.items!.map((child) => (
                 <NavItemComponent key={child.id} item={child} level={level + 1} />
               ))}
             </div>
@@ -495,8 +573,8 @@ function SidebarFavorites({ config }: { config: SidebarConfig }) {
         if (favorites.has(item.id)) {
           items.push(item);
         }
-        if (item.children) {
-          item.children.forEach((child) => {
+        if (item.items) {
+          item.items.forEach((child) => {
             if (favorites.has(child.id)) {
               items.push(child);
             }
