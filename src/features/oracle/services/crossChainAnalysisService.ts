@@ -4,7 +4,6 @@ import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
 import type {
   CrossChainAnalysisConfig,
-  CrossChainArbitrageOpportunity,
   CrossChainComparisonResult,
   CrossChainDashboardData,
   CrossChainDeviationAlert,
@@ -12,8 +11,6 @@ import type {
   CrossChainPriceData,
 } from '@/types/crossChainAnalysisTypes';
 import type { OracleProtocol, SupportedChain } from '@/types/unifiedOracleTypes';
-
-const DEFAULT_TRADE_AMOUNT = 10000;
 
 interface PriceFeedRow {
   chain: string;
@@ -49,7 +46,6 @@ export class CrossChainAnalysisService {
       protocols: config?.protocols ?? ['chainlink', 'pyth'],
       deviationThreshold: config?.deviationThreshold ?? 0.5,
       criticalDeviationThreshold: config?.criticalDeviationThreshold ?? 2.0,
-      arbitrageThreshold: config?.arbitrageThreshold ?? 0.3,
       analysisIntervalMs: config?.analysisIntervalMs ?? 60000,
       alertEnabled: config?.alertEnabled ?? true,
       alertChannels: config?.alertChannels ?? ['webhook'],
@@ -291,168 +287,6 @@ export class CrossChainAnalysisService {
     }
   }
 
-  async detectArbitrageOpportunities(
-    symbol: string,
-    tradeAmount: number = DEFAULT_TRADE_AMOUNT,
-  ): Promise<CrossChainArbitrageOpportunity[]> {
-    try {
-      const comparison = await this.comparePrices(symbol);
-      const opportunities: CrossChainArbitrageOpportunity[] = [];
-
-      const prices = comparison.pricesByChain.filter((p) => !p.isStale);
-
-      for (let i = 0; i < prices.length; i++) {
-        for (let j = i + 1; j < prices.length; j++) {
-          const buyData = prices[i];
-          const sellData = prices[j];
-
-          if (!buyData || !sellData) continue;
-
-          const lowerPrice = Math.min(buyData.price, sellData.price);
-          const higherPrice = Math.max(buyData.price, sellData.price);
-          const buy = buyData.price < sellData.price ? buyData : sellData;
-          const sell = buyData.price < sellData.price ? sellData : buyData;
-
-          const priceDiff = higherPrice - lowerPrice;
-          const priceDiffPercent = lowerPrice > 0 ? (priceDiff / lowerPrice) * 100 : 0;
-
-          if (priceDiffPercent >= this.config.arbitrageThreshold) {
-            const gasCostEstimate = this.getStaticGasCost(buy.chain, sell.chain);
-
-            const buyCostUsd = tradeAmount * buy.price;
-            const sellRevenueUsd = tradeAmount * sell.price;
-            const grossProfitUsd = sellRevenueUsd - buyCostUsd;
-            const netProfitUsd = grossProfitUsd - gasCostEstimate;
-            const netProfitPercent = buyCostUsd > 0 ? (netProfitUsd / buyCostUsd) * 100 : 0;
-
-            const riskLevel =
-              priceDiffPercent > 2.0 ? 'high' : priceDiffPercent > 1.0 ? 'medium' : 'low';
-
-            opportunities.push({
-              id: uuidv4(),
-              symbol,
-              timestamp: new Date(),
-              opportunityType: 'cross_chain',
-              buy: {
-                chain: buy.chain,
-                protocol: buy.protocol,
-                price: buy.price,
-                confidence: buy.confidence ?? 0,
-                timestamp: buy.timestamp,
-              },
-              sell: {
-                chain: sell.chain,
-                protocol: sell.protocol,
-                price: sell.price,
-                confidence: sell.confidence ?? 0,
-                timestamp: sell.timestamp,
-              },
-              priceDiff,
-              priceDiffPercent,
-              potentialProfitPercent: netProfitPercent,
-              gasCostEstimate,
-              netProfitEstimate: netProfitUsd,
-              riskLevel,
-              isActionable: netProfitUsd > 0,
-              warnings: this.generateArbitrageWarnings(
-                buy,
-                sell,
-                priceDiffPercent,
-                netProfitPercent,
-              ),
-            });
-          }
-        }
-      }
-
-      const sortedOpportunities = opportunities.sort(
-        (a, b) => b.netProfitEstimate - a.netProfitEstimate,
-      );
-
-      logger.info('Arbitrage detection completed', {
-        symbol,
-        opportunitiesFound: opportunities.length,
-        actionableCount: opportunities.filter((o) => o.isActionable).length,
-        highestProfit: sortedOpportunities[0]?.netProfitEstimate ?? 0,
-      });
-
-      return sortedOpportunities;
-    } catch (error) {
-      logger.error('Error detecting arbitrage opportunities', {
-        error: error instanceof Error ? error.message : String(error),
-        symbol,
-      });
-      throw error;
-    }
-  }
-
-  private getStaticGasCost(chainA: SupportedChain, chainB: SupportedChain): number {
-    const gasCosts: Partial<Record<SupportedChain, number>> = {
-      ethereum: 15.0,
-      polygon: 0.02,
-      bsc: 0.2,
-      avalanche: 0.3,
-      arbitrum: 0.2,
-      optimism: 0.5,
-      base: 0.1,
-      solana: 0.0005,
-      near: 0.1,
-      fantom: 0.05,
-      celo: 0.01,
-      gnosis: 0.01,
-      linea: 0.1,
-      scroll: 0.15,
-      mantle: 0.05,
-      mode: 0.1,
-      blast: 0.1,
-      aptos: 0.02,
-      polygonAmoy: 0.001,
-      sepolia: 0.001,
-      goerli: 0.001,
-      mumbai: 0.001,
-    };
-
-    const costA = gasCosts[chainA] ?? 0.5;
-    const costB = gasCosts[chainB] ?? 0.5;
-
-    const isBridgeRequired = chainA !== chainB;
-    const bridgeOverhead = isBridgeRequired ? 5.0 : 0;
-
-    return costA + costB + bridgeOverhead;
-  }
-
-  private generateArbitrageWarnings(
-    buy: CrossChainComparisonResult['pricesByChain'][0],
-    sell: CrossChainComparisonResult['pricesByChain'][0],
-    priceDiffPercent: number,
-    netProfitPercent: number,
-  ): string[] {
-    const warnings: string[] = [];
-    const buyConfidence = buy.confidence ?? 0;
-    const sellConfidence = sell.confidence ?? 0;
-
-    if (buyConfidence < 0.9) {
-      warnings.push(`Low confidence on buy price (${(buyConfidence * 100).toFixed(0)}%)`);
-    }
-    if (sellConfidence < 0.9) {
-      warnings.push(`Low confidence on sell price (${(sellConfidence * 100).toFixed(0)}%)`);
-    }
-    if (priceDiffPercent > 5) {
-      warnings.push('Unusually high price difference - possible market anomaly or data error');
-    }
-    if (buy.chain !== sell.chain) {
-      warnings.push('Cross-chain bridge required - additional delay, cost, and execution risk');
-    }
-    if (netProfitPercent < 0) {
-      warnings.push('Negative net profit after gas costs');
-    }
-    if (priceDiffPercent < 0.1) {
-      warnings.push('Very small price difference - may not cover transaction costs');
-    }
-
-    return warnings;
-  }
-
   async detectDeviationAlerts(symbol: string): Promise<CrossChainDeviationAlert[]> {
     try {
       const comparison = await this.comparePrices(symbol);
@@ -523,18 +357,9 @@ export class CrossChainAnalysisService {
         monitoredSymbols: symbols,
         monitoredChains: this.config.chains,
         activeAlerts: 0,
-        opportunities: {
-          total: 0,
-          actionable: 0,
-          avgProfitPercent: 0,
-        },
         priceComparisons: [],
         chainHealth: [],
       };
-
-      let totalProfitPercent = 0;
-      let actionableCount = 0;
-      let totalOpportunities = 0;
 
       const symbolPromises = symbols.map(async (symbol) => {
         try {
@@ -552,25 +377,13 @@ export class CrossChainAnalysisService {
                 : 'normal') as 'critical' | 'warning' | 'normal',
           };
 
-          const [alerts, opportunities] = await Promise.all([
-            this.detectDeviationAlerts(symbol),
-            this.detectArbitrageOpportunities(symbol),
-          ]);
+          const alerts = await this.detectDeviationAlerts(symbol);
 
           const activeAlerts = alerts.filter((a) => a.status === 'active').length;
-          const symbolOpportunities = opportunities.length;
-          const symbolActionable = opportunities.filter((o) => o.isActionable).length;
-          const symbolProfitPercent = opportunities.reduce(
-            (sum, o) => sum + o.potentialProfitPercent,
-            0,
-          );
 
           return {
             priceComparison,
             activeAlerts,
-            opportunities: symbolOpportunities,
-            actionable: symbolActionable,
-            profitPercent: symbolProfitPercent,
           };
         } catch (error) {
           logger.warn('Failed to process symbol for dashboard', { symbol, error });
@@ -582,9 +395,6 @@ export class CrossChainAnalysisService {
               status: 'critical' as const,
             },
             activeAlerts: 0,
-            opportunities: 0,
-            actionable: 0,
-            profitPercent: 0,
           };
         }
       });
@@ -594,15 +404,7 @@ export class CrossChainAnalysisService {
       for (const result of results) {
         dashboardData.priceComparisons.push(result.priceComparison);
         dashboardData.activeAlerts += result.activeAlerts;
-        totalOpportunities += result.opportunities;
-        actionableCount += result.actionable;
-        totalProfitPercent += result.profitPercent;
       }
-
-      dashboardData.opportunities.total = totalOpportunities;
-      dashboardData.opportunities.actionable = actionableCount;
-      dashboardData.opportunities.avgProfitPercent =
-        totalOpportunities > 0 ? totalProfitPercent / totalOpportunities : 0;
 
       for (const chain of this.config.chains) {
         const firstSymbol = symbols[0];
@@ -739,7 +541,7 @@ export class CrossChainAnalysisService {
           maxObservedDeviation,
           convergenceCount: deviations.filter((d) => d < 0.1).length,
           divergenceCount: deviations.filter((d) => d > 0.5).length,
-          arbitrageOpportunitiesCount: deviations.filter((d) => d > 0.3).length,
+          significantDeviationCount: deviations.filter((d) => d > 0.3).length,
           mostVolatileChain,
           mostStableChain,
         },

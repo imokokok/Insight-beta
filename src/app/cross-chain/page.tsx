@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import {
   CrossChainComparisonCard,
-  CrossChainArbitrageCard,
+  CrossChainHistoricalCard,
   CrossChainDashboardCard,
   CrossChainPriceChart,
   CrossChainDeviationChart,
@@ -23,7 +23,6 @@ import {
 } from '@/features/cross-chain';
 import {
   useCrossChainComparison,
-  useCrossChainArbitrage,
   useCrossChainAlerts,
   useCrossChainDashboard,
   useCrossChainHistory,
@@ -52,7 +51,6 @@ export default function CrossChainPage() {
 
   const [selectedSymbol, setSelectedSymbol] = useState<string>('BTC');
   const [selectedChains, setSelectedChains] = useState<string[]>(AVAILABLE_CHAINS);
-  const [arbitrageThreshold, setArbitrageThreshold] = useState<number>(0.3);
   const [timeRange, setTimeRange] = useState<string>('7d');
 
   const timeRangeDates = useMemo(() => {
@@ -75,12 +73,6 @@ export default function CrossChainPage() {
     mutate: refreshComparison,
   } = useCrossChainComparison(selectedSymbol, selectedChains);
 
-  const {
-    data: arbitrageData,
-    isLoading: arbitrageLoading,
-    mutate: refreshArbitrage,
-  } = useCrossChainArbitrage(selectedSymbol, arbitrageThreshold);
-
   const { data: alertsData, mutate: refreshAlerts } = useCrossChainAlerts(selectedSymbol);
 
   const {
@@ -102,11 +94,10 @@ export default function CrossChainPage() {
 
   const handleRefresh = useCallback(() => {
     refreshComparison();
-    refreshArbitrage();
     refreshAlerts();
     refreshDashboard();
     refreshHistory();
-  }, [refreshComparison, refreshArbitrage, refreshAlerts, refreshDashboard, refreshHistory]);
+  }, [refreshComparison, refreshAlerts, refreshDashboard, refreshHistory]);
 
   const handleChainToggle = useCallback((chain: string) => {
     setSelectedChains((prev) =>
@@ -122,10 +113,6 @@ export default function CrossChainPage() {
       deviationFromAvg: comparisonData.data!.statistics.avgPrice - p.price,
     }));
   }, [comparisonData]);
-
-  const arbitrageSummary = useMemo(() => {
-    return arbitrageData?.data?.summary;
-  }, [arbitrageData]);
 
   const alertsList = useMemo(() => {
     return alertsData?.data?.alerts || [];
@@ -187,26 +174,6 @@ export default function CrossChainPage() {
               </div>
             </div>
 
-            {/* Arbitrage Threshold */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{t('crossChain.controls.threshold')}:</span>
-              <Select
-                value={arbitrageThreshold.toString()}
-                onValueChange={(v) => setArbitrageThreshold(parseFloat(v))}
-              >
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0.1">0.1%</SelectItem>
-                  <SelectItem value="0.3">0.3%</SelectItem>
-                  <SelectItem value="0.5">0.5%</SelectItem>
-                  <SelectItem value="1.0">1.0%</SelectItem>
-                  <SelectItem value="2.0">2.0%</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* Time Range */}
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -258,12 +225,10 @@ export default function CrossChainPage() {
           onChainSelect={handleChainToggle}
         />
 
-        {/* Arbitrage Opportunities */}
-        <CrossChainArbitrageCard
-          opportunities={arbitrageData?.data?.opportunities}
-          summary={arbitrageSummary}
-          isLoading={arbitrageLoading}
-          threshold={arbitrageThreshold}
+        {/* Historical Analysis */}
+        <CrossChainHistoricalCard
+          data={historyData?.data}
+          isLoading={historyLoading}
         />
       </div>
 

@@ -1,5 +1,5 @@
 export { CrossChainComparisonCard } from './CrossChainComparisonCard';
-export { CrossChainArbitrageCard } from './CrossChainArbitrageCard';
+export { CrossChainHistoricalCard } from './CrossChainHistoricalCard';
 export { CrossChainDashboardCard } from './CrossChainDashboardCard';
 export { CrossChainPriceChart } from './CrossChainPriceChart';
 export { CrossChainDeviationChart } from './CrossChainDeviationChart';

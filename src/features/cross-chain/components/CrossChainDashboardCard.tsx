@@ -161,7 +161,7 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
       <CardContent className="space-y-4">
         {/* KPI Summary */}
         <div className="grid grid-cols-4 gap-3">
-          {/* Alerts */}
+          {/* Active Alerts */}
           <div className="rounded-lg border bg-muted/30 p-3">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
@@ -184,37 +184,34 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
             </p>
           </div>
 
-          {/* Opportunities */}
+          {/* Price Comparisons */}
           <div className="rounded-lg border bg-muted/30 p-3">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                {t('crossChain.dashboard.opportunities')}
+                {t('crossChain.dashboard.priceStatus')}
               </p>
               <Activity className="h-4 w-4 text-blue-500" />
             </div>
-            <p className="mt-1 font-mono text-2xl font-bold">{data.opportunities.total}</p>
-            {data.opportunities.actionable > 0 && (
-              <p className="text-xs text-emerald-600">
-                {data.opportunities.actionable} {t('crossChain.dashboard.actionable')}
-              </p>
-            )}
+            <p className="mt-1 font-mono text-2xl font-bold">
+              {data.priceComparisons.filter((p) => p.status === 'normal').length}/
+              {data.priceComparisons.length}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {data.priceComparisons.filter((p) => p.status === 'warning').length} warnings
+            </p>
           </div>
 
-          {/* Profit */}
+          {/* Monitoring */}
           <div className="rounded-lg border bg-muted/30 p-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">{t('crossChain.dashboard.avgProfit')}</p>
-              <span className="text-lg">📈</span>
+              <p className="text-xs text-muted-foreground">Monitored</p>
+              <span className="text-lg">📊</span>
             </div>
-            <p
-              className={cn(
-                'mt-1 font-mono text-2xl font-bold',
-                data.opportunities.avgProfitPercent > 0
-                  ? 'text-emerald-600'
-                  : 'text-muted-foreground',
-              )}
-            >
-              {formatPercentValue(data.opportunities.avgProfitPercent, 2)}
+            <p className="mt-1 font-mono text-2xl font-bold">
+              {data.monitoredSymbols.length} {t('crossChain.lastUpdated').toLowerCase()}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {data.monitoredChains.length} {t('crossChain.chainsMonitored')}
             </p>
           </div>
 

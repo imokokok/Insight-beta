@@ -64,58 +64,6 @@ export interface CrossChainComparisonResult {
   data: CrossChainComparisonData;
 }
 
-export interface CrossChainArbitrageOpportunity {
-  id: string;
-  symbol: string;
-  timestamp: string;
-  opportunityType: string;
-  buy: {
-    chain: string;
-    protocol: string;
-    price: number;
-    confidence: number;
-    timestamp: string;
-  };
-  sell: {
-    chain: string;
-    protocol: string;
-    price: number;
-    confidence: number;
-    timestamp: string;
-  };
-  priceDiff: number;
-  priceDiffPercent: number;
-  potentialProfitPercent: number;
-  gasCostEstimate: number;
-  fromGasCost: number;
-  toGasCost: number;
-  bridgeCost: number;
-  netProfitEstimate: number;
-  riskLevel: 'low' | 'medium' | 'high';
-  isActionable: boolean;
-  warnings: string[];
-}
-
-export interface CrossChainArbitrageSummary {
-  total: number;
-  actionable: number;
-  avgProfitPercent: number;
-  highRisk: number;
-  mediumRisk: number;
-  lowRisk: number;
-  thresholdApplied: number | null;
-}
-
-export interface CrossChainArbitrageResponse {
-  success: boolean;
-  data: {
-    symbol: string;
-    opportunities: CrossChainArbitrageOpportunity[];
-    summary: CrossChainArbitrageSummary;
-  };
-  timestamp: string;
-}
-
 export interface CrossChainDeviationAlert {
   id: string;
   symbol: string;
@@ -151,11 +99,6 @@ export interface CrossChainDashboardData {
   monitoredSymbols: string[];
   monitoredChains: string[];
   activeAlerts: number;
-  opportunities: {
-    total: number;
-    actionable: number;
-    avgProfitPercent: number;
-  };
   priceComparisons: {
     symbol: string;
     chainsCount: number;
@@ -188,7 +131,7 @@ export interface CrossChainHistoricalSummary {
   maxObservedDeviation: number;
   convergenceCount: number;
   divergenceCount: number;
-  arbitrageOpportunitiesCount: number;
+  significantDeviationCount: number;
   mostVolatileChain: string;
   mostStableChain: string;
 }
@@ -230,20 +173,6 @@ export function useCrossChainComparison(symbol: string, chains?: string[]) {
   const url = buildApiUrl('/api/cross-chain/comparison', params);
   return useSWR<CrossChainComparisonResult>(url, (url: string) =>
     fetcher<CrossChainComparisonResult>(url),
-  );
-}
-
-/**
- * 跨链套利机会 Hook
- */
-export function useCrossChainArbitrage(symbol: string, threshold?: number) {
-  const params: Record<string, string> = { symbol };
-  if (threshold !== undefined) {
-    params.threshold = String(threshold);
-  }
-  const url = buildApiUrl('/api/cross-chain/arbitrage', params);
-  return useSWR<CrossChainArbitrageResponse>(url, (url: string) =>
-    fetcher<CrossChainArbitrageResponse>(url),
   );
 }
 

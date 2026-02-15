@@ -1,7 +1,7 @@
 /**
  * Cross-Chain Analysis Types - 跨链价格分析类型定义
  *
- * 支持跨链价格对比、套利机会检测等功能
+ * 支持跨链价格对比、历史偏差分析等功能
  */
 
 import type { OracleProtocol, SupportedChain } from './unifiedOracleTypes';
@@ -9,7 +9,6 @@ import type { OracleProtocol, SupportedChain } from './unifiedOracleTypes';
 export type CrossChainAnalysisType =
   | 'price_comparison' // 价格对比
   | 'deviation_analysis' // 偏差分析
-  | 'arbitrage_opportunity' // 套利机会
   | 'convergence_trend' // 收敛趋势
   | 'historical_comparison'; // 历史对比
 
@@ -132,7 +131,7 @@ export interface CrossChainHistoricalAnalysis {
     maxObservedDeviation: number;
     convergenceCount: number;
     divergenceCount: number;
-    arbitrageOpportunitiesCount: number;
+    significantDeviationCount: number;
     mostVolatileChain: SupportedChain;
     mostStableChain: SupportedChain;
   };
@@ -145,7 +144,6 @@ export interface CrossChainAnalysisConfig {
   protocols: OracleProtocol[];
   deviationThreshold: number; // 偏差告警阈值（百分比）
   criticalDeviationThreshold: number; // 严重偏差阈值
-  arbitrageThreshold: number; // 套利机会阈值
   analysisIntervalMs: number; // 分析间隔（毫秒）
   alertEnabled: boolean;
   alertChannels: string[];
