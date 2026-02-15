@@ -11,6 +11,3 @@ export * from './apiAuth';
 
 // 速率限制 - 使用 lib/security/rateLimit.ts
 export { rateLimit, getRateLimitStoreStatus, cleanupRateLimitStore } from '@/lib/security/rateLimit';
-
-// 操纵检测服务
-export * from '@/features/security/services/manipulationDetectionService';

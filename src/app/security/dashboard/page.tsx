@@ -39,7 +39,7 @@ export default function SecurityDashboardPage() {
     <ErrorBoundary>
       <div className="container mx-auto space-y-6 p-4 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl"><span className="text-red-600">Security Dashboard</span></h1><p className="mt-1 text-sm text-muted-foreground">Analyze security alerts and manipulation detection</p></div>
+          <div><h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl"><span className="text-red-600">Security Dashboard</span></h1><p className="mt-1 text-sm text-muted-foreground">Analyze security alerts and anomaly detection</p></div>
           <div className="flex items-center gap-2"><Button variant="outline" size="sm" onClick={fetchAlerts} disabled={loading}><RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />Refresh</Button></div>
         </div>
 
