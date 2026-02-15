@@ -11,7 +11,7 @@ import {
   checkFeedHealth,
   checkProtocolFeeds,
   getProtocolHealthSummary,
-} from '@/services/monitoring/oracleHealthMonitor';
+} from '@/features/monitoring/services/oracleHealthMonitor';
 import { logger } from '@/shared/logger';
 import type { OracleProtocol, SupportedChain } from '@/types/unifiedOracleTypes';
 

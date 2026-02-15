@@ -1,529 +1,80 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
-
-import { useParams } from 'next/navigation';
-
-import { Activity, Shield, TrendingUp, Globe, BarChart3, Bell, Clock } from 'lucide-react';
-
-export const dynamic = 'force-static';
-export const revalidate = 3600; // 1 hour
-export const fetchCache = 'force-cache';
-
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { Globe, RefreshCw, Search, TrendingUp, Activity } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { StatCard } from '@/components/common';
-import { Button, StatusBadge, RefreshIndicator } from '@/components/ui';
-import { Card, CardContent } from '@/components/ui/card';
-import { ErrorBanner } from '@/components/ui/ErrorBanner';
-import { Progress } from '@/components/ui/progress';
-import { ChartSkeleton } from '@/components/ui/skeleton';
-import {
-  FeedTable,
-  commonFeedColumns,
-  type FeedColumn,
-} from '@/features/protocol/components/FeedTable';
-import type { ProtocolComparisonData } from '@/features/protocol/components/ProtocolComparison';
-import { ProtocolPageLayout } from '@/features/protocol/components/ProtocolPageLayout';
-import { useAutoRefresh } from '@/hooks';
-import { getProtocolConfig } from '@/lib/protocol-config';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { logger } from '@/shared/logger';
-import { formatTimeAgo, truncateAddress } from '@/shared/utils/format';
-import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/types';
-import { SUPPORTED_CHAINS } from '@/types/protocol';
+import { cn, fetchApiData } from '@/shared/utils';
 
-// 将 OracleProtocol 转换为 ProtocolComparisonData
-const convertToComparisonData = (protocols: OracleProtocol[]): ProtocolComparisonData[] => {
-  return protocols.map((protocol) => ({
-    id: protocol,
-    name: protocol.charAt(0).toUpperCase() + protocol.slice(1),
-    healthScore: Math.floor(Math.random() * 30) + 70, // 70-100
-    latency: Math.floor(Math.random() * 500) + 100, // 100-600ms
-    accuracy: parseFloat((Math.random() * 5 + 95).toFixed(2)), // 95-100%
-    uptime: parseFloat((Math.random() * 2 + 98).toFixed(3)), // 98-100%
-    activeFeeds: Math.floor(Math.random() * 100) + 50,
-    supportedChains: Math.floor(Math.random() * 10) + 1,
-    features: ['Price Feeds', 'Data Aggregation'],
-  }));
-};
+interface Protocol { id: string; name: string; status: 'active' | 'inactive' | 'maintenance'; priceFeeds: number; avgLatency: number; uptime: number; lastUpdate: string; }
 
-// Dynamic imports for heavy components with recharts
-const PriceHistoryChart = lazy(() =>
-  import('@/features/protocol').then((mod) => ({
-    default: mod.PriceHistoryChart,
-  })),
-);
+export default function ProtocolsPage({ params }: { params: Promise<{ protocol: string }> }) {
+  const [protocols, setProtocols] = useState<Protocol[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [protocolName, setProtocolName] = useState('');
 
-const ProtocolComparison = lazy(() =>
-  import('@/features/protocol').then((mod) => ({
-    default: mod.ProtocolComparison,
-  })),
-);
-
-const PriceAlertSettings = lazy(() =>
-  import('@/features/protocol').then((mod) => ({
-    default: mod.PriceAlertSettings,
-  })),
-);
-
-// Dynamic import for generateMockPriceHistory
-const generateMockPriceHistory = (basePrice: number, hours: number) => {
-  const data = [];
-  const now = new Date();
-  for (let i = hours; i >= 0; i--) {
-    const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-    const volatility = 0.02;
-    const trend = Math.sin(i / 12) * 0.01;
-    const randomChange = (Math.random() - 0.5) * volatility;
-    const price = basePrice * (1 + trend + randomChange);
-    data.push({
-      timestamp: time.getTime(),
-      price: Number(price.toFixed(2)),
-    });
-  }
-  return data;
-};
-
-export default function UnifiedProtocolPage() {
-  const params = useParams();
-  const protocol = params.protocol as OracleProtocol;
-  const config = getProtocolConfig(protocol);
-
-  const [feeds, setFeeds] = useState<unknown[]>([]);
-  const [nodes, setNodes] = useState<unknown[]>([]);
-  const [publishers, setPublishers] = useState<unknown[]>([]);
-  const [stats, setStats] = useState<Record<string, unknown> | null>(null);
-  const [selectedChain, setSelectedChain] = useState<string>('all');
-  const [isValid, setIsValid] = useState(true);
-
-  // Validate protocol
   useEffect(() => {
-    setIsValid(ORACLE_PROTOCOLS.includes(protocol));
-  }, [protocol]);
+    params.then((resolved) => setProtocolName(resolved.protocol));
+  }, [params]);
 
-  // 使用新的自动刷新 hook，配置为 30 秒刷新策略
-  const {
-    lastUpdated,
-    isRefreshing,
-    isError,
-    error,
-    refresh,
-  } = useAutoRefresh({
-    pageId: 'protocol-detail',
-    fetchFn: useCallback(async () => {
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setFeeds(config.mockData.feeds);
-        setStats(config.mockData.stats);
-        if (config.mockData.nodes) {
-          setNodes(config.mockData.nodes);
-        }
-        if (config.mockData.publishers) {
-          setPublishers(config.mockData.publishers);
-        }
-      } catch (err) {
-        logger.error(`Failed to fetch ${protocol} data`, { error: err });
-        throw err;
-      }
-    }, [protocol, config]),
-    enabled: true,
-  });
-
-  // Filter feeds by chain
-  const filteredFeeds = useMemo(() => {
-    if (selectedChain === 'all') return feeds;
-    return feeds.filter((feed: unknown) => (feed as { chain: string }).chain === selectedChain);
-  }, [feeds, selectedChain]);
-
-  // Get supported chains with icons
-  const protocolChains = useMemo(() => {
-    return SUPPORTED_CHAINS.filter((c) => config.supportedChains.includes(c.id));
-  }, [config.supportedChains]);
-
-  // Feed columns configuration
-  const feedColumns = useMemo<FeedColumn[]>(() => {
-    const baseColumns: FeedColumn[] = [
-      commonFeedColumns.name,
-      commonFeedColumns.price,
-      commonFeedColumns.chain,
-      commonFeedColumns.updatedAt,
-      commonFeedColumns.status,
-    ];
-
-    // Add protocol-specific columns
-    if (protocol === 'chainlink') {
-      baseColumns.push({
-        key: 'contractAddress',
-        header: 'Contract',
-        render: (value: unknown) => (
-          <a
-            href={`https://etherscan.io/address/${String(value)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-sm text-blue-600 hover:underline"
-          >
-            {truncateAddress(String(value))}
-          </a>
-        ),
-      });
+  const fetchProtocols = useCallback(async () => {
+    if (!protocolName) return;
+    try { 
+      setLoading(true); 
+      const response = await fetchApiData<{ data: Protocol[] }>(`/api/oracle/protocols/${protocolName}`); 
+      setProtocols(response.data); 
     }
-
-    return baseColumns;
-  }, [protocol]);
-
-  // Build tabs based on protocol features
-  const tabs = useMemo(() => {
-    const tabList: {
-      id: string;
-      label: string;
-      icon: React.ReactNode;
-      content: React.ReactNode;
-    }[] = [
-      {
-        id: 'feeds',
-        label: 'Price Feeds',
-        icon: <TrendingUp className="h-4 w-4" />,
-        content: (
-          <FeedTable
-            feeds={filteredFeeds as Record<string, unknown>[]}
-            columns={feedColumns}
-            title="Price Feeds"
-          />
-        ),
-      },
-    ];
-
-    // Add Nodes tab for Chainlink
-    if (config.features.hasNodes && nodes.length > 0) {
-      tabList.push({
-        id: 'nodes',
-        label: 'Node Operators',
-        icon: <Globe className="h-4 w-4" />,
-        content: (
-          <Card>
-            <CardContent className="p-6">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {nodes.map((node: unknown) => {
-                  const n = node as {
-                    id: string;
-                    name: string;
-                    address: string;
-                    status: 'active' | 'inactive';
-                    successRate: number;
-                    totalSubmissions: number;
-                    lastSubmission: string;
-                  };
-                  return (
-                    <Card key={n.id} className="border-0 bg-card">
-                      <CardContent className="p-4">
-                        <div className="mb-3 flex items-start justify-between">
-                          <div>
-                            <h4 className="font-semibold text-foreground">{n.name}</h4>
-                            <p className="font-mono text-sm text-muted-foreground">
-                              {truncateAddress(n.address)}
-                            </p>
-                          </div>
-                          <StatusBadge status={n.status} size="sm" />
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Success Rate</span>
-                            <span className="font-medium text-foreground">{n.successRate}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Total Submissions</span>
-                            <span className="font-medium">
-                              {n.totalSubmissions.toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Last Submission</span>
-                            <span className="font-medium">{formatTimeAgo(n.lastSubmission)}</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        ),
-      });
+    catch (err) { 
+      logger.error('Failed to load protocols', { error: err }); 
     }
+    finally { setLoading(false); }
+  }, [protocolName]);
 
-    // Add Publishers tab for Pyth
-    if (config.features.hasPublishers && publishers.length > 0) {
-      tabList.push({
-        id: 'publishers',
-        label: 'Publishers',
-        icon: <Globe className="h-4 w-4" />,
-        content: (
-          <Card>
-            <CardContent className="p-6">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {publishers.map((pub: unknown) => {
-                  const p = pub as {
-                    id: string;
-                    name: string;
-                    status: 'active' | 'inactive';
-                    accuracy: number;
-                    totalPublishes: number;
-                    lastPublish: string;
-                  };
-                  return (
-                    <Card key={p.id} className="border-0 bg-card">
-                      <CardContent className="p-4">
-                        <div className="mb-3 flex items-start justify-between">
-                          <div>
-                            <h4 className="font-semibold text-foreground">{p.name}</h4>
-                          </div>
-                          <StatusBadge status={p.status} size="sm" />
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Accuracy</span>
-                            <span className="font-medium text-foreground">{p.accuracy}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Total Publishes</span>
-                            <span className="font-medium">{p.totalPublishes.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Last Publish</span>
-                            <span className="font-medium">{formatTimeAgo(p.lastPublish)}</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        ),
-      });
-    }
+  useEffect(() => { fetchProtocols(); }, [fetchProtocols]);
 
-    // Add Charts tab
-    if (config.features.hasPriceHistory) {
-      tabList.push({
-        id: 'charts',
-        label: 'Charts',
-        icon: <BarChart3 className="h-4 w-4" />,
-        content: (
-          <Suspense fallback={<ChartSkeleton className="h-96" />}>
-            <div className="grid gap-4 lg:grid-cols-2">
-              <PriceHistoryChart
-                data={generateMockPriceHistory(3254.78, 168)}
-                symbol="ETH/USD"
-                title="ETH/USD Price History"
-              />
-              <PriceHistoryChart
-                data={generateMockPriceHistory(67432.15, 168)}
-                symbol="BTC/USD"
-                title="BTC/USD Price History"
-              />
-            </div>
-          </Suspense>
-        ),
-      });
-    }
+  const filteredProtocols = useMemo(() => protocols.filter(p => !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase())), [protocols, searchQuery]);
+  const statusColors: Record<string, string> = { active: 'bg-green-500', inactive: 'bg-gray-500', maintenance: 'bg-yellow-500' };
 
-    // Add Comparison tab
-    if (config.features.hasComparison) {
-      tabList.push({
-        id: 'comparison',
-        label: 'Compare',
-        icon: <Activity className="h-4 w-4" />,
-        content: (
-          <Suspense fallback={<ChartSkeleton className="h-96" />}>
-            <ProtocolComparison protocols={convertToComparisonData(ORACLE_PROTOCOLS)} />
-          </Suspense>
-        ),
-      });
-    }
+  return (
+    <ErrorBoundary>
+      <div className="container mx-auto space-y-6 p-4 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div><h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl"><Globe className="h-6 w-6 text-blue-600" /><span className="capitalize">{protocolName}</span> Protocols</h1><p className="mt-1 text-sm text-muted-foreground">Monitor oracle protocols and their performance</p></div>
+          <Button variant="outline" size="sm" onClick={fetchProtocols} disabled={loading}><RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />Refresh</Button>
+        </div>
 
-    // Add Alerts tab
-    if (config.features.hasAlerts) {
-      tabList.push({
-        id: 'alerts',
-        label: 'Alerts',
-        icon: <Bell className="h-4 w-4" />,
-        content: (
-          <Suspense fallback={<ChartSkeleton className="h-96" />}>
-            <div className="grid gap-4 lg:grid-cols-2">
-              <PriceAlertSettings symbol="ETH/USD" currentPrice={3254.78} />
-              <PriceAlertSettings symbol="BTC/USD" currentPrice={67432.15} />
-            </div>
-          </Suspense>
-        ),
-      });
-    }
+        {loading && !protocols.length ? <div className="grid grid-cols-2 gap-4 md:grid-cols-4"><div className="h-24 animate-pulse rounded-lg bg-gray-100" /><div className="h-24 animate-pulse rounded-lg bg-gray-100" /><div className="h-24 animate-pulse rounded-lg bg-gray-100" /></div> : (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+            <StatCard title="Total Protocols" value={protocols.length} icon={<Globe className="h-5 w-5" />} color="blue" />
+            <StatCard title="Active" value={protocols.filter(p => p.status === 'active').length} icon={<Activity className="h-5 w-5" />} color="green" />
+            <StatCard title="Total Feeds" value={protocols.reduce((sum, p) => sum + p.priceFeeds, 0)} icon={<TrendingUp className="h-5 w-5" />} color="purple" />
+          </div>
+        )}
 
-    // Add Analytics tab
-    if (config.features.hasAnalytics) {
-      tabList.push({
-        id: 'analytics',
-        label: 'Analytics',
-        icon: <BarChart3 className="h-4 w-4" />,
-        content: (
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="mb-4 font-semibold">Network Health</h3>
-                <div className="space-y-4">
-                  <div>
-                    <div className="mb-2 flex justify-between text-sm">
-                      <span>Feed Coverage</span>
-                      <span>
-                        {(
-                          (((stats?.activeFeeds as number) || 0) /
-                            ((stats?.totalFeeds as number) || 1)) *
-                          100
-                        ).toFixed(1)}
-                        %
-                      </span>
-                    </div>
-                    <Progress
-                      value={
-                        (((stats?.activeFeeds as number) || 0) /
-                          ((stats?.totalFeeds as number) || 1)) *
-                        100
-                      }
-                    />
-                  </div>
-                  <div>
-                    <div className="mb-2 flex justify-between text-sm">
-                      <span>Network Uptime</span>
-                      <span>{stats?.networkUptime as number}%</span>
-                    </div>
-                    <Progress value={stats?.networkUptime as number} />
-                  </div>
+        <Card><CardContent className="p-4"><div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Search protocols..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" /></div></CardContent></Card>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredProtocols.map(protocol => (
+            <Card key={protocol.id}>
+              <CardHeader className="pb-2"><div className="flex items-center justify-between"><CardTitle className="text-base">{protocol.name}</CardTitle><Badge className={statusColors[protocol.status]}>{protocol.status}</Badge></div></CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Price Feeds</span><span className="font-semibold">{protocol.priceFeeds}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Avg Latency</span><span className="font-semibold">{protocol.avgLatency}ms</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Uptime</span><span className="font-semibold">{protocol.uptime}%</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Last Update</span><span className="font-semibold">{new Date(protocol.lastUpdate).toLocaleTimeString()}</span></div>
                 </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="mb-4 font-semibold">About {config.name}</h3>
-                <p className="mb-3 text-sm text-gray-600">{config.description}</p>
-                <ul className="list-inside list-disc space-y-1 text-sm text-gray-600">
-                  <li>Real-time price feed monitoring</li>
-                  <li>Multi-chain support</li>
-                  <li>Decentralized oracle network</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        ),
-      });
-    }
-
-    return tabList;
-  }, [config, filteredFeeds, feedColumns, nodes, publishers, stats]);
-
-  // Stats content
-  const statsContent = stats && (
-    <>
-      <StatCard
-        title="Total Feeds"
-        value={stats.totalFeeds as number}
-        icon={<TrendingUp className="h-5 w-5" />}
-        color="blue"
-      />
-      <StatCard
-        title="Active Feeds"
-        value={stats.activeFeeds as number}
-        icon={<Activity className="h-5 w-5" />}
-        color="green"
-        subtitle={`${stats.staleFeeds as number} stale`}
-      />
-      <StatCard
-        title="Network Uptime"
-        value={`${stats.networkUptime as number}%`}
-        icon={<Shield className="h-5 w-5" />}
-        color="purple"
-      />
-      <StatCard
-        title="Avg Latency"
-        value={`${((stats.avgUpdateLatency as number) / 1000).toFixed(1)}s`}
-        icon={<Clock className="h-5 w-5" />}
-        color="amber"
-      />
-    </>
-  );
-
-  // Chain selector
-  const chainSelectorContent = (
-    <>
-      <Button
-        variant={selectedChain === 'all' ? 'default' : 'outline'}
-        size="sm"
-        onClick={() => setSelectedChain('all')}
-      >
-        All Chains
-      </Button>
-      {protocolChains.map((chain) => (
-        <Button
-          key={chain.id}
-          variant={selectedChain === chain.id ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setSelectedChain(chain.id)}
-          className="gap-1"
-        >
-          <span>{chain.icon}</span>
-          {chain.name}
-        </Button>
-      ))}
-    </>
-  );
-
-  // Early return for invalid protocol - must be after all hooks
-  if (!isValid) {
-    return (
-      <div className="container mx-auto py-8">
-        <div className="text-center">
-          <h1 className="mb-4 text-2xl font-bold">Invalid Protocol</h1>
-          <p className="mb-4 text-muted-foreground">
-            The protocol &quot;{protocol}&quot; is not supported.
-          </p>
+          ))}
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {/* 错误提示 */}
-      {isError && error && (
-        <ErrorBanner
-          error={error}
-          onRetry={refresh}
-          title={`加载 ${config.name} 数据失败`}
-          isRetrying={isRefreshing}
-        />
-      )}
-
-      {/* 刷新策略可视化 */}
-      <div className="flex justify-end px-4">
-        <RefreshIndicator
-          lastUpdated={lastUpdated}
-          isRefreshing={isRefreshing}
-          onRefresh={refresh}
-        />
-      </div>
-
-      <ProtocolPageLayout
-        protocol={protocol}
-        title={config.name}
-        description={config.description}
-        icon={config.icon}
-        officialUrl={config.officialUrl}
-        loading={isRefreshing && !stats}
-        onRefresh={refresh}
-        stats={statsContent}
-        chainSelector={chainSelectorContent}
-        tabs={tabs}
-        defaultTab="feeds"
-      />
-    </div>
+    </ErrorBoundary>
   );
 }

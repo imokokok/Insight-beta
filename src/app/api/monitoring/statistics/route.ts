@@ -7,7 +7,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { performanceMonitor } from '@/services/monitoring/performanceMonitor';
+import { performanceMonitor } from '@/features/monitoring/services/performanceMonitor';
 import { logger } from '@/shared/logger';
 
 /**

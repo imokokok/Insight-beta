@@ -173,7 +173,7 @@ async function main() {
     }
   }
   
-  const langDirs = fs.readdirSync(I18N_DIR, { withFileTypes: true })
+  const langDirs = fs.readdirSync(I18N_DIR, { withFileTypes: true }) 
     .filter(d => d.isDirectory())
     .map(d => d.name);
   

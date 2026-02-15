@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { query } from '@/lib/database/db';
 import { gasPriceService } from '@/features/gas/services/gasPriceService';
+import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
 import type {
   CrossChainAnalysisConfig,

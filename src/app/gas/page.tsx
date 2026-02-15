@@ -1,353 +1,101 @@
 'use client';
 
-import { useState } from 'react';
+import { History } from 'lucide-react';
 
-import { RefreshCw, Zap, TrendingUp, Activity, AlertTriangle, History, Calendar } from 'lucide-react';
-
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import { GasPriceHistoryViewer } from '@/features/gas/components/GasPriceHistoryViewer';
-import { GasPriceTrendChart } from '@/features/gas/components/GasPriceTrendChart';
-import { GasProviderHealthCard } from '@/features/gas/components/GasProviderHealthCard';
-import { useGasPrices, useGasPriceTrend, useGasPriceHealth } from '@/features/gas/hooks';
-import { usePageOptimizations } from '@/hooks/usePageOptimizations';
-import { cn } from '@/shared/utils';
-
-const DEFAULT_CHAINS = ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism', 'base'];
-
-const TIME_RANGE_OPTIONS = [
-  { value: '1h', label: '1H', duration: 3600000 },
-  { value: '6h', label: '6H', duration: 21600000 },
-  { value: '24h', label: '24H', duration: 86400000 },
-  { value: '7d', label: '7D', duration: 604800000 },
-];
+import { Button } from '@/components/ui/button';
+import {
+  GasStatsCards,
+  GasPageHeader,
+  GasChainSelector,
+  GasPriceList,
+  GasPriceTrendChart,
+  GasProviderHealthCard,
+  GasPriceHistoryViewer,
+  useGasMonitor,
+} from '@/features/gas';
 
 export default function GasPriceMonitorPage() {
-  const [selectedChains, setSelectedChains] = useState<string[]>(DEFAULT_CHAINS);
-  const [showTrend, setShowTrend] = useState(false);
-  const [selectedChainForTrend, setSelectedChainForTrend] = useState<string>('ethereum');
-  const [timeRange, setTimeRange] = useState<string>('24h');
-  const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
-    from: undefined,
-    to: undefined,
-  });
-
   const {
-    data: gasPrices,
-    isLoading: pricesLoading,
-    mutate: refreshPrices,
-  } = useGasPrices(selectedChains);
-  const { data: trendData, isLoading: trendLoading } = useGasPriceTrend(
-    selectedChainForTrend,
-    'average',
-  );
-  const { data: healthData, isLoading: healthLoading, mutate: refreshHealth } = useGasPriceHealth();
-
-  const handleRefresh = () => {
-    refreshPrices();
-    refreshHealth();
-  };
-
-  usePageOptimizations({
-    pageName: 'Gas价格监控',
-    onRefresh: async () => {
-      handleRefresh();
-    },
-    enableSearch: false,
-    showRefreshToast: true,
-  });
-
-  const handleToggleChain = (chain: string) => {
-    if (selectedChains.includes(chain)) {
-      setSelectedChains(selectedChains.filter((c) => c !== chain));
-    } else {
-      setSelectedChains([...selectedChains, chain]);
-    }
-  };
-
-  const handleShowTrend = (chain: string) => {
-    setSelectedChainForTrend(chain);
-    setShowTrend(true);
-  };
-
-  const gasData = gasPrices?.data || [];
-  const avgGasPrice = gasData.reduce((sum, p) => sum + p.average, 0) / (gasData.length || 1);
-  const slowGasPrice = gasData.reduce((sum, p) => sum + p.slow, 0) / (gasData.length || 1);
-  const fastGasPrice = gasData.reduce((sum, p) => sum + p.fast, 0) / (gasData.length || 1);
+    selectedChains,
+    setSelectedChains,
+    showTrend,
+    setShowTrend,
+    timeRange,
+    setTimeRange,
+    customDateRange,
+    setCustomDateRange,
+    gasPrices,
+    pricesLoading,
+    trendData,
+    trendLoading,
+    healthData,
+    healthLoading,
+    handleRefresh,
+    handleToggleChain,
+    handleShowTrend,
+    avgGasPrice,
+    slowGasPrice,
+    fastGasPrice,
+  } = useGasMonitor();
 
   return (
     <ErrorBoundary>
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Gas Price Monitor</h1>
-            <p className="mt-1 text-muted-foreground">
-              Real-time gas price tracking across multiple chains
-            </p>
+      <div className="container mx-auto px-4 py-8">
+        <GasPageHeader
+          timeRange={timeRange}
+          setTimeRange={setTimeRange}
+          customDateRange={customDateRange}
+          setCustomDateRange={setCustomDateRange}
+          handleRefresh={handleRefresh}
+          pricesLoading={pricesLoading}
+          healthLoading={healthLoading}
+        />
+
+        <GasStatsCards
+          avgGasPrice={avgGasPrice}
+          slowGasPrice={slowGasPrice}
+          fastGasPrice={fastGasPrice}
+          selectedChains={selectedChains}
+        />
+
+        <GasChainSelector
+          selectedChains={selectedChains}
+          setSelectedChains={setSelectedChains}
+          showTrend={showTrend}
+          setShowTrend={setShowTrend}
+          handleToggleChain={handleToggleChain}
+        />
+
+        {showTrend && (
+          <div className="mb-8">
+            <GasPriceTrendChart data={trendData?.data} isLoading={trendLoading} height={400} />
           </div>
-          <div className="flex items-center gap-3">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  {timeRange === 'custom'
-                    ? customDateRange.from && customDateRange.to
-                      ? `${customDateRange.from.toLocaleDateString()} - ${customDateRange.to.toLocaleDateString()}`
-                      : 'Custom Range'
-                    : TIME_RANGE_OPTIONS.find(o => o.value === timeRange)?.label || '24H'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-4" align="end">
-                <div className="space-y-4">
-                  <div className="flex gap-2">
-                    {TIME_RANGE_OPTIONS.map((option) => (
-                      <Button
-                        key={option.value}
-                        variant={timeRange === option.value ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => {
-                          setTimeRange(option.value);
-                          setCustomDateRange({ from: undefined, to: undefined });
-                        }}
-                      >
-                        {option.label}
-                      </Button>
-                    ))}
-                  </div>
-                  {timeRange === 'custom' && (
-                    <div className="flex gap-2">
-                      <Input
-                        type="datetime-local"
-                        value={customDateRange.from?.toISOString().slice(0, 16) || ''}
-                        onChange={(e) => setCustomDateRange(prev => ({ ...prev, from: new Date(e.target.value) }))}
-                        className="text-sm"
-                        placeholder="Start"
-                      />
-                      <Input
-                        type="datetime-local"
-                        value={customDateRange.to?.toISOString().slice(0, 16) || ''}
-                        onChange={(e) => setCustomDateRange(prev => ({ ...prev, to: new Date(e.target.value) }))}
-                        className="text-sm"
-                        placeholder="End"
-                      />
-                    </div>
-                  )}
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={pricesLoading || healthLoading}
-            >
-              <RefreshCw
-                className={cn('mr-2 h-4 w-4', pricesLoading || (healthLoading && 'animate-spin'))}
-              />
-              Refresh
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="h-4 w-4 text-blue-500" />
-              Average Gas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-blue-600">
-              {avgGasPrice ? `$${(avgGasPrice / 1e9).toFixed(2)}` : 'Loading...'}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Across {selectedChains.length} chains
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <TrendingUp className="h-4 w-4 text-emerald-500" />
-              Slow Gas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-emerald-600">
-              {slowGasPrice ? `$${(slowGasPrice / 1e9).toFixed(2)}` : 'Loading...'}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Best for cost-sensitive transactions
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Zap className="h-4 w-4 text-yellow-500" />
-              Fast Gas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-yellow-600">
-              {fastGasPrice ? `$${(fastGasPrice / 1e9).toFixed(2)}` : 'Loading...'}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Best for time-sensitive transactions
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
-              Price Range
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-red-600">
-              {gasPrices?.data && gasPrices.data.length > 0
-                ? `$${((fastGasPrice - slowGasPrice) / 1e9).toFixed(2)}`
-                : 'Loading...'}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">Difference between slow and fast</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div>
-          <h2 className="mb-4 text-xl font-semibold">Chain Selection</h2>
-          <div className="flex flex-wrap gap-2">
-            {DEFAULT_CHAINS.map((chain) => (
-              <Button
-                key={chain}
-                variant={selectedChains.includes(chain) ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleToggleChain(chain)}
-              >
-                {chain.toUpperCase()}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <h2 className="mb-4 text-xl font-semibold">Quick Actions</h2>
-          <div className="space-y-2">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => setShowTrend(!showTrend)}
-            >
-              <TrendingUp className="mr-2 h-4 w-4" />
-              {showTrend ? 'Hide Trend Chart' : 'Show Trend Chart'}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => setSelectedChains(DEFAULT_CHAINS)}
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Reset Selection
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {showTrend && (
-        <div className="mb-8">
-          <GasPriceTrendChart data={trendData?.data} isLoading={trendLoading} height={400} />
-        </div>
-      )}
-
-      <div className="mb-8">
-        <GasProviderHealthCard data={healthData} isLoading={healthLoading} />
-      </div>
-
-      <div className="mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Gas Prices by Chain</CardTitle>
-            <CardDescription>Current gas prices for selected chains</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {pricesLoading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-16 animate-pulse rounded bg-muted/30" />
-                ))}
-              </div>
-            ) : gasPrices?.data && gasPrices.data.length > 0 ? (
-              <div className="space-y-3">
-                {gasPrices.data.map((price) => (
-                  <div
-                    key={price.chain}
-                    className="flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
-                    onClick={() => handleShowTrend(price.chain)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="font-semibold capitalize">{price.chain}</div>
-                      <Badge variant="outline">{price.provider}</Badge>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground">Slow</p>
-                        <p className="font-mono font-semibold">${(price.slow / 1e9).toFixed(2)}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground">Average</p>
-                        <p className="font-mono font-semibold">
-                          ${(price.average / 1e9).toFixed(2)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground">Fast</p>
-                        <p className="font-mono font-semibold">${(price.fast / 1e9).toFixed(2)}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground">Fastest</p>
-                        <p className="font-mono font-semibold">
-                          ${(price.fastest / 1e9).toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-12 text-center text-muted-foreground">
-                No gas price data available
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="mb-8">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Gas Price History</h2>
-          <Button variant="outline" size="sm" onClick={() => setShowTrend(false)}>
-            <History className="mr-1 h-4 w-4" />
-            View History
-          </Button>
-        </div>
-        {selectedChains.length > 0 && (
-          <GasPriceHistoryViewer chain={selectedChains[0]!} provider="etherscan" limit={200} />
         )}
+
+        <div className="mb-8">
+          <GasProviderHealthCard data={healthData} isLoading={healthLoading} />
+        </div>
+
+        <GasPriceList
+          gasPrices={gasPrices}
+          pricesLoading={pricesLoading}
+          handleShowTrend={handleShowTrend}
+        />
+
+        <div className="mb-8">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Gas Price History</h2>
+            <Button variant="outline" size="sm" onClick={() => setShowTrend(false)}>
+              <History className="mr-1 h-4 w-4" />
+              View History
+            </Button>
+          </div>
+          {selectedChains.length > 0 && (
+            <GasPriceHistoryViewer chain={selectedChains[0]!} provider="etherscan" limit={200} />
+          )}
+        </div>
       </div>
-    </div>
     </ErrorBoundary>
   );
 }

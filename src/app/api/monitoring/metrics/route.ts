@@ -6,8 +6,8 @@
 
 import type { NextRequest } from 'next/server';
 
+import { performanceMonitor } from '@/features/monitoring/services';
 import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
-import { performanceMonitor } from '@/services/monitoring/performanceMonitor';
 import { apiSuccess, getQueryParam } from '@/shared/utils';
 
 async function handleGet(request: NextRequest) {

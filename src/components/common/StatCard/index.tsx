@@ -7,6 +7,7 @@
 export {
   EnhancedStatCard as StatCard,
   EnhancedStatCard,
+  StatCardSkeleton,
   StatCardGroup,
   DashboardStatsSection,
 } from './EnhancedStatCard';

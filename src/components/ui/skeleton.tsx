@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { cn } from '@/shared/utils';
 
@@ -379,30 +379,6 @@ function SkeletonList({
 // ============================================================================
 // Animation Variants
 // ============================================================================
-
-const shimmerAnimation: Variants = {
-  initial: { x: '-100%' },
-  animate: {
-    x: '100%',
-    transition: {
-      repeat: Infinity,
-      duration: 1.5,
-      ease: 'linear',
-    },
-  },
-};
-
-const pulseAnimation: Variants = {
-  initial: { opacity: 0.4 },
-  animate: {
-    opacity: [0.4, 0.8, 0.4],
-    transition: {
-      repeat: Infinity,
-      duration: 1.5,
-      ease: 'easeInOut',
-    },
-  },
-};
 
 const containerVariants = {
   hidden: { opacity: 0 },

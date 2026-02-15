@@ -5,9 +5,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/common/AnimatedContainer';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { PageHeader } from '@/components/common/PageHeader';
 import { EmptyWatchlistState } from '@/components/ui';
-import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { AssertionList } from '@/features/assertion/components/AssertionList';
 import { useInfiniteList, useWatchlist, type BaseResponse, useIsMobile } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';

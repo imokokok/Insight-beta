@@ -232,7 +232,7 @@ const colorConfig: Record<
 // Loading State
 // ============================================================================
 
-const StatCardSkeleton = memo(function StatCardSkeleton({ size = 'md' }: { size?: StatCardSize }) {
+export const StatCardSkeleton = memo(function StatCardSkeleton({ size = 'md' }: { size?: StatCardSize }) {
   const heightClass = {
     sm: 'h-24',
     md: 'h-32',

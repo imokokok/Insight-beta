@@ -1,599 +1,84 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
-import {
-  Settings,
-  Bell,
-  Shield,
-  Activity,
-  Save,
-  RotateCcw,
-  CheckCircle,
-  AlertTriangle,
-  Info,
-} from 'lucide-react';
-
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
+import { useEffect, useState, useCallback } from 'react';
+import { Shield, AlertTriangle, RefreshCw, Download, Search, Plus, Settings } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { StatCard } from '@/components/common';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
-import { cn } from '@/shared/utils';
+import { cn, fetchApiData } from '@/shared/utils';
 
-interface DetectionConfig {
-  // Statistical anomaly
-  zScoreThreshold: number;
-  minConfidenceScore: number;
-  timeWindowMs: number;
-  minDataPoints: number;
-  maxPriceDeviationPercent: number;
-
-  // Flash loan
-  flashLoanMinAmountUsd: number;
-
-  // Sandwich attack
-  sandwichProfitThresholdUsd: number;
-
-  // Liquidity
-  liquidityChangeThreshold: number;
-
-  // Correlation
-  correlationThreshold: number;
-
-  // Enabled rules
-  enabledRules: string[];
-
-  // Alert settings
-  alertChannels: {
-    email: boolean;
-    webhook: boolean;
-    slack: boolean;
-    telegram: boolean;
-  };
-  autoBlockSuspiciousFeeds: boolean;
-  notificationCooldownMs: number;
-}
-
-const defaultConfig: DetectionConfig = {
-  zScoreThreshold: 3,
-  minConfidenceScore: 0.7,
-  timeWindowMs: 300000,
-  minDataPoints: 10,
-  maxPriceDeviationPercent: 5,
-  flashLoanMinAmountUsd: 100000,
-  sandwichProfitThresholdUsd: 1000,
-  liquidityChangeThreshold: 0.3,
-  correlationThreshold: 0.8,
-  enabledRules: [
-    'statistical_anomaly',
-    'flash_loan_attack',
-    'sandwich_attack',
-    'liquidity_manipulation',
-  ],
-  alertChannels: {
-    email: true,
-    webhook: true,
-    slack: false,
-    telegram: false,
-  },
-  autoBlockSuspiciousFeeds: false,
-  notificationCooldownMs: 300000,
-};
-
-const detectionRuleIds = [
-  { id: 'statistical_anomaly', icon: Activity },
-  { id: 'flash_loan_attack', icon: AlertTriangle },
-  { id: 'sandwich_attack', icon: Shield },
-  { id: 'liquidity_manipulation', icon: Activity },
-  { id: 'oracle_manipulation', icon: AlertTriangle },
-  { id: 'front_running', icon: Shield },
-  { id: 'back_running', icon: Shield },
-];
+interface ConfigRule { id: string; name: string; type: string; threshold: number; enabled: boolean; severity: 'low' | 'medium' | 'high' | 'critical'; }
+interface ConfigSummary { totalRules: number; activeRules: number; alertCount: number; lastUpdated: string; }
 
 export default function ManipulationConfigPage() {
-  const { t } = useI18n();
-  const [config, setConfig] = useState<DetectionConfig>(defaultConfig);
+  const [config, setConfig] = useState<{ rules: ConfigRule[]; summary: ConfigSummary } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('rules');
 
-  useEffect(() => {
-    fetchConfig();
+  const fetchConfig = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetchApiData<{ data: { rules: ConfigRule[]; summary: ConfigSummary } }>('/api/security/manipulation/config');
+      setConfig(response.data);
+    } catch (err) { 
+      logger.error('Failed to load manipulation config', { error: err }); 
+    }
+    finally { setLoading(false); }
   }, []);
 
-  const fetchConfig = async () => {
-    try {
-      const response = await fetch('/api/security/config');
-      if (response.ok) {
-        const data = await response.json();
-        setConfig({ ...defaultConfig, ...data.config });
-      }
-    } catch (error: unknown) {
-      logger.error('Failed to fetch config', { error });
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => { fetchConfig(); }, [fetchConfig]);
 
-  const saveConfig = async () => {
-    setSaving(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/security/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ config }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save configuration');
-      }
-
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'Unknown error');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const resetConfig = () => {
-    setConfig(defaultConfig);
-  };
-
-  const toggleRule = (ruleId: string) => {
-    setConfig((prev) => ({
-      ...prev,
-      enabledRules: prev.enabledRules.includes(ruleId)
-        ? prev.enabledRules.filter((r) => r !== ruleId)
-        : [...prev.enabledRules, ruleId],
-    }));
-  };
-
-  const updateAlertChannel = (channel: keyof DetectionConfig['alertChannels'], value: boolean) => {
-    setConfig((prev) => ({
-      ...prev,
-      alertChannels: { ...prev.alertChannels, [channel]: value },
-    }));
-  };
-
-  if (loading) {
-    return (
-      <div className="container mx-auto py-8">
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
-  }
+  const filteredRules = config?.rules.filter(r => !searchQuery || r.name.toLowerCase().includes(searchQuery.toLowerCase())) || [];
+  const severityColors: Record<string, string> = { low: 'bg-green-500', medium: 'bg-yellow-500', high: 'bg-orange-500', critical: 'bg-red-500' };
+  const handleExport = () => { if (!config) return; const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `manipulation-config-${new Date().toISOString()}.json`; a.click(); };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-3xl font-bold">
-            <Settings className="h-8 w-8" />
-            {t('security:config.title')}
-          </h1>
-          <p className="mt-1 text-muted-foreground">{t('security:config.subtitle')}</p>
+    <ErrorBoundary>
+      <div className="container mx-auto space-y-6 p-4 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div><h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl"><span className="text-red-600">Manipulation Detection Config</span></h1><p className="mt-1 text-sm text-muted-foreground">Configure detection rules and thresholds</p></div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={fetchConfig} disabled={loading}><RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />Refresh</Button>
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={!config}><Download className="mr-2 h-4 w-4" />Export</Button>
+            <Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Rule</Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={resetConfig} disabled={saving}>
-            <RotateCcw className="mr-2 h-4 w-4" />
-            {t('common:reset')}
-          </Button>
-          <Button onClick={saveConfig} disabled={saving}>
-            {saving ? (
-              <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
-                {t('common:saving')}
-              </>
-            ) : saved ? (
-              <>
-                <CheckCircle className="mr-2 h-4 w-4" />
-                {t('common:saved')}
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                {t('common:saveConfig')}
-              </>
-            )}
-          </Button>
-        </div>
+
+        {loading && !config ? <div className="grid grid-cols-2 gap-4 md:grid-cols-4"><div className="h-24 animate-pulse rounded-lg bg-gray-100" /><div className="h-24 animate-pulse rounded-lg bg-gray-100" /><div className="h-24 animate-pulse rounded-lg bg-gray-100" /><div className="h-24 animate-pulse rounded-lg bg-gray-100" /></div> : (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <StatCard title="Total Rules" value={config?.summary.totalRules || 0} icon={<Settings className="h-5 w-5" />} color="blue" />
+            <StatCard title="Active Rules" value={config?.summary.activeRules || 0} icon={<Shield className="h-5 w-5" />} color="green" />
+            <StatCard title="Alerts Today" value={config?.summary.alertCount || 0} icon={<AlertTriangle className="h-5 w-5" />} color="red" />
+            <StatCard title="Last Updated" value={config?.summary.lastUpdated ? new Date(config.summary.lastUpdated).toLocaleTimeString() : 'N/A'} icon={<RefreshCw className="h-5 w-5" />} color="purple" />
+          </div>
+        )}
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList><TabsTrigger value="rules">Rules ({filteredRules.length})</TabsTrigger><TabsTrigger value="thresholds">Thresholds</TabsTrigger><TabsTrigger value="history">History</TabsTrigger></TabsList>
+          <TabsContent value="rules" className="space-y-4">
+            <Card><CardContent className="p-4"><div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Search rules..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" /></div></CardContent></Card>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredRules.map(rule => (
+                <Card key={rule.id} className={cn(!rule.enabled && 'opacity-60')}>
+                  <CardHeader className="pb-2"><div className="flex items-center justify-between"><CardTitle className="text-base">{rule.name}</CardTitle><Badge className={severityColors[rule.severity]}>{rule.severity}</Badge></div><CardDescription className="text-xs">{rule.type}</CardDescription></CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Threshold</span><span className="font-semibold">{rule.threshold}</span></div>
+                    <div className="mt-2 flex items-center justify-between text-sm"><span className="text-muted-foreground">Status</span><Badge variant={rule.enabled ? 'default' : 'secondary'}>{rule.enabled ? 'Active' : 'Disabled'}</Badge></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          <TabsContent value="thresholds"><Card><CardContent className="p-6 text-center text-muted-foreground">Thresholds configuration coming soon</CardContent></Card></TabsContent>
+          <TabsContent value="history"><Card><CardContent className="p-6 text-center text-muted-foreground">History coming soon</CardContent></Card></TabsContent>
+        </Tabs>
       </div>
-
-      {error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      <Tabs defaultValue="rules" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
-          <TabsTrigger value="rules">{t('security:config.tabs.rules')}</TabsTrigger>
-          <TabsTrigger value="thresholds">{t('security:config.tabs.thresholds')}</TabsTrigger>
-          <TabsTrigger value="alerts">{t('security:config.tabs.alerts')}</TabsTrigger>
-          <TabsTrigger value="advanced">{t('security:config.tabs.advanced')}</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="rules" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                {t('security:config.sections.enabledRules')}
-              </CardTitle>
-              <CardDescription>{t('security:config.sections.enabledRulesDesc')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {detectionRuleIds.map((rule) => {
-                const isEnabled = config.enabledRules.includes(rule.id);
-                const Icon = rule.icon;
-                const ruleName = t(
-                  `security:detectionRules.${rule.id.replace('_attack', '').replace('_manipulation', '')}.name` as const,
-                );
-                const ruleDesc = t(
-                  `security:detectionRules.${rule.id.replace('_attack', '').replace('_manipulation', '')}.description` as const,
-                );
-
-                return (
-                  <div
-                    key={rule.id}
-                    className={cn(
-                      'flex items-center justify-between rounded-lg border p-4 transition-all',
-                      isEnabled ? 'border-primary/20 bg-primary/5' : 'border-muted bg-muted/50',
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={cn('rounded-lg p-2', isEnabled ? 'bg-primary/10' : 'bg-muted')}
-                      >
-                        <Icon
-                          className={cn(
-                            'h-5 w-5',
-                            isEnabled ? 'text-primary' : 'text-muted-foreground',
-                          )}
-                        />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 font-medium">
-                          {ruleName}
-                          {isEnabled && (
-                            <Badge variant="secondary" className="text-xs">
-                              {t('security:config.enabled')}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-sm text-muted-foreground">{ruleDesc}</div>
-                      </div>
-                    </div>
-                    <Switch checked={isEnabled} onCheckedChange={() => toggleRule(rule.id)} />
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="thresholds" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                统计异常检测阈值
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label>Z-Score 阈值</Label>
-                  <span className="text-sm font-medium">{config.zScoreThreshold}</span>
-                </div>
-                <Slider
-                  value={[config.zScoreThreshold]}
-                  onValueChange={(value) =>
-                    setConfig((prev) => ({ ...prev, zScoreThreshold: value[0] ?? 0 }))
-                  }
-                  min={1}
-                  max={5}
-                  step={0.1}
-                />
-                <p className="text-xs text-muted-foreground">
-                  标准差倍数，超过此值视为异常（推荐: 3）
-                </p>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label>最小置信度</Label>
-                  <span className="text-sm font-medium">
-                    {(config.minConfidenceScore * 100).toFixed(0)}%
-                  </span>
-                </div>
-                <Slider
-                  value={[config.minConfidenceScore * 100]}
-                  onValueChange={(value) =>
-                    setConfig((prev) => ({ ...prev, minConfidenceScore: value[0] ?? 0 / 100 }))
-                  }
-                  min={50}
-                  max={95}
-                  step={5}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label>最大价格偏离 (%)</Label>
-                  <span className="text-sm font-medium">{config.maxPriceDeviationPercent}%</span>
-                </div>
-                <Slider
-                  value={[config.maxPriceDeviationPercent]}
-                  onValueChange={(value) =>
-                    setConfig((prev) => ({ ...prev, maxPriceDeviationPercent: value[0] ?? 0 }))
-                  }
-                  min={1}
-                  max={20}
-                  step={0.5}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <Label>最小数据点数</Label>
-                <Input
-                  type="number"
-                  value={config.minDataPoints}
-                  onChange={(e) =>
-                    setConfig((prev) => ({
-                      ...prev,
-                      minDataPoints: parseInt(e.target.value) || 10,
-                    }))
-                  }
-                  min={5}
-                  max={50}
-                />
-                <p className="text-xs text-muted-foreground">
-                  进行统计检测所需的最小历史数据点数量
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                攻击检测阈值
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label>闪电贷最小金额 (USD)</Label>
-                <Input
-                  type="number"
-                  value={config.flashLoanMinAmountUsd}
-                  onChange={(e) =>
-                    setConfig((prev) => ({
-                      ...prev,
-                      flashLoanMinAmountUsd: parseInt(e.target.value) || 100000,
-                    }))
-                  }
-                  min={10000}
-                  step={10000}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>三明治攻击利润阈值 (USD)</Label>
-                <Input
-                  type="number"
-                  value={config.sandwichProfitThresholdUsd}
-                  onChange={(e) =>
-                    setConfig((prev) => ({
-                      ...prev,
-                      sandwichProfitThresholdUsd: parseInt(e.target.value) || 1000,
-                    }))
-                  }
-                  min={100}
-                  step={100}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label>流动性变化阈值</Label>
-                  <span className="text-sm font-medium">
-                    {(config.liquidityChangeThreshold * 100).toFixed(0)}%
-                  </span>
-                </div>
-                <Slider
-                  value={[config.liquidityChangeThreshold * 100]}
-                  onValueChange={(value) =>
-                    setConfig((prev) => ({
-                      ...prev,
-                      liquidityChangeThreshold: (value[0] ?? 0) / 100,
-                    }))
-                  }
-                  min={10}
-                  max={80}
-                  step={5}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="alerts" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                {t('security:config.sections.alertChannels')}
-              </CardTitle>
-              <CardDescription>{t('security:config.sections.alertChannelsDesc')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[{ key: 'email' }, { key: 'webhook' }, { key: 'slack' }, { key: 'telegram' }].map(
-                (channel) => (
-                  <div
-                    key={channel.key}
-                    className="flex items-center justify-between rounded-lg border p-3"
-                  >
-                    <div>
-                      <div className="font-medium">
-                        {t(`security:alertChannels.${channel.key}.name` as const)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {t(`security:alertChannels.${channel.key}.description` as const)}
-                      </div>
-                    </div>
-                    <Switch
-                      checked={
-                        config.alertChannels[channel.key as keyof typeof config.alertChannels]
-                      }
-                      onCheckedChange={(checked) =>
-                        updateAlertChannel(
-                          channel.key as keyof typeof config.alertChannels,
-                          checked,
-                        )
-                      }
-                    />
-                  </div>
-                ),
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>告警设置</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label>通知冷却时间 (分钟)</Label>
-                  <span className="text-sm font-medium">
-                    {Math.round(config.notificationCooldownMs / 60000)} 分钟
-                  </span>
-                </div>
-                <Slider
-                  value={[config.notificationCooldownMs / 60000]}
-                  onValueChange={(value) =>
-                    setConfig((prev) => ({
-                      ...prev,
-                      notificationCooldownMs: value[0] ?? 0 * 60000,
-                    }))
-                  }
-                  min={1}
-                  max={60}
-                  step={1}
-                />
-                <p className="text-xs text-muted-foreground">
-                  同一数据源的告警间隔时间，避免重复通知
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between rounded-lg border bg-yellow-50 p-3">
-                <div className="flex items-start gap-2">
-                  <Info className="mt-0.5 h-5 w-5 text-yellow-600" />
-                  <div>
-                    <div className="font-medium">自动阻断可疑数据源</div>
-                    <div className="text-sm text-muted-foreground">
-                      检测到严重操纵时自动阻断该数据源
-                    </div>
-                  </div>
-                </div>
-                <Switch
-                  checked={config.autoBlockSuspiciousFeeds}
-                  onCheckedChange={(checked) =>
-                    setConfig((prev) => ({
-                      ...prev,
-                      autoBlockSuspiciousFeeds: checked,
-                    }))
-                  }
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="advanced" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>高级配置</CardTitle>
-              <CardDescription>高级检测参数，修改前请了解其含义</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label>时间窗口 (分钟)</Label>
-                  <span className="text-sm font-medium">
-                    {Math.round(config.timeWindowMs / 60000)} 分钟
-                  </span>
-                </div>
-                <Slider
-                  value={[config.timeWindowMs / 60000]}
-                  onValueChange={(value) =>
-                    setConfig((prev) => ({ ...prev, timeWindowMs: value[0] ?? 0 * 60000 }))
-                  }
-                  min={1}
-                  max={30}
-                  step={1}
-                />
-                <p className="text-xs text-muted-foreground">检测分析的时间窗口范围</p>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label>相关性阈值</Label>
-                  <span className="text-sm font-medium">
-                    {(config.correlationThreshold * 100).toFixed(0)}%
-                  </span>
-                </div>
-                <Slider
-                  value={[config.correlationThreshold * 100]}
-                  onValueChange={(value) =>
-                    setConfig((prev) => ({
-                      ...prev,
-                      correlationThreshold: (value[0] ?? 0) / 100,
-                    }))
-                  }
-                  min={50}
-                  max={95}
-                  step={5}
-                />
-                <p className="text-xs text-muted-foreground">多源价格相关性验证阈值</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              修改高级配置可能影响检测准确性，建议在测试环境验证后再应用到生产环境。
-            </AlertDescription>
-          </Alert>
-        </TabsContent>
-      </Tabs>
-    </div>
+    </ErrorBoundary>
   );
 }

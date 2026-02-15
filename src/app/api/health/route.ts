@@ -1,7 +1,7 @@
 import { env, getEnvReport } from '@/config/env';
+import { performanceMonitor } from '@/features/monitoring/services/performanceMonitor';
 import { error, handleApi, rateLimit, requireAdmin } from '@/lib/api/apiResponse';
 import { hasDatabase, query } from '@/lib/database/db';
-import { performanceMonitor } from '@/services/monitoring/performanceMonitor';
 
 /**
  * @swagger
