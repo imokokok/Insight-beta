@@ -24,3 +24,31 @@ export interface ComparisonDataPoint {
   uptime: number;
   [key: string]: unknown;
 }
+
+export interface AreaChartConfig {
+  data: ChartDataPoint[];
+  dataKey: string;
+  color: string;
+  valueFormatter?: (value: number) => string;
+  labelFormatter?: (label: string | number) => string;
+}
+
+export interface LineChartConfig {
+  data: ChartDataPoint[];
+  lines: Array<{
+    dataKey: string;
+    name: string;
+    color: string;
+  }>;
+  valueFormatter?: (value: number) => string;
+}
+
+export interface BarChartConfig {
+  data: ComparisonDataPoint[];
+  bars: Array<{
+    dataKey: string;
+    name: string;
+    color: string;
+  }>;
+  valueFormatter?: (value: number) => string;
+}

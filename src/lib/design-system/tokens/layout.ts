@@ -368,7 +368,7 @@ export function getCurrentBreakpoint(width: number): Breakpoint {
 // Export
 // ============================================================================
 
-export default {
+export const layoutTokens = {
   breakpoints: BREAKPOINTS,
   containerWidths: CONTAINER_WIDTHS,
   maxWidths: MAX_WIDTHS,

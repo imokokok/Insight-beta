@@ -11,6 +11,8 @@ import {
 import type { StatCardStatus } from '@/components/common/StatCard';
 import { useI18n } from '@/i18n/LanguageProvider';
 
+import type { DashboardStats as DashboardStatsType } from '../types/dashboard';
+
 interface StatCardData {
   title: string;
   value: string | number;
@@ -24,7 +26,7 @@ interface DashboardStatsProps {
   statCardsData: StatCardData[];
   scaleCardsData: StatCardData[];
   isRefreshing: boolean;
-  stats: any;
+  stats: DashboardStatsType | null;
 }
 
 const icons = {

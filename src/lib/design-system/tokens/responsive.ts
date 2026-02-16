@@ -329,7 +329,7 @@ export function getContainerBreakpoint(size: keyof typeof CONTAINER_BREAKPOINTS)
 // Export
 // ============================================================================
 
-export default {
+export const responsiveTokens = {
   breakpoints: BREAKPOINTS,
   ranges: RESPONSIVE_RANGES,
   containerSizes: CONTAINER_SIZES,

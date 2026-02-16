@@ -278,6 +278,8 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
       return () => clearTimeout(timer);
     }
     return undefined;
+    // Intentionally not including handleRetry in deps to avoid infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retryCount, error.type]);
 
   return (

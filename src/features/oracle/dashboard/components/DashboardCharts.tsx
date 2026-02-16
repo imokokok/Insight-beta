@@ -9,16 +9,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { formatNumber } from '@/shared/utils';
 
-import type { ChartDataPoint, ComparisonDataPoint } from '../types/dashboard';
+import type { ChartDataPoint, ComparisonDataPoint, AreaChartConfig, LineChartConfig, BarChartConfig, DashboardStats } from '../types/dashboard';
 
 interface DashboardChartsProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   isMobile: boolean;
-  stats: any;
-  priceChartConfig: any;
-  comparisonChartConfig: any;
-  latencyChartConfig: any;
+  stats: DashboardStats | null;
+  priceChartConfig: AreaChartConfig;
+  comparisonChartConfig: BarChartConfig;
+  latencyChartConfig: LineChartConfig;
   priceTrendData: ChartDataPoint[];
   comparisonData: ComparisonDataPoint[];
   latencyData: ChartDataPoint[];

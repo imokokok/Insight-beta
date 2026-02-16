@@ -23,7 +23,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { Input } from '@/components/ui/input';
 import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
-import { SkeletonList, StatCardSkeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -31,14 +30,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { SkeletonList, StatCardSkeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertCard, AlertDetailPanel } from '@/features/alerts/components';
+import type { UnifiedAlert, AlertSeverity, AlertSource, AlertStatus } from '@/features/alerts/hooks/useAlerts';
 import { useAutoRefreshWithCountdown, useDataCache } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/shared/logger';
 import { fetchApiData, cn } from '@/shared/utils';
 
-import { AlertCard, AlertDetailPanel } from '@/features/alerts/components';
-import type { UnifiedAlert, AlertSeverity, AlertSource, AlertStatus } from '@/features/alerts/hooks/useAlerts';
 
 interface AlertsData {
   alerts: UnifiedAlert[];

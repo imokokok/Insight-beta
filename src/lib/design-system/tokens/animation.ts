@@ -570,7 +570,7 @@ export function createPageTransition(
 // Export All
 // ============================================================================
 
-export default {
+export const animationTokens = {
   duration: ANIMATION_DURATION,
   easing: ANIMATION_EASING,
   stagger: STAGGER_CONFIG,
