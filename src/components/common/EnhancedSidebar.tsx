@@ -108,8 +108,8 @@ export const defaultNavConfig: SidebarConfig = {
   defaultCollapsed: false,
   groups: [
     {
-      id: 'main',
-      label: 'nav.groups.main',
+      id: 'navigation',
+      label: '',
       collapsible: false,
       items: [
         {
@@ -177,14 +177,6 @@ export const defaultNavConfig: SidebarConfig = {
             },
           ],
         },
-      ],
-    },
-    {
-      id: 'analytics',
-      label: 'nav.groups.analytics',
-      icon: BarChart3,
-      defaultExpanded: true,
-      items: [
         {
           id: 'deviation',
           label: 'nav.deviation',
@@ -192,14 +184,6 @@ export const defaultNavConfig: SidebarConfig = {
           icon: Activity,
           description: 'nav.descriptions.deviation',
         },
-      ],
-    },
-    {
-      id: 'operations',
-      label: 'nav.groups.operations',
-      icon: AlertTriangle,
-      defaultExpanded: false,
-      items: [
         {
           id: 'assertions',
           label: 'nav.assertions',
@@ -207,15 +191,8 @@ export const defaultNavConfig: SidebarConfig = {
           icon: AlertTriangle,
           description: 'nav.descriptions.assertions',
         },
-      ],
-    },
-    {
-      id: 'protocols',
-      label: 'nav.groups.protocolsGroup',
-      icon: Layers,
-      items: [
         {
-          id: 'protocol-list',
+          id: 'protocols',
           label: 'nav.protocols',
           href: '/oracle/protocols',
           icon: Layers,
