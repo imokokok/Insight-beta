@@ -40,7 +40,6 @@ export const nav = {
     address: 'Search address profile'
   },
   labels: {
-    favorites: 'Favorites',
     search: 'Search navigation...'
   }
 };

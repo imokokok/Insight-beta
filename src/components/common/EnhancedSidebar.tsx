@@ -5,7 +5,6 @@
  * - 可折叠分组
  * - 多级菜单支持
  * - 搜索过滤
- * - 收藏功能
  */
 
 'use client';
@@ -20,7 +19,6 @@ import {
   ChevronRight,
   ChevronDown,
   Search,
-  Star,
   LayoutDashboard,
   Globe,
   X,
@@ -77,7 +75,6 @@ export interface NavGroup {
 export interface SidebarConfig {
   groups: NavGroup[];
   showSearch?: boolean;
-  showFavorites?: boolean;
   collapsible?: boolean;
   defaultCollapsed?: boolean;
 }
@@ -87,8 +84,6 @@ interface SidebarContextType {
   setCollapsed: (collapsed: boolean) => void;
   expandedGroups: Set<string>;
   toggleGroup: (groupId: string) => void;
-  favorites: Set<string>;
-  toggleFavorite: (itemId: string) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
 }
@@ -109,7 +104,6 @@ function useSidebar() {
 
 export const defaultNavConfig: SidebarConfig = {
   showSearch: true,
-  showFavorites: true,
   collapsible: true,
   defaultCollapsed: false,
   groups: [
@@ -192,13 +186,6 @@ export const defaultNavConfig: SidebarConfig = {
       defaultExpanded: true,
       items: [
         {
-          id: 'trends',
-          label: 'nav.trends',
-          href: '/oracle/analytics',
-          icon: BarChart3,
-          description: 'nav.descriptions.trends',
-        },
-        {
           id: 'deviation',
           label: 'nav.deviation',
           href: '/oracle/analytics/deviation',
@@ -251,7 +238,7 @@ interface NavItemProps {
 
 function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
   const pathname = usePathname();
-  const { favorites, toggleFavorite, collapsed: sidebarCollapsed } = useSidebar();
+  const { collapsed: sidebarCollapsed } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
   const { t } = useI18n();
   const [isExpanded, setIsExpanded] = useState(item.defaultExpanded ?? false);
@@ -261,7 +248,6 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
     return pathname === item.href || pathname.startsWith(item.href + '/');
   }, [pathname, item.href]);
 
-  const isFavorite = favorites.has(item.id);
   const hasChildren = item.items && item.items.length > 0;
   const hasHref = item.href !== undefined && item.href !== null && item.href !== '';
 
@@ -304,27 +290,6 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
                 isExpanded && 'rotate-90',
               )}
             />
-          )}
-
-          {hasHref && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleFavorite(item.id);
-              }}
-              className={cn(
-                'ml-2 opacity-0 transition-opacity group-hover:opacity-100',
-                isFavorite && 'opacity-100',
-              )}
-            >
-              <Star
-                className={cn(
-                  'h-4 w-4',
-                  isFavorite ? 'fill-yellow-500 text-yellow-500' : 'text-muted-foreground',
-                )}
-              />
-            </button>
           )}
         </>
       )}
@@ -538,52 +503,6 @@ function SidebarSearch() {
 }
 
 // ============================================================================
-// Favorites Component
-// ============================================================================
-
-function SidebarFavorites({ config }: { config: SidebarConfig }) {
-  const { favorites, collapsed } = useSidebar();
-  const { t } = useI18n();
-
-  const favoriteItems = useMemo(() => {
-    const items: NavItem[] = [];
-    config.groups.forEach((group) => {
-      group.items.forEach((item) => {
-        if (favorites.has(item.id)) {
-          items.push(item);
-        }
-        if (item.items) {
-          item.items.forEach((child) => {
-            if (favorites.has(child.id)) {
-              items.push(child);
-            }
-          });
-        }
-      });
-    });
-    return items;
-  }, [favorites, config.groups]);
-
-  if (favoriteItems.length === 0) return null;
-
-  return (
-    <div className="border-b border-border py-2">
-      {!collapsed && (
-        <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          <Star className="mr-2 h-3.5 w-3.5" />
-          <span>{t('nav.labels.favorites')}</span>
-        </div>
-      )}
-      <div className={cn('space-y-1', collapsed && 'px-1')}>
-        {favoriteItems.map((item) => (
-          <NavItemComponent key={item.id} item={item} collapsed={collapsed} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
 // Main Sidebar Component
 // ============================================================================
 
@@ -603,7 +522,6 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
     });
     return initial;
   });
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [isMounted, setIsMounted] = useState(false);
 
@@ -623,37 +541,16 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
     });
   }, []);
 
-  const toggleFavorite = useCallback((itemId: string) => {
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (next.has(itemId)) {
-        next.delete(itemId);
-      } else {
-        next.add(itemId);
-      }
-      return next;
-    });
-  }, []);
-
   const contextValue = useMemo(
     () => ({
       collapsed,
       setCollapsed,
       expandedGroups,
       toggleGroup,
-      favorites,
-      toggleFavorite,
       searchQuery,
       setSearchQuery,
     }),
-    [
-      collapsed,
-      expandedGroups,
-      favorites,
-      searchQuery,
-      toggleGroup,
-      toggleFavorite,
-    ],
+    [collapsed, expandedGroups, searchQuery, toggleGroup],
   );
 
   if (!isMounted) {
@@ -717,9 +614,6 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
 
           {/* Scrollable Content */}
           <ScrollArea className="flex-1">
-            {/* Favorites */}
-            {config.showFavorites && <SidebarFavorites config={config} />}
-
             {/* Navigation Groups */}
             <div className={cn('py-2', collapsed && 'px-1')}>
               {config.groups.map((group) => (

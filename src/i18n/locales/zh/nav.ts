@@ -40,7 +40,6 @@ export const nav = {
     address: '搜索地址资料'
   },
   labels: {
-    favorites: '收藏',
     search: '搜索导航...'
   }
 };
