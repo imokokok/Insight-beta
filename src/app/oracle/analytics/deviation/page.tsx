@@ -58,7 +58,7 @@ export default function DeviationAnalyticsPage() {
     refresh,
     filteredTrends,
     handleExport,
-  } = useDeviationAnalytics({ showRefreshToast: false });
+  } = useDeviationAnalytics();
 
   if (error && !loading && !report) {
     return (

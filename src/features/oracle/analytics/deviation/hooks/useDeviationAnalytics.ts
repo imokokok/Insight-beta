@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import { deviationConfigService } from '@/features/oracle/services/deviationConfig';
 import { useAutoRefreshWithCountdown, useDataCache } from '@/hooks';
@@ -11,12 +11,9 @@ import { fetchApiData } from '@/shared/utils';
 
 import type { DeviationReport, DeviationTrend, PriceDeviationPoint } from '../types/deviation';
 
-export interface UseDeviationAnalyticsOptions {
-  showRefreshToast?: boolean;
-}
+export interface UseDeviationAnalyticsOptions {}
 
-export function useDeviationAnalytics(options: UseDeviationAnalyticsOptions = {}) {
-  const { showRefreshToast = true } = options;
+export function useDeviationAnalytics(_options: UseDeviationAnalyticsOptions = {}) {
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<DeviationReport | null>(null);
   const [selectedTrend, setSelectedTrend] = useState<DeviationTrend | null>(null);
@@ -26,9 +23,6 @@ export function useDeviationAnalytics(options: UseDeviationAnalyticsOptions = {}
   const [symbolData, setSymbolData] = useState<PriceDeviationPoint[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const refreshToastShown = useRef(false);
 
   const { t } = useI18n();
 
@@ -44,14 +38,14 @@ export function useDeviationAnalytics(options: UseDeviationAnalyticsOptions = {}
     timeUntilRefresh,
     refresh,
   } = useAutoRefreshWithCountdown({
-    onRefresh: () => fetchReport(showRefreshToast),
+    onRefresh: fetchReport,
     interval: deviationConfigService.getConfig().refreshIntervalMs,
     enabled: true,
     pauseWhenHidden: true,
   });
 
   const fetchReport = useCallback(
-    async (showToast = false) => {
+    async () => {
       try {
         setLoading(true);
         setError(null);
@@ -60,9 +54,6 @@ export function useDeviationAnalytics(options: UseDeviationAnalyticsOptions = {}
         if (cached && !lastUpdated) {
           setReport(cached.report);
           setLoading(false);
-          if (showToast && !refreshToastShown.current) {
-            refreshToastShown.current = true;
-          }
           return;
         }
 
@@ -87,7 +78,7 @@ export function useDeviationAnalytics(options: UseDeviationAnalyticsOptions = {}
         setLoading(false);
       }
     },
-    [getCachedData, setCachedData, lastUpdated, showRefreshToast],
+    [getCachedData, setCachedData, lastUpdated],
   );
 
   const fetchSymbolTrend = useCallback(async (symbol: string) => {
@@ -113,7 +104,7 @@ export function useDeviationAnalytics(options: UseDeviationAnalyticsOptions = {}
   });
 
   useEffect(() => {
-    fetchReport(false);
+    fetchReport();
   }, [fetchReport]);
 
   useEffect(() => {
@@ -160,7 +151,6 @@ export function useDeviationAnalytics(options: UseDeviationAnalyticsOptions = {}
     symbolData,
     lastUpdated,
     error,
-    searchInputRef,
     autoRefreshEnabled,
     setAutoRefreshEnabled,
     refreshInterval,
@@ -172,7 +162,5 @@ export function useDeviationAnalytics(options: UseDeviationAnalyticsOptions = {}
     filteredTrends,
     handleExport,
     config,
-    settingsOpen,
-    setSettingsOpen,
   };
 }
