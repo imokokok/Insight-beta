@@ -1,4 +1,6 @@
 export const crossChain = {
+  title: 'Cross-Chain Analysis',
+  description: 'Compare asset prices across multiple blockchain networks',
   page: {
     title: 'Cross-Chain Analysis',
     description: 'Compare asset prices across multiple blockchain networks',

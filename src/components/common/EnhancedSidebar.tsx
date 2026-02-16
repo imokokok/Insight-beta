@@ -133,18 +133,11 @@ export const defaultNavConfig: SidebarConfig = {
           description: 'nav.descriptions.address',
         },
         {
-          id: 'crossChainOverview',
-          label: 'nav.crossChainOverview',
-          href: '/cross-chain/overview',
-          icon: LayoutDashboard,
-          description: 'nav.descriptions.crossChainOverview',
-        },
-        {
-          id: 'crossChainComparison',
-          label: 'nav.crossChainComparison',
-          href: '/cross-chain/comparison',
+          id: 'crossChain',
+          label: 'nav.crossChain',
+          href: '/cross-chain',
           icon: Globe,
-          description: 'nav.descriptions.crossChainComparison',
+          description: 'nav.descriptions.crossChain',
         },
         {
           id: 'oracleComparison',
@@ -152,13 +145,6 @@ export const defaultNavConfig: SidebarConfig = {
           href: '/oracle/comparison',
           icon: Layers,
           description: 'nav.descriptions.oracleComparison',
-        },
-        {
-          id: 'crossChainHistory',
-          label: 'nav.crossChainHistory',
-          href: '/cross-chain/history',
-          icon: BarChart3,
-          description: 'nav.descriptions.crossChainHistory',
         },
         {
           id: 'deviation',

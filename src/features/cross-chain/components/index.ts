@@ -4,3 +4,6 @@ export { CrossChainDashboardCard } from './CrossChainDashboardCard';
 export { CrossChainPriceChart } from './CrossChainPriceChart';
 export { CrossChainDeviationChart } from './CrossChainDeviationChart';
 export { CrossChainComparisonBar } from './CrossChainComparisonBar';
+export { CrossChainOverview } from './CrossChainOverview';
+export { CrossChainComparison } from './CrossChainComparison';
+export { CrossChainHistory } from './CrossChainHistory';

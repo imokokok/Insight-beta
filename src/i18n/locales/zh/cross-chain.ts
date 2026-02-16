@@ -1,4 +1,6 @@
 export const crossChain = {
+  title: '跨链分析',
+  description: '比较多个区块链网络的资产价格',
   page: {
     title: '跨链分析',
     description: '比较多个区块链网络的资产价格',
