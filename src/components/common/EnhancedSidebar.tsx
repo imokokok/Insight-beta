@@ -27,7 +27,6 @@ import {
   Layers,
   AlertTriangle,
   ChevronLeft,
-  Network,
   User,
 } from 'lucide-react';
 
