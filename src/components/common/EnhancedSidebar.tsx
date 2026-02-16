@@ -168,13 +168,6 @@ export const defaultNavConfig: SidebarConfig = {
               icon: BarChart3,
               description: 'nav.descriptions.crossChainHistory',
             },
-            {
-              id: 'crossChainSettings',
-              label: 'nav.crossChainSettings',
-              href: '/cross-chain/settings',
-              icon: Layers,
-              description: 'nav.descriptions.crossChainSettings',
-            },
           ],
         },
         {

@@ -1,9 +1,13 @@
 'use client';
 
-import { RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import { RefreshCw, Settings, Save, RotateCcw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useCrossChainDashboard } from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
@@ -13,6 +17,12 @@ const AVAILABLE_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 
 
 export default function CrossChainOverviewPage() {
   const { t } = useI18n();
+
+  const [deviationThreshold, setDeviationThreshold] = useState('0.5');
+  const [criticalThreshold, setCriticalThreshold] = useState('2.0');
+  const [alertEnabled, setAlertEnabled] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const {
     data: dashboardData,
@@ -25,6 +35,17 @@ export default function CrossChainOverviewPage() {
   const healthyChains = dashboard?.chainHealth?.filter((c) => c.status === 'healthy').length ?? 0;
   const totalChains = dashboard?.chainHealth?.length ?? 0;
 
+  const handleSave = () => {
+    setIsSaving(true);
+    setTimeout(() => setIsSaving(false), 1000);
+  };
+
+  const handleReset = () => {
+    setDeviationThreshold('0.5');
+    setCriticalThreshold('2.0');
+    setAlertEnabled(true);
+  };
+
   return (
     <div className="container mx-auto space-y-6 p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -34,11 +55,86 @@ export default function CrossChainOverviewPage() {
             {t('crossChain.dashboard.description', { count: AVAILABLE_SYMBOLS.length })}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refreshDashboard()}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          {t('crossChain.controls.refresh')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)}>
+            <Settings className="mr-2 h-4 w-4" />
+            设置
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => refreshDashboard()}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            {t('crossChain.controls.refresh')}
+          </Button>
+        </div>
       </div>
+
+      {showSettings && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>阈值设置</CardTitle>
+              <CardDescription>配置价格偏差检测阈值</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="deviation-threshold">警告偏差阈值 (%)</Label>
+                <Input
+                  id="deviation-threshold"
+                  type="number"
+                  step="0.1"
+                  value={deviationThreshold}
+                  onChange={(e) => setDeviationThreshold(e.target.value)}
+                />
+                <p className="text-sm text-muted-foreground">
+                  当偏差超过此值时触发警告
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="critical-threshold">严重偏差阈值 (%)</Label>
+                <Input
+                  id="critical-threshold"
+                  type="number"
+                  step="0.1"
+                  value={criticalThreshold}
+                  onChange={(e) => setCriticalThreshold(e.target.value)}
+                />
+                <p className="text-sm text-muted-foreground">
+                  当偏差超过此值时触发严重告警
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>通知设置</CardTitle>
+              <CardDescription>配置告警通知</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>启用告警</Label>
+                  <p className="text-sm text-muted-foreground">
+                    检测到偏差时接收通知
+                  </p>
+                </div>
+                <Switch checked={alertEnabled} onCheckedChange={setAlertEnabled} />
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <Button variant="outline" size="sm" onClick={handleReset}>
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  重置
+                </Button>
+                <Button size="sm" onClick={handleSave} disabled={isSaving}>
+                  <Save className="mr-2 h-4 w-4" />
+                  {isSaving ? '保存中...' : '保存'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

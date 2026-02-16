@@ -2,10 +2,10 @@
 
 import { useState, useCallback, useMemo } from 'react';
 
-import { RefreshCw, Filter, Calendar, TrendingUp, Minus, DollarSign } from 'lucide-react';
+import { RefreshCw, Filter, Calendar, TrendingUp, Minus, DollarSign, Database } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import {
   CrossChainComparisonCard,
   CrossChainPriceChart,
@@ -45,6 +46,12 @@ export default function CrossChainComparisonPage() {
   const [selectedSymbol, setSelectedSymbol] = useState<string>('BTC');
   const [selectedChains, setSelectedChains] = useState<string[]>(AVAILABLE_CHAINS);
   const [timeRange, setTimeRange] = useState<string>('7d');
+  const [dataSources, setDataSources] = useState([
+    { name: 'Chainlink', enabled: true },
+    { name: 'Pyth', enabled: true },
+    { name: 'Band Protocol', enabled: false },
+  ]);
+  const [showDataSourceSettings, setShowDataSourceSettings] = useState(false);
 
   const timeRangeDates = useMemo(() => {
     const now = new Date();
@@ -116,11 +123,49 @@ export default function CrossChainComparisonPage() {
             {t('crossChain.comparison.description', { count: selectedChains.length })}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refreshComparison()}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          {t('crossChain.controls.refresh')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowDataSourceSettings(!showDataSourceSettings)}>
+            <Database className="mr-2 h-4 w-4" />
+            数据源
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => refreshComparison()}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            {t('crossChain.controls.refresh')}
+          </Button>
+        </div>
       </div>
+
+      {showDataSourceSettings && (
+        <Card>
+          <CardHeader>
+            <CardTitle>数据源配置</CardTitle>
+            <CardDescription>配置价格预言机数据源</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {dataSources.map((source, index) => (
+                <div
+                  key={source.name}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
+                  <span className="font-medium">{source.name}</span>
+                  <Switch
+                    checked={source.enabled}
+                    onCheckedChange={(checked) => {
+                      const newSources = [...dataSources];
+                      const source = newSources[index];
+                      if (source) {
+                        source.enabled = checked;
+                      }
+                      setDataSources(newSources);
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
