@@ -8,8 +8,7 @@ export default function AnalyticsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to anomalies page as default
-    router.push('/oracle/analytics/anomalies');
+    router.push('/alerts');
   }, [router]);
 
   return (
