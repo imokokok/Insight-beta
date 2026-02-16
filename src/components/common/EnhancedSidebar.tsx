@@ -28,6 +28,7 @@ import {
   AlertTriangle,
   ChevronLeft,
   User,
+  Compass,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -136,7 +137,7 @@ export const defaultNavConfig: SidebarConfig = {
           id: 'explore',
           label: 'nav.explore',
           href: '/explore',
-          icon: Layers,
+          icon: Compass,
           description: 'nav.descriptions.explore',
         },
         {
