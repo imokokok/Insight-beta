@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
 import { priceDeviationAnalytics } from '@/features/oracle/services/priceDeviationAnalytics';
@@ -141,12 +142,7 @@ async function fetchCrossChainAlerts(): Promise<UnifiedAlert[]> {
 }
 
 async function fetchSecurityAlerts(): Promise<UnifiedAlert[]> {
-  try {
-    return [];
-  } catch (error) {
-    logger.warn('Failed to fetch security alerts', { error });
-    return [];
-  }
+  return [];
 }
 
 function calculateSummary(alerts: UnifiedAlert[]): AlertsSummary {

@@ -17,6 +17,7 @@
 
 // ==================== 核心 Hooks ====================
 export { useWebSocket, type WebSocketOptions, type WebSocketState } from './useWebSocket';
+export { useSSE, type SSEOptions, type SSEState } from './useSSE';
 
 export { useDebounce } from './useDebounce';
 export { useAutoRefresh } from './useAutoRefresh';

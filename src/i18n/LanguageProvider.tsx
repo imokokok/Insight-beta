@@ -59,12 +59,14 @@ export function LanguageProvider({
   children: ReactNode;
   initialLang?: Lang;
 }) {
-  const [lang, setLangState] = useState<Lang>(() => getInitialLang(initialLang));
+  const [internalLang, setLangState] = useState<Lang>(() => getInitialLang(initialLang));
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  const lang = isHydrated ? internalLang : (initialLang ?? 'en');
 
   useEffect(() => {
     window.localStorage.setItem(LANG_STORAGE_KEY, lang);

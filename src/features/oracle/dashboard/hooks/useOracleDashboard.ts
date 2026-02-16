@@ -1,15 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 import { CHART_COLORS } from '@/components/charts';
 import type { StatCardStatus } from '@/components/common/StatCard';
-import { WS_CONFIG } from '@/config/constants';
-import { useWebSocket, useIsMobile, useAutoRefresh } from '@/hooks';
+import { useIsMobile, useAutoRefresh } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
-import { logger } from '@/shared/logger';
 import { fetchApiData, formatNumber } from '@/shared/utils';
-import { isStatsUpdateMessage } from '@/shared/utils/typeGuards';
 
 import { generateMockChartData, generateMockComparisonData } from '../utils/mockData';
 
@@ -46,24 +43,6 @@ export function useOracleDashboard() {
     }, []),
     enabled: true,
   });
-
-  const { isConnected, sendMessage, lastMessage } = useWebSocket(WS_CONFIG.URL, {
-    autoConnect: true,
-    onConnect: () => {
-      sendMessage({ type: 'subscribe_dashboard' });
-    },
-  });
-
-  useEffect(() => {
-    if (!lastMessage) return;
-    try {
-      if (isStatsUpdateMessage(lastMessage)) {
-        setStats(lastMessage.data as DashboardStats);
-      }
-    } catch (err: unknown) {
-      logger.error('Failed to process WebSocket message', { err });
-    }
-  }, [lastMessage]);
 
   const priceChartConfig = useMemo(
     () => ({
@@ -202,7 +181,6 @@ export function useOracleDashboard() {
     priceTrendData,
     comparisonData,
     latencyData,
-    isConnected,
     lastUpdated,
     isRefreshing,
     isError,

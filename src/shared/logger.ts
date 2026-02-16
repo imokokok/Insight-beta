@@ -1,8 +1,5 @@
-import { env } from '@/config/env';
-
 import type * as SentryModule from '@sentry/nextjs';
 
-const isProd = env.NODE_ENV === 'production';
 const isServer = typeof window === 'undefined';
 
 let sentry: typeof SentryModule | null = null;
@@ -29,14 +26,25 @@ const LOG_LEVELS = {
 
 export type LogLevel = keyof typeof LOG_LEVELS;
 
-const LOG_SAMPLE_RATE = isProd ? env.LOG_SAMPLE_RATE : 1;
+function getIsProd(): boolean {
+  return typeof process !== 'undefined' && process.env?.NODE_ENV === 'production';
+}
+
+function getLogSampleRate(): number {
+  if (typeof process !== 'undefined' && process.env) {
+    const sampleRate = Number(process.env.LOG_SAMPLE_RATE);
+    return getIsProd() && !isNaN(sampleRate) ? sampleRate : 1;
+  }
+  return 1;
+}
 
 let logSampleCounter = 0;
 
 function shouldSample(): boolean {
-  if (LOG_SAMPLE_RATE >= 1) return true;
+  const sampleRate = getLogSampleRate();
+  if (sampleRate >= 1) return true;
   logSampleCounter++;
-  return logSampleCounter % Math.ceil(1 / LOG_SAMPLE_RATE) === 0;
+  return logSampleCounter % Math.ceil(1 / sampleRate) === 0;
 }
 
 function getLogLevel(): LogLevel {
@@ -47,7 +55,7 @@ function getLogLevel(): LogLevel {
   if (envLevel in LOG_LEVELS) {
     return envLevel as LogLevel;
   }
-  return isProd ? 'info' : 'debug';
+  return getIsProd() ? 'info' : 'debug';
 }
 
 const currentLevel = getLogLevel();
@@ -351,7 +359,7 @@ function createLogEntry(level: LogLevel, message: string, metadata?: Record<stri
 }
 
 function formatLogEntry(logEntry: ReturnType<typeof createLogEntry>): string {
-  if (isProd) {
+  if (getIsProd()) {
     return JSON.stringify(logEntry);
   }
   const { level, timestamp, message, ...metadata } = logEntry;

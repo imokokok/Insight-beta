@@ -11,9 +11,7 @@ import { fetchApiData } from '@/shared/utils';
 
 import type { DeviationReport, DeviationTrend, PriceDeviationPoint } from '../types/deviation';
 
-export interface UseDeviationAnalyticsOptions {}
-
-export function useDeviationAnalytics(_options: UseDeviationAnalyticsOptions = {}) {
+export function useDeviationAnalytics() {
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<DeviationReport | null>(null);
   const [selectedTrend, setSelectedTrend] = useState<DeviationTrend | null>(null);

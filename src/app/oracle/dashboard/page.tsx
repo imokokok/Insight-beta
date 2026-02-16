@@ -4,7 +4,7 @@ import { Activity } from 'lucide-react';
 
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { DashboardPageHeader } from '@/components/common/PageHeader';
-import { EmptyDashboardState, LoadingOverlay, RefreshIndicator } from '@/components/ui';
+import { EmptyDashboardState, RefreshIndicator } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { HealthStatusBadge, useOracleDashboard } from '@/features/oracle/dashboard';
 import { DashboardCharts } from '@/features/oracle/dashboard/components/DashboardCharts';
@@ -66,7 +66,6 @@ export default function OptimizedOracleDashboard() {
           />
 
           <div className="relative flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4">
-            {isRefreshing && !stats && <LoadingOverlay message={t('dashboard.loadingMessage')} />}
 
             {isError && error && (
               <div className="mb-6">
