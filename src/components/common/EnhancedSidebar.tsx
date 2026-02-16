@@ -10,7 +10,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useMemo, createContext, useContext } from 'react';
+import React, { useState, useCallback, useMemo, createContext, useContext, useEffect } from 'react';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -23,7 +23,6 @@ import {
   Star,
   LayoutDashboard,
   Globe,
-  Shield,
   X,
   Activity,
   BarChart3,
@@ -127,6 +126,13 @@ export const defaultNavConfig: SidebarConfig = {
           description: 'nav.descriptions.dashboard',
         },
         {
+          id: 'alerts',
+          label: 'nav.alertsCenter',
+          href: '/alerts',
+          icon: AlertTriangle,
+          description: 'nav.descriptions.alertsCenter',
+        },
+        {
           id: 'address',
           label: 'nav.address',
           href: '/oracle/address',
@@ -145,7 +151,7 @@ export const defaultNavConfig: SidebarConfig = {
           label: 'nav.crossChain',
           icon: Network,
           description: 'nav.descriptions.crossChain',
-          defaultExpanded: true,
+          defaultExpanded: false,
           items: [
             {
               id: 'crossChainOverview',
@@ -169,13 +175,6 @@ export const defaultNavConfig: SidebarConfig = {
               description: 'nav.descriptions.crossChainHistory',
             },
             {
-              id: 'crossChainAlerts',
-              label: 'nav.crossChainAlerts',
-              href: '/cross-chain/alerts',
-              icon: AlertTriangle,
-              description: 'nav.descriptions.crossChainAlerts',
-            },
-            {
               id: 'crossChainSettings',
               label: 'nav.crossChainSettings',
               href: '/cross-chain/settings',
@@ -187,31 +186,10 @@ export const defaultNavConfig: SidebarConfig = {
       ],
     },
     {
-      id: 'monitor',
-      label: 'nav.groups.monitor',
-      icon: Activity,
-      defaultExpanded: true,
-      items: [
-        {
-          id: 'security',
-          label: 'nav.security',
-          href: '/security',
-          icon: Shield,
-          description: 'nav.descriptions.security',
-        },
-        {
-          id: 'assertions',
-          label: 'nav.assertions',
-          href: '/oracle/assertions',
-          icon: AlertTriangle,
-          description: 'nav.descriptions.assertions',
-        },
-      ],
-    },
-    {
       id: 'analytics',
       label: 'nav.groups.analytics',
       icon: BarChart3,
+      defaultExpanded: true,
       items: [
         {
           id: 'trends',
@@ -221,18 +199,26 @@ export const defaultNavConfig: SidebarConfig = {
           description: 'nav.descriptions.trends',
         },
         {
-          id: 'anomalies',
-          label: 'nav.anomalies',
-          href: '/oracle/analytics/anomalies',
-          icon: AlertTriangle,
-          description: 'nav.descriptions.anomalies',
-        },
-        {
           id: 'deviation',
           label: 'nav.deviation',
           href: '/oracle/analytics/deviation',
           icon: Activity,
           description: 'nav.descriptions.deviation',
+        },
+      ],
+    },
+    {
+      id: 'operations',
+      label: 'nav.groups.operations',
+      icon: AlertTriangle,
+      defaultExpanded: false,
+      items: [
+        {
+          id: 'assertions',
+          label: 'nav.assertions',
+          href: '/oracle/assertions',
+          icon: AlertTriangle,
+          description: 'nav.descriptions.assertions',
         },
       ],
     },
@@ -619,6 +605,11 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
   });
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const toggleGroup = useCallback((groupId: string) => {
     setExpandedGroups((prev) => {
@@ -665,6 +656,19 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
     ],
   );
 
+  if (!isMounted) {
+    return (
+      <aside
+        className={cn(
+          'h-screen sticky top-0 border-r border-border bg-card',
+          'flex flex-col',
+          className,
+        )}
+        style={{ width: 280 }}
+      />
+    );
+  }
+
   return (
     <SidebarContext.Provider value={contextValue}>
       <TooltipProvider delayDuration={0}>
@@ -675,6 +679,7 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
             className,
           )}
           style={{ width: collapsed ? 72 : 280 }}
+          suppressHydrationWarning
         >
           {/* Header */}
           <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border px-4">

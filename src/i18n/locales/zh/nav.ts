@@ -3,6 +3,7 @@ export const nav = {
   myDisputes: '我的争议',
   assertions: '断言',
   dashboard: '仪表盘',
+  alertsCenter: '告警中心',
   unifiedOracle: '统一预言机',
   crossChain: '跨链分析',
   crossChainOverview: '概览',
@@ -27,6 +28,7 @@ export const nav = {
   },
   descriptions: {
     dashboard: '系统概览',
+    alertsCenter: '统一告警管理中心',
     unifiedOracle: '统一预言机视图',
     crossChain: '跨链价格分析',
     crossChainOverview: '跨链概览与关键指标',

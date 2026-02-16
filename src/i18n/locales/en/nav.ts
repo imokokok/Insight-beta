@@ -3,6 +3,7 @@ export const nav = {
   myDisputes: 'My Disputes',
   assertions: 'Assertions',
   dashboard: 'Dashboard',
+  alertsCenter: 'Alerts Center',
   unifiedOracle: 'Unified Oracle',
   crossChain: 'Cross-Chain',
   crossChainOverview: 'Overview',
@@ -27,6 +28,7 @@ export const nav = {
   },
   descriptions: {
     dashboard: 'Overview of your system',
+    alertsCenter: 'Unified alerts management center',
     unifiedOracle: 'Unified Oracle view',
     crossChain: 'Cross-chain price analysis',
     crossChainOverview: 'Cross-chain overview and key metrics',

@@ -1,0 +1,252 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
+import { priceDeviationAnalytics } from '@/features/oracle/services/priceDeviationAnalytics';
+import { logger } from '@/shared/logger';
+
+type AlertSource = 'price_anomaly' | 'cross_chain' | 'security';
+type AlertSeverity = 'low' | 'medium' | 'high' | 'critical' | 'info' | 'warning';
+type AlertStatus = 'active' | 'resolved' | 'investigating';
+
+interface UnifiedAlert {
+  id: string;
+  source: AlertSource;
+  timestamp: string;
+  severity: AlertSeverity;
+  status: AlertStatus;
+  title: string;
+  description: string;
+  symbol?: string;
+  chainA?: string;
+  chainB?: string;
+  protocol?: string;
+  protocols?: string[];
+  deviation?: number;
+  priceA?: number;
+  priceB?: number;
+  avgPrice?: number;
+  outlierProtocols?: string[];
+  reason?: string;
+  type?: string;
+}
+
+interface AlertsSummary {
+  total: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  active: number;
+  resolved: number;
+  bySource: {
+    price_anomaly: number;
+    cross_chain: number;
+    security: number;
+  };
+}
+
+function normalizeSeverity(severity: string): AlertSeverity {
+  const mapping: Record<string, AlertSeverity> = {
+    info: 'info',
+    warning: 'warning',
+    low: 'low',
+    medium: 'medium',
+    high: 'high',
+    critical: 'critical',
+  };
+  return mapping[severity] || 'medium';
+}
+
+function normalizeStatus(status: string): AlertStatus {
+  const mapping: Record<string, AlertStatus> = {
+    active: 'active',
+    resolved: 'resolved',
+    investigating: 'investigating',
+    new: 'active',
+    acknowledged: 'investigating',
+    closed: 'resolved',
+  };
+  return mapping[status.toLowerCase()] || 'active';
+}
+
+async function fetchPriceAnomalies(): Promise<UnifiedAlert[]> {
+  try {
+    const report = await priceDeviationAnalytics.generateReport();
+    const anomalies = report.anomalies || [];
+
+    return anomalies.map((anomaly) => {
+      let severity: AlertSeverity = 'low';
+      if (anomaly.maxDeviationPercent >= 0.05) severity = 'critical';
+      else if (anomaly.maxDeviationPercent >= 0.03) severity = 'high';
+      else if (anomaly.maxDeviationPercent >= 0.01) severity = 'medium';
+
+      return {
+        id: `anomaly-${anomaly.symbol}-${anomaly.timestamp}`,
+        source: 'price_anomaly' as AlertSource,
+        timestamp: anomaly.timestamp,
+        severity,
+        status: 'active' as AlertStatus,
+        title: `${anomaly.symbol} Price Deviation`,
+        description: `Price deviation detected for ${anomaly.symbol} across protocols`,
+        symbol: anomaly.symbol,
+        protocols: anomaly.protocols,
+        deviation: anomaly.maxDeviationPercent,
+        avgPrice: anomaly.avgPrice,
+        outlierProtocols: anomaly.outlierProtocols,
+      };
+    });
+  } catch (error) {
+    logger.warn('Failed to fetch price anomalies', { error });
+    return [];
+  }
+}
+
+async function fetchCrossChainAlerts(): Promise<UnifiedAlert[]> {
+  try {
+    const symbols = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX'];
+    const allAlerts: UnifiedAlert[] = [];
+
+    for (const symbol of symbols) {
+      try {
+        const alerts = await crossChainAnalysisService.detectDeviationAlerts(symbol);
+        for (const alert of alerts) {
+          allAlerts.push({
+            id: `crosschain-${alert.id}`,
+            source: 'cross_chain' as AlertSource,
+            timestamp: typeof alert.timestamp === 'string' ? alert.timestamp : alert.timestamp.toISOString(),
+            severity: normalizeSeverity(alert.severity),
+            status: normalizeStatus(alert.status),
+            title: `${alert.symbol} Cross-Chain Deviation`,
+            description: `Price deviation between ${alert.chainA} and ${alert.chainB}`,
+            symbol: alert.symbol,
+            chainA: alert.chainA,
+            chainB: alert.chainB,
+            deviation: alert.deviationPercent / 100,
+            priceA: alert.priceA,
+            priceB: alert.priceB,
+            avgPrice: alert.avgPrice,
+            reason: alert.reason,
+          });
+        }
+      } catch {
+        // Continue with other symbols if one fails
+      }
+    }
+
+    return allAlerts;
+  } catch (error) {
+    logger.warn('Failed to fetch cross-chain alerts', { error });
+    return [];
+  }
+}
+
+async function fetchSecurityAlerts(): Promise<UnifiedAlert[]> {
+  try {
+    return [];
+  } catch (error) {
+    logger.warn('Failed to fetch security alerts', { error });
+    return [];
+  }
+}
+
+function calculateSummary(alerts: UnifiedAlert[]): AlertsSummary {
+  const summary: AlertsSummary = {
+    total: alerts.length,
+    critical: 0,
+    high: 0,
+    medium: 0,
+    low: 0,
+    active: 0,
+    resolved: 0,
+    bySource: {
+      price_anomaly: 0,
+      cross_chain: 0,
+      security: 0,
+    },
+  };
+
+  for (const alert of alerts) {
+    if (alert.severity === 'critical') summary.critical++;
+    else if (alert.severity === 'high' || alert.severity === 'warning') summary.high++;
+    else if (alert.severity === 'medium') summary.medium++;
+    else if (alert.severity === 'low' || alert.severity === 'info') summary.low++;
+
+    if (alert.status === 'active') summary.active++;
+    else if (alert.status === 'resolved') summary.resolved++;
+
+    summary.bySource[alert.source]++;
+  }
+
+  return summary;
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const source = searchParams.get('source');
+    const severity = searchParams.get('severity');
+    const status = searchParams.get('status');
+
+    const [priceAnomalies, crossChainAlerts, securityAlerts] = await Promise.all([
+      fetchPriceAnomalies(),
+      fetchCrossChainAlerts(),
+      fetchSecurityAlerts(),
+    ]);
+
+    let allAlerts: UnifiedAlert[] = [...priceAnomalies, ...crossChainAlerts, ...securityAlerts];
+
+    if (source && source !== 'all') {
+      allAlerts = allAlerts.filter((a) => a.source === source);
+    }
+
+    if (severity && severity !== 'all') {
+      allAlerts = allAlerts.filter((a) => a.severity === severity);
+    }
+
+    if (status && status !== 'all') {
+      allAlerts = allAlerts.filter((a) => a.status === status);
+    }
+
+    allAlerts.sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
+
+    const summary = calculateSummary(allAlerts);
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        alerts: allAlerts,
+        summary,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Failed to fetch alerts', { error });
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to fetch alerts',
+        data: {
+          alerts: [],
+          summary: {
+            total: 0,
+            critical: 0,
+            high: 0,
+            medium: 0,
+            low: 0,
+            active: 0,
+            resolved: 0,
+            bySource: {
+              price_anomaly: 0,
+              cross_chain: 0,
+              security: 0,
+            },
+          },
+        },
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
+    );
+  }
+}
