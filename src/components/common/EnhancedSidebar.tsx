@@ -134,13 +134,6 @@ export const defaultNavConfig: SidebarConfig = {
           description: 'nav.descriptions.address',
         },
         {
-          id: 'comparison',
-          label: 'nav.unifiedOracle',
-          href: '/oracle/comparison',
-          icon: Globe,
-          description: 'nav.descriptions.unifiedOracle',
-        },
-        {
           id: 'crossChain',
           label: 'nav.crossChain',
           icon: Network,
@@ -160,6 +153,13 @@ export const defaultNavConfig: SidebarConfig = {
               href: '/cross-chain/comparison',
               icon: Globe,
               description: 'nav.descriptions.crossChainComparison',
+            },
+            {
+              id: 'oracleComparison',
+              label: 'nav.oracleComparison',
+              href: '/oracle/comparison',
+              icon: Layers,
+              description: 'nav.descriptions.oracleComparison',
             },
             {
               id: 'crossChainHistory',
