@@ -23,11 +23,8 @@ import {
   Globe,
   X,
   Activity,
-  BarChart3,
-  Layers,
   AlertTriangle,
   ChevronLeft,
-  User,
   Compass,
 } from 'lucide-react';
 
@@ -141,18 +138,11 @@ export const defaultNavConfig: SidebarConfig = {
           description: 'nav.descriptions.explore',
         },
         {
-          id: 'oracleComparison',
-          label: 'nav.oracleComparison',
-          href: '/oracle/comparison',
-          icon: Layers,
-          description: 'nav.descriptions.oracleComparison',
-        },
-        {
-          id: 'deviation',
-          label: 'nav.deviation',
-          href: '/oracle/analytics/deviation',
+          id: 'analytics',
+          label: 'nav.monitoring',
+          href: '/analytics',
           icon: Activity,
-          description: 'nav.descriptions.deviation',
+          description: 'nav.descriptions.dashboard',
         },
         {
           id: 'assertions',

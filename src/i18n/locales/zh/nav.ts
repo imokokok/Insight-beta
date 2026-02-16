@@ -32,6 +32,7 @@ export const nav = {
     oracleComparison: '对比同一链上不同预言机的价格',
     crossChain: '跨链价格分析与对比',
     explore: '探索协议和地址信息',
+    monitoring: '预言机分析与监控',
     crossChainComparison: '对比同一预言机在不同链上的价格',
     crossChainOverview: '跨链概览与关键指标',
     crossChainHistory: '历史偏差分析',

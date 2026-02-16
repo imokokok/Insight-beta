@@ -32,6 +32,7 @@ export const nav = {
     oracleComparison: 'Compare prices from different oracles on the same chain',
     crossChain: 'Cross-chain price analysis and comparison',
     explore: 'Explore protocols and address information',
+    monitoring: 'Oracle analytics and monitoring',
     crossChainComparison: 'Compare prices of the same oracle across different chains',
     crossChainOverview: 'Cross-chain overview and key metrics',
     crossChainHistory: 'Historical deviation analysis',

@@ -13,3 +13,6 @@ export * from './ProtocolSidebar';
 export * from './SyncStatus';
 export * from './ProtocolExplorer';
 export * from './AddressExplorer';
+export * from './OracleDashboard';
+export * from './OracleComparison';
+export * from './DeviationAnalytics';

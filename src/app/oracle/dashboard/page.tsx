@@ -6,7 +6,7 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { DashboardPageHeader } from '@/components/common/PageHeader';
 import { EmptyDashboardState, RefreshIndicator } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
-import { HealthStatusBadge, useOracleDashboard } from '@/features/oracle/dashboard';
+import { useOracleDashboard } from '@/features/oracle/dashboard';
 import { DashboardCharts } from '@/features/oracle/dashboard/components/DashboardCharts';
 import { DashboardStats as DashboardStatsComponent } from '@/features/oracle/dashboard/components/DashboardStats';
 import { useI18n } from '@/i18n/LanguageProvider';
@@ -23,7 +23,6 @@ export default function OptimizedOracleDashboard() {
     priceTrendData,
     comparisonData,
     latencyData,
-    isConnected,
     lastUpdated,
     isRefreshing,
     isError,
@@ -52,9 +51,6 @@ export default function OptimizedOracleDashboard() {
             title={t('dashboard.pageTitle')}
             description={t('dashboard.pageDescription')}
             icon={<Activity className="h-5 w-5 text-primary" />}
-            statusBadge={
-              <HealthStatusBadge activeAlerts={stats?.activeAlerts ?? 0} isConnected={isConnected} />
-            }
             refreshControl={
               <RefreshIndicator
                 lastUpdated={lastUpdated}

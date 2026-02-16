@@ -28,20 +28,6 @@ export function useDeviationAnalytics() {
     report: DeviationReport;
   }>({ key: 'deviation_dashboard', ttl: 5 * 60 * 1000 });
 
-  const {
-    isEnabled: autoRefreshEnabled,
-    setIsEnabled: setAutoRefreshEnabled,
-    refreshInterval,
-    setRefreshInterval,
-    timeUntilRefresh,
-    refresh,
-  } = useAutoRefreshWithCountdown({
-    onRefresh: fetchReport,
-    interval: deviationConfigService.getConfig().refreshIntervalMs,
-    enabled: true,
-    pauseWhenHidden: true,
-  });
-
   const fetchReport = useCallback(
     async () => {
       try {
@@ -78,6 +64,20 @@ export function useDeviationAnalytics() {
     },
     [getCachedData, setCachedData, lastUpdated],
   );
+
+  const {
+    isEnabled: autoRefreshEnabled,
+    setIsEnabled: setAutoRefreshEnabled,
+    refreshInterval,
+    setRefreshInterval,
+    timeUntilRefresh,
+    refresh,
+  } = useAutoRefreshWithCountdown({
+    onRefresh: fetchReport,
+    interval: deviationConfigService.getConfig().refreshIntervalMs,
+    enabled: true,
+    pauseWhenHidden: true,
+  });
 
   const fetchSymbolTrend = useCallback(async (symbol: string) => {
     try {

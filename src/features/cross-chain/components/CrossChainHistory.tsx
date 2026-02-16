@@ -20,6 +20,7 @@ import {
 } from '@/features/cross-chain';
 import { useCrossChainHistory } from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
+import { cn } from '@/shared/utils';
 
 const AVAILABLE_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const AVAILABLE_CHAINS = [

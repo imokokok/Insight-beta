@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function ProtocolsPage() {
-  redirect('/explore');
+  redirect('/explore' as any);
 }

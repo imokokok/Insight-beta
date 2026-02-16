@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Compass, Layers, User } from 'lucide-react';
+import { Layers, User } from 'lucide-react';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ProtocolExplorer, AddressExplorer } from '@/features/oracle/components';
