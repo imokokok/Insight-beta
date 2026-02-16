@@ -11,3 +11,5 @@ export * from './ProtocolFilter';
 export * from './ProtocolHealthGrid';
 export * from './ProtocolSidebar';
 export * from './SyncStatus';
+export * from './ProtocolExplorer';
+export * from './AddressExplorer';
