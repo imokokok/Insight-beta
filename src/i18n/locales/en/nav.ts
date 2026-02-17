@@ -14,7 +14,7 @@ export const nav = {
   crossChainHistory: 'History',
   crossChainSettings: 'Settings',
   security: 'Security',
-  monitoring: 'Analytics',
+  monitoring: 'Oracle Analytics',
   trends: 'Trends',
   deviation: 'Deviation',
   protocols: 'Protocols',

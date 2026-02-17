@@ -14,7 +14,7 @@ export const nav = {
   crossChainHistory: '历史分析',
   crossChainSettings: '设置',
   security: '安全',
-  monitoring: '分析',
+  monitoring: '预言机分析',
   trends: '趋势',
   deviation: '偏差',
   protocols: '协议',

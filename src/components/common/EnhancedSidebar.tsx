@@ -25,6 +25,7 @@ import {
   AlertTriangle,
   ChevronLeft,
   Compass,
+  Gavel,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -137,17 +138,10 @@ export const defaultNavConfig: SidebarConfig = {
           description: 'nav.descriptions.monitoring',
         },
         {
-          id: 'assertions',
-          label: 'nav.assertions',
-          href: '/oracle/assertions',
-          icon: AlertTriangle,
-          description: 'nav.descriptions.assertions',
-        },
-        {
           id: 'arbitration',
           label: 'nav.arbitration',
           href: '/oracle/analytics/disputes',
-          icon: Activity,
+          icon: Gavel,
           description: 'nav.descriptions.arbitration',
         },
       ],
