@@ -19,7 +19,6 @@ import {
   ChevronRight,
   ChevronDown,
   Search,
-  LayoutDashboard,
   Globe,
   X,
   Activity,
@@ -110,13 +109,6 @@ export const defaultNavConfig: SidebarConfig = {
       collapsible: false,
       items: [
         {
-          id: 'dashboard',
-          label: 'nav.dashboard',
-          href: '/oracle/dashboard',
-          icon: LayoutDashboard,
-          description: 'nav.descriptions.dashboard',
-        },
-        {
           id: 'alerts',
           label: 'nav.alertsCenter',
           href: '/alerts',
@@ -142,7 +134,7 @@ export const defaultNavConfig: SidebarConfig = {
           label: 'nav.monitoring',
           href: '/analytics',
           icon: Activity,
-          description: 'nav.descriptions.dashboard',
+          description: 'nav.descriptions.monitoring',
         },
         {
           id: 'assertions',
