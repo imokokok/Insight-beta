@@ -2,5 +2,5 @@
  * Security Feature Module
  */
 
-export * from './components';
+export { ThreatLevelBadge } from '@/components/security/ThreatLevelBadge';
 export * from './services';

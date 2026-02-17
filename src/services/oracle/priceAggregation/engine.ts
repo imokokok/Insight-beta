@@ -274,8 +274,8 @@ export class PriceAggregationEngine {
   }
 
   /**
-   * 计算价格统计信息 - 单次遍历优化
-   * 同时计算平均值、中位数、最小值、最大值和范围
+   * 计算价格统计信息
+   * 使用共享数学工具函数计算平均值和中位数
    */
   private calculatePriceStats(values: number[]): {
     avg: number;
@@ -288,23 +288,12 @@ export class PriceAggregationEngine {
       return { avg: 0, median: 0, min: 0, max: 0, range: 0 };
     }
 
-    let sum = 0;
-    let min = values[0]!;
-    let max = values[0]!;
-
-    for (const v of values) {
-      sum += v;
-      if (v < min) min = v;
-      if (v > max) max = v;
-    }
-
-    const sorted = [...values].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    const median = sorted.length % 2 !== 0 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
+    const min = Math.min(...values);
+    const max = Math.max(...values);
 
     return {
-      avg: sum / values.length,
-      median,
+      avg: calculateMean(values),
+      median: calculateMedian(values),
       min,
       max,
       range: max - min,

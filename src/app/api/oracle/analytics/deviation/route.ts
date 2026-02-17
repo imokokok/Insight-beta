@@ -16,6 +16,7 @@ import {
 import { ok, error } from '@/lib/api/apiResponse';
 import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
+import { generateMockData } from '@/shared/utils/mockData';
 
 // ============================================================================
 // Report 处理
@@ -287,45 +288,6 @@ async function fetchDeviationHistoryPaginated(
     const mockData = generateMockData(symbol, windowHours);
     return { data: mockData, total: mockData.length };
   }
-}
-
-/**
- * 生成模拟数据
- */
-function generateMockData(symbol: string, windowHours: number): PriceDeviationPoint[] {
-  const dataPoints: PriceDeviationPoint[] = [];
-  const now = new Date();
-  const protocols = ['chainlink', 'pyth', 'redstone'];
-
-  // 根据时间窗口生成数据点
-  const dataPointCount = Math.min(windowHours, 24);
-
-  for (let i = dataPointCount - 1; i >= 0; i--) {
-    const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000).toISOString();
-    const basePrice = symbol.includes('BTC') ? 65000 : symbol.includes('ETH') ? 3500 : 100;
-    const volatility = 0.002; // 0.2% 波动
-
-    const randomDeviation = (Math.random() - 0.5) * volatility;
-    const avgPrice = basePrice * (1 + randomDeviation);
-    const maxDeviationPercent = Math.abs(randomDeviation) * (1 + Math.random());
-
-    dataPoints.push({
-      timestamp,
-      symbol,
-      protocols,
-      prices: {},
-      avgPrice,
-      medianPrice: avgPrice * (1 + (Math.random() - 0.5) * 0.001),
-      maxDeviation: avgPrice * maxDeviationPercent,
-      maxDeviationPercent,
-      outlierProtocols:
-        maxDeviationPercent > 0.005
-          ? [protocols[Math.floor(Math.random() * protocols.length)]!]
-          : [],
-    });
-  }
-
-  return dataPoints;
 }
 
 // ============================================================================

@@ -115,3 +115,48 @@ export interface PerformanceMetrics {
   cacheHitRate: number;
   databaseQueryTimeMs: number;
 }
+
+export interface PriceDeviationPoint {
+  timestamp: string;
+  symbol: string;
+  protocols: string[];
+  prices: Record<string, number>;
+  avgPrice: number;
+  medianPrice: number;
+  maxDeviation: number;
+  maxDeviationPercent: number;
+  outlierProtocols: string[];
+}
+
+export interface DeviationTrend {
+  symbol: string;
+  trendDirection: TrendDirection;
+  trendStrength: number;
+  avgDeviation: number;
+  maxDeviation: number;
+  volatility: number;
+  anomalyScore: number;
+  recommendation: string;
+}
+
+export interface DeviationReport {
+  generatedAt: string;
+  period: {
+    start: string;
+    end: string;
+  };
+  summary: {
+    totalSymbols: number;
+    symbolsWithHighDeviation: number;
+    avgDeviationAcrossAll: number;
+    mostVolatileSymbol: string;
+  };
+  trends: DeviationTrend[];
+  anomalies: PriceDeviationPoint[];
+}
+
+export interface DeviationAnalyticsConfig {
+  analysisWindowHours: number;
+  deviationThreshold: number;
+  minDataPoints: number;
+}

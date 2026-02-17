@@ -13,6 +13,43 @@ import type { NextRequest } from 'next/server';
 
 import { logger } from '@/shared/logger';
 
+const SENSITIVE_PARAMS = ['api_key', 'token', 'secret', 'password', 'key', 'auth', 'credential'];
+
+function sanitizeUrl(url: string): string {
+  try {
+    const parsed = new URL(url, 'http://localhost');
+    const params = new URLSearchParams(parsed.search);
+
+    for (const [key] of params) {
+      if (SENSITIVE_PARAMS.some((sensitive) => key.toLowerCase().includes(sensitive))) {
+        params.set(key, '***');
+      }
+    }
+
+    parsed.search = params.toString();
+    return parsed.pathname + (parsed.search ? '?' + parsed.search : '');
+  } catch {
+    return url;
+  }
+}
+
+function sanitizeHeaders(headers: Headers): Record<string, string> {
+  const result: Record<string, string> = {};
+  const sensitiveHeaders = ['authorization', 'cookie', 'set-cookie', 'x-api-key'];
+
+  headers.forEach((value, key) => {
+    if (sensitiveHeaders.includes(key.toLowerCase())) {
+      result[key] = '***';
+    } else {
+      result[key] = value;
+    }
+  });
+
+  return result;
+}
+
+export { sanitizeHeaders };
+
 export interface MiddlewareConfig {
   /** 是否启用日志 */
   logRequest?: boolean;
@@ -185,7 +222,7 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
           logger.info('API Request', {
             requestId,
             method,
-            url,
+            url: sanitizeUrl(request.url),
             status: response.status,
             duration,
             ip: request.headers.get('x-forwarded-for')?.split(',')[0],

@@ -11,56 +11,16 @@ import { query } from '@/lib/database/db';
 import { AGGREGATION_CONFIG } from '@/services/oracle/priceAggregation/config';
 import { detectOutliers } from '@/services/oracle/priceAggregation/utils';
 import { logger } from '@/shared/logger';
+import { generateMockData } from '@/shared/utils/mockData';
 import { robustTrendAnalysis } from '@/shared/utils/robustTrendAnalysis';
+import type {
+  DeviationAnalyticsConfig,
+  PriceDeviationPoint,
+  DeviationTrend,
+  DeviationReport,
+} from '@/types/analytics/deviation';
 
-// ============================================================================
-// 类型定义
-// ============================================================================
-
-export interface DeviationAnalyticsConfig {
-  analysisWindowHours: number;
-  deviationThreshold: number;
-  minDataPoints: number;
-}
-
-export interface PriceDeviationPoint {
-  timestamp: string;
-  symbol: string;
-  protocols: string[];
-  prices: Record<string, number>;
-  avgPrice: number;
-  medianPrice: number;
-  maxDeviation: number;
-  maxDeviationPercent: number;
-  outlierProtocols: string[];
-}
-
-export interface DeviationTrend {
-  symbol: string;
-  trendDirection: 'increasing' | 'decreasing' | 'stable';
-  trendStrength: number; // 0-1
-  avgDeviation: number;
-  maxDeviation: number;
-  volatility: number;
-  anomalyScore: number;
-  recommendation: string;
-}
-
-export interface DeviationReport {
-  generatedAt: string;
-  period: {
-    start: string;
-    end: string;
-  };
-  summary: {
-    totalSymbols: number;
-    symbolsWithHighDeviation: number;
-    avgDeviationAcrossAll: number;
-    mostVolatileSymbol: string;
-  };
-  trends: DeviationTrend[];
-  anomalies: PriceDeviationPoint[];
-}
+export type { DeviationAnalyticsConfig, PriceDeviationPoint, DeviationTrend, DeviationReport };
 
 // ============================================================================
 // 价格偏差分析服务
@@ -165,15 +125,20 @@ export class PriceDeviationAnalytics {
       let mostVolatileSymbol = '';
       let highDeviationCount = 0;
 
-      // 记录每个交易对的处理耗时
       const symbolProcessingTimes: Record<string, number> = {};
 
-      for (const symbol of targetSymbols) {
-        const symbolStartTime = performance.now();
+      const trendResults = await Promise.all(
+        targetSymbols.map(async (symbol) => {
+          const symbolStartTime = performance.now();
+          const trend = await this.analyzeDeviationTrend(symbol);
+          const symbolAnomalies = await this.detectAnomalies(symbol);
+          const processingTime = performance.now() - symbolStartTime;
+          return { symbol, trend, symbolAnomalies, processingTime };
+        }),
+      );
 
-        const trend = await this.analyzeDeviationTrend(symbol);
+      for (const { symbol, trend, symbolAnomalies, processingTime } of trendResults) {
         trends.push(trend);
-
         totalDeviation += trend.avgDeviation;
 
         if (trend.avgDeviation > this.config.deviationThreshold) {
@@ -185,18 +150,14 @@ export class PriceDeviationAnalytics {
           mostVolatileSymbol = symbol;
         }
 
-        // 收集异常点
-        const symbolAnomalies = await this.detectAnomalies(symbol);
         anomalies.push(...symbolAnomalies);
-
-        symbolProcessingTimes[symbol] = performance.now() - symbolStartTime;
+        symbolProcessingTimes[symbol] = processingTime;
       }
 
       const avgDeviationAcrossAll = trends.length > 0 ? totalDeviation / trends.length : 0;
 
       const totalTime = performance.now() - startTime;
 
-      // 性能日志
       logger.info('Deviation report generated', {
         performance: {
           totalTimeMs: Math.round(totalTime),
@@ -229,7 +190,7 @@ export class PriceDeviationAnalytics {
           mostVolatileSymbol,
         },
         trends,
-        anomalies: anomalies.slice(0, 50), // 限制异常点数量
+        anomalies: anomalies.slice(0, 50),
       };
     } catch (error) {
       const totalTime = performance.now() - startTime;
@@ -341,15 +302,14 @@ export class PriceDeviationAnalytics {
           max_price
         FROM cross_oracle_comparisons
         WHERE symbol = $1
-          AND timestamp > NOW() - INTERVAL '${this.config.analysisWindowHours} hours'
+          AND timestamp > NOW() - INTERVAL '1 hour' * $2
         ORDER BY timestamp ASC
         `,
-        [symbol],
+        [symbol, this.config.analysisWindowHours],
       );
 
       if (result.rows.length === 0) {
-        // 返回模拟数据用于演示
-        return this.generateMockData(symbol);
+        return generateMockData(symbol, this.config.analysisWindowHours);
       }
 
       return result.rows.map((row) => ({
@@ -365,7 +325,7 @@ export class PriceDeviationAnalytics {
       }));
     } catch (error) {
       logger.warn('Database query failed, returning mock data', { error, symbol });
-      return this.generateMockData(symbol);
+      return generateMockData(symbol, this.config.analysisWindowHours);
     }
   }
 
@@ -389,41 +349,6 @@ export class PriceDeviationAnalytics {
       logger.warn('Database query failed, returning mock symbols', { error });
       return this.getMockSymbols();
     }
-  }
-
-  /**
-   * 生成模拟数据用于演示
-   */
-  private generateMockData(symbol: string): PriceDeviationPoint[] {
-    const dataPoints: PriceDeviationPoint[] = [];
-    const now = new Date();
-    const protocols = ['chainlink', 'pyth', 'redstone'];
-
-    // 生成 24 小时的数据点，每小时一个
-    for (let i = 23; i >= 0; i--) {
-      const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000).toISOString();
-      const basePrice = symbol.includes('BTC') ? 65000 : symbol.includes('ETH') ? 3500 : 100;
-      const volatility = 0.002; // 0.2% 波动
-
-      const randomDeviation = (Math.random() - 0.5) * volatility;
-      const avgPrice = basePrice * (1 + randomDeviation);
-      const maxDeviationPercent = Math.abs(randomDeviation) * (1 + Math.random());
-
-      const randomProtocol = protocols[Math.floor(Math.random() * protocols.length)];
-      dataPoints.push({
-        timestamp,
-        symbol,
-        protocols,
-        prices: {},
-        avgPrice,
-        medianPrice: avgPrice * (1 + (Math.random() - 0.5) * 0.001),
-        maxDeviation: avgPrice * maxDeviationPercent,
-        maxDeviationPercent,
-        outlierProtocols: maxDeviationPercent > 0.005 && randomProtocol ? [randomProtocol] : [],
-      });
-    }
-
-    return dataPoints;
   }
 
   /**

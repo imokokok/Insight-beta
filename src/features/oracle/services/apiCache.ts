@@ -123,6 +123,22 @@ export const apiCacheService = new APICacheService({
   maxSize: 200,
 });
 
-setInterval(() => {
-  apiCacheService.cleanExpired();
-}, 60000);
+let cleanupInterval: ReturnType<typeof setInterval> | null = null;
+
+export function startCacheCleanup(): void {
+  if (cleanupInterval) return;
+  cleanupInterval = setInterval(() => {
+    apiCacheService.cleanExpired();
+  }, 60000);
+}
+
+export function stopCacheCleanup(): void {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+  }
+}
+
+export function isCleanupRunning(): boolean {
+  return cleanupInterval !== null;
+}

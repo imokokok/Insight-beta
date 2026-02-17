@@ -1,12 +1,13 @@
 import type { NextRequest } from 'next/server';
 
+import { VALID_SYMBOLS } from '@/config/constants';
 import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
 import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
+import { validateSymbol } from '@/lib/api/validation';
 import { logger } from '@/shared/logger';
 import { apiSuccess, apiError, getQueryParam } from '@/shared/utils';
 import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
-const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const VALID_CHAINS: SupportedChain[] = [
   'ethereum',
   'bsc',
@@ -29,17 +30,6 @@ const VALID_CHAINS: SupportedChain[] = [
   'polygonAmoy',
   'sepolia',
 ];
-
-function validateSymbol(symbol: string | null): string | null {
-  if (!symbol || typeof symbol !== 'string') {
-    return null;
-  }
-  const upperSymbol = symbol.toUpperCase().trim();
-  if (!VALID_SYMBOLS.includes(upperSymbol)) {
-    return null;
-  }
-  return upperSymbol;
-}
 
 function validateChains(chainsParam: string | null): SupportedChain[] | null {
   if (!chainsParam) return null;

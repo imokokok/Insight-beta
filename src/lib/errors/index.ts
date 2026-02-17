@@ -44,6 +44,10 @@ export type { WalletErrorDetail, NormalizedWalletErrorKind } from './walletError
 import { PriceFetchError } from '@/lib/blockchain/core/types';
 import type { OracleProtocol, SupportedChain } from '@/types/unifiedOracleTypes';
 
+// 从 resilience.ts 导入 withRetry（统一实现）
+export { withRetry } from '@/shared/utils/resilience';
+export type { RetryOptions } from '@/shared/utils/resilience';
+
 /**
  * 标准化错误对象
  */
@@ -100,65 +104,4 @@ export class ErrorHandler {
       normalized,
     );
   }
-
-  /**
-   * 带重试的错误处理
-   */
-  static async withRetry<T>(
-    operation: () => Promise<T>,
-    options: {
-      maxRetries: number;
-      baseDelay: number;
-      maxDelay: number;
-      onRetry?: (attempt: number, error: Error) => void;
-    },
-  ): Promise<T> {
-    const { maxRetries, baseDelay, maxDelay, onRetry } = options;
-    let lastError: Error | undefined;
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        return await operation();
-      } catch (error) {
-        lastError = normalizeError(error);
-
-        if (attempt < maxRetries - 1) {
-          const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
-          if (onRetry) {
-            onRetry(attempt + 1, lastError);
-          }
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-      }
-    }
-
-    throw lastError;
-  }
-}
-
-/**
- * 重试装饰器
- */
-export function withRetry(options: {
-  maxRetries: number;
-  baseDelay: number;
-  maxDelay: number;
-  onRetry?: (attempt: number, error: Error) => void;
-}) {
-  return function (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
-
-    descriptor.value = async function (...args: unknown[]) {
-      return ErrorHandler.withRetry(() => originalMethod.apply(this, args), {
-        ...options,
-        onRetry: options.onRetry
-          ? (attempt, error) => {
-              options.onRetry?.(attempt, error);
-            }
-          : undefined,
-      });
-    };
-
-    return descriptor;
-  };
 }

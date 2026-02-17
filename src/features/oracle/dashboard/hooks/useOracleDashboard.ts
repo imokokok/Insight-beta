@@ -12,6 +12,8 @@ import { generateMockChartData, generateMockComparisonData } from '../utils/mock
 
 import type { DashboardStats, ChartDataPoint, ComparisonDataPoint } from '../types/dashboard';
 
+const IS_DEMO_MODE = process.env.NEXT_PUBLIC_INSIGHT_DEMO_MODE === 'true';
+
 export function useOracleDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -21,6 +23,7 @@ export function useOracleDashboard() {
   const [priceTrendData, setPriceTrendData] = useState<ChartDataPoint[]>([]);
   const [comparisonData, setComparisonData] = useState<ComparisonDataPoint[]>([]);
   const [latencyData, setLatencyData] = useState<ChartDataPoint[]>([]);
+  const [isDemoData, setIsDemoData] = useState(false);
 
   usePageOptimizations({
     pageName: 'Oracle Dashboard',
@@ -37,9 +40,36 @@ export function useOracleDashboard() {
     fetchFn: useCallback(async () => {
       const data = await fetchApiData<DashboardStats>('/api/oracle/stats');
       setStats(data);
-      setPriceTrendData(generateMockChartData());
-      setComparisonData(generateMockComparisonData());
-      setLatencyData(generateMockChartData(12));
+
+      if (IS_DEMO_MODE) {
+        setPriceTrendData(generateMockChartData());
+        setComparisonData(generateMockComparisonData());
+        setLatencyData(generateMockChartData(12));
+        setIsDemoData(true);
+      } else {
+        try {
+          const chartData = await fetchApiData<ChartDataPoint[]>('/api/oracle/charts/price-trend');
+          setPriceTrendData(chartData.length > 0 ? chartData : generateMockChartData());
+          setIsDemoData(chartData.length === 0);
+        } catch {
+          setPriceTrendData(generateMockChartData());
+          setIsDemoData(true);
+        }
+
+        try {
+          const compData = await fetchApiData<ComparisonDataPoint[]>('/api/oracle/charts/comparison');
+          setComparisonData(compData.length > 0 ? compData : generateMockComparisonData());
+        } catch {
+          setComparisonData(generateMockComparisonData());
+        }
+
+        try {
+          const latData = await fetchApiData<ChartDataPoint[]>('/api/oracle/charts/latency');
+          setLatencyData(latData.length > 0 ? latData : generateMockChartData(12));
+        } catch {
+          setLatencyData(generateMockChartData(12));
+        }
+      }
     }, []),
     enabled: true,
   });
@@ -191,5 +221,6 @@ export function useOracleDashboard() {
     latencyChartConfig,
     statCardsData,
     scaleCardsData,
+    isDemoData,
   };
 }

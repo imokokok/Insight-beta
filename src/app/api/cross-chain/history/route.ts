@@ -1,25 +1,15 @@
 import type { NextRequest } from 'next/server';
 
+import { VALID_SYMBOLS } from '@/config/constants';
 import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
 import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
+import { validateSymbol } from '@/lib/api/validation';
 import { logger } from '@/shared/logger';
 import { apiSuccess, apiError, getQueryParam } from '@/shared/utils';
 
-const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const VALID_INTERVALS = ['1hour', '1day'] as const;
 const DEFAULT_PAGE_SIZE = 100;
 const MAX_PAGE_SIZE = 1000;
-
-function validateSymbol(symbol: string | null): string | null {
-  if (!symbol || typeof symbol !== 'string') {
-    return null;
-  }
-  const upperSymbol = symbol.toUpperCase().trim();
-  if (!VALID_SYMBOLS.includes(upperSymbol)) {
-    return null;
-  }
-  return upperSymbol;
-}
 
 function validateInterval(interval: string | null): '1hour' | '1day' {
   if (interval && VALID_INTERVALS.includes(interval as '1hour' | '1day')) {

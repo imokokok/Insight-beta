@@ -26,6 +26,12 @@ export type {
   EnhancedStatCardProps,
 } from './StatCard';
 
+export {
+  SummaryStatsGrid,
+  type StatItem,
+  type SummaryStatsGridProps,
+} from './SummaryStatsGrid';
+
 // ==================== 页面布局 ====================
 export {
   PageHeader,

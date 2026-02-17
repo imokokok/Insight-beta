@@ -28,12 +28,9 @@ export class HttpError extends Error {
   }
 }
 
-export class TimeoutError extends Error {
-  constructor(timeoutMs: number) {
-    super(`Request timed out after ${timeoutMs}ms`);
-    this.name = 'TimeoutError';
-  }
-}
+import { TimeoutError } from '@/lib/errors/AppError';
+
+export { TimeoutError };
 
 export async function safeFetch<T>(url: string, options: SafeFetchOptions = {}): Promise<T> {
   const {
@@ -76,7 +73,7 @@ export async function safeFetch<T>(url: string, options: SafeFetchOptions = {}):
       lastError = error instanceof Error ? error : new Error(String(error));
 
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new TimeoutError(timeoutMs);
+        throw new TimeoutError('HTTP request', timeoutMs);
       }
 
       if (attempt < retries) {

@@ -4,6 +4,14 @@
  * 图表组件统一导出
  */
 
+// 价格历史图表
+export { PriceHistoryChart } from './PriceHistoryChart';
+export type {
+  SingleAssetDataPoint,
+  MultiProtocolDataPoint,
+  PriceHistoryChartProps,
+} from './PriceHistoryChart';
+
 // 图表组件
 export {
   // 图表组件

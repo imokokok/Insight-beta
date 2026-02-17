@@ -33,5 +33,4 @@ export type {
 export type { PaginationParams } from './common/pagination';
 export type { HealthStatus } from './common/status';
 
-// 价格类型
-export * from './price';
+

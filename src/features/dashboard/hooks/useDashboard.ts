@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useState, useRef } from 'react';
+import { useEffect, useCallback } from 'react';
 
 import { logger } from '@/shared/logger';
 
@@ -84,112 +84,7 @@ export function useDashboardShortcuts({
   }, [handleKeyDown, enabled]);
 }
 
-// ============================================================================
-// useAutoRefresh - 自动刷新 Hook (带倒计时功能)
-// 这是 dashboard 专用版本，保留向后兼容
-// ============================================================================
-
-interface UseAutoRefreshOptions {
-  onRefresh: () => void;
-  interval?: number;
-  enabled?: boolean;
-  pauseWhenHidden?: boolean;
-}
-
-export function useAutoRefresh({
-  onRefresh,
-  interval = 30000,
-  enabled = true,
-  pauseWhenHidden = true,
-}: UseAutoRefreshOptions) {
-  const [isEnabled, setIsEnabled] = useState(enabled);
-  const [refreshInterval, setRefreshInterval] = useState(interval);
-  const [timeUntilRefresh, setTimeUntilRefresh] = useState(interval);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const countdownRef = useRef<NodeJS.Timeout | null>(null);
-
-  const refresh = useCallback(() => {
-    onRefresh();
-    setTimeUntilRefresh(refreshInterval);
-  }, [onRefresh, refreshInterval]);
-
-  useEffect(() => {
-    if (!isEnabled) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      if (countdownRef.current) {
-        clearInterval(countdownRef.current);
-        countdownRef.current = null;
-      }
-      return;
-    }
-
-    intervalRef.current = setInterval(() => {
-      refresh();
-    }, refreshInterval);
-
-    countdownRef.current = setInterval(() => {
-      setTimeUntilRefresh((prev) => {
-        if (prev <= 1000) {
-          return refreshInterval;
-        }
-        return prev - 1000;
-      });
-    }, 1000);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      if (countdownRef.current) {
-        clearInterval(countdownRef.current);
-      }
-    };
-  }, [isEnabled, refreshInterval, refresh]);
-
-  useEffect(() => {
-    if (!pauseWhenHidden) return;
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-        if (countdownRef.current) {
-          clearInterval(countdownRef.current);
-          countdownRef.current = null;
-        }
-      } else {
-        if (isEnabled) {
-          refresh();
-          intervalRef.current = setInterval(refresh, refreshInterval);
-          countdownRef.current = setInterval(() => {
-            setTimeUntilRefresh((prev) => {
-              if (prev <= 1000) {
-                return refreshInterval;
-              }
-              return prev - 1000;
-            });
-          }, 1000);
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [pauseWhenHidden, isEnabled, refreshInterval, refresh]);
-
-  return {
-    isEnabled,
-    setIsEnabled,
-    refreshInterval,
-    setRefreshInterval,
-    timeUntilRefresh,
-    refresh,
-  };
-}
+// useAutoRefreshWithCountdown 已迁移到 src/hooks/useAutoRefresh.ts
+// 请从 '@/hooks' 导入 useAutoRefreshWithCountdown
 
 

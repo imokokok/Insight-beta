@@ -6,6 +6,7 @@
  * - 支持多客户端订阅
  * - 自动心跳保活
  * - 身份验证和输入验证
+ * - IP 级别速率限制
  */
 
 import type { NextRequest } from 'next/server';
@@ -15,42 +16,94 @@ import { logger } from '@/shared/logger';
 
 export const dynamic = 'force-dynamic';
 
-// 允许的订阅符号列表
 const ALLOWED_SYMBOLS = ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD', 'SOL/USD'];
 
-// 最大连接数限制
 const MAX_CONNECTIONS = 100;
+
+const IP_RATE_LIMIT_WINDOW_MS = 60000;
+const IP_RATE_LIMIT_MAX = 5;
+
+const ipConnectionStore = new Map<string, { count: number; resetTime: number }>();
+
+function checkIpRateLimit(ip: string): { allowed: boolean; remaining: number; resetIn: number } {
+  const now = Date.now();
+  const record = ipConnectionStore.get(ip);
+
+  if (!record || now > record.resetTime) {
+    ipConnectionStore.set(ip, { count: 1, resetTime: now + IP_RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, remaining: IP_RATE_LIMIT_MAX - 1, resetIn: IP_RATE_LIMIT_WINDOW_MS };
+  }
+
+  if (record.count >= IP_RATE_LIMIT_MAX) {
+    return { allowed: false, remaining: 0, resetIn: record.resetTime - now };
+  }
+
+  record.count++;
+  return {
+    allowed: true,
+    remaining: IP_RATE_LIMIT_MAX - record.count,
+    resetIn: record.resetTime - now,
+  };
+}
+
+function getClientIp(request: NextRequest): string {
+  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  // 生成服务器端 clientId，防止客户端伪造
+  const clientIp = getClientIp(request);
+
+  const rateLimitResult = checkIpRateLimit(clientIp);
+  if (!rateLimitResult.allowed) {
+    return new Response(
+      JSON.stringify({
+        error: 'Rate limit exceeded',
+        retryAfter: Math.ceil(rateLimitResult.resetIn / 1000),
+      }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': String(Math.ceil(rateLimitResult.resetIn / 1000)),
+        },
+      },
+    );
+  }
+
   const clientId = `client-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-  // 验证订阅符号
   const symbolsParam = searchParams.get('symbols');
   let symbols: string[];
 
   if (symbolsParam) {
-    // 过滤只允许预定义的符号
-    symbols = symbolsParam
-      .split(',')
-      .map((s) => s.trim().toUpperCase())
-      .filter((s) => ALLOWED_SYMBOLS.includes(s));
+    const requestedSymbols = symbolsParam.split(',').map((s) => s.trim().toUpperCase());
+    if (requestedSymbols.length > 10) {
+      return new Response(
+        JSON.stringify({ error: 'Too many symbols requested. Maximum 10 allowed.' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+    symbols = requestedSymbols.filter((s) => ALLOWED_SYMBOLS.includes(s));
   } else {
     symbols = ['ETH/USD'];
   }
 
   if (symbols.length === 0) {
-    return new Response('Invalid symbols', { status: 400 });
+    return new Response(
+      JSON.stringify({ error: 'Invalid symbols. Allowed: ' + ALLOWED_SYMBOLS.join(', ') }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } },
+    );
   }
 
-  // 检查连接数限制
   if (realtimePriceService.listenerCount('priceUpdate') >= MAX_CONNECTIONS) {
-    return new Response('Too many connections', { status: 503 });
+    return new Response(
+      JSON.stringify({ error: 'Too many connections. Please try again later.' }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } },
+    );
   }
 
-  // 确保服务已启动
   if (!realtimePriceService.listenerCount('started')) {
     realtimePriceService.start();
   }
@@ -58,7 +111,6 @@ export async function GET(request: NextRequest) {
   const response = new Response(
     new ReadableStream({
       start(controller) {
-        // 发送初始连接成功消息
         const connectMsg = {
           type: 'connected',
           clientId,
@@ -66,7 +118,6 @@ export async function GET(request: NextRequest) {
         };
         controller.enqueue(`data: ${JSON.stringify(connectMsg)}\n\n`);
 
-        // 订阅价格更新
         const handlePriceUpdate = (data: { clientId: string; updates: unknown[] }) => {
           if (data.clientId === clientId) {
             const message = {
@@ -80,12 +131,10 @@ export async function GET(request: NextRequest) {
 
         realtimePriceService.on('priceUpdate', handlePriceUpdate);
 
-        // 订阅实时服务
         realtimePriceService.subscribe(clientId, symbols);
 
-        logger.info('SSE client connected', { clientId, symbols });
+        logger.info('SSE client connected', { clientId, symbols, clientIp });
 
-        // 心跳定时器
         const heartbeat = setInterval(() => {
           const heartbeatMsg = {
             type: 'heartbeat',
@@ -94,16 +143,14 @@ export async function GET(request: NextRequest) {
           controller.enqueue(`data: ${JSON.stringify(heartbeatMsg)}\n\n`);
         }, 30000);
 
-        // 清理函数
         const abortHandler = () => {
           clearInterval(heartbeat);
           realtimePriceService.off('priceUpdate', handlePriceUpdate);
           realtimePriceService.unsubscribe(clientId);
-          logger.info('SSE client disconnected', { clientId });
+          logger.info('SSE client disconnected', { clientId, clientIp });
         };
         request.signal.addEventListener('abort', abortHandler);
 
-        // 返回清理函数（虽然 ReadableStream 不直接使用，但为了完整性）
         return () => {
           request.signal.removeEventListener('abort', abortHandler);
         };
@@ -114,6 +161,7 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         Connection: 'keep-alive',
+        'X-RateLimit-Remaining': String(rateLimitResult.remaining),
       },
     },
   );

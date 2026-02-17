@@ -6,7 +6,6 @@ import { useAutoRefreshWithCountdown, useDataCache } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
-import { fetchApiData } from '@/shared/utils';
 
 import type { DisputeReport, Dispute, DisputerStats } from '../types/disputes';
 

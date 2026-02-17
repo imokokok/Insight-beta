@@ -20,7 +20,7 @@ export { useWebSocket, type WebSocketOptions, type WebSocketState } from './useW
 export { useSSE, type SSEOptions, type SSEState } from './useSSE';
 
 export { useDebounce } from './useDebounce';
-export { useAutoRefresh } from './useAutoRefresh';
+export { useAutoRefresh, useAutoRefreshWithCountdown } from './useAutoRefresh';
 export { useDataCache } from './useDataCache';
 
 export { usePageOptimizations } from './usePageOptimizations';
@@ -90,7 +90,4 @@ export {
 } from '@/features/cross-chain/hooks';
 
 // ==================== Dashboard Hooks ====================
-export {
-  useDashboardShortcuts,
-  useAutoRefresh as useAutoRefreshWithCountdown,
-} from '@/features/dashboard/hooks';
+export { useDashboardShortcuts } from '@/features/dashboard/hooks';

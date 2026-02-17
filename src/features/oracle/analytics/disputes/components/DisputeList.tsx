@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { ExternalLink, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';

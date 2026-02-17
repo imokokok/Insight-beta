@@ -94,3 +94,9 @@ export const DEFAULT_FALLBACK_PRICES = Object.freeze({
   ETH: 3000,
   DEFAULT: 100,
 } as const);
+
+// ============================================================================
+// 跨链 API 支持的交易对
+// ============================================================================
+
+export const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'] as const;

@@ -1,7 +1,16 @@
 /**
- * useAutoRefresh Hook - 简化版
+ * useAutoRefresh Hooks - 自动刷新功能集合
  *
- * 基础自动刷新功能
+ * 包含两个 Hook:
+ * 1. useAutoRefresh - 增强版自动刷新
+ *    - 支持请求取消（AbortController）
+ *    - 请求去重机制
+ *    - 竞态条件防护
+ *
+ * 2. useAutoRefreshWithCountdown - 带倒计时的自动刷新
+ *    - 倒计时显示功能
+ *    - 页面可见性暂停
+ *    - 动态调整刷新间隔
  */
 
 'use client';
@@ -11,9 +20,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getRefreshStrategy, formatLastUpdated, type RefreshStrategyConfig } from '@/config/refreshStrategy';
 import { logger } from '@/shared/logger';
 
+// ============================================================================
+// useAutoRefresh - 增强版自动刷新 Hook
+// ============================================================================
+
 interface UseAutoRefreshOptions {
   pageId: string;
-  fetchFn: () => Promise<void>;
+  fetchFn: (signal?: AbortSignal) => Promise<void>;
   enabled?: boolean;
   interval?: number;
 }
@@ -26,6 +39,7 @@ interface UseAutoRefreshReturn {
   strategy: RefreshStrategyConfig;
   refresh: () => Promise<void>;
   formattedLastUpdated: string;
+  cancel: () => void;
 }
 
 export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshReturn {
@@ -41,9 +55,32 @@ export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshRe
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
   const isRefreshingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const requestIdRef = useRef(0);
+
+  const cancel = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    isRefreshingRef.current = false;
+    if (isMountedRef.current) {
+      setIsRefreshing(false);
+    }
+  }, []);
 
   const refresh = useCallback(async () => {
-    if (isRefreshingRef.current) return;
+    if (isRefreshingRef.current) {
+      logger.debug('Refresh skipped: already in progress', { pageId });
+      return;
+    }
+
+    const currentRequestId = ++requestIdRef.current;
+
+    cancel();
+
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
 
     isRefreshingRef.current = true;
     setIsRefreshing(true);
@@ -51,23 +88,38 @@ export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshRe
     setError(null);
 
     try {
-      await fetchFn();
-      if (isMountedRef.current) {
-        setLastUpdated(new Date());
+      await fetchFn(abortController.signal);
+
+      if (!isMountedRef.current || currentRequestId !== requestIdRef.current) {
+        return;
       }
+
+      if (abortController.signal.aborted) {
+        return;
+      }
+
+      setLastUpdated(new Date());
     } catch (err) {
-      logger.error('Refresh failed', { error: err });
-      if (isMountedRef.current) {
-        setIsError(true);
-        setError(err instanceof Error ? err : new Error(String(err)));
+      if (err instanceof Error && err.name === 'AbortError') {
+        logger.debug('Refresh aborted', { pageId, requestId: currentRequestId });
+        return;
       }
+
+      logger.error('Refresh failed', { error: err, pageId, requestId: currentRequestId });
+
+      if (!isMountedRef.current || currentRequestId !== requestIdRef.current) {
+        return;
+      }
+
+      setIsError(true);
+      setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
-      isRefreshingRef.current = false;
-      if (isMountedRef.current) {
+      if (isMountedRef.current && currentRequestId === requestIdRef.current) {
+        isRefreshingRef.current = false;
         setIsRefreshing(false);
       }
     }
-  }, [fetchFn]);
+  }, [fetchFn, pageId, cancel]);
 
   useEffect(() => {
     refresh().catch((error) => {
@@ -99,11 +151,12 @@ export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshRe
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
+      cancel();
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, []);
+  }, [cancel]);
 
   return {
     lastUpdated,
@@ -113,6 +166,123 @@ export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshRe
     strategy,
     refresh,
     formattedLastUpdated,
+    cancel,
+  };
+}
+
+// ============================================================================
+// useAutoRefreshWithCountdown - 带倒计时的自动刷新 Hook
+// ============================================================================
+
+interface UseAutoRefreshWithCountdownOptions {
+  onRefresh: () => void;
+  interval?: number;
+  enabled?: boolean;
+  pauseWhenHidden?: boolean;
+}
+
+interface UseAutoRefreshWithCountdownReturn {
+  isEnabled: boolean;
+  setIsEnabled: (enabled: boolean) => void;
+  refreshInterval: number;
+  setRefreshInterval: (interval: number) => void;
+  timeUntilRefresh: number;
+  refresh: () => void;
+}
+
+export function useAutoRefreshWithCountdown({
+  onRefresh,
+  interval = 30000,
+  enabled = true,
+  pauseWhenHidden = true,
+}: UseAutoRefreshWithCountdownOptions): UseAutoRefreshWithCountdownReturn {
+  const [isEnabled, setIsEnabled] = useState(enabled);
+  const [refreshInterval, setRefreshInterval] = useState(interval);
+  const [timeUntilRefresh, setTimeUntilRefresh] = useState(interval);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
+
+  const refresh = useCallback(() => {
+    onRefresh();
+    setTimeUntilRefresh(refreshInterval);
+  }, [onRefresh, refreshInterval]);
+
+  useEffect(() => {
+    if (!isEnabled) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+      return;
+    }
+
+    intervalRef.current = setInterval(() => {
+      refresh();
+    }, refreshInterval);
+
+    countdownRef.current = setInterval(() => {
+      setTimeUntilRefresh((prev) => {
+        if (prev <= 1000) {
+          return refreshInterval;
+        }
+        return prev - 1000;
+      });
+    }, 1000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+      }
+    };
+  }, [isEnabled, refreshInterval, refresh]);
+
+  useEffect(() => {
+    if (!pauseWhenHidden) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        if (countdownRef.current) {
+          clearInterval(countdownRef.current);
+          countdownRef.current = null;
+        }
+      } else {
+        if (isEnabled) {
+          refresh();
+          intervalRef.current = setInterval(refresh, refreshInterval);
+          countdownRef.current = setInterval(() => {
+            setTimeUntilRefresh((prev) => {
+              if (prev <= 1000) {
+                return refreshInterval;
+              }
+              return prev - 1000;
+            });
+          }, 1000);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [pauseWhenHidden, isEnabled, refreshInterval, refresh]);
+
+  return {
+    isEnabled,
+    setIsEnabled,
+    refreshInterval,
+    setRefreshInterval,
+    timeUntilRefresh,
+    refresh,
   };
 }
 

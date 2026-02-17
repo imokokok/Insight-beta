@@ -41,7 +41,7 @@ export function DisputeContent({
   filterStatus,
   setFilterStatus,
   filteredDisputes,
-  selectedDispute,
+  selectedDispute: _selectedDispute,
   setSelectedDispute,
   selectedDisputer,
   setSelectedDisputer,

@@ -6,8 +6,8 @@
  */
 
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { ok, error } from '@/lib/api/apiResponse';
 import { logger } from '@/shared/logger';
 
 export async function GET(request: NextRequest) {
@@ -91,28 +91,14 @@ export async function GET(request: NextRequest) {
       responseStats: { totalPairs: rows.length, criticalDeviations },
     });
 
-    return NextResponse.json({
-      ok: true,
-      data: response,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestTimeMs: Math.round(requestTime),
-      },
-    });
-  } catch (error) {
+    return ok(response, { requestTimeMs: Math.round(requestTime) });
+  } catch (err) {
     const requestTime = performance.now() - requestStartTime;
     logger.error('Heatmap API request failed', {
-      error,
+      error: err,
       performance: { totalRequestTimeMs: Math.round(requestTime) },
     });
 
-    return NextResponse.json(
-      {
-        ok: false,
-        error: 'Failed to fetch heatmap data',
-        meta: { timestamp: new Date().toISOString() },
-      },
-      { status: 500 },
-    );
+    return error({ code: 'heatmap_error', message: 'Failed to fetch heatmap data' }, 500);
   }
 }

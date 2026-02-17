@@ -520,37 +520,57 @@ export class UnifiedPriceService {
   }
 
   async insertPriceHistory(records: Omit<PriceHistoryRecord, 'id' | 'createdAt'>[]): Promise<void> {
+    if (records.length === 0) return;
+
     try {
+      const columns = [
+        'feed_id', 'protocol', 'chain', 'symbol', 'base_asset', 'quote_asset',
+        'price', 'price_raw', 'decimals', 'timestamp', 'block_number', 'confidence',
+        'sources', 'is_stale', 'staleness_seconds', 'tx_hash', 'log_index', 'volume_24h', 'change_24h'
+      ];
+
+      const valueGroups: string[] = [];
+      const allValues: (string | number | boolean | Date | null | undefined)[] = [];
+      let paramIndex = 1;
+
       for (const record of records) {
-        await query(
-          `INSERT INTO price_history (
-            feed_id, protocol, chain, symbol, base_asset, quote_asset,
-            price, price_raw, decimals, timestamp, block_number, confidence,
-            sources, is_stale, staleness_seconds, tx_hash, log_index, volume_24h, change_24h
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
-          [
-            record.feedId,
-            record.protocol,
-            record.chain,
-            record.symbol,
-            record.baseAsset,
-            record.quoteAsset,
-            record.price,
-            record.priceRaw,
-            record.decimals,
-            record.timestamp,
-            record.blockNumber,
-            record.confidence,
-            record.sources,
-            record.isStale,
-            record.stalenessSeconds,
-            record.txHash,
-            record.logIndex,
-            record.volume24h,
-            record.change24h,
-          ],
-        );
+        const placeholders: string[] = [];
+        const values: (string | number | boolean | Date | null | undefined)[] = [
+          record.feedId,
+          record.protocol,
+          record.chain,
+          record.symbol,
+          record.baseAsset,
+          record.quoteAsset,
+          record.price,
+          record.priceRaw,
+          record.decimals,
+          record.timestamp,
+          record.blockNumber ?? null,
+          record.confidence ?? null,
+          record.sources ?? null,
+          record.isStale ?? null,
+          record.stalenessSeconds ?? null,
+          record.txHash ?? null,
+          record.logIndex ?? null,
+          record.volume24h ?? null,
+          record.change24h ?? null,
+        ];
+
+        for (let i = 0; i < values.length; i++) {
+          placeholders.push(`$${paramIndex++}`);
+        }
+
+        valueGroups.push(`(${placeholders.join(', ')})`);
+        allValues.push(...values);
       }
+
+      const sql = `
+        INSERT INTO price_history (${columns.join(', ')})
+        VALUES ${valueGroups.join(', ')}
+      `;
+
+      await query(sql, allValues);
     } catch (error) {
       logger.error(t('errors.failedToInsertPriceHistory'), {
         error: error instanceof Error ? error.message : String(error),
