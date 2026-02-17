@@ -7,3 +7,4 @@
 export * from './number';
 export * from './percentage';
 export * from './date';
+export * from './clipboard';

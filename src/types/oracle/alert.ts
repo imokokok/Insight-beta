@@ -2,7 +2,7 @@
  * Alert Types - 告警和监控相关类型定义
  */
 
-import type { SupportedChain } from './chain';
+import type { SupportedChain } from '@/types/chains';
 import type { OracleProtocol } from './protocol';
 
 export type AlertSeverity = 'info' | 'warning' | 'critical';

@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-import { generateOpenAPISpec } from '@/lib/api/openapi';
+import { generateOpenAPISpec } from '@/lib/api/openapi/index';
 
 export async function GET() {
   const h = await headers();

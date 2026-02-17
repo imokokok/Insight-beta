@@ -32,9 +32,11 @@ export {
   PageHeaderSkeleton,
   DashboardPageHeader,
   DashboardPageHeaderSkeleton,
+  DynamicPageHeader,
   type BreadcrumbItem,
   type PageHeaderProps,
   type DashboardPageHeaderProps,
+  type DynamicPageHeaderProps,
 } from './PageHeader';
 export { EnhancedSidebar as Sidebar, defaultNavConfig } from './EnhancedSidebar';
 

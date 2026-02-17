@@ -1,16 +1,6 @@
 /**
- * Format Utilities
- *
- * 格式化工具函数 - 统一入口
- *
- * @deprecated 请使用 @/shared/utils/format 代替
- * 此文件仅为向后兼容保留，所有工具函数已迁移到 @/shared/utils/format
+ * Clipboard Utilities - 剪贴板工具函数
  */
-
-export * from './format/index';
-export * from './format/number';
-export * from './format/percentage';
-export * from './format/date';
 
 import { logger } from '@/shared/logger';
 

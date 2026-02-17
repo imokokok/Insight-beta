@@ -30,5 +30,5 @@ export {
 // 从 api.ts 导出特定函数，避免重复
 export { ApiClientError, fetchApiData, getErrorCode, normalizeListResponse } from './api';
 
-// 从 format.ts 导出（向后兼容）
-export { copyToClipboard } from './format';
+// 从 format/index.ts 导出（向后兼容）
+export { copyToClipboard } from './format/index';

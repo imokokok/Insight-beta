@@ -12,6 +12,7 @@
 import React, { useState, useCallback, useMemo, createContext, useContext, useEffect } from 'react';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -442,9 +443,33 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
         >
           {/* Header */}
           <div className="flex h-16 flex-shrink-0 items-center border-b border-border px-4">
-            <Link href="/" className="flex items-center gap-2">
-              <img src="/logo-owl.png" alt="Logo" className="h-8 w-8" />
-              <span className="text-lg font-bold text-foreground">Insight</span>
+            <Link
+              href="/"
+              className="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-all duration-200 hover:bg-muted/50"
+            >
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="relative h-8 w-8 overflow-hidden rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 p-0.5"
+              >
+                <Image
+                  src="/logo-owl.png"
+                  alt="Insight Logo"
+                  width={28}
+                  height={28}
+                  className="h-full w-full object-contain transition-transform duration-300 group-hover:rotate-3"
+                  priority
+                />
+              </motion.div>
+              <div className="flex flex-col">
+                <span className="text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                  Insight
+                </span>
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  Oracle Analytics
+                </span>
+              </div>
             </Link>
           </div>
 

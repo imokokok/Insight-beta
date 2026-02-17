@@ -7,6 +7,7 @@ import { Toaster } from 'sonner';
 
 
 import { ClientComponentsWrapper } from '@/components/common/ClientComponentsWrapper';
+import { DynamicPageHeader } from '@/components/common/PageHeader';
 import { Sidebar } from '@/components/common/EnhancedSidebar';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { PageProgress } from '@/components/common/PageProgress';
@@ -102,15 +103,14 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                   className="flex-1"
                 >
                   <div className="container mx-auto max-w-7xl p-8">
-                    <div className="sticky top-0 z-20 mb-6 flex items-center justify-between gap-3">
-                      <h2 className="text-2xl font-bold text-foreground">
-                        {translations[lang].app.title}
-                      </h2>
-                      <div className="flex items-center gap-3">
-                        <SyncStatus />
-                        <LanguageSwitcher />
-                      </div>
-                    </div>
+                    <DynamicPageHeader
+                      actions={
+                        <>
+                          <SyncStatus />
+                          <LanguageSwitcher />
+                        </>
+                      }
+                    />
                     <PageTransition variant="fade">
                       <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
                     </PageTransition>

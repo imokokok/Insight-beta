@@ -1,18 +1,11 @@
-/**
- * Page Header Component
- *
- * 专业页面头部组件
- * - 面包屑导航
- * - 标题和描述
- * - 操作按钮组
- * - Dashboard 模式支持
- * - 响应式设计
- */
+'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
+import { motion } from 'framer-motion';
 import {
   ChevronRight,
   Home,
@@ -31,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 export interface BreadcrumbItem {
@@ -65,6 +59,43 @@ export interface DashboardPageHeaderProps {
   extraActions?: React.ReactNode;
   className?: string;
   sticky?: boolean;
+}
+
+export interface DynamicPageHeaderProps {
+  className?: string;
+  actions?: React.ReactNode;
+}
+
+const routeTitleMap: Record<string, string> = {
+  '/analytics': 'nav.monitoring',
+  '/cross-chain': 'nav.crossChain',
+  '/cross-chain/overview': 'nav.crossChainOverview',
+  '/cross-chain/comparison': 'nav.crossChainComparison',
+  '/cross-chain/history': 'nav.crossChainHistory',
+  '/explore': 'nav.explore',
+  '/alerts': 'nav.alertsCenter',
+  '/oracle/analytics/disputes': 'nav.arbitration',
+  '/oracle/analytics/deviation': 'nav.deviation',
+  '/oracle/dashboard': 'nav.dashboard',
+  '/oracle/protocols': 'nav.protocols',
+  '/oracle/address': 'nav.address',
+  '/oracle/comparison': 'nav.oracleComparison',
+};
+
+function getPageTitle(pathname: string | null): string {
+  if (!pathname) return 'app.brand';
+
+  if (routeTitleMap[pathname]) {
+    return routeTitleMap[pathname];
+  }
+
+  for (const [route, title] of Object.entries(routeTitleMap)) {
+    if (pathname.startsWith(route + '/')) {
+      return title;
+    }
+  }
+
+  return 'app.brand';
 }
 
 export const PageHeader = memo(function PageHeader({
@@ -258,6 +289,46 @@ export const DashboardPageHeader = memo(function DashboardPageHeader({
   );
 });
 
+export function DynamicPageHeader({ className, actions }: DynamicPageHeaderProps) {
+  const pathname = usePathname();
+  const { t } = useI18n();
+
+  const titleKey = useMemo(() => getPageTitle(pathname), [pathname]);
+  const title = t(titleKey);
+
+  return (
+    <motion.header
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={cn(
+        'sticky top-0 z-20 mb-6 flex items-center justify-between gap-3',
+        'border-b border-border/50 bg-background/80 backdrop-blur-sm',
+        'px-1 py-4',
+        className
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <motion.h1
+          key={title}
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.2 }}
+          className="text-xl font-bold text-foreground md:text-2xl"
+        >
+          {title}
+        </motion.h1>
+      </div>
+
+      {actions && (
+        <div className="flex items-center gap-3">
+          {actions}
+        </div>
+      )}
+    </motion.header>
+  );
+}
+
 export function PageHeaderSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn('space-y-4', className)}>
@@ -309,3 +380,5 @@ export function DashboardPageHeaderSkeleton({ className }: { className?: string 
     </header>
   );
 }
+
+export default PageHeader;
