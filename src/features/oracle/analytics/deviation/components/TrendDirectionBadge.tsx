@@ -3,6 +3,7 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 import type { DeviationTrend } from '../types/deviation';
@@ -13,21 +14,22 @@ interface TrendDirectionBadgeProps {
 }
 
 export function TrendDirectionBadge({ direction, strength }: TrendDirectionBadgeProps) {
+  const { t } = useI18n();
   const config = {
     increasing: {
       icon: TrendingUp,
       color: 'bg-red-500',
-      label: 'Increasing',
+      label: t('common.trendIncreasing'),
     },
     decreasing: {
       icon: TrendingDown,
       color: 'bg-green-500',
-      label: 'Decreasing',
+      label: t('common.trendDecreasing'),
     },
     stable: {
       icon: Minus,
       color: 'bg-blue-500',
-      label: 'Stable',
+      label: t('common.trendStable'),
     },
   };
 

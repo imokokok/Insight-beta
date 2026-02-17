@@ -18,8 +18,9 @@ import {
   CrossChainComparisonCard,
   CrossChainPriceChart,
   CrossChainComparisonBar,
+  CorrelationMatrix,
 } from '@/features/cross-chain';
-import { useCrossChainComparison, useCrossChainHistory } from '@/features/cross-chain/hooks';
+import { useCrossChainComparison, useCrossChainHistory, useCorrelation } from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
@@ -86,6 +87,11 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
     timeRangeDates.endTime.toISOString(),
     timeRange === '24h' ? '1hour' : '1day',
   );
+
+  const {
+    data: correlationData,
+    isLoading: correlationLoading,
+  } = useCorrelation(selectedSymbol, timeRange);
 
   const chartPrices = useMemo(() => {
     if (!comparisonData?.data) return [];
@@ -282,6 +288,8 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
         <CrossChainPriceChart data={historyData?.data} isLoading={historyLoading} height={350} />
         <CrossChainComparisonBar prices={chartPrices} isLoading={comparisonLoading} height={350} />
       </div>
+
+      <CorrelationMatrix data={correlationData} isLoading={correlationLoading} />
     </div>
   );
 }

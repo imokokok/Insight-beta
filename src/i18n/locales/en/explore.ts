@@ -1,0 +1,48 @@
+export const explore = {
+  title: 'Explore',
+  description: 'Explore blockchain data, protocols and address information',
+  search: {
+    placeholder: 'Search protocols, addresses, trading pairs...',
+    global: 'Global Search',
+    recent: 'Recent Searches',
+    clear: 'Clear History'
+  },
+  quickAccess: {
+    title: 'Quick Access',
+    favorites: 'Favorite Feeds',
+    recent: 'Recent Visits',
+    noFavorites: 'No favorites yet',
+    noRecent: 'No recent visits'
+  },
+  tabs: {
+    marketOverview: 'Market Overview',
+    trending: 'Trending Pairs',
+    protocols: 'Protocol Explorer',
+    address: 'Address Explorer',
+    discovery: 'Data Discovery'
+  },
+  marketOverview: {
+    title: 'Market Overview',
+    totalMarketCap: 'Total Market Cap',
+    totalVolume24h: '24h Volume',
+    activeProtocols: 'Active Protocols',
+    priceChanges: 'Price Changes',
+    topGainers: 'Top Gainers',
+    topLosers: 'Top Losers'
+  },
+  trending: {
+    title: 'Trending Trading Pairs',
+    volume: 'Volume',
+    priceChange: 'Price Change',
+    transactions: 'Transactions',
+    sortByVolume: 'Sort by Volume',
+    sortByPriceChange: 'Sort by Price Change'
+  },
+  discovery: {
+    title: 'Data Discovery',
+    newProtocols: 'New Protocols',
+    trendingProtocols: 'Trending Protocols',
+    anomalies: 'Anomaly Detection',
+    insights: 'Data Insights'
+  }
+};

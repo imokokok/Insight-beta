@@ -47,7 +47,15 @@ export const oracle = {
     helperText: 'Enter a valid Ethereum address (0x...)',
     invalidAddress: 'Invalid Ethereum address',
     search: 'Search Address',
-    examples: 'Try these addresses:'
+    examples: 'Try these addresses:',
+    history: 'History',
+    recentSearches: 'Recent Searches',
+    clearHistory: 'Clear All',
+    popularAddresses: 'Popular Addresses',
+    popularDesc: 'Quick access to well-known addresses',
+    typeContract: 'Contract',
+    typeWallet: 'Wallet',
+    detectingType: 'Detecting type...'
   },
   priceService: {
     refreshedMaterializedView: 'Successfully refreshed materialized view: {{viewName}}'

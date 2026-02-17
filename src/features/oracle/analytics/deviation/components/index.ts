@@ -4,5 +4,8 @@ export { AnomalyList } from './AnomalyList';
 export { SummaryStats } from './SummaryStats';
 export { TrendDetails } from './TrendDetails';
 export { DeviationDistributionChart } from './DeviationDistributionChart';
+export { DeviationHeatmap } from './charts/DeviationHeatmap';
 export { AnalysisPeriodCard } from './AnalysisPeriodCard';
 export { DeviationContent } from './DeviationContent';
+export { TimeRangeSelector } from './filters/TimeRangeSelector';
+export { WelcomeGuide, useWelcomeGuide, HelpTooltip, HelpIcon } from './onboarding';

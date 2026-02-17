@@ -10,6 +10,9 @@ export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardEnhanced
 // Badges - 统一版
 export { Badge, StatusBadge, badgeVariants, type BadgeProps, type StatusType } from './badge';
 
+// Checkbox
+export { Checkbox, type CheckboxProps } from './checkbox';
+
 // Skeletons - 统一版
 export {
   Skeleton,

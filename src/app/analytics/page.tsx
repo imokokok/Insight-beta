@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+
 import { Activity, Layers, TrendingUp, BarChart3 } from 'lucide-react';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { useI18n } from '@/i18n';
-
-import { DashboardContent } from '@/features/oracle/dashboard/components/DashboardContent';
 import { ComparisonContent } from '@/features/comparison/components/ComparisonContent';
 import { DeviationContent } from '@/features/oracle/analytics/deviation/components/DeviationContent';
+import { DashboardContent } from '@/features/oracle/dashboard/components/DashboardContent';
+import { useI18n } from '@/i18n';
 
 export default function AnalyticsPage() {
   const { t } = useI18n();

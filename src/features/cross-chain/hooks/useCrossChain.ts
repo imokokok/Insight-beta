@@ -124,6 +124,7 @@ export interface CrossChainHistoricalDataPoint {
   avgPrice: number;
   medianPrice: number;
   maxDeviation: number;
+  pricesByChain?: Record<string, number | null>;
 }
 
 export interface CrossChainHistoricalSummary {

@@ -15,6 +15,7 @@ export const nav = {
   crossChainSettings: '设置',
   security: '安全',
   monitoring: '预言机分析',
+  oracleAnalytics: '预言机分析',
   trends: '趋势',
   deviation: '偏差',
   protocols: '协议',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import { deviationConfigService } from '@/features/oracle/services/deviationConfig';
 import { useAutoRefreshWithCountdown, useDataCache } from '@/hooks';
@@ -8,6 +8,9 @@ import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 import { fetchApiData } from '@/shared/utils';
+
+import { useProtocolFilter } from './useProtocolFilter';
+import { useTimeRange } from './useTimeRange';
 
 import type { DeviationReport, DeviationTrend, PriceDeviationPoint } from '../types/deviation';
 
@@ -22,7 +25,12 @@ export function useDeviationAnalytics() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const { t } = useI18n();
+
+  const timeRangeState = useTimeRange('24h');
+  const protocolFilterState = useProtocolFilter();
 
   const { getCachedData, setCachedData } = useDataCache<{
     report: DeviationReport;
@@ -41,11 +49,11 @@ export function useDeviationAnalytics() {
           return;
         }
 
-        const config = deviationConfigService.getConfig();
-        const windowHours = config.analysisWindowHours;
-        
+        const protocolParam = protocolFilterState.filterParams.protocols
+          ? `&protocols=${protocolFilterState.filterParams.protocols}`
+          : '';
         const response = await fetchApiData<{ data: DeviationReport }>(
-          `/api/oracle/analytics/deviation?type=report&windowHours=${windowHours}`,
+          `/api/oracle/analytics/deviation?type=report&windowHours=${timeRangeState.windowHours}${protocolParam}`,
         );
         setReport(response.data);
         setLastUpdated(new Date());
@@ -62,7 +70,7 @@ export function useDeviationAnalytics() {
         setLoading(false);
       }
     },
-    [getCachedData, setCachedData, lastUpdated],
+    [getCachedData, setCachedData, lastUpdated, timeRangeState.windowHours, protocolFilterState.filterParams.protocols],
   );
 
   const {
@@ -81,15 +89,24 @@ export function useDeviationAnalytics() {
 
   const fetchSymbolTrend = useCallback(async (symbol: string) => {
     try {
-      const config = deviationConfigService.getConfig();
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = new AbortController();
+
+      const protocolParam = protocolFilterState.filterParams.protocols
+        ? `&protocols=${protocolFilterState.filterParams.protocols}`
+        : '';
       const response = await fetchApiData<{ data: { dataPoints: PriceDeviationPoint[] } }>(
-        `/api/oracle/analytics/deviation?type=trend&symbol=${symbol}&windowHours=${config.analysisWindowHours}`,
+        `/api/oracle/analytics/deviation?type=trend&symbol=${symbol}&windowHours=${timeRangeState.windowHours}${protocolParam}`,
+        { signal: abortControllerRef.current.signal },
       );
       setSymbolData(response.data.dataPoints || []);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       logger.error('Failed to fetch symbol trend', { error: err, symbol });
     }
-  }, []);
+  }, [timeRangeState.windowHours, protocolFilterState.filterParams.protocols]);
 
   usePageOptimizations({
     pageName: t('analytics:deviation.pageName'),
@@ -104,6 +121,12 @@ export function useDeviationAnalytics() {
   useEffect(() => {
     fetchReport();
   }, [fetchReport]);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   useEffect(() => {
     if (selectedTrend) {
@@ -160,5 +183,16 @@ export function useDeviationAnalytics() {
     filteredTrends,
     handleExport,
     config,
+    timeRange: timeRangeState.timeRange,
+    timeRangePreset: timeRangeState.preset,
+    timeRangeWindowHours: timeRangeState.windowHours,
+    setTimeRangePreset: timeRangeState.setPreset,
+    setCustomTimeRange: timeRangeState.setCustomRange,
+    customStartTime: timeRangeState.customStartTime,
+    customEndTime: timeRangeState.customEndTime,
+    selectedProtocols: protocolFilterState.selectedProtocols,
+    isAllProtocolsSelected: protocolFilterState.isAllSelected,
+    toggleProtocol: protocolFilterState.toggleProtocol,
+    toggleAllProtocols: protocolFilterState.toggleAll,
   };
 }

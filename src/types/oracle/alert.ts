@@ -3,6 +3,7 @@
  */
 
 import type { SupportedChain } from '@/types/chains';
+
 import type { OracleProtocol } from './protocol';
 
 export type AlertSeverity = 'info' | 'warning' | 'critical';
@@ -123,3 +124,40 @@ export type Incident = {
   updatedAt: string;
   resolvedAt: string | null;
 };
+
+export type NotificationChannelType = 'webhook' | 'email' | 'telegram' | 'slack';
+
+export interface NotificationChannelConfig {
+  url?: string;
+  email?: string;
+  botToken?: string;
+  chatId?: string;
+  secret?: string;
+  headers?: Record<string, string>;
+}
+
+export interface NotificationChannel {
+  id: string;
+  name: string;
+  type: NotificationChannelType;
+  enabled: boolean;
+  config: NotificationChannelConfig;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+  lastUsedAt?: string | null;
+  testStatus?: 'success' | 'failed' | 'pending' | null;
+  testMessage?: string | null;
+}
+
+export interface CreateNotificationChannelInput {
+  name: string;
+  type: NotificationChannelType;
+  enabled?: boolean;
+  config: NotificationChannelConfig;
+  description?: string;
+}
+
+export interface UpdateNotificationChannelInput extends Partial<CreateNotificationChannelInput> {
+  id: string;
+}

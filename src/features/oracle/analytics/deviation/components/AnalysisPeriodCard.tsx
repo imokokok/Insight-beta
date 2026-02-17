@@ -3,7 +3,7 @@
 import { Clock } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useI18n } from '@/i18n/LanguageProvider';
+import { useI18n } from '@/i18n';
 import { formatTime } from '@/shared/utils';
 
 import type { DeviationReport } from '../types/deviation';

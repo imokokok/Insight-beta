@@ -5,6 +5,7 @@
  */
 
 import type { SupportedChain } from '@/types/chains';
+
 import type { OracleProtocol } from './protocol';
 
 // ============================================================================

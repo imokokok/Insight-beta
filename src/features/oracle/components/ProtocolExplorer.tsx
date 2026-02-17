@@ -1,16 +1,32 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 
-import { TrendingUp, Globe, Activity } from 'lucide-react';
+import {
+  TrendingUp,
+  Globe,
+  Activity,
+  Search,
+  Star,
+  Filter,
+  X,
+  ChevronDown,
+  Check,
+} from 'lucide-react';
 
 import { EmptyProtocolsState } from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { fetchApiData } from '@/shared/utils';
+import { fetchApiData, cn } from '@/shared/utils';
+
+type ProtocolType = 'Chainlink' | 'Pyth' | 'RedStone' | 'UMA' | 'API3' | 'Band';
+type ChangeFilter = 'all' | 'up' | 'down';
+type HealthStatus = 'healthy' | 'warning' | 'critical';
 
 interface PriceFeed {
   id: string;
@@ -19,18 +35,74 @@ interface PriceFeed {
   price: number;
   change24h: number;
   volume24h: number;
-  sources: string[];
+  sources: ProtocolType[];
   lastUpdated: string;
+  health: HealthStatus;
+}
+
+interface Filters {
+  protocols: ProtocolType[];
+  priceMin: number;
+  priceMax: number;
+  change: ChangeFilter;
+  health: HealthStatus[];
+  search: string;
 }
 
 interface ProtocolExplorerProps {
   className?: string;
 }
 
+const PROTOCOL_OPTIONS: ProtocolType[] = ['Chainlink', 'Pyth', 'RedStone', 'UMA', 'API3', 'Band'];
+const HEALTH_OPTIONS: { value: HealthStatus; labelKey: string }[] = [
+  { value: 'healthy', labelKey: 'protocol.priceFeeds.health.healthy' },
+  { value: 'warning', labelKey: 'protocol.priceFeeds.health.warning' },
+  { value: 'critical', labelKey: 'protocol.priceFeeds.health.critical' },
+];
+const CHANGE_OPTIONS: { value: ChangeFilter; labelKey: string }[] = [
+  { value: 'all', labelKey: 'protocol.priceFeeds.changeFilter.all' },
+  { value: 'up', labelKey: 'protocol.priceFeeds.changeFilter.up' },
+  { value: 'down', labelKey: 'protocol.priceFeeds.changeFilter.down' },
+];
+
+const FAVORITES_STORAGE_KEY = 'protocol-explorer-favorites';
+
 export function ProtocolExplorer({ className }: ProtocolExplorerProps) {
   const { t } = useI18n();
   const [feeds, setFeeds] = useState<PriceFeed[]>([]);
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<Filters>({
+    protocols: [],
+    priceMin: 0,
+    priceMax: 100000,
+    change: 'all',
+    health: [],
+    search: '',
+  });
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
+    if (stored) {
+      try {
+        setFavorites(JSON.parse(stored));
+      } catch {
+        setFavorites([]);
+      }
+    }
+  }, []);
+
+  const toggleFavorite = useCallback((feedId: string) => {
+    setFavorites((prev) => {
+      const newFavorites = prev.includes(feedId)
+        ? prev.filter((id) => id !== feedId)
+        : [...prev, feedId];
+      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(newFavorites));
+      return newFavorites;
+    });
+  }, []);
 
   const fetchFeeds = useCallback(async () => {
     try {
@@ -56,6 +128,84 @@ export function ProtocolExplorer({ className }: ProtocolExplorerProps) {
     enableSearch: false,
     showRefreshToast: true,
   });
+
+  const filteredFeeds = useMemo(() => {
+    return feeds.filter((feed) => {
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        if (
+          !feed.symbol.toLowerCase().includes(searchLower) &&
+          !feed.name.toLowerCase().includes(searchLower)
+        ) {
+          return false;
+        }
+      }
+
+      if (filters.protocols.length > 0) {
+        if (!filters.protocols.some((p) => feed.sources.includes(p))) {
+          return false;
+        }
+      }
+
+      if (feed.price < filters.priceMin || feed.price > filters.priceMax) {
+        return false;
+      }
+
+      if (filters.change === 'up' && feed.change24h < 0) {
+        return false;
+      }
+      if (filters.change === 'down' && feed.change24h >= 0) {
+        return false;
+      }
+
+      if (filters.health.length > 0 && !filters.health.includes(feed.health)) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [feeds, filters]);
+
+  const toggleProtocol = (protocol: ProtocolType) => {
+    setFilters((prev) => ({
+      ...prev,
+      protocols: prev.protocols.includes(protocol)
+        ? prev.protocols.filter((p) => p !== protocol)
+        : [...prev.protocols, protocol],
+    }));
+  };
+
+  const toggleHealth = (health: HealthStatus) => {
+    setFilters((prev) => ({
+      ...prev,
+      health: prev.health.includes(health)
+        ? prev.health.filter((h) => h !== health)
+        : [...prev.health, health],
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      protocols: [],
+      priceMin: 0,
+      priceMax: 100000,
+      change: 'all',
+      health: [],
+      search: '',
+    });
+  };
+
+  const hasActiveFilters =
+    filters.protocols.length > 0 ||
+    filters.health.length > 0 ||
+    filters.change !== 'all' ||
+    filters.priceMin > 0 ||
+    filters.priceMax < 100000;
+
+  const handleCardClick = (feed: PriceFeed) => {
+    const path = `/oracle/protocol/${feed.symbol.toLowerCase().replace('/', '-')}`;
+    window.location.href = path;
+  };
 
   return (
     <div className={className}>
@@ -88,7 +238,198 @@ export function ProtocolExplorer({ className }: ProtocolExplorerProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('protocol.priceFeeds.livePriceFeeds')}</CardTitle>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle>{t('protocol.priceFeeds.livePriceFeeds')}</CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder={t('protocol.priceFeeds.searchPlaceholder')}
+                  value={filters.search}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
+                  className="w-48 pl-9"
+                />
+              </div>
+              <Button
+                variant={showFilters ? 'secondary' : 'outline'}
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="gap-1"
+              >
+                <Filter className="h-4 w-4" />
+                {t('protocol.priceFeeds.filters')}
+                {hasActiveFilters && (
+                  <Badge variant="default" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
+                    !
+                  </Badge>
+                )}
+              </Button>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
+                  <X className="h-4 w-4" />
+                  {t('protocol.priceFeeds.clearFilters')}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {showFilters && (
+            <div className="mt-4 grid gap-4 rounded-lg border bg-gray-50 p-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  {t('protocol.priceFeeds.protocolType')}
+                </label>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveDropdown(activeDropdown === 'protocol' ? null : 'protocol')
+                    }
+                    className="flex h-10 w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-sm"
+                  >
+                    <span>
+                      {filters.protocols.length === 0
+                        ? t('protocol.priceFeeds.allProtocols')
+                        : `${filters.protocols.length} ${t('protocol.priceFeeds.selected')}`}
+                    </span>
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                  {activeDropdown === 'protocol' && (
+                    <div className="absolute left-0 right-0 top-full z-10 mt-1 rounded-md border bg-white p-2 shadow-lg">
+                      {PROTOCOL_OPTIONS.map((protocol) => (
+                        <button
+                          key={protocol}
+                          type="button"
+                          onClick={() => toggleProtocol(protocol)}
+                          className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-gray-100"
+                        >
+                          <div
+                            className={cn(
+                              'flex h-4 w-4 items-center justify-center rounded border',
+                              filters.protocols.includes(protocol)
+                                ? 'border-primary bg-primary text-white'
+                                : 'border-gray-300',
+                            )}
+                          >
+                            {filters.protocols.includes(protocol) && (
+                              <Check className="h-3 w-3" />
+                            )}
+                          </div>
+                          {protocol}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  {t('protocol.priceFeeds.priceRange')}
+                </label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    placeholder={t('protocol.priceFeeds.min')}
+                    value={filters.priceMin || ''}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        priceMin: Number(e.target.value) || 0,
+                      }))
+                    }
+                    className="w-full"
+                  />
+                  <span className="text-gray-400">-</span>
+                  <Input
+                    type="number"
+                    placeholder={t('protocol.priceFeeds.max')}
+                    value={filters.priceMax === 100000 ? '' : filters.priceMax}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        priceMax: Number(e.target.value) || 100000,
+                      }))
+                    }
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  {t('protocol.priceFeeds.change24h')}
+                </label>
+                <div className="flex gap-1">
+                  {CHANGE_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() =>
+                        setFilters((prev) => ({ ...prev, change: option.value }))
+                      }
+                      className={cn(
+                        'flex-1 rounded-md px-3 py-2 text-sm transition-colors',
+                        filters.change === option.value
+                          ? 'bg-primary text-white'
+                          : 'bg-white border hover:bg-gray-50',
+                      )}
+                    >
+                      {t(option.labelKey)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  {t('protocol.priceFeeds.healthStatus')}
+                </label>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveDropdown(activeDropdown === 'health' ? null : 'health')
+                    }
+                    className="flex h-10 w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-sm"
+                  >
+                    <span>
+                      {filters.health.length === 0
+                        ? t('protocol.priceFeeds.allStatus')
+                        : `${filters.health.length} ${t('protocol.priceFeeds.selected')}`}
+                    </span>
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                  {activeDropdown === 'health' && (
+                    <div className="absolute left-0 right-0 top-full z-10 mt-1 rounded-md border bg-white p-2 shadow-lg">
+                      {HEALTH_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => toggleHealth(option.value)}
+                          className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-gray-100"
+                        >
+                          <div
+                            className={cn(
+                              'flex h-4 w-4 items-center justify-center rounded border',
+                              filters.health.includes(option.value)
+                                ? 'border-primary bg-primary text-white'
+                                : 'border-gray-300',
+                            )}
+                          >
+                            {filters.health.includes(option.value) && (
+                              <Check className="h-3 w-3" />
+                            )}
+                          </div>
+                          <HealthBadge health={option.value} t={t} labelKey={option.labelKey} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -97,16 +438,23 @@ export function ProtocolExplorer({ className }: ProtocolExplorerProps) {
                 <Skeleton key={i} className="h-32" />
               ))}
             </div>
-          ) : feeds.length === 0 ? (
+          ) : filteredFeeds.length === 0 ? (
             <EmptyProtocolsState
               onExplore={() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                clearFilters();
               }}
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {feeds.map((feed) => (
-                <PriceFeedCard key={feed.id} feed={feed} t={t} />
+              {filteredFeeds.map((feed) => (
+                <PriceFeedCard
+                  key={feed.id}
+                  feed={feed}
+                  t={t}
+                  isFavorite={favorites.includes(feed.id)}
+                  onToggleFavorite={() => toggleFavorite(feed.id)}
+                  onClick={() => handleCardClick(feed)}
+                />
               ))}
             </div>
           )}
@@ -116,25 +464,58 @@ export function ProtocolExplorer({ className }: ProtocolExplorerProps) {
   );
 }
 
-function PriceFeedCard({ feed, t }: { feed: PriceFeed; t: (key: string) => string }) {
+function PriceFeedCard({
+  feed,
+  t,
+  isFavorite,
+  onToggleFavorite,
+  onClick,
+}: {
+  feed: PriceFeed;
+  t: (key: string) => string;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
+  onClick: () => void;
+}) {
   const isPositive = feed.change24h >= 0;
 
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleFavorite();
+  };
+
   return (
-    <div className="rounded-lg border bg-white p-4 transition-shadow hover:shadow-md">
+    <div
+      onClick={onClick}
+      className="cursor-pointer rounded-lg border bg-white p-4 transition-shadow hover:shadow-md"
+    >
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-semibold text-gray-900">{feed.symbol}</h3>
           <p className="text-sm text-gray-500">{feed.name}</p>
         </div>
-        <Badge variant="secondary" className="text-xs">
-          {feed.sources.length} {t('protocol.priceFeeds.sources')}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <HealthBadge health={feed.health} t={t} />
+          <button
+            type="button"
+            onClick={handleFavoriteClick}
+            className="rounded p-1 transition-colors hover:bg-gray-100"
+            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            <Star
+              className={cn(
+                'h-5 w-5',
+                isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300',
+              )}
+            />
+          </button>
+        </div>
       </div>
 
       <div className="mt-4">
         <div className="text-2xl font-bold text-gray-900">${feed.price.toLocaleString()}</div>
         <div
-          className={`flex items-center text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}
+          className={cn('flex items-center text-sm', isPositive ? 'text-green-600' : 'text-red-600')}
         >
           <span>
             {isPositive ? '+' : ''}
@@ -144,11 +525,66 @@ function PriceFeedCard({ feed, t }: { feed: PriceFeed; t: (key: string) => strin
         </div>
       </div>
 
+      <div className="mt-4 flex flex-wrap gap-1">
+        {feed.sources.slice(0, 3).map((source) => (
+          <Badge key={source} variant="secondary" className="text-xs">
+            {source}
+          </Badge>
+        ))}
+        {feed.sources.length > 3 && (
+          <Badge variant="secondary" className="text-xs">
+            +{feed.sources.length - 3}
+          </Badge>
+        )}
+      </div>
+
       <div className="mt-4 flex items-center justify-between text-xs text-gray-400">
-        <span>{t('protocol.priceFeeds.vol')}: ${(feed.volume24h / 1e9).toFixed(2)}B</span>
+        <span>
+          {t('protocol.priceFeeds.vol')}: ${(feed.volume24h / 1e9).toFixed(2)}B
+        </span>
         <span>{new Date(feed.lastUpdated).toLocaleTimeString()}</span>
       </div>
     </div>
+  );
+}
+
+function HealthBadge({
+  health,
+  t,
+  labelKey,
+}: {
+  health: HealthStatus;
+  t: (key: string) => string;
+  labelKey?: string;
+}) {
+  const config = {
+    healthy: {
+      bg: 'bg-green-100',
+      text: 'text-green-700',
+      dot: 'bg-green-500',
+    },
+    warning: {
+      bg: 'bg-yellow-100',
+      text: 'text-yellow-700',
+      dot: 'bg-yellow-500',
+    },
+    critical: {
+      bg: 'bg-red-100',
+      text: 'text-red-700',
+      dot: 'bg-red-500',
+    },
+  };
+
+  const { bg, text, dot } = config[health];
+  const label = labelKey
+    ? t(labelKey)
+    : t(`protocol.priceFeeds.health.${health}`);
+
+  return (
+    <Badge variant="secondary" className={cn('gap-1 text-xs', bg, text)}>
+      <span className={cn('h-1.5 w-1.5 rounded-full', dot)} />
+      {label}
+    </Badge>
   );
 }
 
@@ -203,14 +639,33 @@ function generateMockFeeds(): PriceFeed[] {
     { symbol: 'YFI/USD', name: 'Yearn Finance' },
   ];
 
-  return symbols.map((s, i) => ({
-    id: `feed-${i}`,
-    symbol: s.symbol,
-    name: s.name,
-    price: Math.random() * 50000 + 10,
-    change24h: (Math.random() - 0.5) * 20,
-    volume24h: Math.random() * 10e9,
-    sources: ['Chainlink', 'Pyth', 'RedStone'],
-    lastUpdated: new Date().toISOString(),
-  }));
+  const protocolCombos: ProtocolType[][] = [
+    ['Chainlink', 'Pyth'],
+    ['Chainlink', 'RedStone'],
+    ['Pyth', 'UMA'],
+    ['Chainlink', 'API3', 'Band'],
+    ['RedStone', 'Pyth'],
+    ['Chainlink'],
+    ['UMA', 'API3'],
+    ['Band', 'Chainlink', 'Pyth'],
+    ['RedStone'],
+    ['API3', 'Chainlink'],
+  ];
+
+  const healthStatuses: HealthStatus[] = ['healthy', 'warning', 'critical'];
+
+  return symbols.map((s, i) => {
+    const healthIndex = Math.floor(Math.random() * 10) < 7 ? 0 : Math.floor(Math.random() * 3);
+    return {
+      id: `feed-${i}`,
+      symbol: s.symbol,
+      name: s.name,
+      price: Math.random() * 50000 + 10,
+      change24h: (Math.random() - 0.5) * 20,
+      volume24h: Math.random() * 10e9,
+      sources: protocolCombos[i % protocolCombos.length] || ['Chainlink'],
+      lastUpdated: new Date().toISOString(),
+      health: healthStatuses[healthIndex] ?? 'healthy',
+    };
+  });
 }

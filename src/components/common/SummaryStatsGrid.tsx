@@ -1,7 +1,8 @@
 'use client';
 
-import type { StatCardColor } from './StatCard';
 import { StatCard } from './StatCard';
+
+import type { StatCardColor } from './StatCard';
 
 export interface StatItem {
   title: string;

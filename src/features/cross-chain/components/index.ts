@@ -7,3 +7,8 @@ export { CrossChainComparisonBar } from './CrossChainComparisonBar';
 export { CrossChainOverview } from './CrossChainOverview';
 export { CrossChainComparison } from './CrossChainComparison';
 export { CrossChainHistory } from './CrossChainHistory';
+export { ArbitrageOpportunityList } from './ArbitrageOpportunityList';
+export { BridgeStatusCard } from './BridgeStatusCard';
+export { CorrelationMatrix } from './CorrelationMatrix';
+export { LiquidityDistribution } from './LiquidityDistribution';
+export { RiskScore } from './RiskScore';

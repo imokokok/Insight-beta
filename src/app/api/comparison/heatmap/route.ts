@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
       responseStats: { totalPairs: rows.length, criticalDeviations },
     });
 
-    return ok(response, { requestTimeMs: Math.round(requestTime) });
+    return ok(response);
   } catch (err) {
     const requestTime = performance.now() - requestStartTime;
     logger.error('Heatmap API request failed', {

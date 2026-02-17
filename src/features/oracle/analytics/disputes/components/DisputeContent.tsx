@@ -1,19 +1,31 @@
 'use client';
 
-import { Activity, Gavel, Users } from 'lucide-react';
+import { useState } from 'react';
+
+import { Activity, Gavel, Calendar } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { StatCardSkeleton, ChartSkeleton, CardSkeleton, SkeletonList } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useI18n } from '@/i18n';
 
-import { SummaryStats } from './SummaryStats';
+import { DisputeResultChart, BondDistributionChart } from './charts';
+import { DisputeDetailPanel } from './details';
 import { DisputeList } from './DisputeList';
-import { DisputerList } from './DisputerList';
 import { DisputeTrendChart } from './DisputeTrendChart';
+import { ProtocolChainFilter } from './filters';
+import { SummaryStats } from './SummaryStats';
 
-import type { DisputeReport, Dispute, DisputerStats } from '../types/disputes';
+import type { DisputeReport, Dispute, DisputeTrend } from '../types/disputes';
+import type { TimeRangePreset } from '../hooks/useDisputeAnalytics';
 
 interface DisputeContentProps {
   report: DisputeReport | null;
@@ -25,10 +37,17 @@ interface DisputeContentProps {
   filterStatus: 'All' | 'Active' | 'Resolved';
   setFilterStatus: (status: 'All' | 'Active' | 'Resolved') => void;
   filteredDisputes: Dispute[];
+  filteredTrends: DisputeTrend[];
   selectedDispute: Dispute | null;
   setSelectedDispute: (dispute: Dispute | null) => void;
-  selectedDisputer: DisputerStats | null;
-  setSelectedDisputer: (disputer: DisputerStats | null) => void;
+  timeRangePreset: TimeRangePreset;
+  setTimeRangePreset: (preset: TimeRangePreset) => void;
+  selectedProtocols: string[];
+  setSelectedProtocols: (protocols: string[]) => void;
+  selectedChains: string[];
+  setSelectedChains: (chains: string[]) => void;
+  availableProtocols: string[];
+  availableChains: string[];
 }
 
 export function DisputeContent({
@@ -41,12 +60,30 @@ export function DisputeContent({
   filterStatus,
   setFilterStatus,
   filteredDisputes,
-  selectedDispute: _selectedDispute,
+  filteredTrends,
+  selectedDispute,
   setSelectedDispute,
-  selectedDisputer,
-  setSelectedDisputer,
+  timeRangePreset,
+  setTimeRangePreset,
+  selectedProtocols,
+  setSelectedProtocols,
+  selectedChains,
+  setSelectedChains,
+  availableProtocols,
+  availableChains,
 }: DisputeContentProps) {
   const { t } = useI18n();
+  const [isDetailPanelOpen, setIsDetailPanelOpen] = useState(false);
+
+  const handleSelectDispute = (dispute: Dispute) => {
+    setSelectedDispute(dispute);
+    setIsDetailPanelOpen(true);
+  };
+
+  const handleCloseDetailPanel = () => {
+    setIsDetailPanelOpen(false);
+    setSelectedDispute(null);
+  };
 
   return (
     <>
@@ -58,8 +95,39 @@ export function DisputeContent({
         <SummaryStats report={report} />
       )}
 
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">{t('common.timeRange')}:</span>
+              <Select value={timeRangePreset} onValueChange={(v) => setTimeRangePreset(v as TimeRangePreset)}>
+                <SelectTrigger className="w-28">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1h">1{t('common.hours')}</SelectItem>
+                  <SelectItem value="6h">6{t('common.hours')}</SelectItem>
+                  <SelectItem value="24h">24{t('common.hours')}</SelectItem>
+                  <SelectItem value="7d">7{t('common.days')}</SelectItem>
+                  <SelectItem value="30d">30{t('common.days')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <ProtocolChainFilter
+              protocols={availableProtocols}
+              chains={availableChains}
+              selectedProtocols={selectedProtocols}
+              selectedChains={selectedChains}
+              onProtocolChange={setSelectedProtocols}
+              onChainChange={setSelectedChains}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-2 lg:w-auto">
           <TabsTrigger value="overview">
             <Activity className="mr-2 h-4 w-4" />
             {t('analytics:disputes.tabs.overview')}
@@ -68,26 +136,33 @@ export function DisputeContent({
             <Gavel className="mr-2 h-4 w-4" />
             {t('analytics:disputes.tabs.disputes')} ({filteredDisputes.length})
           </TabsTrigger>
-          <TabsTrigger value="disputers">
-            <Users className="mr-2 h-4 w-4" />
-            {t('analytics:disputes.tabs.disputers')} ({report?.topDisputers.length || 0})
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-2">
             {loading && !report ? (
+              <><ChartSkeleton /><ChartSkeleton /></>
+            ) : report ? (
+              <>
+                <DisputeTrendChart trends={filteredTrends} />
+                <DisputeResultChart disputes={filteredDisputes} />
+              </>
+            ) : null}
+          </div>
+          
+          <div className="grid gap-6 lg:grid-cols-2">
+            {loading && !report ? (
               <><ChartSkeleton /><CardSkeleton /></>
             ) : report ? (
               <>
-                <DisputeTrendChart trends={report.trends} />
+                <BondDistributionChart disputes={filteredDisputes} trends={filteredTrends} />
                 <Card>
                   <CardHeader>
                     <CardTitle>{t('analytics:disputes.disputes.title')}</CardTitle>
-                    <CardDescription>{t('analytics:disputes.disputes.showing', { count: report.recentActivity.length, total: report.disputes.length })}</CardDescription>
+                    <CardDescription>{t('analytics:disputes.disputes.showing', { count: Math.min(5, filteredDisputes.length), total: filteredDisputes.length })}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {loading ? <SkeletonList count={5} /> : <DisputeList disputes={report.recentActivity} isLoading={loading} onSelect={setSelectedDispute} />}
+                    {loading ? <SkeletonList count={5} /> : <DisputeList disputes={filteredDisputes.slice(0, 5)} isLoading={loading} onSelect={handleSelectDispute} />}
                   </CardContent>
                 </Card>
               </>
@@ -129,57 +204,18 @@ export function DisputeContent({
               <DisputeList
                 disputes={filteredDisputes}
                 isLoading={loading}
-                onSelect={setSelectedDispute}
+                onSelect={handleSelectDispute}
               />
             </CardContent>
           </Card>
         </TabsContent>
-
-        <TabsContent value="disputers" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('analytics:disputes.disputers.title')}</CardTitle>
-                <CardDescription>{t('analytics:disputes.disputers.showing', { count: report?.topDisputers.length || 0 })}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DisputerList
-                  disputers={report?.topDisputers || []}
-                  isLoading={loading}
-                  onSelect={setSelectedDisputer}
-                />
-              </CardContent>
-            </Card>
-            <div>
-              {selectedDisputer && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Selected Disputer</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Address</p>
-                        <p className="font-mono text-sm">{selectedDisputer.address}</p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-gray-500">Total Disputes</p>
-                          <p className="font-medium">{selectedDisputer.totalDisputes}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Success Rate</p>
-                          <p className="font-medium text-green-600">{selectedDisputer.winRate.toFixed(1)}%</p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
-        </TabsContent>
       </Tabs>
+
+      <DisputeDetailPanel
+        dispute={selectedDispute}
+        isOpen={isDetailPanelOpen}
+        onClose={handleCloseDetailPanel}
+      />
     </>
   );
 }

@@ -63,9 +63,10 @@ interface DropdownMenuContentProps {
   children: React.ReactNode;
   className?: string;
   align?: 'start' | 'end' | 'center';
+  onCloseAutoFocus?: boolean;
 }
 
-function DropdownMenuContent({ children, className, align = 'end' }: DropdownMenuContentProps) {
+function DropdownMenuContent({ children, className, align = 'end', onCloseAutoFocus = true }: DropdownMenuContentProps) {
   const { open, setOpen } = useDropdownMenuContext();
 
   if (!open) return null;
@@ -77,7 +78,11 @@ function DropdownMenuContent({ children, className, align = 'end' }: DropdownMen
         align === 'start' ? 'left-0' : align === 'end' ? 'right-0' : 'left-1/2 -translate-x-1/2',
         className,
       )}
-      onClick={() => setOpen(false)}
+      onClick={() => {
+        if (onCloseAutoFocus) {
+          setOpen(false);
+        }
+      }}
     >
       {children}
     </div>

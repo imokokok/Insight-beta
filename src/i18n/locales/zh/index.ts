@@ -7,6 +7,7 @@ import { crossChain } from './cross-chain';
 import { dashboard } from './dashboard';
 import { errorPage } from './errorPage';
 import { errors } from './errors';
+import { explore } from './explore';
 import { nav } from './nav';
 import { oracle } from './oracle';
 import { protocol } from './protocol';
@@ -23,6 +24,7 @@ export const zhTranslations = {
   dashboard,
   errorPage,
   errors,
+  explore,
   nav,
   oracle,
   protocol,

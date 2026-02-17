@@ -47,7 +47,15 @@ export const oracle = {
     helperText: '输入有效的以太坊地址 (0x...)',
     invalidAddress: '无效的以太坊地址',
     search: '搜索地址',
-    examples: '试试这些地址：'
+    examples: '试试这些地址：',
+    history: '历史',
+    recentSearches: '最近搜索',
+    clearHistory: '清除全部',
+    popularAddresses: '热门地址',
+    popularDesc: '快速访问知名地址',
+    typeContract: '合约',
+    typeWallet: '钱包',
+    detectingType: '正在检测类型...'
   },
   priceService: {
     refreshedMaterializedView: '成功刷新物化视图：{{viewName}}'

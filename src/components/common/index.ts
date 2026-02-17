@@ -39,11 +39,18 @@ export {
   DashboardPageHeader,
   DashboardPageHeaderSkeleton,
   DynamicPageHeader,
-  type BreadcrumbItem,
+  type BreadcrumbItem as PageHeaderBreadcrumbItem,
   type PageHeaderProps,
   type DashboardPageHeaderProps,
   type DynamicPageHeaderProps,
 } from './PageHeader';
+export {
+  Breadcrumb,
+  BreadcrumbWithActions,
+  type BreadcrumbItem,
+  type BreadcrumbProps,
+  type BreadcrumbWithActionsProps,
+} from './Breadcrumb';
 export { EnhancedSidebar as Sidebar, defaultNavConfig } from './EnhancedSidebar';
 
 // ==================== 交互反馈 ====================

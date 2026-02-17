@@ -5,7 +5,7 @@ export function validateSymbol(symbol: string | null): string | null {
     return null;
   }
   const upperSymbol = symbol.toUpperCase().trim();
-  if (!VALID_SYMBOLS.includes(upperSymbol)) {
+  if (!(VALID_SYMBOLS as readonly string[]).includes(upperSymbol)) {
     return null;
   }
   return upperSymbol;

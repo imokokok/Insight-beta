@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { RefreshCw, Settings, Save, RotateCcw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useCrossChainDashboard } from '@/features/cross-chain/hooks';
+import { ArbitrageOpportunityList, BridgeStatusCard, LiquidityDistribution, RiskScore } from '@/features/cross-chain/components';
+import { useCrossChainDashboard, useArbitrage, useBridgeStatus, useLiquidity } from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import type { CrossChainDashboardData } from '@/types/crossChainAnalysisTypes';
@@ -34,6 +36,23 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
     mutate: refreshDashboard,
   } = useCrossChainDashboard();
 
+  const {
+    data: arbitrageData,
+    isLoading: arbitrageLoading,
+    mutate: refreshArbitrage,
+  } = useArbitrage();
+
+  const {
+    data: bridgeData,
+    isLoading: bridgeLoading,
+    mutate: refreshBridges,
+  } = useBridgeStatus();
+
+  const {
+    data: liquidityData,
+    isLoading: liquidityLoading,
+  } = useLiquidity();
+
   const dashboard = dashboardData?.data as CrossChainDashboardData | undefined;
 
   const healthyChains = dashboard?.chainHealth?.filter((c) => c.status === 'healthy').length ?? 0;
@@ -50,6 +69,12 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
     setAlertEnabled(true);
   };
 
+  const handleRefreshAll = () => {
+    refreshDashboard();
+    refreshArbitrage();
+    refreshBridges();
+  };
+
   return (
     <div className={cn('space-y-6', className)}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -64,7 +89,7 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
             <Settings className="mr-2 h-4 w-4" />
             设置
           </Button>
-          <Button variant="outline" size="sm" onClick={() => refreshDashboard()}>
+          <Button variant="outline" size="sm" onClick={handleRefreshAll}>
             <RefreshCw className="mr-2 h-4 w-4" />
             {t('crossChain.controls.refresh')}
           </Button>
@@ -188,6 +213,23 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
             <p className="text-xs text-muted-foreground">{t('crossChain.dashboard.lastSync')}: {dashboard?.lastUpdated ? new Date(dashboard.lastUpdated).toLocaleTimeString() : '-'}</p>
           </CardContent>
         </Card>
+      </div>
+
+      <ArbitrageOpportunityList
+        opportunities={arbitrageData?.opportunities}
+        summary={arbitrageData?.summary}
+        isLoading={arbitrageLoading}
+      />
+
+      <BridgeStatusCard
+        bridges={bridgeData?.bridges}
+        summary={bridgeData?.summary}
+        isLoading={bridgeLoading}
+      />
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <LiquidityDistribution data={liquidityData} isLoading={liquidityLoading} />
+        <RiskScore />
       </div>
 
       {dashboard?.chainHealth && dashboard.chainHealth.length > 0 && (

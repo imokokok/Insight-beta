@@ -7,12 +7,11 @@ import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 
-import type { DisputeReport, Dispute, DisputerStats } from '../types/disputes';
+import type { DisputeReport, Dispute } from '../types/disputes';
 
 function generateMockDisputeReport(): DisputeReport {
   const now = new Date();
   const disputes: Dispute[] = [];
-  const topDisputers: DisputerStats[] = [];
   const trends = [];
 
   const protocols = ['uma', 'insight'];
@@ -39,15 +38,20 @@ function generateMockDisputeReport(): DisputeReport {
     const proposedAt = new Date(now.getTime() - (i + 1) * 24 * 60 * 60 * 1000);
     const disputedAt = new Date(proposedAt.getTime() + Math.random() * 48 * 60 * 60 * 1000);
     const settledAt = isResolved ? new Date(disputedAt.getTime() + Math.random() * 72 * 60 * 60 * 1000) : undefined;
+    const protocolIdx = Math.floor(Math.random() * protocols.length);
+    const chainIdx = Math.floor(Math.random() * chains.length);
+    const disputerIdx = Math.floor(Math.random() * addresses.length);
+    const asserterIdx = Math.floor(Math.random() * addresses.length);
+    const claimIdx = Math.floor(Math.random() * claims.length);
 
     disputes.push({
       id: `dispute-${i}`,
       assertionId: `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
-      protocol: protocols[Math.floor(Math.random() * protocols.length)],
-      chain: chains[Math.floor(Math.random() * chains.length)],
-      disputer: addresses[Math.floor(Math.random() * addresses.length)],
-      asserter: addresses[Math.floor(Math.random() * addresses.length)],
-      claim: claims[Math.floor(Math.random() * claims.length)],
+      protocol: protocols[protocolIdx]!,
+      chain: chains[chainIdx]!,
+      disputer: addresses[disputerIdx]!,
+      asserter: addresses[asserterIdx]!,
+      claim: claims[claimIdx]!,
       bond: 100 + Math.random() * 5000,
       disputeBond: 100 + Math.random() * 10000,
       currency: 'WETH',
@@ -58,21 +62,6 @@ function generateMockDisputeReport(): DisputeReport {
       settledAt: settledAt?.toISOString(),
       txHash: `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
       blockNumber: 18000000 + i * 1000,
-    });
-  }
-
-  for (let i = 0; i < 5; i++) {
-    const totalDisputes = 5 + Math.floor(Math.random() * 50);
-    const successfulDisputes = Math.floor(totalDisputes * (0.3 + Math.random() * 0.6));
-    topDisputers.push({
-      address: addresses[i],
-      totalDisputes,
-      successfulDisputes,
-      winRate: (successfulDisputes / totalDisputes) * 100,
-      totalBonded: 1000 + Math.random() * 50000,
-      totalRewards: 500 + Math.random() * 20000,
-      firstDisputeAt: new Date(now.getTime() - (90 + Math.random() * 270) * 24 * 60 * 60 * 1000).toISOString(),
-      lastDisputeAt: new Date(now.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
   }
 
@@ -104,21 +93,27 @@ function generateMockDisputeReport(): DisputeReport {
     },
     disputes,
     trends,
-    topDisputers,
+    topDisputers: [],
     recentActivity: disputes.slice(0, 5),
   };
 }
+
+export type TimeRangePreset = '1h' | '6h' | '24h' | '7d' | '30d' | 'custom';
 
 export function useDisputeAnalytics() {
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<DisputeReport | null>(null);
   const [selectedDispute, setSelectedDispute] = useState<Dispute | null>(null);
-  const [selectedDisputer, setSelectedDisputer] = useState<DisputerStats | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'All' | 'Active' | 'Resolved'>('All');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  const [timeRangePreset, setTimeRangePreset] = useState<TimeRangePreset>('30d');
+  const [customTimeRange, setCustomTimeRange] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
+  const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
+  const [selectedChains, setSelectedChains] = useState<string[]>([]);
 
   const { t } = useI18n();
 
@@ -186,6 +181,38 @@ export function useDisputeAnalytics() {
     fetchReport();
   }, [fetchReport]);
 
+  const availableProtocols = useMemo(() => {
+    const protocols = new Set<string>();
+    report?.disputes.forEach(d => protocols.add(d.protocol));
+    return Array.from(protocols);
+  }, [report]);
+
+  const availableChains = useMemo(() => {
+    const chains = new Set<string>();
+    report?.disputes.forEach(d => chains.add(d.chain));
+    return Array.from(chains);
+  }, [report]);
+
+  const getTimeRangeDate = useCallback(() => {
+    const now = new Date();
+    switch (timeRangePreset) {
+      case '1h':
+        return new Date(now.getTime() - 60 * 60 * 1000);
+      case '6h':
+        return new Date(now.getTime() - 6 * 60 * 60 * 1000);
+      case '24h':
+        return new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      case '7d':
+        return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      case '30d':
+        return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      case 'custom':
+        return customTimeRange.start || new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      default:
+        return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    }
+  }, [timeRangePreset, customTimeRange]);
+
   const filteredDisputes = useMemo(
     () =>
       report?.disputes.filter(
@@ -193,34 +220,36 @@ export function useDisputeAnalytics() {
           const matchesStatus = filterStatus === 'All' || 
             (filterStatus === 'Active' && dispute.status === 'active') ||
             (filterStatus === 'Resolved' && dispute.status === 'resolved');
+          
           const matchesSearch = !searchQuery ||
             dispute.claim.toLowerCase().includes(searchQuery.toLowerCase()) ||
             dispute.disputer.toLowerCase().includes(searchQuery.toLowerCase()) ||
             dispute.asserter.toLowerCase().includes(searchQuery.toLowerCase());
-          return matchesStatus && matchesSearch;
+          
+          const disputeDate = new Date(dispute.disputedAt);
+          const timeRangeStart = getTimeRangeDate();
+          const matchesTimeRange = disputeDate >= timeRangeStart;
+          
+          const matchesProtocol = selectedProtocols.length === 0 || selectedProtocols.includes(dispute.protocol);
+          const matchesChain = selectedChains.length === 0 || selectedChains.includes(dispute.chain);
+          
+          return matchesStatus && matchesSearch && matchesTimeRange && matchesProtocol && matchesChain;
         },
       ) || [],
-    [report, searchQuery, filterStatus],
+    [report, searchQuery, filterStatus, getTimeRangeDate, selectedProtocols, selectedChains],
   );
 
-  const handleExport = useCallback(() => {
-    if (!report) return;
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `dispute-report-${new Date().toISOString()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [report]);
+  const filteredTrends = useMemo(() => {
+    if (!report?.trends) return [];
+    const timeRangeStart = getTimeRangeDate();
+    return report.trends.filter(trend => new Date(trend.timestamp) >= timeRangeStart);
+  }, [report, getTimeRangeDate]);
 
   return {
     loading,
     report,
     selectedDispute,
     setSelectedDispute,
-    selectedDisputer,
-    setSelectedDisputer,
     activeTab,
     setActiveTab,
     searchQuery,
@@ -237,6 +266,16 @@ export function useDisputeAnalytics() {
     refresh,
     fetchReport,
     filteredDisputes,
-    handleExport,
+    filteredTrends,
+    timeRangePreset,
+    setTimeRangePreset,
+    customTimeRange,
+    setCustomTimeRange,
+    selectedProtocols,
+    setSelectedProtocols,
+    selectedChains,
+    setSelectedChains,
+    availableProtocols,
+    availableChains,
   };
 }

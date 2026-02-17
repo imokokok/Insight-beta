@@ -7,9 +7,9 @@ import { Toaster } from 'sonner';
 
 
 import { ClientComponentsWrapper } from '@/components/common/ClientComponentsWrapper';
-import { DynamicPageHeader } from '@/components/common/PageHeader';
 import { Sidebar } from '@/components/common/EnhancedSidebar';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { DynamicPageHeader } from '@/components/common/PageHeader';
 import { PageProgress } from '@/components/common/PageProgress';
 import { PageTransition } from '@/components/common/PageTransitions';
 import { ResourceHints } from '@/components/common/ResourceHints';

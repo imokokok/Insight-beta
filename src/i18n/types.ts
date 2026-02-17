@@ -1,8 +1,8 @@
 export type Lang = 'zh' | 'en';
 
 export const languages: Array<{ code: Lang; label: string }> = [
-  { code: 'zh', label: '中文' },
   { code: 'en', label: 'English' },
+  { code: 'zh', label: '中文' },
 ];
 
 export const LANG_STORAGE_KEY = 'oracle-monitor_lang';

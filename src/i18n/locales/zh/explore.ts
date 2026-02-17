@@ -1,0 +1,48 @@
+export const explore = {
+  title: '探索',
+  description: '探索区块链数据、协议和地址信息',
+  search: {
+    placeholder: '搜索协议、地址、交易对...',
+    global: '全局搜索',
+    recent: '最近搜索',
+    clear: '清除历史'
+  },
+  quickAccess: {
+    title: '快捷入口',
+    favorites: '收藏的Feed',
+    recent: '最近访问',
+    noFavorites: '暂无收藏',
+    noRecent: '暂无最近访问'
+  },
+  tabs: {
+    marketOverview: '市场概览',
+    trending: '热门交易对',
+    protocols: '协议探索',
+    address: '地址探索',
+    discovery: '数据发现'
+  },
+  marketOverview: {
+    title: '市场概览',
+    totalMarketCap: '总市值',
+    totalVolume24h: '24h交易量',
+    activeProtocols: '活跃协议',
+    priceChanges: '价格变动',
+    topGainers: '涨幅榜',
+    topLosers: '跌幅榜'
+  },
+  trending: {
+    title: '热门交易对',
+    volume: '交易量',
+    priceChange: '价格变动',
+    transactions: '交易次数',
+    sortByVolume: '按交易量排序',
+    sortByPriceChange: '按价格变动排序'
+  },
+  discovery: {
+    title: '数据发现',
+    newProtocols: '新上线协议',
+    trendingProtocols: '热门协议',
+    anomalies: '异常检测',
+    insights: '数据洞察'
+  }
+};
