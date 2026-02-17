@@ -143,6 +143,13 @@ export const defaultNavConfig: SidebarConfig = {
           icon: AlertTriangle,
           description: 'nav.descriptions.assertions',
         },
+        {
+          id: 'arbitration',
+          label: 'nav.arbitration',
+          href: '/oracle/analytics/disputes',
+          icon: Activity,
+          description: 'nav.descriptions.arbitration',
+        },
       ],
     },
   ],
