@@ -26,11 +26,6 @@ export function isStatsUpdateMessage(value: unknown): value is StatsUpdateMessag
 // General Type Guards
 // ============================================================================
 
-/**
- * 获取错误消息
- */
-export function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  return 'An unknown error occurred';
-}
+// getErrorMessage 已从 lib/errors 统一导出
+// 请从 @/lib/errors 导入 getErrorMessage
+export { getErrorMessage } from '@/lib/errors';

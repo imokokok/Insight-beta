@@ -4,6 +4,15 @@ import useSWR from 'swr';
 
 import { buildApiUrl } from '@/shared/utils';
 
+import type {
+  AlertSource,
+  AlertSeverity,
+  AlertStatus,
+  UnifiedAlert,
+  AlertsResponse,
+  UseAlertsOptions,
+} from '../types';
+
 const fetcher = async <T>(url: string): Promise<T> => {
   const res = await fetch(url);
   if (!res.ok) {
@@ -19,64 +28,7 @@ const fetcher = async <T>(url: string): Promise<T> => {
   return res.json() as Promise<T>;
 };
 
-export type AlertSource = 'price_anomaly' | 'cross_chain' | 'security';
-
-export type AlertSeverity = 'low' | 'medium' | 'high' | 'critical' | 'info' | 'warning';
-
-export type AlertStatus = 'active' | 'resolved' | 'investigating';
-
-export interface UnifiedAlert {
-  id: string;
-  source: AlertSource;
-  timestamp: string;
-  severity: AlertSeverity;
-  status: AlertStatus;
-  title: string;
-  description: string;
-  symbol?: string;
-  chainA?: string;
-  chainB?: string;
-  protocol?: string;
-  protocols?: string[];
-  deviation?: number;
-  priceA?: number;
-  priceB?: number;
-  avgPrice?: number;
-  outlierProtocols?: string[];
-  reason?: string;
-  type?: string;
-}
-
-export interface AlertsSummary {
-  total: number;
-  critical: number;
-  high: number;
-  medium: number;
-  low: number;
-  active: number;
-  resolved: number;
-  bySource: {
-    price_anomaly: number;
-    cross_chain: number;
-    security: number;
-  };
-}
-
-export interface AlertsResponse {
-  success: boolean;
-  data: {
-    alerts: UnifiedAlert[];
-    summary: AlertsSummary;
-  };
-  timestamp: string;
-}
-
-export interface UseAlertsOptions {
-  source?: AlertSource | 'all';
-  severity?: AlertSeverity | 'all';
-  status?: AlertStatus | 'all';
-  searchQuery?: string;
-}
+export type { AlertSource, AlertSeverity, AlertStatus, UnifiedAlert };
 
 export function useAlerts(options: UseAlertsOptions = {}) {
   const { source = 'all', severity = 'all', status = 'all' } = options;

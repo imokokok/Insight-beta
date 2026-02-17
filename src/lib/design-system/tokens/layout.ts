@@ -9,19 +9,12 @@
  */
 
 // ============================================================================
-// Breakpoints
+// Breakpoints (从 responsive.ts 导入)
 // ============================================================================
 
-export const BREAKPOINTS = {
-  xs: 475,
-  sm: 640,
-  md: 768,
-  lg: 1024,
-  xl: 1280,
-  '2xl': 1536,
-} as const;
+import { BREAKPOINTS } from './responsive';
 
-export type Breakpoint = keyof typeof BREAKPOINTS;
+export { BREAKPOINTS, type Breakpoint } from './responsive';
 
 // ============================================================================
 // Container Widths
@@ -346,23 +339,8 @@ export function getCardSize(size: keyof typeof CARD_SIZES) {
   return CARD_SIZES[size];
 }
 
-/**
- * 检查当前视口是否匹配断点
- */
-export function matchesBreakpoint(breakpoint: Breakpoint, width: number): boolean {
-  return width >= BREAKPOINTS[breakpoint];
-}
-
-/**
- * 获取当前断点
- */
-export function getCurrentBreakpoint(width: number): Breakpoint {
-  const breakpoints = Object.entries(BREAKPOINTS).sort((a, b) => b[1] - a[1]);
-  for (const [name, minWidth] of breakpoints) {
-    if (width >= minWidth) return name as Breakpoint;
-  }
-  return 'xs';
-}
+// 从 responsive.ts 导入断点工具函数
+export { getCurrentBreakpoint, matchesBreakpoint } from './responsive';
 
 // ============================================================================
 // Export

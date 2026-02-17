@@ -1,50 +1,16 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import type {
+  AlertSource,
+  AlertSeverity,
+  AlertStatus,
+  UnifiedAlert,
+  AlertsSummary,
+} from '@/features/alerts/types';
 import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
 import { priceDeviationAnalytics } from '@/features/oracle/services/priceDeviationAnalytics';
 import { logger } from '@/shared/logger';
-
-type AlertSource = 'price_anomaly' | 'cross_chain' | 'security';
-type AlertSeverity = 'low' | 'medium' | 'high' | 'critical' | 'info' | 'warning';
-type AlertStatus = 'active' | 'resolved' | 'investigating';
-
-interface UnifiedAlert {
-  id: string;
-  source: AlertSource;
-  timestamp: string;
-  severity: AlertSeverity;
-  status: AlertStatus;
-  title: string;
-  description: string;
-  symbol?: string;
-  chainA?: string;
-  chainB?: string;
-  protocol?: string;
-  protocols?: string[];
-  deviation?: number;
-  priceA?: number;
-  priceB?: number;
-  avgPrice?: number;
-  outlierProtocols?: string[];
-  reason?: string;
-  type?: string;
-}
-
-interface AlertsSummary {
-  total: number;
-  critical: number;
-  high: number;
-  medium: number;
-  low: number;
-  active: number;
-  resolved: number;
-  bySource: {
-    price_anomaly: number;
-    cross_chain: number;
-    security: number;
-  };
-}
 
 function normalizeSeverity(severity: string): AlertSeverity {
   const mapping: Record<string, AlertSeverity> = {
