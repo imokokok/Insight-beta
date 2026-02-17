@@ -23,7 +23,6 @@ import {
   X,
   Activity,
   AlertTriangle,
-  ChevronLeft,
   Compass,
   Gavel,
 } from 'lucide-react';
@@ -31,7 +30,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { ConnectWallet } from '@/features/wallet/components/ConnectWallet';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useI18n } from '@/i18n';
@@ -101,7 +100,7 @@ function useSidebar() {
 
 export const defaultNavConfig: SidebarConfig = {
   showSearch: true,
-  collapsible: true,
+  collapsible: false,
   defaultCollapsed: false,
   groups: [
     {
@@ -110,11 +109,11 @@ export const defaultNavConfig: SidebarConfig = {
       collapsible: false,
       items: [
         {
-          id: 'alerts',
-          label: 'nav.alertsCenter',
-          href: '/alerts',
-          icon: AlertTriangle,
-          description: 'nav.descriptions.alertsCenter',
+          id: 'analytics',
+          label: 'nav.monitoring',
+          href: '/analytics',
+          icon: Activity,
+          description: 'nav.descriptions.monitoring',
         },
         {
           id: 'crossChain',
@@ -131,11 +130,11 @@ export const defaultNavConfig: SidebarConfig = {
           description: 'nav.descriptions.explore',
         },
         {
-          id: 'analytics',
-          label: 'nav.monitoring',
-          href: '/analytics',
-          icon: Activity,
-          description: 'nav.descriptions.monitoring',
+          id: 'alerts',
+          label: 'nav.alertsCenter',
+          href: '/alerts',
+          icon: AlertTriangle,
+          description: 'nav.descriptions.alertsCenter',
         },
         {
           id: 'arbitration',
@@ -156,12 +155,10 @@ export const defaultNavConfig: SidebarConfig = {
 interface NavItemProps {
   item: NavItem;
   level?: number;
-  collapsed?: boolean;
 }
 
-function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
+function NavItemComponent({ item, level = 0 }: NavItemProps) {
   const pathname = usePathname();
-  const { collapsed: sidebarCollapsed } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
   const { t } = useI18n();
   const [isExpanded, setIsExpanded] = useState(item.defaultExpanded ?? false);
@@ -189,32 +186,28 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
         )}
       />
 
-      {!sidebarCollapsed && (
-        <>
-          <span
-            className={cn(
-              'ml-3 flex-1 truncate text-sm font-medium transition-colors',
-              isActive ? 'text-primary-dark' : 'text-foreground group-hover:text-foreground',
-            )}
-          >
-            {t(item.label)}
-          </span>
+      <span
+        className={cn(
+          'ml-3 flex-1 truncate text-sm font-medium transition-colors',
+          isActive ? 'text-primary-dark' : 'text-foreground group-hover:text-foreground',
+        )}
+      >
+        {t(item.label)}
+      </span>
 
-          {item.badge !== undefined && item.badge !== 0 && (
-            <Badge variant={item.badgeVariant || 'default'} className="ml-2 px-1.5 py-0 text-xs">
-              {item.badge}
-            </Badge>
-          )}
+      {item.badge !== undefined && item.badge !== 0 && (
+        <Badge variant={item.badgeVariant || 'default'} className="ml-2 px-1.5 py-0 text-xs">
+          {item.badge}
+        </Badge>
+      )}
 
-          {hasChildren && (
-            <ChevronRight
-              className={cn(
-                'ml-2 h-4 w-4 transition-transform duration-200',
-                isExpanded && 'rotate-90',
-              )}
-            />
+      {hasChildren && (
+        <ChevronRight
+          className={cn(
+            'ml-2 h-4 w-4 transition-transform duration-200',
+            isExpanded && 'rotate-90',
           )}
-        </>
+        />
       )}
     </>
   );
@@ -226,47 +219,6 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
     level > 0 && 'ml-4',
     item.disabled && 'cursor-not-allowed opacity-50',
   );
-
-  if (collapsed) {
-    if (!hasHref && hasChildren) {
-      return null;
-    }
-    return (
-      <Tooltip delayDuration={0}>
-        <TooltipTrigger asChild>
-          {hasHref ? (
-            <Link
-              href={item.href as Route}
-              onClick={handleClick}
-              data-tour={item.id}
-              className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-lg transition-all',
-                isActive
-                  ? 'text-primary-dark bg-primary/10'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-              )}
-            >
-              <item.icon className="h-5 w-5" />
-            </Link>
-          ) : (
-            <button
-              onClick={handleClick}
-              data-tour={item.id}
-              className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-lg transition-all',
-                isActive
-                  ? 'text-primary-dark bg-primary/10'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-              )}
-            >
-              <item.icon className="h-5 w-5" />
-            </button>
-          )}
-        </TooltipTrigger>
-        <TooltipContent side="right">{t(item.label)}</TooltipContent>
-      </Tooltip>
-    );
-  }
 
   return (
     <div className="group">
@@ -291,7 +243,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
 
       {/* Submenu */}
       <AnimatePresence>
-        {hasChildren && isExpanded && !sidebarCollapsed && (
+        {hasChildren && isExpanded && (
           <motion.div
             initial={prefersReducedMotion ? {} : { height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -320,7 +272,7 @@ interface NavGroupProps {
 }
 
 function NavGroupComponent({ group }: NavGroupProps) {
-  const { expandedGroups, toggleGroup, collapsed, searchQuery } = useSidebar();
+  const { expandedGroups, toggleGroup, searchQuery } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
   const { t } = useI18n();
   const isExpanded = expandedGroups.has(group.id);
@@ -339,18 +291,6 @@ function NavGroupComponent({ group }: NavGroupProps) {
   }, [group.items, searchQuery, t]);
 
   if (filteredItems.length === 0) return null;
-
-  if (collapsed) {
-    return (
-      <div className="py-2">
-        <div className="space-y-1">
-          {filteredItems.map((item) => (
-            <NavItemComponent key={item.id} item={item} collapsed />
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="py-2">
@@ -435,7 +375,6 @@ interface EnhancedSidebarProps {
 }
 
 export function EnhancedSidebar({ config = defaultNavConfig, className }: EnhancedSidebarProps) {
-  const [collapsed, setCollapsed] = useState(config.defaultCollapsed ?? false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
     const initial = new Set<string>();
     config.groups.forEach((group) => {
@@ -466,14 +405,14 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
 
   const contextValue = useMemo(
     () => ({
-      collapsed,
-      setCollapsed,
+      collapsed: false,
+      setCollapsed: () => {},
       expandedGroups,
       toggleGroup,
       searchQuery,
       setSearchQuery,
     }),
-    [collapsed, expandedGroups, searchQuery, toggleGroup],
+    [expandedGroups, searchQuery, toggleGroup],
   );
 
   if (!isMounted) {
@@ -498,47 +437,24 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
             'flex flex-col',
             className,
           )}
-          style={{ width: collapsed ? 72 : 280 }}
+          style={{ width: 280 }}
           suppressHydrationWarning
         >
           {/* Header */}
-          <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border px-4">
-            {!collapsed && (
-              <Link href="/" className="flex items-center gap-2">
-                <img src="/logo-owl.png" alt="Logo" className="h-8 w-8" />
-                <span className="text-lg font-bold text-foreground">Insight</span>
-              </Link>
-            )}
-            {collapsed && (
-              <div className="mx-auto">
-                <img src="/logo-owl.png" alt="Logo" className="h-8 w-8" />
-              </div>
-            )}
-
-            {config.collapsible && (
-              <button
-                onClick={() => setCollapsed(!collapsed)}
-                className={cn(
-                  'rounded-lg p-1.5 transition-colors hover:bg-muted',
-                  collapsed && 'absolute -right-3 top-20 border border-border bg-card shadow-sm',
-                )}
-              >
-                {collapsed ? (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronLeft className="h-4 w-4 text-muted-foreground" />
-                )}
-              </button>
-            )}
+          <div className="flex h-16 flex-shrink-0 items-center border-b border-border px-4">
+            <Link href="/" className="flex items-center gap-2">
+              <img src="/logo-owl.png" alt="Logo" className="h-8 w-8" />
+              <span className="text-lg font-bold text-foreground">Insight</span>
+            </Link>
           </div>
 
           {/* Search */}
-          {config.showSearch && !collapsed && <SidebarSearch />}
+          {config.showSearch && <SidebarSearch />}
 
           {/* Scrollable Content */}
           <ScrollArea className="flex-1">
             {/* Navigation Groups */}
-            <div className={cn('py-2', collapsed && 'px-1')}>
+            <div className="py-2">
               {config.groups.map((group) => (
                 <NavGroupComponent key={group.id} group={group} />
               ))}

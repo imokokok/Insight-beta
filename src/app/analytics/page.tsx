@@ -21,14 +21,14 @@ export default function AnalyticsPage() {
           <Activity className="h-8 w-8 text-primary" />
           {t('nav.monitoring')}
         </h1>
-        <p className="mt-2 text-muted-foreground">预言机分析与监控</p>
+        <p className="mt-2 text-muted-foreground">{t('nav.descriptions.monitoring')}</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="h-auto p-1 bg-muted">
           <TabsTrigger value="dashboard" className="flex items-center gap-2 px-4 py-2 h-auto">
             <BarChart3 className="h-4 w-4" />
-            仪表盘
+            {t('nav.dashboard')}
           </TabsTrigger>
           <TabsTrigger value="comparison" className="flex items-center gap-2 px-4 py-2 h-auto">
             <Layers className="h-4 w-4" />

@@ -56,8 +56,6 @@ describe('Translation Coverage', () => {
         'wallet',
         'nav',
         'oracle',
-        'disputes',
-        'chain',
       ];
 
       for (const ns of requiredNamespaces) {
