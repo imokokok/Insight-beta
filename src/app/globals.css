@@ -731,20 +731,44 @@ body::before {
 /* 价格闪烁动画 - 绿色 */
 @keyframes flash-green {
   0% {
-    background-color: rgba(34, 197, 94, 0.3);
+    background-color: rgba(34, 197, 94, 0.4);
+    background-image: radial-gradient(circle at center, rgba(34, 197, 94, 0.6) 0%, transparent 70%);
+    transform: scale(1);
+  }
+  25% {
+    background-color: rgba(34, 197, 94, 0.35);
+    transform: scale(1.02);
+  }
+  50% {
+    background-color: rgba(34, 197, 94, 0.25);
+    transform: scale(1.01);
   }
   100% {
     background-color: transparent;
+    background-image: none;
+    transform: scale(1);
   }
 }
 
 /* 价格闪烁动画 - 红色 */
 @keyframes flash-red {
   0% {
-    background-color: rgba(239, 68, 68, 0.3);
+    background-color: rgba(239, 68, 68, 0.4);
+    background-image: radial-gradient(circle at center, rgba(239, 68, 68, 0.6) 0%, transparent 70%);
+    transform: scale(1);
+  }
+  25% {
+    background-color: rgba(239, 68, 68, 0.35);
+    transform: scale(1.02);
+  }
+  50% {
+    background-color: rgba(239, 68, 68, 0.25);
+    transform: scale(1.01);
   }
   100% {
     background-color: transparent;
+    background-image: none;
+    transform: scale(1);
   }
 }
 
@@ -828,11 +852,11 @@ body::before {
 
 /* 工具类动画 */
 .animate-flash-green {
-  animation: flash-green 1s ease-out;
+  animation: flash-green 800ms ease-out;
 }
 
 .animate-flash-red {
-  animation: flash-red 1s ease-out;
+  animation: flash-red 800ms ease-out;
 }
 
 .animate-ripple {
@@ -927,11 +951,11 @@ body::before {
 
 /* 价格闪烁工具类 - 使用统一的动画 */
 .animate-price-flash-up {
-  animation: flash-green 500ms ease-out;
+  animation: flash-green 800ms ease-out;
 }
 
 .animate-price-flash-down {
-  animation: flash-red 500ms ease-out;
+  animation: flash-red 800ms ease-out;
 }
 
 .animate-scale-in {
@@ -1222,6 +1246,62 @@ body::before {
 
 .animate-blur-in {
   animation: blurIn 0.4s ease-out;
+}
+
+/* 实时模式脉冲动画 */
+@keyframes realtimePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+  }
+}
+
+.animate-realtime-pulse {
+  animation: realtimePulse 2s ease-in-out infinite;
+}
+
+/* 实时连接状态指示器 */
+@keyframes connectionPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.realtime-indicator-connected {
+  position: relative;
+}
+
+.realtime-indicator-connected::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.4);
+  animation: connectionPulse 1.5s ease-out infinite;
+}
+
+.realtime-indicator-disconnected {
+  position: relative;
+}
+
+.realtime-indicator-disconnected::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.4);
+  animation: connectionPulse 1.5s ease-out infinite;
 }
 
 /* 响应式工具

@@ -3,7 +3,8 @@
 import React, { useMemo, useCallback, useRef, useState } from 'react';
 
 import {
-  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
   MoreHorizontal,
   TrendingUp,
   TrendingDown,
@@ -11,6 +12,8 @@ import {
   Clock,
   Search,
   Download,
+  Settings2,
+  AlignJustify,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +24,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,12 +36,9 @@ import { exportRealtimeToCSV } from '@/shared/utils/export';
 import type { RealtimeComparisonItem } from '@/types/oracle';
 import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
 
-// ============================================================================
-// Types
-// ============================================================================
-
 export type SortField = 'symbol' | 'price' | 'deviation' | 'spread' | 'latency' | 'updated';
 export type SortDirection = 'asc' | 'desc';
+export type ViewDensity = 'compact' | 'comfortable';
 
 export interface TableRowData {
   id: string;
@@ -65,11 +68,14 @@ interface VirtualTableHeaderProps {
   sortDirection: SortDirection;
   onSort: (field: SortField) => void;
   height: number;
+  visibleColumns: ColumnVisibility;
 }
 
 interface VirtualTableRowProps {
   row: TableRowData;
   style: React.CSSProperties;
+  visibleColumns: ColumnVisibility;
+  density: ViewDensity;
 }
 
 interface VirtualTableToolbarProps {
@@ -80,6 +86,10 @@ interface VirtualTableToolbarProps {
   endIndex: number;
   data?: RealtimeComparisonItem[];
   onExport?: (format: 'json' | 'csv') => void;
+  visibleColumns: ColumnVisibility;
+  onVisibleColumnsChange: (columns: ColumnVisibility) => void;
+  density: ViewDensity;
+  onDensityChange: (density: ViewDensity) => void;
 }
 
 interface VirtualTableSkeletonProps {
@@ -90,14 +100,44 @@ interface StatusBadgeProps {
   status: 'active' | 'stale' | 'error' | string;
 }
 
-// ============================================================================
-// Constants
-// ============================================================================
+interface ColumnVisibility {
+  symbol: boolean;
+  protocol: boolean;
+  price: boolean;
+  deviation: boolean;
+  spread: boolean;
+  latency: boolean;
+  status: boolean;
+  confidence: boolean;
+}
 
 const HEADER_HEIGHT = 48;
-const DEFAULT_ROW_HEIGHT = 52;
 const DEFAULT_CONTAINER_HEIGHT = 600;
 const OVERSCAN = 5;
+
+const DENSITY_CONFIG = {
+  compact: {
+    rowHeight: 44,
+    padding: 'py-2',
+    fontSize: 'text-xs',
+  },
+  comfortable: {
+    rowHeight: 60,
+    padding: 'py-3',
+    fontSize: 'text-sm',
+  },
+};
+
+const DEFAULT_COLUMN_VISIBILITY: ColumnVisibility = {
+  symbol: true,
+  protocol: true,
+  price: true,
+  deviation: true,
+  spread: true,
+  latency: true,
+  status: true,
+  confidence: true,
+};
 
 interface HeaderColumn {
   field: SortField | null;
@@ -105,11 +145,8 @@ interface HeaderColumn {
   width: string;
   align: 'left' | 'right' | 'center';
   sortable: boolean;
+  columnKey: keyof ColumnVisibility;
 }
-
-// ============================================================================
-// Formatters
-// ============================================================================
 
 export interface TableFormatters {
   price: (price: number) => string;
@@ -125,7 +162,6 @@ export function createFormatters(): TableFormatters {
       return `$${price.toFixed(4)}`;
     },
     deviation: (value: number) => {
-      // value 是小数形式 (如 0.01 = 1%)，转换为百分比显示
       const percentValue = Math.abs(value) * 100;
       if (percentValue < 0.01) return '<0.01%';
       return `${percentValue.toFixed(2)}%`;
@@ -138,7 +174,6 @@ export function createFormatters(): TableFormatters {
 }
 
 export function getDeviationColor(deviation: number): string {
-  // deviation 是小数形式 (如 0.01 = 1%)
   const abs = Math.abs(deviation);
   if (abs > 0.02) return 'text-red-600 bg-red-50';
   if (abs > 0.01) return 'text-amber-600 bg-amber-50';
@@ -153,7 +188,6 @@ export function getLatencyColor(latency: number): string {
 }
 
 export function getSpreadVariant(spreadPercent: number): 'default' | 'secondary' | 'destructive' {
-  // spreadPercent 是小数形式 (如 0.01 = 1%)
   if (spreadPercent > 0.01) return 'destructive';
   if (spreadPercent > 0.005) return 'secondary';
   return 'default';
@@ -161,38 +195,25 @@ export function getSpreadVariant(spreadPercent: number): 'default' | 'secondary'
 
 const formatters = createFormatters();
 
-// ============================================================================
-// Sub-components
-// ============================================================================
-
 const StatusBadge = React.memo(function StatusBadge({ status }: StatusBadgeProps) {
   const { t } = useI18n();
 
   switch (status) {
     case 'active':
       return (
-        <Badge
-          variant="default"
-          className={cn('bg-emerald-500', 'text-xs')}
-        >
+        <Badge variant="default" className={cn('bg-emerald-500', 'text-xs')}>
           {t('comparison.status.active')}
         </Badge>
       );
     case 'stale':
       return (
-        <Badge
-          variant="secondary"
-          className={cn('bg-amber-500/10', 'text-amber-600', 'text-xs')}
-        >
+        <Badge variant="secondary" className={cn('bg-amber-500/10', 'text-amber-600', 'text-xs')}>
           {t('comparison.status.stale')}
         </Badge>
       );
     case 'error':
       return (
-        <Badge
-          variant="destructive"
-          className="text-xs"
-        >
+        <Badge variant="destructive" className="text-xs">
           {t('comparison.status.error')}
         </Badge>
       );
@@ -206,8 +227,11 @@ const StatusBadge = React.memo(function StatusBadge({ status }: StatusBadgeProps
 });
 
 const VirtualTableHeader = React.memo(function VirtualTableHeader({
+  sortField,
+  sortDirection,
   onSort,
   height,
+  visibleColumns,
 }: VirtualTableHeaderProps) {
   const { t } = useI18n();
 
@@ -218,6 +242,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       width: 'w-[100px]',
       align: 'left',
       sortable: true,
+      columnKey: 'symbol',
     },
     {
       field: null,
@@ -225,6 +250,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       width: 'flex-1',
       align: 'left',
       sortable: false,
+      columnKey: 'protocol',
     },
     {
       field: 'price',
@@ -232,6 +258,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       width: 'w-[120px]',
       align: 'right',
       sortable: true,
+      columnKey: 'price',
     },
     {
       field: 'deviation',
@@ -239,6 +266,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       width: 'w-[120px]',
       align: 'right',
       sortable: true,
+      columnKey: 'deviation',
     },
     {
       field: 'spread',
@@ -246,6 +274,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       width: 'w-[100px]',
       align: 'right',
       sortable: true,
+      columnKey: 'spread',
     },
     {
       field: 'latency',
@@ -253,6 +282,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       width: 'w-[100px]',
       align: 'right',
       sortable: true,
+      columnKey: 'latency',
     },
     {
       field: null,
@@ -260,6 +290,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       width: 'w-[80px]',
       align: 'center',
       sortable: false,
+      columnKey: 'status',
     },
     {
       field: null,
@@ -267,17 +298,19 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       width: 'w-[80px]',
       align: 'right',
       sortable: false,
+      columnKey: 'confidence',
     },
-    { field: null, label: '', width: 'w-[50px]', align: 'left', sortable: false },
   ];
+
+  const visibleColumnsList = columns.filter((col) => visibleColumns[col.columnKey]);
 
   return (
     <div
       className="sticky top-0 z-10 border-b bg-muted/95 backdrop-blur supports-[backdrop-filter]:bg-muted/60"
-      style={{ height }}
+      style={{ height, contain: 'layout style' }}
     >
       <div className="flex h-full items-center px-4 text-sm font-medium">
-        {columns.map((col, index) => (
+        {visibleColumnsList.map((col, index) => (
           <div
             key={index}
             className={`${col.width} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}`}
@@ -287,68 +320,104 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
                 variant="ghost"
                 size="sm"
                 onClick={() => onSort(col.field as SortField)}
-                className="h-8 font-medium"
+                className={cn(
+                  'h-8 font-medium',
+                  sortField === col.field && 'bg-primary/10 text-primary',
+                )}
               >
                 {col.label}
-                <ArrowUpDown className="ml-2 h-3 w-3" />
+                {sortField === col.field ? (
+                  sortDirection === 'asc' ? (
+                    <ArrowUp className="ml-2 h-3 w-3" />
+                  ) : (
+                    <ArrowDown className="ml-2 h-3 w-3" />
+                  )
+                ) : null}
               </Button>
             ) : (
               col.label
             )}
           </div>
         ))}
+        <div className="w-[50px]" />
       </div>
     </div>
   );
 });
 
-const VirtualTableRow = React.memo(function VirtualTableRow({ row, style }: VirtualTableRowProps) {
+const VirtualTableRow = React.memo(function VirtualTableRow({
+  row,
+  style,
+  visibleColumns,
+  density,
+}: VirtualTableRowProps) {
   const { t } = useI18n();
+  const densityConfig = DENSITY_CONFIG[density];
 
   return (
     <div
-      className="flex items-center border-b px-4 transition-colors hover:bg-muted/30"
-      style={style}
+      className={cn(
+        'flex items-center border-b px-4 transition-colors hover:bg-muted/30',
+        densityConfig.padding,
+        densityConfig.fontSize,
+      )}
+      style={{ ...style, contain: 'layout style', contentVisibility: 'auto' }}
     >
-      <div className="w-[100px] truncate font-medium">{row.symbol}</div>
-      <div className="flex-1 capitalize">
-        {PROTOCOL_DISPLAY_NAMES[row.protocol as keyof typeof PROTOCOL_DISPLAY_NAMES]}
-      </div>
-      <div className="w-[120px] text-right font-mono">{formatters.price(row.price)}</div>
-      <div className="w-[120px] text-right">
-        <span
-          className={cn(
-            'inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium',
-            getDeviationColor(row.deviation),
-          )}
-        >
-          {row.deviation > 0 ? (
-            <TrendingUp className="h-3 w-3" />
-          ) : row.deviation < 0 ? (
-            <TrendingDown className="h-3 w-3" />
-          ) : (
-            <Minus className="h-3 w-3" />
-          )}
-          {formatters.deviation(row.deviation)}
-        </span>
-      </div>
-      <div className="w-[100px] text-right">
-        <Badge variant={getSpreadVariant(row.spreadPercent)} className="text-xs">
-          ±{(row.spreadPercent * 100).toFixed(2)}%
-        </Badge>
-      </div>
-      <div className="w-[100px] text-right">
-        <span className={cn('text-xs', getLatencyColor(row.latency))}>
-          <Clock className="mr-1 inline h-3 w-3" />
-          {formatters.latency(row.latency)}
-        </span>
-      </div>
-      <div className="w-[80px] text-center">
-        <StatusBadge status={row.status} />
-      </div>
-      <div className="w-[80px] text-right">
-        <span className="text-xs text-muted-foreground">{(row.confidence * 100).toFixed(0)}%</span>
-      </div>
+      {visibleColumns.symbol && <div className="w-[100px] truncate font-medium">{row.symbol}</div>}
+      {visibleColumns.protocol && (
+        <div className="flex-1 capitalize">
+          {PROTOCOL_DISPLAY_NAMES[row.protocol as keyof typeof PROTOCOL_DISPLAY_NAMES]}
+        </div>
+      )}
+      {visibleColumns.price && (
+        <div className="w-[120px] text-right font-mono">{formatters.price(row.price)}</div>
+      )}
+      {visibleColumns.deviation && (
+        <div className="w-[120px] text-right">
+          <span
+            className={cn(
+              'inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium',
+              getDeviationColor(row.deviation),
+            )}
+          >
+            {row.deviation > 0 ? (
+              <TrendingUp className="h-3 w-3" />
+            ) : row.deviation < 0 ? (
+              <TrendingDown className="h-3 w-3" />
+            ) : (
+              <Minus className="h-3 w-3" />
+            )}
+            {formatters.deviation(row.deviation)}
+          </span>
+        </div>
+      )}
+      {visibleColumns.spread && (
+        <div className="w-[100px] text-right">
+          <Badge variant={getSpreadVariant(row.spreadPercent)} className="text-xs">
+            ±{(row.spreadPercent * 100).toFixed(2)}%
+          </Badge>
+        </div>
+      )}
+      {visibleColumns.latency && (
+        <div className="w-[100px] text-right">
+          <span className={cn('text-xs', getLatencyColor(row.latency))}>
+            <Clock className="mr-1 inline h-3 w-3" />
+            {formatters.latency(row.latency)}
+          </span>
+        </div>
+      )}
+      {visibleColumns.status && (
+        <div className="w-[80px] text-center">
+          <StatusBadge status={row.status} />
+        </div>
+      )}
+      {visibleColumns.confidence && (
+        <div className="w-[80px] text-right">
+          <span className="text-xs text-muted-foreground">
+            {(row.confidence * 100).toFixed(0)}%
+          </span>
+        </div>
+      )}
       <div className="w-[50px]">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -374,8 +443,48 @@ const VirtualTableToolbar = React.memo(function VirtualTableToolbar({
   endIndex,
   data,
   onExport,
+  visibleColumns,
+  onVisibleColumnsChange,
+  density,
+  onDensityChange,
 }: VirtualTableToolbarProps) {
   const { t } = useI18n();
+
+  const handleColumnToggle = (columnKey: keyof ColumnVisibility) => {
+    onVisibleColumnsChange({
+      ...visibleColumns,
+      [columnKey]: !visibleColumns[columnKey],
+    });
+  };
+
+  const handleSelectAll = () => {
+    onVisibleColumnsChange(DEFAULT_COLUMN_VISIBILITY);
+  };
+
+  const handleDeselectAll = () => {
+    const allHidden: ColumnVisibility = {
+      symbol: false,
+      protocol: false,
+      price: false,
+      deviation: false,
+      spread: false,
+      latency: false,
+      status: false,
+      confidence: false,
+    };
+    onVisibleColumnsChange(allHidden);
+  };
+
+  const columnOptions: { key: keyof ColumnVisibility; label: string }[] = [
+    { key: 'symbol', label: t('comparison.table.assetPair') },
+    { key: 'protocol', label: t('comparison.table.protocol') },
+    { key: 'price', label: t('comparison.table.price') },
+    { key: 'deviation', label: t('comparison.table.deviation') },
+    { key: 'spread', label: t('comparison.table.spread') },
+    { key: 'latency', label: t('comparison.table.latency') },
+    { key: 'status', label: t('comparison.table.status') },
+    { key: 'confidence', label: t('comparison.table.confidence') },
+  ];
 
   return (
     <CardHeader className="pb-4">
@@ -396,6 +505,71 @@ const VirtualTableToolbar = React.memo(function VirtualTableToolbar({
               className="w-64 pl-9"
             />
           </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Settings2 className="mr-1 h-4 w-4" />
+                {t('comparison.table.columnConfig')}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>{t('comparison.table.visibleColumns')}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {columnOptions.map((option) => (
+                <DropdownMenuCheckboxItem
+                  key={option.key}
+                  checked={visibleColumns[option.key]}
+                  onCheckedChange={() => handleColumnToggle(option.key)}
+                >
+                  {option.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+              <DropdownMenuSeparator />
+              <div className="flex gap-1 px-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 flex-1 text-xs"
+                  onClick={handleSelectAll}
+                >
+                  {t('comparison.table.selectAll')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 flex-1 text-xs"
+                  onClick={handleDeselectAll}
+                >
+                  {t('comparison.table.deselectAll')}
+                </Button>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <AlignJustify className="mr-1 h-4 w-4" />
+                {density === 'compact'
+                  ? t('comparison.table.densityCompact')
+                  : t('comparison.table.densityComfortable')}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onDensityChange('compact')}>
+                <span className={cn(density === 'compact' && 'font-semibold')}>
+                  {t('comparison.table.densityCompact')}
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onDensityChange('comfortable')}>
+                <span className={cn(density === 'comfortable' && 'font-semibold')}>
+                  {t('comparison.table.densityComfortable')}
+                </span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -457,25 +631,22 @@ const VirtualTableSkeleton = React.memo(function VirtualTableSkeleton({
   );
 });
 
-// ============================================================================
-// Main Component
-// ============================================================================
-
 export const VirtualTable = React.memo(function VirtualTable({
   data,
   isLoading,
   onExport,
-  rowHeight = DEFAULT_ROW_HEIGHT,
   containerHeight = DEFAULT_CONTAINER_HEIGHT,
 }: VirtualTableProps) {
-  useI18n();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('symbol');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [scrollTop, setScrollTop] = useState(0);
+  const [visibleColumns, setVisibleColumns] = useState<ColumnVisibility>(DEFAULT_COLUMN_VISIBILITY);
+  const [density, setDensity] = useState<ViewDensity>('comfortable');
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 转换数据为表格格式
+  const rowHeight = DENSITY_CONFIG[density].rowHeight;
+
   const tableData = useMemo<TableRowData[]>(() => {
     if (!data) return [];
 
@@ -509,7 +680,6 @@ export const VirtualTable = React.memo(function VirtualTable({
     return result;
   }, [data]);
 
-  // 筛选数据
   const filteredData = useMemo(() => {
     if (!searchTerm) return tableData;
 
@@ -519,7 +689,6 @@ export const VirtualTable = React.memo(function VirtualTable({
     );
   }, [tableData, searchTerm]);
 
-  // 排序数据
   const sortedData = useMemo(() => {
     return [...filteredData].sort((a, b) => {
       let comparison = 0;
@@ -547,7 +716,6 @@ export const VirtualTable = React.memo(function VirtualTable({
     });
   }, [filteredData, sortField, sortDirection]);
 
-  // 虚拟滚动计算
   const { virtualItems, totalHeight, startIndex, endIndex } = useMemo(() => {
     const startIndex = Math.max(0, Math.floor(scrollTop / rowHeight) - OVERSCAN);
     const visibleCount = Math.ceil(containerHeight / rowHeight);
@@ -576,7 +744,6 @@ export const VirtualTable = React.memo(function VirtualTable({
     };
   }, [scrollTop, sortedData, rowHeight, containerHeight]);
 
-  // 滚动处理
   const scrollTimeoutRef = useRef<number | null>(null);
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     if (scrollTimeoutRef.current) {
@@ -587,7 +754,6 @@ export const VirtualTable = React.memo(function VirtualTable({
     });
   }, []);
 
-  // 排序处理
   const handleSort = useCallback((field: SortField) => {
     setSortField((prev) => {
       if (prev === field) {
@@ -597,6 +763,14 @@ export const VirtualTable = React.memo(function VirtualTable({
       setSortDirection('asc');
       return field;
     });
+  }, []);
+
+  const handleVisibleColumnsChange = useCallback((columns: ColumnVisibility) => {
+    setVisibleColumns(columns);
+  }, []);
+
+  const handleDensityChange = useCallback((newDensity: ViewDensity) => {
+    setDensity(newDensity);
   }, []);
 
   if (isLoading) {
@@ -613,13 +787,20 @@ export const VirtualTable = React.memo(function VirtualTable({
         endIndex={endIndex}
         data={data}
         onExport={onExport}
+        visibleColumns={visibleColumns}
+        onVisibleColumnsChange={handleVisibleColumnsChange}
+        density={density}
+        onDensityChange={handleDensityChange}
       />
 
       <CardContent>
         <div
           ref={containerRef}
           className="virtual-list-container overflow-auto rounded-lg border"
-          style={{ height: containerHeight }}
+          style={{
+            height: containerHeight,
+            contain: 'strict',
+          }}
           onScroll={handleScroll}
         >
           <VirtualTableHeader
@@ -627,12 +808,21 @@ export const VirtualTable = React.memo(function VirtualTable({
             sortDirection={sortDirection}
             onSort={handleSort}
             height={HEADER_HEIGHT}
+            visibleColumns={visibleColumns}
           />
 
-          <div style={{ height: totalHeight, position: 'relative' }}>
+          <div style={{ height: totalHeight, position: 'relative', contain: 'layout style' }}>
             {virtualItems.map(({ data: row, style }) => {
               if (!row) return null;
-              return <VirtualTableRow key={row.id} row={row} style={style} />;
+              return (
+                <VirtualTableRow
+                  key={row.id}
+                  row={row}
+                  style={style}
+                  visibleColumns={visibleColumns}
+                  density={density}
+                />
+              );
             })}
           </div>
         </div>

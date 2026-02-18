@@ -66,7 +66,12 @@ interface DropdownMenuContentProps {
   onCloseAutoFocus?: boolean;
 }
 
-function DropdownMenuContent({ children, className, align = 'end', onCloseAutoFocus = true }: DropdownMenuContentProps) {
+function DropdownMenuContent({
+  children,
+  className,
+  align = 'end',
+  onCloseAutoFocus = true,
+}: DropdownMenuContentProps) {
   const { open, setOpen } = useDropdownMenuContext();
 
   if (!open) return null;
@@ -98,7 +103,7 @@ function DropdownMenuItem({ className, inset, ...props }: DropdownMenuItemProps)
     <button
       type="button"
       className={cn(
-        'focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        'focus:text-accent-foreground relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         inset && 'pl-8',
         className,
       )}
@@ -111,10 +116,70 @@ function DropdownMenuSeparator({ className }: { className?: string }) {
   return <div className={cn('-mx-1 my-1 h-px bg-border', className)} />;
 }
 
+interface DropdownMenuLabelProps extends React.HTMLAttributes<HTMLDivElement> {
+  inset?: boolean;
+}
+
+function DropdownMenuLabel({ className, inset, ...props }: DropdownMenuLabelProps) {
+  return (
+    <div
+      className={cn('px-2 py-1.5 text-sm font-semibold', inset && 'pl-8', className)}
+      {...props}
+    />
+  );
+}
+
+interface DropdownMenuCheckboxItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+}
+
+function DropdownMenuCheckboxItem({
+  className,
+  checked = false,
+  onCheckedChange,
+  children,
+  ...props
+}: DropdownMenuCheckboxItemProps) {
+  return (
+    <button
+      type="button"
+      role="menuitemcheckbox"
+      aria-checked={checked}
+      className={cn(
+        'focus:text-accent-foreground relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        className,
+      )}
+      onClick={() => onCheckedChange?.(!checked)}
+      {...props}
+    >
+      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        {checked && (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        )}
+      </span>
+      {children}
+    </button>
+  );
+}
+
 export {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuLabel,
+  DropdownMenuCheckboxItem,
 };

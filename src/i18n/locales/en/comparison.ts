@@ -1,6 +1,7 @@
 export const comparison = {
   title: 'Oracle Comparison Analytics',
-  description: 'Multi-dimensional comparison of oracle protocols price, latency, and cost efficiency',
+  description:
+    'Multi-dimensional comparison of oracle protocols price, latency, and cost efficiency',
   pageName: 'Oracle Comparison Analysis',
   liveConnected: 'Live Connected',
   controls: {
@@ -27,13 +28,13 @@ export const comparison = {
     export: 'Export',
     exportJSON: 'Export as JSON',
     exportCSV: 'Export as CSV',
-    filterActive: 'Filter Active:'
+    filterActive: 'Filter Active:',
   },
   status: {
     stale: 'Stale',
     active: 'Active',
     error: 'Error',
-    unknown: 'Unknown'
+    unknown: 'Unknown',
   },
   table: {
     assetPair: 'Asset Pair',
@@ -48,7 +49,15 @@ export const comparison = {
     setAlert: 'Set Alert',
     searchPlaceholder: 'Search asset pair or protocol...',
     total: 'Total',
-    showing: 'Showing'
+    showing: 'Showing',
+    columnConfig: 'Columns',
+    visibleColumns: 'Visible Columns',
+    selectAll: 'Select All',
+    deselectAll: 'Deselect All',
+    densityCompact: 'Compact',
+    densityComfortable: 'Comfortable',
+    records: 'records',
+    search: 'Search',
   },
   heatmap: {
     title: 'Price Deviation Heatmap',
@@ -64,8 +73,8 @@ export const comparison = {
       deviationValue: 'Deviation Value',
       deviationPercent: 'Deviation %',
       updateTime: 'Update Time',
-      status: 'Status'
-    }
+      status: 'Status',
+    },
   },
   latency: {
     title: 'Latency Analysis',
@@ -81,7 +90,7 @@ export const comparison = {
     tabs: {
       distribution: 'Latency Distribution',
       frequency: 'Update Frequency',
-      trends: 'Trend Analysis'
+      trends: 'Trend Analysis',
     },
     threshold: 'Threshold',
     vsLastHour: 'vs last hour',
@@ -89,8 +98,8 @@ export const comparison = {
       avgLatency: 'Avg Latency',
       maxLatency: 'Max Latency',
       healthyNodes: 'Healthy Nodes',
-      degradedNodes: 'Degraded Nodes'
-    }
+      degradedNodes: 'Degraded Nodes',
+    },
   },
   cost: {
     title: 'Cost Efficiency Analysis',
@@ -101,7 +110,7 @@ export const comparison = {
     tabs: {
       overallScore: 'Overall Score',
       costComparison: 'Cost Comparison',
-      recommendations: 'Recommendations'
+      recommendations: 'Recommendations',
     },
     bestValue: 'Best Value',
     lowestCost: 'Lowest Cost',
@@ -121,15 +130,16 @@ export const comparison = {
     alternatives: 'Alternatives',
     estimatedMonthlyCost: 'Est. Monthly Cost',
     calculationNote: 'Cost Calculation Note',
-    calculationDescription: 'Cost estimates are based on public pricing and on-chain gas fees. Actual costs may vary based on usage, network congestion, and protocol pricing policies. Contact the protocol directly for accurate quotes.',
+    calculationDescription:
+      'Cost estimates are based on public pricing and on-chain gas fees. Actual costs may vary based on usage, network congestion, and protocol pricing policies. Contact the protocol directly for accurate quotes.',
     radar: {
       costAdvantage: 'Cost Advantage',
       overallValue: 'Overall Value',
       accuracy: 'Data Accuracy',
       uptime: 'Uptime',
       coverage: 'Coverage',
-      multiChain: 'Multi-Chain'
-    }
+      multiChain: 'Multi-Chain',
+    },
   },
   realtime: {
     title: 'Realtime Price Comparison',
@@ -146,7 +156,7 @@ export const comparison = {
     deviationFromConsensus: 'Deviation from Consensus',
     mean: 'Mean',
     spreadRange: 'Spread Range',
-    selectAssetPair: 'Select an asset pair to view details'
+    selectAssetPair: 'Select an asset pair to view details',
   },
   toast: {
     exportSuccess: 'Export Successful',
@@ -154,6 +164,6 @@ export const comparison = {
     latencyExported: 'Latency data exported as CSV',
     costExported: 'Cost data exported as CSV',
     realtimeExported: 'Realtime data exported as CSV',
-    allExported: 'All data exported as JSON'
-  }
+    allExported: 'All data exported as JSON',
+  },
 };

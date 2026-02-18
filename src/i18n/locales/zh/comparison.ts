@@ -27,13 +27,13 @@ export const comparison = {
     export: '导出',
     exportJSON: '导出为 JSON',
     exportCSV: '导出为 CSV',
-    filterActive: '已启用筛选:'
+    filterActive: '已启用筛选:',
   },
   status: {
     stale: '陈旧',
     active: '活跃',
     error: '错误',
-    unknown: '未知'
+    unknown: '未知',
   },
   table: {
     assetPair: '资产对',
@@ -48,7 +48,15 @@ export const comparison = {
     setAlert: '设置告警',
     searchPlaceholder: '搜索资产对或协议...',
     total: '总计',
-    showing: '显示'
+    showing: '显示',
+    columnConfig: '列配置',
+    visibleColumns: '可见列',
+    selectAll: '全选',
+    deselectAll: '取消全选',
+    densityCompact: '紧凑',
+    densityComfortable: '宽松',
+    records: '条记录',
+    search: '搜索',
   },
   heatmap: {
     title: '价格偏离热力图',
@@ -64,8 +72,8 @@ export const comparison = {
       deviationValue: '偏离值',
       deviationPercent: '偏离百分比',
       updateTime: '更新时间',
-      status: '状态'
-    }
+      status: '状态',
+    },
   },
   latency: {
     title: '延迟分析',
@@ -81,7 +89,7 @@ export const comparison = {
     tabs: {
       distribution: '延迟分布',
       frequency: '更新频率',
-      trends: '趋势分析'
+      trends: '趋势分析',
     },
     threshold: '阈值',
     vsLastHour: '较上小时',
@@ -89,8 +97,8 @@ export const comparison = {
       avgLatency: '平均延迟',
       maxLatency: '最大延迟',
       healthyNodes: '健康节点',
-      degradedNodes: '降级节点'
-    }
+      degradedNodes: '降级节点',
+    },
   },
   cost: {
     title: '成本效益分析',
@@ -101,7 +109,7 @@ export const comparison = {
     tabs: {
       overallScore: '综合评分',
       costComparison: '成本对比',
-      recommendations: '使用建议'
+      recommendations: '使用建议',
     },
     estimatedMonthlyCost: '预估月成本',
     calculationNote: '成本计算说明',
@@ -128,8 +136,8 @@ export const comparison = {
       accuracy: '数据准确度',
       uptime: '在线率',
       coverage: '覆盖范围',
-      multiChain: '多链支持'
-    }
+      multiChain: '多链支持',
+    },
   },
   realtime: {
     title: '实时价格对比',
@@ -146,7 +154,7 @@ export const comparison = {
     deviationFromConsensus: '偏离共识价',
     mean: '平均值',
     spreadRange: '价差范围',
-    selectAssetPair: '选择资产对查看详情'
+    selectAssetPair: '选择资产对查看详情',
   },
   toast: {
     exportSuccess: '导出成功',
@@ -154,6 +162,6 @@ export const comparison = {
     latencyExported: '延迟数据已导出为 CSV',
     costExported: '成本数据已导出为 CSV',
     realtimeExported: '实时数据已导出为 CSV',
-    allExported: '所有数据已导出为 JSON'
-  }
+    allExported: '所有数据已导出为 JSON',
+  },
 };
