@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
@@ -146,7 +147,6 @@ export function Tooltip({
       className={cn('relative inline-block', className)}
       onMouseEnter={showTooltip}
       onMouseLeave={hideTooltip}
-
     >
       {children}
 
@@ -158,7 +158,6 @@ export function Tooltip({
             positionClasses[positionState],
             themeClasses[theme],
           )}
-
         >
           <div className="relative z-10">{content}</div>
           <div
@@ -182,16 +181,16 @@ interface ContextualHelpProps {
 
 export function ContextualHelp({ children, helpId, title, className }: ContextualHelpProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useI18n();
 
   return (
     <div className={cn('relative inline-flex items-center gap-2', className)}>
       {children}
 
-      <Tooltip content="Click for help" position="right">
+      <Tooltip content={t('common.tooltip.clickForHelp')} position="right">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="rounded-full p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
-
         >
           <svg
             className="h-4 w-4 text-gray-500"
@@ -230,6 +229,7 @@ export function ContextualHelpPanel({
   className,
 }: ContextualHelpPanelProps) {
   const helpContent = getHelpContent(helpId);
+  const { t } = useI18n();
 
   return (
     <div
@@ -242,7 +242,7 @@ export function ContextualHelpPanel({
     >
       <div className="dark:border-dark-700 flex items-center justify-between border-b border-gray-200 p-4">
         <h3 className="font-semibold text-gray-900 dark:text-white">
-          {title || helpContent?.title || 'Help'}
+          {title || helpContent?.title || t('common.help.title')}
         </h3>
         <button
           onClick={onClose}
@@ -274,7 +274,7 @@ export function ContextualHelpPanel({
             {helpContent.examples && helpContent.examples.length > 0 && (
               <div className="mb-4">
                 <h4 className="dark:text-dark-400 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Examples
+                  {t('common.help.examples')}
                 </h4>
                 <ul className="space-y-2">
                   {helpContent.examples.map((example, index) => (
@@ -291,7 +291,7 @@ export function ContextualHelpPanel({
             {helpContent.tips && helpContent.tips.length > 0 && (
               <div className="mb-4">
                 <h4 className="dark:text-dark-400 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Tips
+                  {t('common.help.tips')}
                 </h4>
                 <ul className="space-y-1">
                   {helpContent.tips.map((tip, index) => (
@@ -322,7 +322,7 @@ export function ContextualHelpPanel({
             {helpContent.relatedTopics && helpContent.relatedTopics.length > 0 && (
               <div>
                 <h4 className="dark:text-dark-400 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Related Topics
+                  {t('common.help.relatedTopics')}
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {helpContent.relatedTopics.map((topic, index) => (
@@ -339,17 +339,17 @@ export function ContextualHelpPanel({
           </>
         ) : (
           <p className="dark:text-dark-400 text-sm text-gray-500">
-            No help content available for this topic.
+            {t('common.help.noHelpContent')}
           </p>
         )}
       </div>
 
       <div className="dark:border-dark-700 dark:bg-dark-900 flex items-center justify-between rounded-b-xl border-t border-gray-200 bg-gray-50 p-3">
         <span className="dark:text-dark-400 text-xs text-gray-500">
-          Press ? for keyboard shortcuts
+          {t('common.help.pressForShortcuts')}
         </span>
         <a href="/docs" className="text-xs text-primary-600 hover:underline dark:text-primary-400">
-          View full documentation →
+          {t('common.help.viewDocs')}
         </a>
       </div>
     </div>

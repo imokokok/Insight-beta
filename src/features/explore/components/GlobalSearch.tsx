@@ -19,32 +19,15 @@ interface GlobalSearchProps {
   autoFocus?: boolean;
 }
 
-export function GlobalSearch({
-  className,
-  placeholder,
-  autoFocus = false,
-}: GlobalSearchProps) {
-  const { lang } = useI18n();
+export function GlobalSearch({ className, placeholder, autoFocus = false }: GlobalSearchProps) {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const {
-    query,
-    setQuery,
-    results,
-    total,
-    isLoading,
-    error,
-    clearSearch,
-  } = useGlobalSearch();
-
-  const defaultPlaceholder =
-    lang === 'zh'
-      ? '搜索交易对、协议、地址或链...'
-      : 'Search pairs, protocols, addresses or chains...';
+  const { query, setQuery, results, total, isLoading, error, clearSearch } = useGlobalSearch();
 
   const handleResultSelect = useCallback(
     (result: SearchResult) => {
@@ -121,7 +104,7 @@ export function GlobalSearch({
   return (
     <div ref={containerRef} className={cn('relative', className)}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
         <Input
           ref={inputRef}
@@ -134,25 +117,23 @@ export function GlobalSearch({
               setIsOpen(true);
             }
           }}
-          placeholder={placeholder || defaultPlaceholder}
+          placeholder={placeholder || t('explore.search.placeholder')}
           autoFocus={autoFocus}
           className="pl-10 pr-10"
-          aria-label="Global search"
+          aria-label={t('explore.search.ariaLabel')}
           aria-expanded={showResults}
           aria-haspopup="listbox"
           role="combobox"
         />
 
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          {isLoading && (
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          )}
+        <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1">
+          {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
 
           {query && !isLoading && (
             <button
               onClick={handleClear}
-              className="rounded-sm p-1 hover:bg-muted transition-colors"
-              aria-label="Clear search"
+              className="rounded-sm p-1 transition-colors hover:bg-muted"
+              aria-label={t('explore.search.clearAriaLabel')}
             >
               <X className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
@@ -162,21 +143,17 @@ export function GlobalSearch({
 
       {showResults && (
         <div
-          className="absolute left-0 right-0 top-full mt-2 rounded-lg border border-border bg-popover shadow-lg z-50 overflow-hidden"
+          className="bg-popover absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-border shadow-lg"
           role="listbox"
         >
           {isLoading && results.length === 0 ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin mr-2" />
-              <span>{lang === 'zh' ? '搜索中...' : 'Searching...'}</span>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              <span>{t('explore.search.searching')}</span>
             </div>
           ) : error ? (
-            <div className="px-4 py-8 text-center text-destructive">
-              <p>
-                {lang === 'zh'
-                  ? '搜索失败，请重试'
-                  : 'Search failed, please try again'}
-              </p>
+            <div className="text-destructive px-4 py-8 text-center">
+              <p>{t('explore.search.searchFailed')}</p>
             </div>
           ) : (
             <>
@@ -190,9 +167,7 @@ export function GlobalSearch({
 
               {total > results.length && (
                 <div className="border-t border-border px-4 py-3 text-center text-sm text-muted-foreground">
-                  {lang === 'zh'
-                    ? `显示 ${results.length} 条，共 ${total} 条结果`
-                    : `Showing ${results.length} of ${total} results`}
+                  {t('explore.search.showingResults', { count: results.length, total })}
                 </div>
               )}
             </>

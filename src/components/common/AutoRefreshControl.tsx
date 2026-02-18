@@ -20,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 interface AutoRefreshControlProps {
@@ -47,6 +48,7 @@ export function AutoRefreshControl({
   className,
 }: AutoRefreshControlProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useI18n();
 
   const formatTime = (ms: number) => {
     const seconds = Math.ceil(ms / 1000);
@@ -63,7 +65,7 @@ export function AutoRefreshControl({
         size="sm"
         onClick={onToggle}
         className={cn('relative h-8 w-8 p-0', isEnabled && 'text-green-600 hover:text-green-700')}
-        title={isEnabled ? 'Pause auto refresh' : 'Start auto refresh'}
+        title={isEnabled ? t('common.autoRefresh.pause') : t('common.autoRefresh.start')}
       >
         {isEnabled ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
 
@@ -103,13 +105,18 @@ export function AutoRefreshControl({
       {/* 间隔设置 */}
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Refresh interval">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            title={t('common.autoRefresh.interval')}
+          >
             <Settings2 className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-            Refresh Interval
+            {t('common.autoRefresh.intervalLabel')}
           </div>
           {intervals.map((item) => (
             <DropdownMenuItem

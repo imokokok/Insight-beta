@@ -233,11 +233,7 @@ function NavItemComponent({ item, level = 0 }: NavItemProps) {
           {content}
         </Link>
       ) : (
-        <button
-          onClick={handleClick}
-          data-tour={item.id}
-          className={baseClassName}
-        >
+        <button onClick={handleClick} data-tour={item.id} className={baseClassName}>
           {content}
         </button>
       )}
@@ -376,6 +372,7 @@ interface EnhancedSidebarProps {
 }
 
 export function EnhancedSidebar({ config = defaultNavConfig, className }: EnhancedSidebarProps) {
+  const { t } = useI18n();
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
     const initial = new Set<string>();
     config.groups.forEach((group) => {
@@ -420,7 +417,7 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
     return (
       <aside
         className={cn(
-          'h-screen sticky top-0 border-r border-border bg-card',
+          'sticky top-0 h-screen border-r border-border bg-card',
           'flex flex-col',
           className,
         )}
@@ -434,7 +431,7 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
       <TooltipProvider delayDuration={0}>
         <aside
           className={cn(
-            'h-screen sticky top-0 border-r border-border bg-card',
+            'sticky top-0 h-screen border-r border-border bg-card',
             'flex flex-col',
             className,
           )}
@@ -455,7 +452,7 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
               >
                 <Image
                   src="/logo-owl.png"
-                  alt="Insight Logo"
+                  alt={t('app.logoAlt')}
                   width={28}
                   height={28}
                   className="h-full w-full object-contain transition-transform duration-300 group-hover:rotate-3"
@@ -464,10 +461,10 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
               </motion.div>
               <div className="flex flex-col">
                 <span className="text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
-                  Insight
+                  {t('app.brand')}
                 </span>
                 <span className="text-[10px] font-medium text-muted-foreground">
-                  Oracle Analytics
+                  {t('app.subtitle')}
                 </span>
               </div>
             </Link>

@@ -544,6 +544,12 @@ export function EmptyProtocolsState({
   animated?: boolean;
 }) {
   const { t } = useI18n();
+  const protocols = [
+    t('common.chainlink'),
+    t('common.pythNetwork'),
+    t('common.redstone'),
+    t('common.uma'),
+  ];
   return (
     <UnifiedEmptyState
       icon={Globe}
@@ -562,7 +568,7 @@ export function EmptyProtocolsState({
       }
     >
       <div className="mt-4 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
-        {['Chainlink', 'Pyth', 'RedStone', 'UMA'].map((protocol) => (
+        {protocols.map((protocol) => (
           <div key={protocol} className="rounded-lg bg-primary/10 px-3 py-2">
             <span className="text-primary-dark text-sm font-medium">{protocol}</span>
           </div>
@@ -587,7 +593,11 @@ export function EmptyPriceDataState({
   return (
     <UnifiedEmptyState
       icon={TrendingUp}
-      title={pair ? t('protocol.emptyStates.dataUnavailable', { pair }) : t('protocol.emptyStates.selectTradingPair')}
+      title={
+        pair
+          ? t('protocol.emptyStates.dataUnavailable', { pair })
+          : t('protocol.emptyStates.selectTradingPair')
+      }
       description={
         pair
           ? t('protocol.emptyStates.dataSynchronizing')
@@ -670,9 +680,7 @@ export function EmptyFirstItemState({
     <UnifiedEmptyState
       icon={Plus}
       title={t('common.createNew')}
-      description={
-        description || t('protocol.emptyStates.noDataDesc')
-      }
+      description={description || t('protocol.emptyStates.noDataDesc')}
       variant="action"
       className={className}
       animated={animated}

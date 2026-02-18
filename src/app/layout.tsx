@@ -5,7 +5,6 @@ import { cookies, headers } from 'next/headers';
 
 import { Toaster } from 'sonner';
 
-
 import { ClientComponentsWrapper } from '@/components/common/ClientComponentsWrapper';
 import { Sidebar } from '@/components/common/EnhancedSidebar';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
@@ -53,7 +52,7 @@ export async function generateMetadata(): Promise<Metadata> {
       url: 'https://insight.foresight.build',
       title: translations[lang].app.title,
       description: translations[lang].app.description,
-      siteName: 'Insight',
+      siteName: translations[lang].app.brand,
     },
     twitter: {
       card: 'summary_large_image',
@@ -77,48 +76,40 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <link rel="icon" href="/logo-owl.png" />
         <meta name="theme-color" content="#6366f1" />
       </head>
-      <body
-        className={cn(
-          'min-h-screen bg-background font-sans text-foreground antialiased',
-        )}
-      >
-
-          <PageProgress />
-          <LanguageProvider initialLang={lang}>
-            <WalletProvider>
-              <Toaster />
-              <div className="mesh-gradient" />
-              <div className="animated-blobs">
-                <div className="blob-1" />
-                <div className="blob-2" />
-                <div className="blob-3" />
-                <div className="blob-4" />
+      <body className={cn('min-h-screen bg-background font-sans text-foreground antialiased')}>
+        <PageProgress />
+        <LanguageProvider initialLang={lang}>
+          <WalletProvider>
+            <Toaster />
+            <div className="mesh-gradient" />
+            <div className="animated-blobs">
+              <div className="blob-1" />
+              <div className="blob-2" />
+              <div className="blob-3" />
+              <div className="blob-4" />
+            </div>
+            <div className="flex min-h-screen">
+              <div className="w-[280px] flex-shrink-0">
+                <Sidebar />
               </div>
-              <div className="min-h-screen flex">
-                <div className="w-[280px] flex-shrink-0">
-                  <Sidebar />
+              <main id="main-content" className="flex-1">
+                <div className="container mx-auto max-w-7xl p-8">
+                  <DynamicPageHeader
+                    actions={
+                      <>
+                        <SyncStatus />
+                        <LanguageSwitcher />
+                      </>
+                    }
+                  />
+                  <PageTransition variant="fade">
+                    <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
+                  </PageTransition>
                 </div>
-                <main
-                  id="main-content"
-                  className="flex-1"
-                >
-                  <div className="container mx-auto max-w-7xl p-8">
-                    <DynamicPageHeader
-                      actions={
-                        <>
-                          <SyncStatus />
-                          <LanguageSwitcher />
-                        </>
-                      }
-                    />
-                    <PageTransition variant="fade">
-                      <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
-                    </PageTransition>
-                  </div>
-                </main>
-              </div>
-            </WalletProvider>
-          </LanguageProvider>
+              </main>
+            </div>
+          </WalletProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

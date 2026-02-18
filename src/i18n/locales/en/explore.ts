@@ -5,21 +5,26 @@ export const explore = {
     placeholder: 'Search protocols, addresses, trading pairs...',
     global: 'Global Search',
     recent: 'Recent Searches',
-    clear: 'Clear History'
+    clear: 'Clear History',
+    searching: 'Searching...',
+    searchFailed: 'Search failed, please try again',
+    showingResults: 'Showing {{count}} of {{total}} results',
+    ariaLabel: 'Global search',
+    clearAriaLabel: 'Clear search',
   },
   quickAccess: {
     title: 'Quick Access',
     favorites: 'Favorite Feeds',
     recent: 'Recent Visits',
     noFavorites: 'No favorites yet',
-    noRecent: 'No recent visits'
+    noRecent: 'No recent visits',
   },
   tabs: {
     marketOverview: 'Market Overview',
     trending: 'Trending Pairs',
     protocols: 'Protocol Explorer',
     address: 'Address Explorer',
-    discovery: 'Data Discovery'
+    discovery: 'Data Discovery',
   },
   marketOverview: {
     title: 'Market Overview',
@@ -28,7 +33,7 @@ export const explore = {
     activeProtocols: 'Active Protocols',
     priceChanges: 'Price Changes',
     topGainers: 'Top Gainers',
-    topLosers: 'Top Losers'
+    topLosers: 'Top Losers',
   },
   trending: {
     title: 'Trending Trading Pairs',
@@ -36,13 +41,13 @@ export const explore = {
     priceChange: 'Price Change',
     transactions: 'Transactions',
     sortByVolume: 'Sort by Volume',
-    sortByPriceChange: 'Sort by Price Change'
+    sortByPriceChange: 'Sort by Price Change',
   },
   discovery: {
     title: 'Data Discovery',
     newProtocols: 'New Protocols',
     trendingProtocols: 'Trending Protocols',
     anomalies: 'Anomaly Detection',
-    insights: 'Data Insights'
-  }
+    insights: 'Data Insights',
+  },
 };

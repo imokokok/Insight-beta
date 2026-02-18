@@ -2,6 +2,7 @@
 
 import { Shield, AlertTriangle, AlertCircle } from 'lucide-react';
 
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 interface HealthStatusBadgeProps {
@@ -18,33 +19,36 @@ const getHealthStatus = (activeAlerts: number, isConnected: boolean) => {
 
 export function HealthStatusBadge({ activeAlerts, isConnected }: HealthStatusBadgeProps) {
   const status = getHealthStatus(activeAlerts, isConnected);
+  const { t } = useI18n();
   const statusConfig = {
     online: {
-      label: 'Online',
+      label: t('common.healthStatus.online'),
       icon: <Shield className="h-4 w-4" />,
       bgColor: 'bg-success/20',
       textColor: 'text-success-dark',
       borderColor: 'border-success/30',
       dotColor: 'bg-success',
-      description: 'All systems operational',
+      description: t('common.healthStatus.allOperational'),
     },
     degraded: {
-      label: 'Degraded',
+      label: t('common.healthStatus.degraded'),
       icon: <AlertTriangle className="h-4 w-4" />,
       bgColor: 'bg-warning/20',
       textColor: 'text-warning-dark',
       borderColor: 'border-warning/30',
       dotColor: 'bg-warning',
-      description: `${activeAlerts} active alert${activeAlerts > 1 ? 's' : ''}`,
+      description: `${activeAlerts}${activeAlerts > 1 ? t('common.healthStatus.activeAlerts') : t('common.healthStatus.activeAlert')}`,
     },
     incident: {
-      label: 'Incident',
+      label: t('common.healthStatus.incident'),
       icon: <AlertCircle className="h-4 w-4" />,
       bgColor: 'bg-error/20',
       textColor: 'text-error-dark',
       borderColor: 'border-error/30',
       dotColor: 'bg-error',
-      description: !isConnected ? 'Connection lost' : `${activeAlerts} critical alerts`,
+      description: !isConnected
+        ? t('common.healthStatus.connectionLost')
+        : `${activeAlerts}${activeAlerts > 1 ? t('common.healthStatus.criticalAlerts') : t('common.healthStatus.criticalAlert')}`,
     },
   };
 

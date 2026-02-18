@@ -1,6 +1,5 @@
 'use client';
 
-
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp,
@@ -22,7 +21,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { Input } from '@/components/ui/input';
 import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
-import { StatCardSkeleton, ChartSkeleton, CardSkeleton, SkeletonList } from '@/components/ui/skeleton';
+import {
+  StatCardSkeleton,
+  ChartSkeleton,
+  CardSkeleton,
+  SkeletonList,
+} from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   TrendList,
@@ -34,8 +38,14 @@ import {
   AnalysisPeriodCard,
 } from '@/features/oracle/analytics/deviation';
 import { ExportButton } from '@/features/oracle/analytics/deviation/components/export';
-import { ProtocolFilter, TimeRangeSelector } from '@/features/oracle/analytics/deviation/components/filters';
-import { WelcomeGuide, HelpTooltip } from '@/features/oracle/analytics/deviation/components/onboarding';
+import {
+  ProtocolFilter,
+  TimeRangeSelector,
+} from '@/features/oracle/analytics/deviation/components/filters';
+import {
+  WelcomeGuide,
+  HelpTooltip,
+} from '@/features/oracle/analytics/deviation/components/onboarding';
 import { useDeviationAnalytics } from '@/features/oracle/analytics/deviation/hooks';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
@@ -55,7 +65,7 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
   const { t } = useI18n();
   const { toasts, removeToast } = useToast();
   const isMobile = useIsMobile();
-  
+
   const {
     loading,
     report,
@@ -100,43 +110,50 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
     return (
       <div className="space-y-6">
         <Breadcrumb items={breadcrumbItems} />
-        <ErrorBanner error={new Error(error)} onRetry={() => handleRefresh()} title={t('analytics.deviation.failedToLoad')} isRetrying={loading} />
+        <ErrorBanner
+          error={new Error(error)}
+          onRetry={() => handleRefresh()}
+          title={t('analytics.deviation.failedToLoad')}
+          isRetrying={loading}
+        />
       </div>
     );
   }
 
   const summary = report?.summary;
 
-  const enhancedStats = summary ? [
-    {
-      title: t('analytics:deviation.summary.totalSymbols'),
-      value: summary.totalSymbols,
-      icon: <BarChart3 className="h-5 w-5" />,
-      color: 'blue' as const,
-      tooltip: t('analytics.deviation.help.totalSymbols'),
-    },
-    {
-      title: t('analytics:deviation.summary.highDeviation'),
-      value: summary.symbolsWithHighDeviation,
-      icon: <AlertTriangle className="h-5 w-5" />,
-      color: 'red' as const,
-      tooltip: t('analytics.deviation.help.highDeviation'),
-    },
-    {
-      title: t('analytics:deviation.summary.avgDeviation'),
-      value: `${(summary.avgDeviationAcrossAll * 100).toFixed(2)}%`,
-      icon: <Activity className="h-5 w-5" />,
-      color: 'amber' as const,
-      tooltip: t('analytics.deviation.help.avgDeviation'),
-    },
-    {
-      title: t('analytics:deviation.summary.mostVolatile'),
-      value: summary.mostVolatileSymbol || 'N/A',
-      icon: <Zap className="h-5 w-5" />,
-      color: 'purple' as const,
-      tooltip: t('analytics.deviation.help.mostVolatile'),
-    },
-  ] : [];
+  const enhancedStats = summary
+    ? [
+        {
+          title: t('analytics:deviation.summary.totalSymbols'),
+          value: summary.totalSymbols,
+          icon: <BarChart3 className="h-5 w-5" />,
+          color: 'blue' as const,
+          tooltip: t('analytics.deviation.help.totalSymbols'),
+        },
+        {
+          title: t('analytics:deviation.summary.highDeviation'),
+          value: summary.symbolsWithHighDeviation,
+          icon: <AlertTriangle className="h-5 w-5" />,
+          color: 'red' as const,
+          tooltip: t('analytics.deviation.help.highDeviation'),
+        },
+        {
+          title: t('analytics:deviation.summary.avgDeviation'),
+          value: `${(summary.avgDeviationAcrossAll * 100).toFixed(2)}%`,
+          icon: <Activity className="h-5 w-5" />,
+          color: 'amber' as const,
+          tooltip: t('analytics.deviation.help.avgDeviation'),
+        },
+        {
+          title: t('analytics:deviation.summary.mostVolatile'),
+          value: summary.mostVolatileSymbol || 'N/A',
+          icon: <Zap className="h-5 w-5" />,
+          color: 'purple' as const,
+          tooltip: t('analytics.deviation.help.mostVolatile'),
+        },
+      ]
+    : [];
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -149,22 +166,38 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
         <div>
           <h1 className="flex items-center gap-2 text-lg font-bold sm:gap-3 sm:text-xl lg:text-2xl xl:text-3xl">
             <span className="text-orange-600">{t('analytics.deviation.pageName')}</span>
-            <HelpTooltip
-              content={t('analytics.deviation.help.pageOverview')}
-              side="right"
-            />
+            <HelpTooltip content={t('analytics.deviation.help.pageOverview')} side="right" />
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t('analytics.deviation.pageDescription')}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('analytics.deviation.pageDescription')}
+          </p>
         </div>
         <div className="flex flex-col items-start gap-2 sm:items-end">
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" className="h-10 sm:h-9" onClick={() => handleRefresh()} disabled={loading}>
-              <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />{t('common.refresh')}
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10 sm:h-9"
+              onClick={() => handleRefresh()}
+              disabled={loading}
+            >
+              <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
+              {t('common.refresh')}
             </Button>
             <ExportButton report={report} disabled={loading} />
-            <AutoRefreshControl isEnabled={autoRefreshEnabled} onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)} interval={refreshInterval} onIntervalChange={setRefreshInterval} timeUntilRefresh={timeUntilRefresh} />
+            <AutoRefreshControl
+              isEnabled={autoRefreshEnabled}
+              onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+              interval={refreshInterval}
+              onIntervalChange={setRefreshInterval}
+              timeUntilRefresh={timeUntilRefresh}
+            />
           </div>
-          <RefreshIndicator lastUpdated={lastUpdated} isRefreshing={loading} onRefresh={handleRefresh} />
+          <RefreshIndicator
+            lastUpdated={lastUpdated}
+            isRefreshing={loading}
+            onRefresh={handleRefresh}
+          />
         </div>
       </div>
 
@@ -190,14 +223,17 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
       </Card>
 
       <DashboardStatsSection
-        title={t('analytics.deviation.summary.title') || '关键指标概览'}
+        title={t('analytics.deviation.summary.title')}
         icon={<BarChart3 className="h-4 w-4" />}
         color="blue"
         className="overflow-hidden"
       >
         {loading && !report ? (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-            <StatCardSkeleton /><StatCardSkeleton /><StatCardSkeleton /><StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
           </div>
         ) : (
           <StatCardGroup columns={isMobile ? 2 : 4} gap="md">
@@ -232,18 +268,26 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
             <TabsTrigger value="overview" className="h-11 text-xs sm:h-10 sm:text-sm">
               <Activity className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">{t('analytics.deviation.tabs.overview')}</span>
-              <span className="sm:hidden">{t('analytics.deviation.tabs.overviewShort') || t('analytics.deviation.tabs.overview')}</span>
+              <span className="sm:hidden">
+                {t('analytics.deviation.tabs.overviewShort') ||
+                  t('analytics.deviation.tabs.overview')}
+              </span>
             </TabsTrigger>
             <TabsTrigger value="trends" className="h-11 text-xs sm:h-10 sm:text-sm">
               <TrendingUp className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">{t('analytics.deviation.tabs.trends')}</span>
-              <span className="sm:hidden">{t('analytics.deviation.tabs.trendsShort') || t('analytics.deviation.tabs.trends')}</span>
+              <span className="sm:hidden">
+                {t('analytics.deviation.tabs.trendsShort') || t('analytics.deviation.tabs.trends')}
+              </span>
               <span className="ml-1">({filteredTrends.length})</span>
             </TabsTrigger>
             <TabsTrigger value="anomalies" className="h-11 text-xs sm:h-10 sm:text-sm">
               <AlertTriangle className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">{t('analytics.deviation.tabs.anomalies')}</span>
-              <span className="sm:hidden">{t('analytics.deviation.tabs.anomaliesShort') || t('analytics.deviation.tabs.anomalies')}</span>
+              <span className="sm:hidden">
+                {t('analytics.deviation.tabs.anomaliesShort') ||
+                  t('analytics.deviation.tabs.anomalies')}
+              </span>
               <span className="ml-1">({report?.anomalies.length || 0})</span>
             </TabsTrigger>
           </TabsList>
@@ -259,46 +303,96 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
             transition={{ duration: 0.2 }}
           >
             {activeTab === 'overview' && (
-              <TabsContent value="overview" className="space-y-4 mt-0 sm:space-y-6">
+              <TabsContent value="overview" className="mt-0 space-y-4 sm:space-y-6">
                 <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                  {loading && !report ? <><ChartSkeleton /><CardSkeleton /></> : <><DeviationDistributionChart trends={filteredTrends} /><AnalysisPeriodCard report={report} /></>}
+                  {loading && !report ? (
+                    <>
+                      <ChartSkeleton />
+                      <CardSkeleton />
+                    </>
+                  ) : (
+                    <>
+                      <DeviationDistributionChart trends={filteredTrends} />
+                      <AnalysisPeriodCard report={report} />
+                    </>
+                  )}
                 </div>
-                {loading && !report ? <ChartSkeleton /> : <DeviationHeatmap trends={filteredTrends} anomalies={report?.anomalies} />}
+                {loading && !report ? (
+                  <ChartSkeleton />
+                ) : (
+                  <DeviationHeatmap trends={filteredTrends} anomalies={report?.anomalies} />
+                )}
                 <Card>
                   <CardHeader className="p-4 sm:p-6">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-base sm:text-lg">{t('analytics.deviation.anomalies.recent')}</CardTitle>
-                      <Button variant="ghost" size="sm" className="h-10 sm:h-9" onClick={() => setActiveTab('anomalies')}>
+                      <CardTitle className="text-base sm:text-lg">
+                        {t('analytics.deviation.anomalies.recent')}
+                      </CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-10 sm:h-9"
+                        onClick={() => setActiveTab('anomalies')}
+                      >
                         {t('analytics.deviation.anomalies.viewAll')}
                         <ChevronRight className="ml-1 h-4 w-4" />
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-                    {loading && !report ? <SkeletonList count={5} /> : <AnomalyList anomalies={report?.anomalies.slice(0, 5) || []} isLoading={loading} onSelect={(anomaly) => { setSelectedAnomaly(anomaly); setActiveTab('anomalies'); }} />}
+                    {loading && !report ? (
+                      <SkeletonList count={5} />
+                    ) : (
+                      <AnomalyList
+                        anomalies={report?.anomalies.slice(0, 5) || []}
+                        isLoading={loading}
+                        onSelect={(anomaly) => {
+                          setSelectedAnomaly(anomaly);
+                          setActiveTab('anomalies');
+                        }}
+                      />
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
             )}
 
             {activeTab === 'trends' && (
-              <TabsContent value="trends" className="space-y-4 mt-0 sm:space-y-6">
+              <TabsContent value="trends" className="mt-0 space-y-4 sm:space-y-6">
                 <Card>
                   <CardContent className="p-3 sm:p-4">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input placeholder={t('analytics.deviation.searchPlaceholder')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="h-11 pl-9 sm:h-10" />
+                      <Input
+                        placeholder={t('analytics.deviation.searchPlaceholder')}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="h-11 pl-9 sm:h-10"
+                      />
                     </div>
                   </CardContent>
                 </Card>
                 <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                   <Card>
                     <CardHeader className="p-4 sm:p-6">
-                      <CardTitle className="text-base sm:text-lg">{t('analytics.deviation.trends.title')}</CardTitle>
-                      <CardDescription>{t('analytics.deviation.trends.showing', { count: filteredTrends.length, total: report?.trends.length || 0 })}</CardDescription>
+                      <CardTitle className="text-base sm:text-lg">
+                        {t('analytics.deviation.trends.title')}
+                      </CardTitle>
+                      <CardDescription>
+                        {t('analytics.deviation.trends.showing', {
+                          count: filteredTrends.length,
+                          total: report?.trends.length || 0,
+                        })}
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-                      <TrendList trends={filteredTrends} isLoading={loading} onSelect={(trend) => { setSelectedTrend(trend); }} />
+                      <TrendList
+                        trends={filteredTrends}
+                        isLoading={loading}
+                        onSelect={(trend) => {
+                          setSelectedTrend(trend);
+                        }}
+                      />
                     </CardContent>
                   </Card>
                   <div className="space-y-4 sm:space-y-6">
@@ -310,15 +404,23 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
             )}
 
             {activeTab === 'anomalies' && (
-              <TabsContent value="anomalies" className="space-y-4 mt-0 sm:space-y-6">
+              <TabsContent value="anomalies" className="mt-0 space-y-4 sm:space-y-6">
                 <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                   <Card>
                     <CardHeader className="p-4 sm:p-6">
-                      <CardTitle className="text-base sm:text-lg">{t('analytics.deviation.anomalies.title')}</CardTitle>
-                      <CardDescription>{t('analytics.deviation.anomalies.description')}</CardDescription>
+                      <CardTitle className="text-base sm:text-lg">
+                        {t('analytics.deviation.anomalies.title')}
+                      </CardTitle>
+                      <CardDescription>
+                        {t('analytics.deviation.anomalies.description')}
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-                      <AnomalyList anomalies={report?.anomalies || []} isLoading={loading} onSelect={setSelectedAnomaly} />
+                      <AnomalyList
+                        anomalies={report?.anomalies || []}
+                        isLoading={loading}
+                        onSelect={setSelectedAnomaly}
+                      />
                     </CardContent>
                   </Card>
                   <ProtocolPriceComparison dataPoint={selectedAnomaly} />

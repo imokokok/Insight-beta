@@ -5,21 +5,26 @@ export const explore = {
     placeholder: '搜索协议、地址、交易对...',
     global: '全局搜索',
     recent: '最近搜索',
-    clear: '清除历史'
+    clear: '清除历史',
+    searching: '搜索中...',
+    searchFailed: '搜索失败，请重试',
+    showingResults: '显示 {{count}} 条，共 {{total}} 条结果',
+    ariaLabel: '全局搜索',
+    clearAriaLabel: '清除搜索',
   },
   quickAccess: {
     title: '快捷入口',
     favorites: '收藏的Feed',
     recent: '最近访问',
     noFavorites: '暂无收藏',
-    noRecent: '暂无最近访问'
+    noRecent: '暂无最近访问',
   },
   tabs: {
     marketOverview: '市场概览',
     trending: '热门交易对',
     protocols: '协议探索',
     address: '地址探索',
-    discovery: '数据发现'
+    discovery: '数据发现',
   },
   marketOverview: {
     title: '市场概览',
@@ -28,7 +33,7 @@ export const explore = {
     activeProtocols: '活跃协议',
     priceChanges: '价格变动',
     topGainers: '涨幅榜',
-    topLosers: '跌幅榜'
+    topLosers: '跌幅榜',
   },
   trending: {
     title: '热门交易对',
@@ -36,13 +41,13 @@ export const explore = {
     priceChange: '价格变动',
     transactions: '交易次数',
     sortByVolume: '按交易量排序',
-    sortByPriceChange: '按价格变动排序'
+    sortByPriceChange: '按价格变动排序',
   },
   discovery: {
     title: '数据发现',
     newProtocols: '新上线协议',
     trendingProtocols: '热门协议',
     anomalies: '异常检测',
-    insights: '数据洞察'
-  }
+    insights: '数据洞察',
+  },
 };
