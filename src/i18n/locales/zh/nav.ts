@@ -20,12 +20,13 @@ export const nav = {
   deviation: '偏差',
   protocols: '协议',
   address: '地址查询',
+  favorites: '收藏夹',
   groups: {
     main: '主要',
     monitor: '分析',
     analytics: '分析',
     operations: '运营',
-    protocolsGroup: '协议'
+    protocolsGroup: '协议',
   },
   descriptions: {
     dashboard: '系统概览',
@@ -45,9 +46,10 @@ export const nav = {
     trends: '趋势分析',
     deviation: '价格偏差',
     protocolList: '协议列表',
-    address: '搜索地址资料'
+    address: '搜索地址资料',
+    favorites: '查看收藏的项目',
   },
   labels: {
-    search: '搜索导航...'
-  }
+    search: '搜索导航...',
+  },
 };

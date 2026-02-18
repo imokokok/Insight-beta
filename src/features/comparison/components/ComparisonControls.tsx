@@ -2,7 +2,17 @@
 
 import React, { useState, useCallback, memo } from 'react';
 
-import { Filter, Settings, RefreshCw, Download, Clock, Eye, EyeOff, X } from 'lucide-react';
+import {
+  Filter,
+  Settings,
+  RefreshCw,
+  Download,
+  Clock,
+  Eye,
+  EyeOff,
+  X,
+  GitCompare,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -71,6 +81,11 @@ const viewOptions: { value: ComparisonView; labelKey: string; icon: React.ReactN
     icon: <RefreshCw className="h-4 w-4" />,
   },
   { value: 'table', labelKey: 'comparison.views.table', icon: <Eye className="h-4 w-4" /> },
+  {
+    value: 'compare',
+    labelKey: 'comparison.views.compare',
+    icon: <GitCompare className="h-4 w-4" />,
+  },
 ];
 
 export const ComparisonControls = memo(function ComparisonControls({
@@ -154,7 +169,9 @@ export const ComparisonControls = memo(function ComparisonControls({
                         ? 'Cost'
                         : option.value === 'realtime'
                           ? 'Live'
-                          : 'Table'}
+                          : option.value === 'table'
+                            ? 'Table'
+                            : 'Comp'}
                 </span>
               </Button>
             ))}

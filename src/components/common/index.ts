@@ -5,6 +5,10 @@ export { ClientComponentsWrapper } from './ClientComponentsWrapper';
 // ==================== 加载状态 ====================
 export { DynamicLoading, createLoadingComponent, type LoadingType } from './DynamicLoading';
 export { ChartCard, ChartCardSkeleton } from './ChartCard';
+export { ChartFullscreen, ChartFullscreenButton } from './ChartFullscreen';
+export type { ChartFullscreenProps } from './ChartFullscreen';
+export { ExportButton } from './ExportButton';
+export type { ExportButtonProps } from './ExportButton';
 
 // ==================== 数据展示 ====================
 export { StatCard, StatCardSkeleton, StatCardGroup, DashboardStatsSection } from './StatCard';
@@ -22,6 +26,14 @@ export type {
 } from './StatCard';
 
 export { SummaryStatsGrid, type StatItem, type SummaryStatsGridProps } from './SummaryStatsGrid';
+
+export {
+  KPIOverviewBar,
+  type KPIItem,
+  type KPITrend,
+  type KPIColor,
+  type KPIOverviewBarProps,
+} from './KPIOverviewBar';
 
 // ==================== 页面布局 ====================
 export {

@@ -19,6 +19,7 @@
 export { useDebounce } from './useDebounce';
 export { useAutoRefresh, useAutoRefreshWithCountdown } from './useAutoRefresh';
 export { useDataCache } from './useDataCache';
+export { useFullscreen } from './useFullscreen';
 
 export { usePageOptimizations } from './usePageOptimizations';
 

@@ -14,6 +14,8 @@ import {
   Download,
   Settings2,
   AlignJustify,
+  ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +37,8 @@ import { cn } from '@/shared/utils';
 import { exportRealtimeToCSV } from '@/shared/utils/export';
 import type { RealtimeComparisonItem } from '@/types/oracle';
 import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
+
+import { RowDetailPanel } from './RowDetailPanel';
 
 export type SortField = 'symbol' | 'price' | 'deviation' | 'spread' | 'latency' | 'updated';
 export type SortDirection = 'asc' | 'desc';
@@ -61,6 +65,8 @@ interface VirtualTableProps {
   onExport?: (format: 'json' | 'csv') => void;
   rowHeight?: number;
   containerHeight?: number;
+  expandable?: boolean;
+  renderExpanded?: (row: TableRowData) => React.ReactNode;
 }
 
 interface VirtualTableHeaderProps {
@@ -76,6 +82,9 @@ interface VirtualTableRowProps {
   style: React.CSSProperties;
   visibleColumns: ColumnVisibility;
   density: ViewDensity;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
+  expandable?: boolean;
 }
 
 interface VirtualTableToolbarProps {
@@ -350,6 +359,9 @@ const VirtualTableRow = React.memo(function VirtualTableRow({
   style,
   visibleColumns,
   density,
+  isExpanded,
+  onToggleExpand,
+  expandable,
 }: VirtualTableRowProps) {
   const { t } = useI18n();
   const densityConfig = DENSITY_CONFIG[density];
@@ -360,9 +372,29 @@ const VirtualTableRow = React.memo(function VirtualTableRow({
         'flex items-center border-b px-4 transition-colors hover:bg-muted/30',
         densityConfig.padding,
         densityConfig.fontSize,
+        isExpanded && 'bg-muted/40',
       )}
       style={{ ...style, contain: 'layout style', contentVisibility: 'auto' }}
     >
+      {expandable && (
+        <div className="w-[30px] flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand?.();
+            }}
+          >
+            {isExpanded ? (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            )}
+          </Button>
+        </div>
+      )}
       {visibleColumns.symbol && <div className="w-[100px] truncate font-medium">{row.symbol}</div>}
       {visibleColumns.protocol && (
         <div className="flex-1 capitalize">
@@ -426,7 +458,9 @@ const VirtualTableRow = React.memo(function VirtualTableRow({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>{t('comparison.table.viewDetails')}</DropdownMenuItem>
+            <DropdownMenuItem onClick={onToggleExpand}>
+              {isExpanded ? t('comparison.table.closeDetails') : t('comparison.table.viewDetails')}
+            </DropdownMenuItem>
             <DropdownMenuItem>{t('comparison.table.setAlert')}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -636,6 +670,8 @@ export const VirtualTable = React.memo(function VirtualTable({
   isLoading,
   onExport,
   containerHeight = DEFAULT_CONTAINER_HEIGHT,
+  expandable = true,
+  renderExpanded,
 }: VirtualTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('symbol');
@@ -643,9 +679,11 @@ export const VirtualTable = React.memo(function VirtualTable({
   const [scrollTop, setScrollTop] = useState(0);
   const [visibleColumns, setVisibleColumns] = useState<ColumnVisibility>(DEFAULT_COLUMN_VISIBILITY);
   const [density, setDensity] = useState<ViewDensity>('comfortable');
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
 
   const rowHeight = DENSITY_CONFIG[density].rowHeight;
+  const expandedPanelHeight = 200;
 
   const tableData = useMemo<TableRowData[]>(() => {
     if (!data) return [];
@@ -721,28 +759,57 @@ export const VirtualTable = React.memo(function VirtualTable({
     const visibleCount = Math.ceil(containerHeight / rowHeight);
     const endIndex = Math.min(sortedData.length - 1, startIndex + visibleCount + OVERSCAN * 2);
 
-    const virtualItems = [];
-    for (let i = startIndex; i <= endIndex; i++) {
-      virtualItems.push({
-        index: i,
-        data: sortedData[i],
-        style: {
-          position: 'absolute' as const,
-          top: i * rowHeight,
-          height: rowHeight,
-          left: 0,
-          right: 0,
-        },
-      });
+    const virtualItems: Array<{
+      index: number;
+      data: TableRowData;
+      style: React.CSSProperties;
+      isExpanded?: boolean;
+      panelStyle?: React.CSSProperties;
+    }> = [];
+
+    let currentTop = 0;
+    for (let i = 0; i < sortedData.length; i++) {
+      const row = sortedData[i];
+      if (!row) continue;
+      const isExpanded = expandedRows.has(row.id);
+
+      if (i >= startIndex - OVERSCAN && i <= endIndex + OVERSCAN) {
+        virtualItems.push({
+          index: i,
+          data: row,
+          style: {
+            position: 'absolute' as const,
+            top: currentTop,
+            height: rowHeight,
+            left: 0,
+            right: 0,
+          },
+          isExpanded,
+          panelStyle: isExpanded
+            ? {
+                position: 'absolute' as const,
+                top: currentTop + rowHeight,
+                left: 0,
+                right: 0,
+                height: expandedPanelHeight,
+              }
+            : undefined,
+        });
+      }
+
+      currentTop += rowHeight;
+      if (isExpanded) {
+        currentTop += expandedPanelHeight;
+      }
     }
 
     return {
       virtualItems,
-      totalHeight: sortedData.length * rowHeight,
+      totalHeight: currentTop,
       startIndex,
       endIndex,
     };
-  }, [scrollTop, sortedData, rowHeight, containerHeight]);
+  }, [scrollTop, sortedData, rowHeight, containerHeight, expandedRows, expandedPanelHeight]);
 
   const scrollTimeoutRef = useRef<number | null>(null);
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -771,6 +838,18 @@ export const VirtualTable = React.memo(function VirtualTable({
 
   const handleDensityChange = useCallback((newDensity: ViewDensity) => {
     setDensity(newDensity);
+  }, []);
+
+  const handleToggleExpand = useCallback((rowId: string) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(rowId)) {
+        next.delete(rowId);
+      } else {
+        next.add(rowId);
+      }
+      return next;
+    });
   }, []);
 
   if (isLoading) {
@@ -812,16 +891,29 @@ export const VirtualTable = React.memo(function VirtualTable({
           />
 
           <div style={{ height: totalHeight, position: 'relative', contain: 'layout style' }}>
-            {virtualItems.map(({ data: row, style }) => {
+            {virtualItems.map(({ data: row, style, isExpanded, panelStyle }) => {
               if (!row) return null;
               return (
-                <VirtualTableRow
-                  key={row.id}
-                  row={row}
-                  style={style}
-                  visibleColumns={visibleColumns}
-                  density={density}
-                />
+                <React.Fragment key={row.id}>
+                  <VirtualTableRow
+                    row={row}
+                    style={style}
+                    visibleColumns={visibleColumns}
+                    density={density}
+                    isExpanded={isExpanded}
+                    onToggleExpand={() => handleToggleExpand(row.id)}
+                    expandable={expandable}
+                  />
+                  {isExpanded && panelStyle && (
+                    <div style={panelStyle} className="absolute left-0 right-0 z-10">
+                      {renderExpanded ? (
+                        renderExpanded(row)
+                      ) : (
+                        <RowDetailPanel row={row} onClose={() => handleToggleExpand(row.id)} />
+                      )}
+                    </div>
+                  )}
+                </React.Fragment>
               );
             })}
           </div>

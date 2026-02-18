@@ -26,12 +26,15 @@ import {
   AlertTriangle,
   Compass,
   Gavel,
+  Star,
 } from 'lucide-react';
 
+import { FavoritesPanel } from '@/components/common/FavoritesPanel';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { useFavoritesContext } from '@/contexts/FavoritesContext';
 import { ConnectWallet } from '@/features/wallet/components/ConnectWallet';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useI18n } from '@/i18n';
@@ -150,6 +153,12 @@ export const defaultNavConfig: SidebarConfig = {
           href: '/oracle/analytics/disputes',
           icon: Gavel,
           description: 'nav.descriptions.arbitration',
+        },
+        {
+          id: 'favorites',
+          label: 'nav.favorites',
+          icon: Star,
+          description: 'nav.descriptions.favorites',
         },
       ],
     },
@@ -506,12 +515,59 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
           </ScrollArea>
 
           {/* Footer */}
-          <div className="flex-shrink-0 border-t border-border p-3">
-            <ConnectWallet />
+          <div className="flex-shrink-0 border-t border-border">
+            <FavoritesSection />
+            <div className="p-3">
+              <ConnectWallet />
+            </div>
           </div>
         </aside>
       </TooltipProvider>
     </SidebarContext.Provider>
+  );
+}
+
+function FavoritesSection() {
+  const { t } = useI18n();
+  const { favorites } = useFavoritesContext();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <div className="border-b border-border">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex w-full items-center justify-between px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <div className="flex items-center gap-2">
+          <Star className="h-4 w-4" />
+          <span>{t('favorites.title')}</span>
+          {favorites.length > 0 && (
+            <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+              {favorites.length}
+            </Badge>
+          )}
+        </div>
+        <ChevronDown
+          className={cn('h-4 w-4 transition-transform duration-200', isExpanded && 'rotate-180')}
+        />
+      </button>
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={prefersReducedMotion ? {} : { height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={prefersReducedMotion ? {} : { height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="max-h-[200px] border-t border-border/50">
+              <FavoritesPanel />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 

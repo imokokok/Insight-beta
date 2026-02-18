@@ -231,7 +231,7 @@ export type ComparisonConfig = {
   timeRange: '1h' | '24h' | '7d' | '30d';
 };
 
-export type ComparisonView = 'heatmap' | 'latency' | 'cost' | 'realtime' | 'table';
+export type ComparisonView = 'heatmap' | 'latency' | 'cost' | 'realtime' | 'table' | 'compare';
 
 // ============================================================================
 // API 响应类型

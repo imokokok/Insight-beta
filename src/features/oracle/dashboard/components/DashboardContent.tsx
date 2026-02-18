@@ -1,8 +1,11 @@
 'use client';
 
-import { Activity } from 'lucide-react';
+import { useMemo } from 'react';
+
+import { Activity, Shield, Zap, TrendingUp } from 'lucide-react';
 
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { KPIOverviewBar, type KPIItem } from '@/components/common/KPIOverviewBar';
 import { EmptyDashboardState, RefreshIndicator } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { useOracleDashboard } from '@/features/oracle/dashboard';
@@ -38,6 +41,51 @@ export function DashboardContent({ onRefresh }: DashboardContentProps) {
 
   const handleRefresh = onRefresh || refresh;
 
+  const kpiItems: KPIItem[] = useMemo(
+    () => [
+      {
+        id: 'tvl',
+        label: t('common.kpi.totalTVL'),
+        value: stats?.totalValueSecured ?? '$0',
+        icon: <TrendingUp className="h-5 w-5" />,
+        trend: { value: 23, isPositive: true },
+        color: 'blue',
+      },
+      {
+        id: 'protocols',
+        label: t('common.kpi.activeProtocols'),
+        value: stats?.totalProtocols ?? 0,
+        icon: <Shield className="h-5 w-5" />,
+        trend: { value: 8, isPositive: true },
+        color: 'green',
+      },
+      {
+        id: 'latency',
+        label: t('common.kpi.avgLatency'),
+        value: `${stats?.avgLatency ?? 0}ms`,
+        icon: <Zap className="h-5 w-5" />,
+        trend: { value: 5, isPositive: false },
+        color: 'amber',
+      },
+      {
+        id: 'health',
+        label: t('common.kpi.healthScore'),
+        value: `${stats?.networkUptime ?? 99.9}%`,
+        icon: <Activity className="h-5 w-5" />,
+        trend: { value: 0.1, isPositive: true },
+        color: 'purple',
+      },
+    ],
+    [stats, t],
+  );
+
+  const handleKPIClick = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <ErrorBoundary>
       <div className="space-y-4">
@@ -59,6 +107,8 @@ export function DashboardContent({ onRefresh }: DashboardContentProps) {
             />
           </div>
         </div>
+
+        <KPIOverviewBar items={kpiItems} onItemClick={handleKPIClick} />
 
         {isError && error && (
           <div>

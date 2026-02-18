@@ -8,6 +8,7 @@ import { dashboard } from './dashboard';
 import { errorPage } from './errorPage';
 import { errors } from './errors';
 import { explore } from './explore';
+import { favorites } from './favorites';
 import { nav } from './nav';
 import { oracle } from './oracle';
 import { protocol } from './protocol';
@@ -25,6 +26,7 @@ export const enTranslations = {
   errorPage,
   errors,
   explore,
+  favorites,
   nav,
   oracle,
   protocol,

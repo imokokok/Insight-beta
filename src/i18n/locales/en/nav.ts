@@ -20,12 +20,13 @@ export const nav = {
   deviation: 'Deviation',
   protocols: 'Protocols',
   address: 'Address Lookup',
+  favorites: 'Favorites',
   groups: {
     main: 'Main',
     monitor: 'Analytics',
     analytics: 'Analytics',
     operations: 'Operations',
-    protocolsGroup: 'Protocols'
+    protocolsGroup: 'Protocols',
   },
   descriptions: {
     dashboard: 'Overview of your system',
@@ -45,9 +46,10 @@ export const nav = {
     trends: 'Trend analysis',
     deviation: 'Price deviation',
     protocolList: 'Protocol list',
-    address: 'Search address profile'
+    address: 'Search address profile',
+    favorites: 'View your favorite items',
   },
   labels: {
-    search: 'Search navigation...'
-  }
+    search: 'Search navigation...',
+  },
 };
