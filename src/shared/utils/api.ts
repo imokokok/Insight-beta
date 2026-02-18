@@ -17,10 +17,10 @@ export { getErrorMessage };
  */
 interface ApiResponse<T> {
   /** 请求是否成功 */
-  ok: boolean;
-  /** 响应数据，仅在 ok 为 true 时存在 */
+  success: boolean;
+  /** 响应数据，仅在 success 为 true 时存在 */
   data?: T;
-  /** 错误信息，仅在 ok 为 false 时存在 */
+  /** 错误信息，仅在 success 为 false 时存在 */
   error?: string | { code?: unknown; details?: unknown };
 }
 
@@ -170,7 +170,7 @@ export async function fetchApiData<T>(
 
     const data = (await response.json()) as ApiResponse<T>;
 
-    if (!data.ok) {
+    if (!data.success) {
       throw new ApiClientError('api_error', data.error || 'Unknown API error');
     }
 

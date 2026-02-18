@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 
+import { logger } from '@/shared/logger';
+
 import type { HistoryItem } from '../types';
 
 const STORAGE_KEY = 'explore_history';
@@ -24,7 +26,7 @@ export function useHistory(): UseHistoryReturn {
         setHistory(JSON.parse(stored));
       }
     } catch (error) {
-      console.error('Failed to load history:', error);
+      logger.error('Failed to load history', { error });
     }
   }, []);
 
@@ -33,34 +35,40 @@ export function useHistory(): UseHistoryReturn {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
       setHistory(items);
     } catch (error) {
-      console.error('Failed to save history:', error);
+      logger.error('Failed to save history', { error });
     }
   }, []);
 
-  const addHistory = useCallback((item: Omit<HistoryItem, 'visitedAt'>) => {
-    setHistory((prev) => {
-      const filtered = prev.filter((h) => h.id !== item.id);
-      const newItem: HistoryItem = {
-        ...item,
-        visitedAt: new Date().toISOString(),
-      };
-      const updated = [newItem, ...filtered].slice(0, MAX_HISTORY_ITEMS);
-      saveHistory(updated);
-      return updated;
-    });
-  }, [saveHistory]);
+  const addHistory = useCallback(
+    (item: Omit<HistoryItem, 'visitedAt'>) => {
+      setHistory((prev) => {
+        const filtered = prev.filter((h) => h.id !== item.id);
+        const newItem: HistoryItem = {
+          ...item,
+          visitedAt: new Date().toISOString(),
+        };
+        const updated = [newItem, ...filtered].slice(0, MAX_HISTORY_ITEMS);
+        saveHistory(updated);
+        return updated;
+      });
+    },
+    [saveHistory],
+  );
 
   const clearHistory = useCallback(() => {
     saveHistory([]);
   }, [saveHistory]);
 
-  const removeHistoryItem = useCallback((id: string) => {
-    setHistory((prev) => {
-      const updated = prev.filter((h) => h.id !== id);
-      saveHistory(updated);
-      return updated;
-    });
-  }, [saveHistory]);
+  const removeHistoryItem = useCallback(
+    (id: string) => {
+      setHistory((prev) => {
+        const updated = prev.filter((h) => h.id !== id);
+        saveHistory(updated);
+        return updated;
+      });
+    },
+    [saveHistory],
+  );
 
   return {
     history,

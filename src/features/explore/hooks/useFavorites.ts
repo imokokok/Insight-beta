@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 
+import { logger } from '@/shared/logger';
+
 import type { FavoriteItem } from '../types';
 
 const STORAGE_KEY = 'explore_favorites';
@@ -24,7 +26,7 @@ export function useFavorites(): UseFavoritesReturn {
         setFavorites(JSON.parse(stored));
       }
     } catch (error) {
-      console.error('Failed to load favorites:', error);
+      logger.error('Failed to load favorites', { error });
     }
   }, []);
 
@@ -33,36 +35,45 @@ export function useFavorites(): UseFavoritesReturn {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
       setFavorites(items);
     } catch (error) {
-      console.error('Failed to save favorites:', error);
+      logger.error('Failed to save favorites', { error });
     }
   }, []);
 
-  const addFavorite = useCallback((item: Omit<FavoriteItem, 'addedAt'>) => {
-    setFavorites((prev) => {
-      if (prev.some((f) => f.id === item.id)) {
-        return prev;
-      }
-      const newItem: FavoriteItem = {
-        ...item,
-        addedAt: new Date().toISOString(),
-      };
-      const updated = [...prev, newItem];
-      saveFavorites(updated);
-      return updated;
-    });
-  }, [saveFavorites]);
+  const addFavorite = useCallback(
+    (item: Omit<FavoriteItem, 'addedAt'>) => {
+      setFavorites((prev) => {
+        if (prev.some((f) => f.id === item.id)) {
+          return prev;
+        }
+        const newItem: FavoriteItem = {
+          ...item,
+          addedAt: new Date().toISOString(),
+        };
+        const updated = [...prev, newItem];
+        saveFavorites(updated);
+        return updated;
+      });
+    },
+    [saveFavorites],
+  );
 
-  const removeFavorite = useCallback((id: string) => {
-    setFavorites((prev) => {
-      const updated = prev.filter((f) => f.id !== id);
-      saveFavorites(updated);
-      return updated;
-    });
-  }, [saveFavorites]);
+  const removeFavorite = useCallback(
+    (id: string) => {
+      setFavorites((prev) => {
+        const updated = prev.filter((f) => f.id !== id);
+        saveFavorites(updated);
+        return updated;
+      });
+    },
+    [saveFavorites],
+  );
 
-  const isFavorite = useCallback((id: string) => {
-    return favorites.some((f) => f.id === id);
-  }, [favorites]);
+  const isFavorite = useCallback(
+    (id: string) => {
+      return favorites.some((f) => f.id === id);
+    },
+    [favorites],
+  );
 
   const clearFavorites = useCallback(() => {
     saveFavorites([]);

@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 
+import { logger } from '@/shared/logger';
+
 import type { UserPreferences, TrendingSortBy } from '../types';
 
 const STORAGE_KEY = 'explore_preferences';
@@ -31,7 +33,7 @@ export function usePreferences(): UsePreferencesReturn {
         setPreferencesState({ ...DEFAULT_PREFERENCES, ...parsed });
       }
     } catch (error) {
-      console.error('Failed to load preferences:', error);
+      logger.error('Failed to load preferences', { error });
     }
   }, []);
 
@@ -40,33 +42,42 @@ export function usePreferences(): UsePreferencesReturn {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
       setPreferencesState(prefs);
     } catch (error) {
-      console.error('Failed to save preferences:', error);
+      logger.error('Failed to save preferences', { error });
     }
   }, []);
 
-  const setDefaultTab = useCallback((tab: string) => {
-    setPreferencesState((prev) => {
-      const updated = { ...prev, defaultTab: tab };
-      savePreferences(updated);
-      return updated;
-    });
-  }, [savePreferences]);
+  const setDefaultTab = useCallback(
+    (tab: string) => {
+      setPreferencesState((prev) => {
+        const updated = { ...prev, defaultTab: tab };
+        savePreferences(updated);
+        return updated;
+      });
+    },
+    [savePreferences],
+  );
 
-  const setDefaultSortBy = useCallback((sortBy: TrendingSortBy) => {
-    setPreferencesState((prev) => {
-      const updated = { ...prev, defaultSortBy: sortBy };
-      savePreferences(updated);
-      return updated;
-    });
-  }, [savePreferences]);
+  const setDefaultSortBy = useCallback(
+    (sortBy: TrendingSortBy) => {
+      setPreferencesState((prev) => {
+        const updated = { ...prev, defaultSortBy: sortBy };
+        savePreferences(updated);
+        return updated;
+      });
+    },
+    [savePreferences],
+  );
 
-  const setPreferences = useCallback((prefs: Partial<UserPreferences>) => {
-    setPreferencesState((prev) => {
-      const updated = { ...prev, ...prefs };
-      savePreferences(updated);
-      return updated;
-    });
-  }, [savePreferences]);
+  const setPreferences = useCallback(
+    (prefs: Partial<UserPreferences>) => {
+      setPreferencesState((prev) => {
+        const updated = { ...prev, ...prefs };
+        savePreferences(updated);
+        return updated;
+      });
+    },
+    [savePreferences],
+  );
 
   const resetPreferences = useCallback(() => {
     savePreferences(DEFAULT_PREFERENCES);

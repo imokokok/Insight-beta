@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useI18n } from '@/i18n';
+import { logger } from '@/shared/logger';
 import { cn } from '@/shared/utils';
 
 import { useAlertActions } from '../hooks/useAlertActions';
@@ -25,14 +26,24 @@ interface ActionDialogProps {
   isLoading: boolean;
 }
 
-function ActionDialog({ isOpen, action, alert, onConfirm, onCancel, isLoading }: ActionDialogProps) {
+function ActionDialog({
+  isOpen,
+  action,
+  alert,
+  onConfirm,
+  onCancel,
+  isLoading,
+}: ActionDialogProps) {
   const { t } = useI18n();
   const [note, setNote] = useState('');
   const [duration, setDuration] = useState(60);
 
   if (!isOpen) return null;
 
-  const actionConfig: Record<AlertAction, { title: string; description: string; icon: typeof CheckCircle; color: string }> = {
+  const actionConfig: Record<
+    AlertAction,
+    { title: string; description: string; icon: typeof CheckCircle; color: string }
+  > = {
     acknowledge: {
       title: t('alerts.actions.acknowledge'),
       description: t('alerts.actions.acknowledgeDesc'),
@@ -94,9 +105,7 @@ function ActionDialog({ isOpen, action, alert, onConfirm, onCancel, isLoading }:
                 {alert.severity}
               </Badge>
             </div>
-            {alert.symbol && (
-              <p className="mt-1 text-xs text-muted-foreground">{alert.symbol}</p>
-            )}
+            {alert.symbol && <p className="mt-1 text-xs text-muted-foreground">{alert.symbol}</p>}
           </div>
 
           <div className="space-y-2">
@@ -158,7 +167,7 @@ export function AlertActionButtons({ alert, onActionComplete }: AlertActionButto
       onActionComplete?.(action, updatedAlert);
     },
     onError: (action, error) => {
-      console.error(`Failed to ${action} alert:`, error);
+      logger.error(`Failed to ${action} alert`, { error, alertId: alert.id });
     },
   });
 

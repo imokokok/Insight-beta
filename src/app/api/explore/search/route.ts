@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 
-import { ok } from '@/lib/api/apiResponse';
+import { error, ok } from '@/lib/api/apiResponse';
+import { logger } from '@/shared/logger';
 
 interface SearchResult {
   id: string;
@@ -109,8 +110,7 @@ function searchAddresses(query: string): SearchResult[] {
   return mockAddresses
     .filter(
       (addr) =>
-        addr.id.toLowerCase().includes(lowerQuery) ||
-        addr.label.toLowerCase().includes(lowerQuery),
+        addr.id.toLowerCase().includes(lowerQuery) || addr.label.toLowerCase().includes(lowerQuery),
     )
     .slice(0, 3)
     .map((addr) => ({
@@ -123,21 +123,26 @@ function searchAddresses(query: string): SearchResult[] {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q') || '';
+  try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('q') || '';
 
-  if (!query.trim()) {
-    return ok([], { total: 0 });
+    if (!query.trim()) {
+      return ok([], { total: 0 });
+    }
+
+    const results: SearchResult[] = [
+      ...searchFeeds(query),
+      ...searchProtocols(query),
+      ...searchChains(query),
+      ...searchAddresses(query),
+    ];
+
+    return ok(results, {
+      total: results.length,
+    });
+  } catch (err) {
+    logger.error('Search API error', { error: err });
+    return error('Failed to perform search', 500);
   }
-
-  const results: SearchResult[] = [
-    ...searchFeeds(query),
-    ...searchProtocols(query),
-    ...searchChains(query),
-    ...searchAddresses(query),
-  ];
-
-  return ok(results, {
-    total: results.length,
-  });
 }
