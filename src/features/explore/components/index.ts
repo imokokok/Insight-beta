@@ -11,4 +11,3 @@ export * from './ProtocolActivity';
 export * from './GlobalSearch';
 export * from './SearchResults';
 export * from './QuickAccess';
-export * from './FavoritesList';

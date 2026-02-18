@@ -2,7 +2,16 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 
-import { BarChart3, Layers, User, Sparkles, TrendingUp, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  BarChart3,
+  Layers,
+  User,
+  Sparkles,
+  TrendingUp,
+  SlidersHorizontal,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -18,7 +27,6 @@ import type { TrendingSortBy } from '@/features/explore/types';
 import { ProtocolExplorer, AddressExplorer } from '@/features/oracle/components';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useI18n } from '@/i18n';
-
 
 export default function ExplorePage() {
   const { t } = useI18n();
@@ -84,7 +92,9 @@ export default function ExplorePage() {
 
   const scrollToActiveTab = useCallback(() => {
     if (tabsListRef.current && isMobile) {
-      const activeTrigger = tabsListRef.current.querySelector('[data-state="active"]') as HTMLElement;
+      const activeTrigger = tabsListRef.current.querySelector(
+        '[data-state="active"]',
+      ) as HTMLElement;
       if (activeTrigger) {
         activeTrigger.scrollIntoView({
           behavior: 'smooth',
@@ -108,22 +118,14 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen">
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border md:hidden">
-        <div className="container mx-auto px-4 py-3">
+      <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
+        <div className="px-4 py-3">
           <GlobalSearch />
         </div>
       </div>
 
-      <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
-        <div className="hidden md:flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-              {t('explore.title')}
-            </h1>
-            <p className="mt-1 text-sm md:text-base text-muted-foreground">
-              {t('explore.description')}
-            </p>
-          </div>
+      <div className="space-y-4 md:space-y-6">
+        <div className="hidden items-center justify-end md:flex">
           <div className="w-full md:w-auto md:min-w-[300px]">
             <GlobalSearch />
           </div>
@@ -135,7 +137,7 @@ export default function ExplorePage() {
 
         <div className="md:hidden">
           <details className="group">
-            <summary className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer list-none">
+            <summary className="flex cursor-pointer list-none items-center justify-between rounded-lg bg-muted/50 p-3">
               <span className="text-sm font-medium">快捷入口</span>
               <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
             </summary>
@@ -150,7 +152,7 @@ export default function ExplorePage() {
             {showScrollButtons && isMobile && (
               <button
                 onClick={() => scrollTabs('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-background/90 shadow-md border border-border"
+                className="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-background/90 p-1.5 shadow-md"
                 aria-label="向左滚动"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -159,15 +161,15 @@ export default function ExplorePage() {
 
             <div
               ref={tabsListRef}
-              className="overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide"
+              className="scrollbar-hide -mx-4 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0"
               onScroll={checkScrollButtons}
             >
-              <TabsList className="h-auto p-1 bg-muted inline-flex min-w-max md:min-w-0 md:w-full md:justify-start gap-1">
+              <TabsList className="inline-flex h-auto min-w-max gap-1 bg-muted p-1 md:w-full md:min-w-0 md:justify-start">
                 {tabs.map((tab) => (
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="flex items-center gap-2 px-3 md:px-4 py-2.5 h-auto text-sm md:text-base min-h-[44px] rounded-md"
+                    className="flex h-auto min-h-[44px] items-center gap-2 rounded-md px-3 py-2.5 text-sm md:px-4 md:text-base"
                   >
                     <tab.icon className="h-4 w-4 flex-shrink-0" />
                     <span className="whitespace-nowrap">{tab.label}</span>
@@ -179,7 +181,7 @@ export default function ExplorePage() {
             {showScrollButtons && isMobile && (
               <button
                 onClick={() => scrollTabs('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-background/90 shadow-md border border-border"
+                className="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-background/90 p-1.5 shadow-md"
                 aria-label="向右滚动"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -195,7 +197,7 @@ export default function ExplorePage() {
                 onClick={() => setIsFilterOpen(true)}
                 className="min-h-[44px] px-4"
               >
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
                 筛选
               </Button>
             </div>

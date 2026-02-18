@@ -5,14 +5,11 @@ import { cookies, headers } from 'next/headers';
 
 import { Toaster } from 'sonner';
 
+import { AppLayout } from '@/components/common/AppLayout';
 import { ClientComponentsWrapper } from '@/components/common/ClientComponentsWrapper';
-import { Sidebar } from '@/components/common/EnhancedSidebar';
-import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
-import { DynamicPageHeader } from '@/components/common/PageHeader';
 import { PageProgress } from '@/components/common/PageProgress';
 import { PageTransition } from '@/components/common/PageTransitions';
 import { ResourceHints } from '@/components/common/ResourceHints';
-import { SyncStatus } from '@/features/oracle/components/SyncStatus';
 import { WalletProvider } from '@/features/wallet/contexts/WalletContext';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
 import {
@@ -22,7 +19,6 @@ import {
   LANG_STORAGE_KEY,
   translations,
 } from '@/i18n/translations';
-import { cn } from '@/shared/utils';
 
 import type { Metadata } from 'next';
 
@@ -76,7 +72,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <link rel="icon" href="/logo-owl.png" />
         <meta name="theme-color" content="#6366f1" />
       </head>
-      <body className={cn('min-h-screen bg-background font-sans text-foreground antialiased')}>
+      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <PageProgress />
         <LanguageProvider initialLang={lang}>
           <WalletProvider>
@@ -88,26 +84,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               <div className="blob-3" />
               <div className="blob-4" />
             </div>
-            <div className="flex min-h-screen">
-              <div className="w-[280px] flex-shrink-0">
-                <Sidebar />
-              </div>
-              <main id="main-content" className="flex-1">
-                <div className="container mx-auto max-w-7xl p-8">
-                  <DynamicPageHeader
-                    actions={
-                      <>
-                        <SyncStatus />
-                        <LanguageSwitcher />
-                      </>
-                    }
-                  />
-                  <PageTransition variant="fade">
-                    <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
-                  </PageTransition>
-                </div>
-              </main>
-            </div>
+            <AppLayout>
+              <PageTransition variant="fade">
+                <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
+              </PageTransition>
+            </AppLayout>
           </WalletProvider>
         </LanguageProvider>
       </body>

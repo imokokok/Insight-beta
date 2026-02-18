@@ -2,23 +2,15 @@ import { useState, useEffect } from 'react';
 
 import useSWR from 'swr';
 
-import { createSWRConfig, createSWRInfiniteConfig } from '@/hooks/useSWRConfig';
-import type { BaseResponse } from '@/hooks/useUI';
-import { useInfiniteList } from '@/hooks/useUI';
 import {
-  fetchApiData,
-  getOracleInstanceId,
-  setOracleInstanceId,
-  clearOracleFilters,
-  isDefaultOracleInstance,
-  buildApiUrl,
-} from '@/shared/utils';
-import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/types/oracleTypes';
-
-
-// ============================================================================
-// useOracleData - Oracle 数据获取 Hook
-// ============================================================================
+  createSWRConfig,
+  createSWRInfiniteConfig,
+  useInfiniteList,
+  type BaseResponse,
+} from '@/hooks';
+import { fetchApiData, buildApiUrl } from '@/shared/utils';
+import type { Assertion, OracleStats, OracleStatus } from '@/types/oracleTypes';
+import type { OracleConfig } from '@/types/oracleTypes';
 
 export function useOracleData(
   filterStatus: OracleStatus | 'All',
@@ -42,7 +34,6 @@ export function useOracleData(
   );
 
   const getUrl = (pageIndex: number, previousPageData: BaseResponse<Assertion> | null) => {
-    // If reached the end, return null
     if (previousPageData && previousPageData.nextCursor === null) return null;
 
     const url = buildApiUrl('/api/oracle/assertions', {
@@ -92,33 +83,29 @@ export function useOracleData(
   };
 }
 
-// ============================================================================
-// useOracleFilters - Oracle 过滤器 Hook
-// ============================================================================
-
 export function useOracleFilters() {
   const [instanceId, setInstanceIdState] = useState<string>('default');
 
   useEffect(() => {
-    // 组件挂载时从 storage 读取最新值
-    getOracleInstanceId().then((id) => setInstanceIdState(id));
+    const saved = localStorage.getItem('oracleInstanceId');
+    if (saved) setInstanceIdState(saved);
   }, []);
 
   const updateInstanceId = (newInstanceId: string) => {
     const normalized = newInstanceId.trim();
     setInstanceIdState(normalized);
-    setOracleInstanceId(normalized);
+    localStorage.setItem('oracleInstanceId', normalized);
   };
 
   const clearInstanceId = () => {
     setInstanceIdState('default');
-    clearOracleFilters();
+    localStorage.removeItem('oracleInstanceId');
   };
 
   return {
     instanceId,
     setInstanceId: updateInstanceId,
     clearInstanceId,
-    isDefault: isDefaultOracleInstance(instanceId),
+    isDefault: instanceId === 'default',
   };
 }

@@ -66,35 +66,6 @@ export interface CrossChainComparisonResult {
   };
 }
 
-export interface CrossChainArbitrageOpportunity {
-  id: string;
-  symbol: string;
-  timestamp: Date;
-  opportunityType: 'cross_chain' | 'cross_protocol' | 'combined';
-  buy: {
-    chain: SupportedChain;
-    protocol: OracleProtocol;
-    price: number;
-    confidence: number;
-    timestamp: Date;
-  };
-  sell: {
-    chain: SupportedChain;
-    protocol: OracleProtocol;
-    price: number;
-    confidence: number;
-    timestamp: Date;
-  };
-  priceDiff: number;
-  priceDiffPercent: number;
-  potentialProfitPercent: number;
-  gasCostEstimate: number;
-  netProfitEstimate: number;
-  riskLevel: 'low' | 'medium' | 'high';
-  isActionable: boolean;
-  warnings: string[];
-}
-
 export interface CrossChainDeviationAlert {
   id: string;
   symbol: string;

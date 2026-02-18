@@ -16,9 +16,6 @@
  */
 
 // ==================== 核心 Hooks ====================
-export { useWebSocket, type WebSocketOptions, type WebSocketState } from './useWebSocket';
-export { useSSE, type SSEOptions, type SSEState } from './useSSE';
-
 export { useDebounce } from './useDebounce';
 export { useAutoRefresh, useAutoRefreshWithCountdown } from './useAutoRefresh';
 export { useDataCache } from './useDataCache';
@@ -27,11 +24,7 @@ export { usePageOptimizations } from './usePageOptimizations';
 
 // ==================== 响应式 Hooks ====================
 
-export {
-  useMediaQuery,
-  useIsLargeScreen,
-  useIsMobile,
-} from './useMediaQuery';
+export { useMediaQuery, useIsLargeScreen, useIsMobile } from './useMediaQuery';
 
 // ==================== 无障碍 Hooks ====================
 export { useReducedMotion } from './useReducedMotion';
@@ -44,16 +37,6 @@ export { useUserStats, useAdminSession } from './useUser';
 
 // ==================== 钱包 Hooks ====================
 export { useBalance, useSwitchChainWithFeedback } from '@/features/wallet/hooks/useWallet';
-
-// ==================== Admin Hooks ====================
-export {
-  useAdminToken,
-  type UseAdminTokenOptions,
-  type UseAdminTokenReturn,
-} from './useAdminToken';
-
-// ==================== Query Hooks ====================
-export { useQuery, type UseQueryOptions, type UseQueryReturn } from './useQuery';
 
 // ==================== SWR 配置 Hooks ====================
 export { createSWRConfig, createSWRInfiniteConfig, REALTIME_CONFIG } from './useSWRConfig';
@@ -91,6 +74,3 @@ export {
   type CrossChainHistoricalSummary,
   type CrossChainHistoricalResponse,
 } from '@/features/cross-chain/types';
-
-// ==================== Dashboard Hooks ====================
-export { useDashboardShortcuts } from '@/features/dashboard/hooks';

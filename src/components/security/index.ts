@@ -1,1 +1,4 @@
-export { ThreatLevelBadge, type ThreatLevel } from './ThreatLevelBadge';
+export {
+  ThreatLevelBadge,
+  type ThreatLevel,
+} from '@/features/security/components/ThreatLevelBadge';

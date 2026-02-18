@@ -113,35 +113,26 @@ export default function AlertsCenterPage() {
   }
 
   return (
-    <div className="container mx-auto space-y-6 p-4 sm:p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl">
-            <AlertTriangle className="h-8 w-8 text-red-500" />
-            <span className="text-red-600">{t('alerts.pageTitle')}</span>
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t('alerts.pageDescription')}</p>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => refresh()} disabled={loading}>
+            <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
+            {t('common.refresh')}
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={!data}>
+            <Download className="mr-2 h-4 w-4" />
+            {t('common.export')}
+          </Button>
+          <AutoRefreshControl
+            isEnabled={autoRefreshEnabled}
+            onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+            interval={refreshInterval}
+            onIntervalChange={setRefreshInterval}
+            timeUntilRefresh={timeUntilRefresh}
+          />
         </div>
-        <div className="flex flex-col items-start gap-2 sm:items-end">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => refresh()} disabled={loading}>
-              <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
-              {t('common.refresh')}
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleExport} disabled={!data}>
-              <Download className="mr-2 h-4 w-4" />
-              {t('common.export')}
-            </Button>
-            <AutoRefreshControl
-              isEnabled={autoRefreshEnabled}
-              onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
-              interval={refreshInterval}
-              onIntervalChange={setRefreshInterval}
-              timeUntilRefresh={timeUntilRefresh}
-            />
-          </div>
-          <RefreshIndicator lastUpdated={lastUpdated} isRefreshing={loading} onRefresh={refresh} />
-        </div>
+        <RefreshIndicator lastUpdated={lastUpdated} isRefreshing={loading} onRefresh={refresh} />
       </div>
 
       {loading && !data ? (

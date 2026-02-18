@@ -31,7 +31,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { ConnectWallet } from '@/features/wallet/components/ConnectWallet';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useI18n } from '@/i18n';
@@ -105,8 +105,8 @@ export const defaultNavConfig: SidebarConfig = {
   defaultCollapsed: false,
   groups: [
     {
-      id: 'navigation',
-      label: '',
+      id: 'main',
+      label: 'nav.groups.main',
       collapsible: false,
       items: [
         {
@@ -130,6 +130,13 @@ export const defaultNavConfig: SidebarConfig = {
           icon: Compass,
           description: 'nav.descriptions.explore',
         },
+      ],
+    },
+    {
+      id: 'operations',
+      label: 'nav.groups.operations',
+      collapsible: false,
+      items: [
         {
           id: 'alerts',
           label: 'nav.alertsCenter',
@@ -190,7 +197,7 @@ function NavItemComponent({ item, level = 0 }: NavItemProps) {
       <span
         className={cn(
           'ml-3 flex-1 truncate text-sm font-medium transition-colors',
-          isActive ? 'text-primary-dark' : 'text-foreground group-hover:text-foreground',
+          isActive ? 'font-semibold text-primary' : 'text-foreground group-hover:text-foreground',
         )}
       >
         {t(item.label)}
@@ -214,28 +221,43 @@ function NavItemComponent({ item, level = 0 }: NavItemProps) {
   );
 
   const baseClassName = cn(
-    'flex items-center rounded-lg px-3 py-2 transition-all duration-200',
+    'relative flex items-center rounded-lg px-3 py-2 transition-all duration-200',
     'hover:bg-muted',
-    isActive && 'bg-primary/5 hover:bg-primary/10',
+    isActive && [
+      'bg-primary/10 hover:bg-primary/15',
+      'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2',
+      'before:h-6 before:w-1 before:rounded-r before:bg-primary',
+    ],
     level > 0 && 'ml-4',
     item.disabled && 'cursor-not-allowed opacity-50',
   );
 
+  const navItem = hasHref ? (
+    <Link
+      href={item.href as Route}
+      onClick={handleClick}
+      data-tour={item.id}
+      className={baseClassName}
+    >
+      {content}
+    </Link>
+  ) : (
+    <button onClick={handleClick} data-tour={item.id} className={baseClassName}>
+      {content}
+    </button>
+  );
+
   return (
     <div className="group">
-      {hasHref ? (
-        <Link
-          href={item.href as Route}
-          onClick={handleClick}
-          data-tour={item.id}
-          className={baseClassName}
-        >
-          {content}
-        </Link>
+      {item.description ? (
+        <Tooltip delayDuration={300}>
+          <TooltipTrigger asChild>{navItem}</TooltipTrigger>
+          <TooltipContent side="right" className="max-w-xs">
+            <p className="text-sm">{t(item.description)}</p>
+          </TooltipContent>
+        </Tooltip>
       ) : (
-        <button onClick={handleClick} data-tour={item.id} className={baseClassName}>
-          {content}
-        </button>
+        navItem
       )}
 
       {/* Submenu */}

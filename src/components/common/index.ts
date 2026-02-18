@@ -7,12 +7,7 @@ export { DynamicLoading, createLoadingComponent, type LoadingType } from './Dyna
 export { ChartCard, ChartCardSkeleton } from './ChartCard';
 
 // ==================== 数据展示 ====================
-export {
-  StatCard,
-  StatCardSkeleton,
-  StatCardGroup,
-  DashboardStatsSection,
-} from './StatCard';
+export { StatCard, StatCardSkeleton, StatCardGroup, DashboardStatsSection } from './StatCard';
 
 export type {
   StatCardProps,
@@ -26,11 +21,7 @@ export type {
   EnhancedStatCardProps,
 } from './StatCard';
 
-export {
-  SummaryStatsGrid,
-  type StatItem,
-  type SummaryStatsGridProps,
-} from './SummaryStatsGrid';
+export { SummaryStatsGrid, type StatItem, type SummaryStatsGridProps } from './SummaryStatsGrid';
 
 // ==================== 页面布局 ====================
 export {
@@ -52,6 +43,9 @@ export {
   type BreadcrumbWithActionsProps,
 } from './Breadcrumb';
 export { EnhancedSidebar as Sidebar, defaultNavConfig } from './EnhancedSidebar';
+export { MobileNavProvider, MobileMenuButton, MobileSidebar, useMobileNav } from './MobileNav';
+export { AppLayout } from './AppLayout';
+export { QuickSearch, useQuickSearch } from './QuickSearch';
 
 // ==================== 交互反馈 ====================
 export { CopyButton } from './CopyButton';

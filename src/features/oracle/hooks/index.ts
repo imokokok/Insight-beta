@@ -1,6 +1,5 @@
 /**
  * Oracle Hooks
  */
-export * from './useOracle';
-export * from './usePlatformStats';
 export * from './useAddressHistory';
+export * from './useOracleData';

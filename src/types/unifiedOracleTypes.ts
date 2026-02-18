@@ -24,7 +24,6 @@ import type {
   OracleFeature as _OracleFeature,
 } from './oracle/protocol';
 
-
 // 本地类型别名
 export type OracleProtocol = _OracleProtocol;
 export type OracleProtocolInfo = _OracleProtocolInfo;
@@ -350,25 +349,6 @@ export type ConfigTemplate = {
   chain: SupportedChain;
   config: Partial<UnifiedOracleConfig>;
   isDefault?: boolean;
-};
-
-// ============================================================================
-// 跨协议比较类型
-// ============================================================================
-
-export type CrossProtocolComparison = {
-  symbol: string;
-  timestamp: number;
-  prices: Record<
-    OracleProtocol,
-    {
-      price: number;
-      confidence: number;
-      timestamp: number;
-    }
-  >;
-  priceDeviation: number;
-  recommendedProtocol?: OracleProtocol;
 };
 
 // 数据状态类型
