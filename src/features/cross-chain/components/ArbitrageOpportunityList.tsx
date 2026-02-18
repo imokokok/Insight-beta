@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn, formatPrice } from '@/shared/utils';
 
-import type { ArbitrageOpportunity, ArbitrageSummary } from '../hooks/useArbitrage';
+import type { ArbitrageOpportunity, ArbitrageSummary } from '../types';
 
 interface ArbitrageOpportunityListProps {
   opportunities?: ArbitrageOpportunity[];

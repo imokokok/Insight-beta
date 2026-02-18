@@ -6,8 +6,6 @@ import { Activity, Gavel, Calendar } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { StatCardSkeleton, ChartSkeleton, CardSkeleton, SkeletonList } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -15,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { StatCardSkeleton, ChartSkeleton, CardSkeleton, SkeletonList } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
 
 import { DisputeResultChart, BondDistributionChart } from './charts';
@@ -24,8 +24,8 @@ import { DisputeTrendChart } from './DisputeTrendChart';
 import { ProtocolChainFilter } from './filters';
 import { SummaryStats } from './SummaryStats';
 
-import type { DisputeReport, Dispute, DisputeTrend } from '../types/disputes';
 import type { TimeRangePreset } from '../hooks/useDisputeAnalytics';
+import type { DisputeReport, Dispute, DisputeTrend } from '../types/disputes';
 
 interface DisputeContentProps {
   report: DisputeReport | null;

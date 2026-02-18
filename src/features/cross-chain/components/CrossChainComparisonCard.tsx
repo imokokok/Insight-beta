@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { CrossChainComparisonData } from '@/features/cross-chain/hooks';
+import type { CrossChainComparisonData } from '../types';
 import { useI18n } from '@/i18n';
 import { cn, formatPrice, formatChangePercent, formatConfidence } from '@/shared/utils';
 

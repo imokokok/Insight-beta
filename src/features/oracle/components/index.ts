@@ -16,3 +16,4 @@ export * from './AddressExplorer';
 export * from './OracleDashboard';
 export * from './OracleComparison';
 export * from './DeviationAnalytics';
+export * from './PriceHistoryChart';

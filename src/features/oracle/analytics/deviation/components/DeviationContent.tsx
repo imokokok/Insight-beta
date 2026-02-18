@@ -1,5 +1,7 @@
 'use client';
 
+
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp,
   Activity,
@@ -10,8 +12,6 @@ import {
   BarChart3,
   Zap,
 } from 'lucide-react';
-
-import { motion, AnimatePresence } from 'framer-motion';
 
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
@@ -24,7 +24,6 @@ import { Input } from '@/components/ui/input';
 import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
 import { StatCardSkeleton, ChartSkeleton, CardSkeleton, SkeletonList } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useIsMobile } from '@/hooks';
 import {
   TrendList,
   AnomalyList,
@@ -38,6 +37,7 @@ import { ExportButton } from '@/features/oracle/analytics/deviation/components/e
 import { ProtocolFilter, TimeRangeSelector } from '@/features/oracle/analytics/deviation/components/filters';
 import { WelcomeGuide, HelpTooltip } from '@/features/oracle/analytics/deviation/components/onboarding';
 import { useDeviationAnalytics } from '@/features/oracle/analytics/deviation/hooks';
+import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 

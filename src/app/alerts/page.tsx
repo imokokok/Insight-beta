@@ -1,25 +1,9 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
-
-import {
-  AlertTriangle,
-  RefreshCw,
-  Download,
-  Search,
-  Filter,
-  Network,
-  Shield,
-  TrendingUp,
-  Activity,
-  Bell,
-  BarChart3,
-  Settings,
-} from 'lucide-react';
+import { AlertTriangle, RefreshCw, Download } from 'lucide-react';
 
 import { StatCard } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
-import { useToast } from '@/components/common/DashboardToast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -36,170 +20,73 @@ import {
 } from '@/components/ui/select';
 import { SkeletonList, StatCardSkeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCard, AlertDetailPanel, AlertRulesList, AlertBatchActions, AlertGroupSelector, AlertGroupList, AlertTrendChart, AlertHeatmap, NotificationChannels, ResponseTimeStats } from '@/features/alerts/components';
-import { useAlertHistory, useAlertRules, useAlertSelection, useNotificationChannels } from '@/features/alerts/hooks';
-import type { TimeRange, GroupBy } from '@/features/alerts/hooks/useAlertHistory';
-import type { UnifiedAlert, AlertSeverity, AlertSource, AlertStatus } from '@/features/alerts/hooks/useAlerts';
-import type { SortMode, GroupMode } from '@/features/alerts/utils/alertScoring';
-import { sortAlerts, groupAlerts } from '@/features/alerts/utils/alertScoring';
-import { useAutoRefreshWithCountdown, useDataCache } from '@/hooks';
+import { Search, Filter } from 'lucide-react';
+import { cn } from '@/shared/utils';
+import {
+  AlertCard,
+  AlertDetailPanel,
+  AlertRulesList,
+  AlertBatchActions,
+  AlertGroupSelector,
+  AlertGroupList,
+  AlertTrendChart,
+  AlertHeatmap,
+  NotificationChannels,
+  ResponseTimeStats,
+} from '@/features/alerts/components';
+import { useAlertsPage, sourceIcons } from '@/features/alerts/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { logger } from '@/shared/logger';
-import { fetchApiData, cn } from '@/shared/utils';
-
-
-interface AlertsData {
-  alerts: UnifiedAlert[];
-  summary: {
-    total: number;
-    critical: number;
-    high: number;
-    medium: number;
-    low: number;
-    active: number;
-    resolved: number;
-    bySource: {
-      price_anomaly: number;
-      cross_chain: number;
-      security: number;
-    };
-  };
-}
-
-const sourceIcons: Record<AlertSource | 'all', typeof AlertTriangle> = {
-  all: Activity,
-  price_anomaly: TrendingUp,
-  cross_chain: Network,
-  security: Shield,
-};
 
 export default function AlertsCenterPage() {
   const { t } = useI18n();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<AlertsData | null>(null);
-  const [selectedAlert, setSelectedAlert] = useState<UnifiedAlert | null>(null);
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterSeverity, setFilterSeverity] = useState<AlertSeverity | 'all'>('all');
-  const [filterStatus, setFilterStatus] = useState<AlertStatus | 'all'>('all');
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [sortMode, setSortMode] = useState<SortMode>('smart');
-  const [groupMode, setGroupMode] = useState<GroupMode>('none');
-  const [historyTimeRange, setHistoryTimeRange] = useState<TimeRange>('24h');
-  const [historyGroupBy, setHistoryGroupBy] = useState<GroupBy>('none');
-
   const {
+    loading,
+    data,
+    selectedAlert,
+    setSelectedAlert,
+    activeTab,
+    setActiveTab,
+    searchQuery,
+    setSearchQuery,
+    filterSeverity,
+    setFilterSeverity,
+    filterStatus,
+    setFilterStatus,
+    lastUpdated,
+    error,
+    sortMode,
+    setSortMode,
+    groupMode,
+    setGroupMode,
+    historyTimeRange,
+    setHistoryTimeRange,
+    historyGroupBy,
+    setHistoryGroupBy,
     rules,
-    loading: rulesLoading,
-    fetchRules,
+    rulesLoading,
     createRule,
     updateRule,
     deleteRule,
     toggleRule,
-  } = useAlertRules();
-
-  const {
     channels,
-    loading: channelsLoading,
+    channelsLoading,
     fetchChannels,
     createChannel,
     updateChannel,
     deleteChannel,
     toggleChannel,
     testChannel,
-  } = useNotificationChannels();
-
-  const { data: historyData, isLoading: historyLoading } = useAlertHistory({
-    timeRange: historyTimeRange,
-    groupBy: historyGroupBy,
-  });
-
-  const { success, error: showError } = useToast();
-  const { getCachedData, setCachedData } = useDataCache<{ data: AlertsData }>({
-    key: 'alerts_center',
-    ttl: 2 * 60 * 1000,
-  });
-  const {
-    isEnabled: autoRefreshEnabled,
-    setIsEnabled: setAutoRefreshEnabled,
+    historyData,
+    historyLoading,
+    autoRefreshEnabled,
+    setAutoRefreshEnabled,
     refreshInterval,
     setRefreshInterval,
     timeUntilRefresh,
     refresh,
-  } = useAutoRefreshWithCountdown({
-    onRefresh: () => fetchData(false),
-    interval: 30000,
-    enabled: true,
-    pauseWhenHidden: true,
-  });
-
-  const fetchData = useCallback(
-    async (showToast = true) => {
-      try {
-        setLoading(true);
-        setError(null);
-        const cached = getCachedData();
-        if (cached && !lastUpdated) {
-          setData(cached.data);
-          setLoading(false);
-        }
-        const response = await fetchApiData<{ data: AlertsData }>('/api/alerts');
-        setData(response.data);
-        setLastUpdated(new Date());
-        setCachedData({ data: response.data });
-        if (showToast) {
-          success(t('alerts.dataRefreshed'), t('alerts.dataRefreshedDesc'));
-        }
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch alerts';
-        setError(errorMessage);
-        showError(t('alerts.failedToRefresh'), errorMessage);
-        logger.error('Failed to fetch alerts', { error: err });
-      } finally {
-        setLoading(false);
-      }
-    },
-    [getCachedData, setCachedData, lastUpdated, success, showError, t],
-  );
-
-  const filteredAlerts = useMemo(() => {
-    if (!data?.alerts) return [];
-
-    let alerts = data.alerts;
-
-    if (activeTab !== 'all') {
-      alerts = alerts.filter((a) => a.source === activeTab);
-    }
-
-    if (filterSeverity !== 'all') {
-      alerts = alerts.filter((a) => a.severity === filterSeverity);
-    }
-
-    if (filterStatus !== 'all') {
-      alerts = alerts.filter((a) => a.status === filterStatus);
-    }
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      alerts = alerts.filter(
-        (a) =>
-          a.title.toLowerCase().includes(query) ||
-          a.description.toLowerCase().includes(query) ||
-          a.symbol?.toLowerCase().includes(query) ||
-          a.chainA?.toLowerCase().includes(query) ||
-          a.chainB?.toLowerCase().includes(query),
-      );
-    }
-
-    return sortAlerts(alerts, sortMode);
-  }, [data, activeTab, filterSeverity, filterStatus, searchQuery, sortMode]);
-
-  const alertGroups = useMemo(() => {
-    return groupAlerts(filteredAlerts, groupMode);
-  }, [filteredAlerts, groupMode]);
-
-  const {
+    fetchData,
+    filteredAlerts,
+    alertGroups,
     selectedAlerts,
     isAllSelected,
     isIndeterminate,
@@ -207,33 +94,9 @@ export default function AlertsCenterPage() {
     deselectAll,
     toggleSelectAll,
     isSelected,
-  } = useAlertSelection({ alerts: filteredAlerts });
-
-  const handleBatchActionComplete = useCallback(
-    (_processed: number, _failed: number) => {
-      fetchData(false);
-    },
-    [fetchData],
-  );
-
-  const handleExport = useCallback(() => {
-    if (!data) return;
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `alerts-export-${new Date().toISOString()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [data]);
-
-  useEffect(() => {
-    fetchData(false);
-  }, [fetchData]);
-
-  useEffect(() => {
-    fetchRules();
-  }, [fetchRules]);
+    handleBatchActionComplete,
+    handleExport,
+  } = useAlertsPage();
 
   if (error && !loading && !data) {
     return (
@@ -312,19 +175,19 @@ export default function AlertsCenterPage() {
           <StatCard
             title={t('alerts.stats.active')}
             value={data?.summary.active || 0}
-            icon={<Activity className="h-5 w-5" />}
+            icon={<sourceIcons.all className="h-5 w-5" />}
             color="red"
           />
           <StatCard
             title={t('alerts.stats.priceAnomaly')}
             value={data?.summary.bySource.price_anomaly || 0}
-            icon={<TrendingUp className="h-5 w-5" />}
+            icon={<sourceIcons.price_anomaly className="h-5 w-5" />}
             color="purple"
           />
           <StatCard
             title={t('alerts.stats.crossChain')}
             value={data?.summary.bySource.cross_chain || 0}
-            icon={<Network className="h-5 w-5" />}
+            icon={<sourceIcons.cross_chain className="h-5 w-5" />}
             color="cyan"
           />
         </div>
@@ -334,31 +197,31 @@ export default function AlertsCenterPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <TabsList className="grid w-full grid-cols-7 lg:w-auto">
             <TabsTrigger value="all">
-              <Activity className="mr-2 h-4 w-4" />
+              <sourceIcons.all className="mr-2 h-4 w-4" />
               {t('alerts.tabs.all')}
             </TabsTrigger>
             <TabsTrigger value="price_anomaly">
-              <TrendingUp className="mr-2 h-4 w-4" />
+              <sourceIcons.price_anomaly className="mr-2 h-4 w-4" />
               {t('alerts.tabs.priceAnomaly')}
             </TabsTrigger>
             <TabsTrigger value="cross_chain">
-              <Network className="mr-2 h-4 w-4" />
+              <sourceIcons.cross_chain className="mr-2 h-4 w-4" />
               {t('alerts.tabs.crossChain')}
             </TabsTrigger>
             <TabsTrigger value="security">
-              <Shield className="mr-2 h-4 w-4" />
+              <sourceIcons.security className="mr-2 h-4 w-4" />
               {t('alerts.tabs.security')}
             </TabsTrigger>
             <TabsTrigger value="rules">
-              <Bell className="mr-2 h-4 w-4" />
+              <sourceIcons.all className="mr-2 h-4 w-4" />
               {t('alerts.tabs.rules')}
             </TabsTrigger>
             <TabsTrigger value="channels">
-              <Settings className="mr-2 h-4 w-4" />
+              <sourceIcons.all className="mr-2 h-4 w-4" />
               {t('alerts.tabs.channels')}
             </TabsTrigger>
             <TabsTrigger value="analysis">
-              <BarChart3 className="mr-2 h-4 w-4" />
+              <sourceIcons.all className="mr-2 h-4 w-4" />
               {t('alerts.tabs.analysis')}
             </TabsTrigger>
           </TabsList>
@@ -380,7 +243,7 @@ export default function AlertsCenterPage() {
                 <Filter className="h-4 w-4 text-muted-foreground" />
                 <Select
                   value={filterSeverity}
-                  onValueChange={(v) => setFilterSeverity(v as AlertSeverity | 'all')}
+                  onValueChange={(v) => setFilterSeverity(v as any)}
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue />
@@ -395,7 +258,7 @@ export default function AlertsCenterPage() {
                 </Select>
                 <Select
                   value={filterStatus}
-                  onValueChange={(v) => setFilterStatus(v as AlertStatus | 'all')}
+                  onValueChange={(v) => setFilterStatus(v as any)}
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue />
@@ -408,17 +271,17 @@ export default function AlertsCenterPage() {
                   </SelectContent>
                 </Select>
                 <AlertGroupSelector
-                  groupMode={groupMode}
-                  onGroupModeChange={setGroupMode}
-                  sortMode={sortMode}
-                  onSortModeChange={setSortMode}
+                  groupMode={groupMode as any}
+                  onGroupModeChange={setGroupMode as any}
+                  sortMode={sortMode as any}
+                  onSortModeChange={setSortMode as any}
                 />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <TabsContent value={activeTab} className="space-y-6">
+        <TabsContent value={activeTab as any} className="space-y-6">
           <AlertBatchActions
             selectedAlerts={selectedAlerts}
             onClearSelection={deselectAll}
@@ -431,8 +294,8 @@ export default function AlertsCenterPage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     {(() => {
-                      const Icon = sourceIcons[activeTab as AlertSource | 'all'];
-                      return <Icon className="h-5 w-5" />;
+                      const Icon = sourceIcons[activeTab as keyof typeof sourceIcons];
+                      return Icon ? <Icon className="h-5 w-5" /> : <sourceIcons.all className="h-5 w-5" />;
                     })()}
                     {t('alerts.cards.alertList')}
                     <Badge variant="secondary" className="ml-2">
@@ -531,10 +394,10 @@ export default function AlertsCenterPage() {
           <AlertTrendChart
             data={historyData?.data?.trend || []}
             stats={historyData?.data?.stats || null}
-            timeRange={historyTimeRange}
-            groupBy={historyGroupBy}
-            onTimeRangeChange={setHistoryTimeRange}
-            onGroupByChange={setHistoryGroupBy}
+            timeRange={historyTimeRange as any}
+            groupBy={historyGroupBy as any}
+            onTimeRangeChange={setHistoryTimeRange as any}
+            onGroupByChange={setHistoryGroupBy as any}
             loading={historyLoading}
           />
           <AlertHeatmap

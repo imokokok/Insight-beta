@@ -14,13 +14,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import {
-  CrossChainComparisonCard,
-  CrossChainPriceChart,
-  CrossChainComparisonBar,
-  CorrelationMatrix,
-} from '@/features/cross-chain';
-import { useCrossChainComparison, useCrossChainHistory, useCorrelation } from '@/features/cross-chain/hooks';
+import { CrossChainComparisonCard } from './CrossChainComparisonCard';
+import { CrossChainPriceChart } from './CrossChainPriceChart';
+import { CrossChainComparisonBar } from './CrossChainComparisonBar';
+import { CorrelationMatrix } from './CorrelationMatrix';
+import { useCrossChainComparison, useCrossChainHistory, useCorrelation } from '../hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 

@@ -15,7 +15,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { CrossChainHistoricalResponse } from '@/features/cross-chain/hooks';
+import type { CrossChainHistoricalResponse } from '../types';
 import { useI18n } from '@/i18n';
 import { cn, formatPercentValue } from '@/shared/utils';
 

@@ -13,12 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  CrossChainHistoricalCard,
-  CrossChainPriceChart,
-  CrossChainDeviationChart,
-} from '@/features/cross-chain';
-import { useCrossChainHistory } from '@/features/cross-chain/hooks';
+import { CrossChainHistoricalCard } from './CrossChainHistoricalCard';
+import { CrossChainPriceChart } from './CrossChainPriceChart';
+import { CrossChainDeviationChart } from './CrossChainDeviationChart';
+import { useCrossChainHistory } from '../hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 

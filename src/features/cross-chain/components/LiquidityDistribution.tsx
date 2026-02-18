@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/shared/utils';
 
-import type { LiquidityResponse } from '../hooks/useArbitrage';
+import type { LiquidityResponse } from '../types';
 
 const CHAIN_COLORS: Record<string, string> = {
   ethereum: '#627eea',

@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/shared/utils';
 
-import type { BridgeStatus, BridgeSummary } from '../hooks/useArbitrage';
+import type { BridgeStatus, BridgeSummary } from '../types';
 
 interface BridgeStatusCardProps {
   bridges?: BridgeStatus[];

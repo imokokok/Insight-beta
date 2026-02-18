@@ -78,6 +78,9 @@ export {
   useCrossChainAlerts,
   useCrossChainDashboard,
   useCrossChainHistory,
+} from '@/features/cross-chain/hooks';
+
+export {
   type CrossChainComparisonData,
   type CrossChainComparisonResult,
   type CrossChainDeviationAlert,
@@ -87,7 +90,7 @@ export {
   type CrossChainHistoricalDataPoint,
   type CrossChainHistoricalSummary,
   type CrossChainHistoricalResponse,
-} from '@/features/cross-chain/hooks';
+} from '@/features/cross-chain/types';
 
 // ==================== Dashboard Hooks ====================
 export { useDashboardShortcuts } from '@/features/dashboard/hooks';

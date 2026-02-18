@@ -21,7 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
 import { formatPrice } from '@/shared/utils';
 
-import type { CrossChainHistoricalResponse } from '../hooks/useCrossChain';
+import type { CrossChainHistoricalResponse } from '../types';
 
 const CHAIN_COLORS: Record<string, string> = {
   ethereum: '#627eea',

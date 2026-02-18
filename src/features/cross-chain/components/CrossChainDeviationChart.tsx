@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
 
-import type { CrossChainHistoricalResponse } from '../hooks/useCrossChain';
+import type { CrossChainHistoricalResponse } from '../types';
 
 interface CrossChainDeviationChartProps {
   data?: CrossChainHistoricalResponse['data'];

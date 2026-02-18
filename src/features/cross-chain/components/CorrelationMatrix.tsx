@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/shared/utils';
 
-import type { CorrelationResponse } from '../hooks/useArbitrage';
+import type { CorrelationResponse } from '../types';
 
 interface CorrelationMatrixProps {
   data?: CorrelationResponse;

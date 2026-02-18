@@ -230,9 +230,7 @@ export default function ExplorePage() {
         sortValue={sortBy}
         onSortChange={setSortBy}
         sortOptions={sortOptions}
-        onApply={() => {
-          console.log('Applied sort:', sortBy);
-        }}
+        onApply={() => {}}
         onReset={() => {
           setSortBy('volume');
         }}
