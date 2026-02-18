@@ -2,9 +2,13 @@
 
 import { useMemo } from 'react';
 
-import { ExportButton, escapeCSV, type ExportConfig } from '@/features/oracle/components/shared';
-
-import type { DisputeReport, Dispute, DisputeTrend } from '../../types/disputes';
+import {
+  ExportButton,
+  escapeCSV,
+  escapeXML,
+  type ExportConfig,
+} from '@/features/oracle/components/shared';
+import type { DisputeReport, Dispute, DisputeTrend } from '@/types/oracle/dispute';
 
 interface DisputeExportButtonProps {
   report: DisputeReport | null;
@@ -76,14 +80,6 @@ function trendsToCSV(trends: DisputeTrend[]): string {
 }
 
 function generateExcelXML(report: DisputeReport): string {
-  const escapeXML = (str: string) =>
-    str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&apos;');
-
   return `<?xml version="1.0" encoding="UTF-8"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"

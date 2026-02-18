@@ -1,3 +1,5 @@
+export type DisputeStatus = 'active' | 'resolved';
+
 export interface Dispute {
   id: string;
   assertionId: string;
@@ -9,7 +11,7 @@ export interface Dispute {
   bond: number;
   disputeBond: number;
   currency: string;
-  status: 'active' | 'resolved';
+  status: DisputeStatus;
   resolutionResult?: boolean;
   proposedAt: string;
   disputedAt: string;

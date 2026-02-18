@@ -13,9 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { StatCardSkeleton, ChartSkeleton, CardSkeleton, SkeletonList } from '@/components/ui/skeleton';
+import {
+  StatCardSkeleton,
+  ChartSkeleton,
+  CardSkeleton,
+  SkeletonList,
+} from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
+import type { DisputeReport, Dispute, DisputeTrend } from '@/types/oracle/dispute';
 
 import { DisputeResultChart, BondDistributionChart } from './charts';
 import { DisputeDetailPanel } from './details';
@@ -25,7 +31,6 @@ import { ProtocolChainFilter } from './filters';
 import { SummaryStats } from './SummaryStats';
 
 import type { TimeRangePreset } from '../hooks/useDisputeAnalytics';
-import type { DisputeReport, Dispute, DisputeTrend } from '../types/disputes';
 
 interface DisputeContentProps {
   report: DisputeReport | null;
@@ -89,7 +94,10 @@ export function DisputeContent({
     <>
       {loading && !report ? (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <StatCardSkeleton /><StatCardSkeleton /><StatCardSkeleton /><StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
         </div>
       ) : (
         <SummaryStats report={report} />
@@ -101,7 +109,10 @@ export function DisputeContent({
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">{t('common.timeRange')}:</span>
-              <Select value={timeRangePreset} onValueChange={(v) => setTimeRangePreset(v as TimeRangePreset)}>
+              <Select
+                value={timeRangePreset}
+                onValueChange={(v) => setTimeRangePreset(v as TimeRangePreset)}
+              >
                 <SelectTrigger className="w-28">
                   <SelectValue />
                 </SelectTrigger>
@@ -141,7 +152,10 @@ export function DisputeContent({
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-2">
             {loading && !report ? (
-              <><ChartSkeleton /><ChartSkeleton /></>
+              <>
+                <ChartSkeleton />
+                <ChartSkeleton />
+              </>
             ) : report ? (
               <>
                 <DisputeTrendChart trends={filteredTrends} />
@@ -149,20 +163,36 @@ export function DisputeContent({
               </>
             ) : null}
           </div>
-          
+
           <div className="grid gap-6 lg:grid-cols-2">
             {loading && !report ? (
-              <><ChartSkeleton /><CardSkeleton /></>
+              <>
+                <ChartSkeleton />
+                <CardSkeleton />
+              </>
             ) : report ? (
               <>
                 <BondDistributionChart disputes={filteredDisputes} trends={filteredTrends} />
                 <Card>
                   <CardHeader>
                     <CardTitle>{t('analytics:disputes.disputes.title')}</CardTitle>
-                    <CardDescription>{t('analytics:disputes.disputes.showing', { count: Math.min(5, filteredDisputes.length), total: filteredDisputes.length })}</CardDescription>
+                    <CardDescription>
+                      {t('analytics:disputes.disputes.showing', {
+                        count: Math.min(5, filteredDisputes.length),
+                        total: filteredDisputes.length,
+                      })}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {loading ? <SkeletonList count={5} /> : <DisputeList disputes={filteredDisputes.slice(0, 5)} isLoading={loading} onSelect={handleSelectDispute} />}
+                    {loading ? (
+                      <SkeletonList count={5} />
+                    ) : (
+                      <DisputeList
+                        disputes={filteredDisputes.slice(0, 5)}
+                        isLoading={loading}
+                        onSelect={handleSelectDispute}
+                      />
+                    )}
                   </CardContent>
                 </Card>
               </>
@@ -190,7 +220,9 @@ export function DisputeContent({
                 >
                   <option value="All">{t('oracle.filters.allStatus')}</option>
                   <option value="Active">{t('analytics:disputes.disputes.statusActive')}</option>
-                  <option value="Resolved">{t('analytics:disputes.disputes.statusResolved')}</option>
+                  <option value="Resolved">
+                    {t('analytics:disputes.disputes.statusResolved')}
+                  </option>
                 </select>
               </div>
             </CardContent>
@@ -198,7 +230,12 @@ export function DisputeContent({
           <Card>
             <CardHeader>
               <CardTitle>{t('analytics:disputes.disputes.title')}</CardTitle>
-              <CardDescription>{t('analytics:disputes.disputes.showing', { count: filteredDisputes.length, total: report?.disputes.length || 0 })}</CardDescription>
+              <CardDescription>
+                {t('analytics:disputes.disputes.showing', {
+                  count: filteredDisputes.length,
+                  total: report?.disputes.length || 0,
+                })}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <DisputeList

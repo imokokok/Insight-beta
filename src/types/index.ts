@@ -29,8 +29,15 @@ export type {
   RealtimeComparisonItem,
 } from './oracle/comparison';
 
+// Dispute 相关类型
+export type {
+  DisputeStatus,
+  Dispute,
+  DisputerStats,
+  DisputeTrend,
+  DisputeReport,
+} from './oracle/dispute';
+
 // 通用类型
 export type { PaginationParams } from './common/pagination';
 export type { HealthStatus } from './common/status';
-
-

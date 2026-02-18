@@ -35,7 +35,6 @@ interface AssertionListProps {
   instanceId?: string | null;
 }
 
-// Grid Components for Virtuoso
 const GridList = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
   ({ style, children, ...props }, ref) => (
     <div
@@ -59,7 +58,6 @@ const GridItem = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
 );
 GridItem.displayName = 'GridItem';
 
-// List Components for Virtuoso
 const ListContainer = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
   ({ style, children, ...props }, ref) => (
     <div ref={ref} {...props} style={style} className="space-y-6 pb-4">
@@ -138,11 +136,6 @@ export const AssertionList = memo(function AssertionList({
       );
     }
 
-    // If hasMore but not loadingMore, user scrolling triggers loadMore automatically via endReached.
-    // However, we can also keep a manual button if we prefer, but Virtuoso is best with auto-load.
-    // We'll return a spacer or the manual button if we want hybrid.
-    // Usually infinite scroll hides the button.
-    // Let's keep it simple: just a spacer to ensure bottom visibility.
     return <div className="h-8" />;
   };
 
@@ -158,7 +151,6 @@ export const AssertionList = memo(function AssertionList({
             viewMode === 'grid' ? 'h-full' : 'flex flex-col gap-6 md:flex-row md:items-center',
           )}
         >
-          {/* Header: Icon, ID, Protocol */}
           <div
             className={cn(
               'flex items-start justify-between',
@@ -191,7 +183,6 @@ export const AssertionList = memo(function AssertionList({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Status badge for Grid view */}
               {viewMode === 'grid' && (
                 <span
                   className={cn(
@@ -205,7 +196,6 @@ export const AssertionList = memo(function AssertionList({
             </div>
           </div>
 
-          {/* Question */}
           <div className={cn(viewMode === 'grid' ? 'mb-6 mt-4' : 'min-w-0 flex-1')}>
             {viewMode === 'grid' && (
               <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
@@ -240,7 +230,6 @@ export const AssertionList = memo(function AssertionList({
             )}
           </div>
 
-          {/* Stats */}
           <div
             className={cn(
               viewMode === 'grid'
@@ -284,7 +273,6 @@ export const AssertionList = memo(function AssertionList({
             </div>
           </div>
 
-          {/* Liveness Progress (Pending only) */}
           {item.status === 'Pending' && (
             <div
               className={cn(
@@ -301,7 +289,6 @@ export const AssertionList = memo(function AssertionList({
             </div>
           )}
 
-          {/* Footer for Grid View */}
           {viewMode === 'grid' && (
             <div className="flex items-center justify-between border-t border-gray-100 pt-4">
               <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400">
@@ -315,7 +302,6 @@ export const AssertionList = memo(function AssertionList({
             </div>
           )}
 
-          {/* View Details arrow for List View */}
           {viewMode === 'list' && (
             <div className="flex w-full translate-x-0 transform items-center justify-end border-t border-gray-100 pl-0 pt-4 text-primary opacity-100 transition-all md:w-auto md:translate-x-[-10px] md:justify-start md:border-l md:border-t-0 md:pl-4 md:pt-0 md:opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100">
               <span className="mr-2 text-xs font-bold md:hidden">{t('common.viewDetails')}</span>

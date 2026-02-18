@@ -16,8 +16,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useI18n } from '@/i18n';
-
-import type { DisputeTrend } from '../types/disputes';
+import type { DisputeTrend } from '@/types/oracle/dispute';
 
 interface DisputeTrendChartProps {
   trends: DisputeTrend[];
@@ -25,27 +24,30 @@ interface DisputeTrendChartProps {
 
 function predictFuture(data: { total: number }[], days: number): number[] {
   if (data.length < 3) return [];
-  
-  const values = data.map(d => d.total);
+
+  const values = data.map((d) => d.total);
   const n = values.length;
-  
-  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0;
   for (let i = 0; i < n; i++) {
     sumX += i;
     sumY += values[i]!;
     sumXY += i * values[i]!;
     sumX2 += i * i;
   }
-  
+
   const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
   const intercept = (sumY - slope * sumX) / n;
-  
+
   const predictions: number[] = [];
   for (let i = 0; i < days; i++) {
     const predicted = slope * (n + i) + intercept;
     predictions.push(Math.max(0, Math.round(predicted)));
   }
-  
+
   return predictions;
 }
 
@@ -60,12 +62,12 @@ interface ChartDataItem {
 
 export function DisputeTrendChart({ trends }: DisputeTrendChartProps) {
   const { t } = useI18n();
-  
+
   const { historicalData, combinedData } = useMemo(() => {
     const sorted = trends
       .slice()
       .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-    
+
     const historical: ChartDataItem[] = sorted.map((d, index) => ({
       date: new Date(d.timestamp).toLocaleDateString(),
       total: d.totalDisputes,
@@ -74,10 +76,11 @@ export function DisputeTrendChart({ trends }: DisputeTrendChartProps) {
       isPrediction: false,
       index,
     }));
-    
+
     const predictions = predictFuture(historical, 7);
-    
-    const lastDate = sorted.length > 0 ? new Date(sorted[sorted.length - 1]!.timestamp) : new Date();
+
+    const lastDate =
+      sorted.length > 0 ? new Date(sorted[sorted.length - 1]!.timestamp) : new Date();
     const predicted: ChartDataItem[] = predictions.map((value, index) => {
       const futureDate = new Date(lastDate);
       futureDate.setDate(futureDate.getDate() + index + 1);
@@ -90,7 +93,7 @@ export function DisputeTrendChart({ trends }: DisputeTrendChartProps) {
         index: historical.length + index,
       };
     });
-    
+
     return {
       historicalData: historical,
       combinedData: [...historical, ...predicted],
@@ -123,9 +126,9 @@ export function DisputeTrendChart({ trends }: DisputeTrendChartProps) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 10 }} 
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 10 }}
                 interval="preserveStartEnd"
                 tickFormatter={(value: string, index: number) => {
                   if (index === lastHistoricalIndex + 1) return '';
@@ -142,7 +145,7 @@ export function DisputeTrendChart({ trends }: DisputeTrendChartProps) {
               />
               <Area
                 type="monotone"
-                dataKey={(d: ChartDataItem) => d.isPrediction ? undefined : d.total}
+                dataKey={(d: ChartDataItem) => (d.isPrediction ? undefined : d.total)}
                 stroke="#3b82f6"
                 strokeWidth={2}
                 fillOpacity={1}
@@ -151,7 +154,7 @@ export function DisputeTrendChart({ trends }: DisputeTrendChartProps) {
               />
               <Area
                 type="monotone"
-                dataKey={(d: ChartDataItem) => d.isPrediction ? undefined : d.active}
+                dataKey={(d: ChartDataItem) => (d.isPrediction ? undefined : d.active)}
                 stroke="#f59e0b"
                 strokeWidth={2}
                 fillOpacity={1}
@@ -160,7 +163,7 @@ export function DisputeTrendChart({ trends }: DisputeTrendChartProps) {
               />
               <Line
                 type="monotone"
-                dataKey={(d: ChartDataItem) => d.isPrediction ? d.total : undefined}
+                dataKey={(d: ChartDataItem) => (d.isPrediction ? d.total : undefined)}
                 stroke="#8b5cf6"
                 strokeWidth={2}
                 strokeDasharray="5 5"
@@ -170,13 +173,18 @@ export function DisputeTrendChart({ trends }: DisputeTrendChartProps) {
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex items-center justify-center gap-6 mt-4 text-sm">
+        <div className="mt-4 flex items-center justify-center gap-6 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5 bg-blue-500" />
-            <span className="text-muted-foreground">{t('analytics:disputes.chart.historical')}</span>
+            <div className="h-0.5 w-4 bg-blue-500" />
+            <span className="text-muted-foreground">
+              {t('analytics:disputes.chart.historical')}
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5 bg-purple-500 border-dashed" style={{ borderStyle: 'dashed' }} />
+            <div
+              className="h-0.5 w-4 border-dashed bg-purple-500"
+              style={{ borderStyle: 'dashed' }}
+            />
             <span className="text-muted-foreground">{t('analytics:disputes.chart.predicted')}</span>
           </div>
         </div>

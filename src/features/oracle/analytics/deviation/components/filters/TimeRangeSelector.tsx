@@ -1,5 +1,24 @@
 'use client';
 
+/**
+ * TimeRangeSelector - Deviation 分析专用时间范围选择器
+ *
+ * 职责：
+ * - 提供预设时间范围选择（1h, 6h, 24h, 7d, 30d）
+ * - 支持自定义时间范围选择
+ * - 使用 Select 下拉形式的 UI，适合表单/筛选面板场景
+ * - 与 useTimeRange hook 紧密配合，提供完整的状态管理
+ *
+ * 使用场景：
+ * - Deviation Analytics 页面的时间筛选
+ * - 需要下拉选择样式的场景
+ * - 需要 6h 预设选项的场景
+ *
+ * 注意：
+ * - 如需按钮组样式，请使用 @/components/common/TimeRangeSelector
+ * - 此组件依赖 deviation 模块的 useTimeRange hook
+ */
+
 import { useState } from 'react';
 
 import { Calendar, Clock } from 'lucide-react';
@@ -17,11 +36,7 @@ import {
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
-import {
-  TIME_RANGE_PRESETS,
-  type TimeRangePreset,
-  type TimeRange,
-} from '../../hooks/useTimeRange';
+import { TIME_RANGE_PRESETS, type TimeRangePreset, type TimeRange } from '../../hooks/useTimeRange';
 
 interface TimeRangeSelectorProps {
   preset: TimeRangePreset;
@@ -135,7 +150,9 @@ export function TimeRangeSelector({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span className="text-sm font-medium">{t('analytics.deviation.timeRange.customTitle')}</span>
+              <span className="text-sm font-medium">
+                {t('analytics.deviation.timeRange.customTitle')}
+              </span>
             </div>
 
             <div className="space-y-2">
@@ -163,7 +180,12 @@ export function TimeRangeSelector({
             </div>
 
             <div className="flex justify-end gap-2">
-              <Button variant="outline" size="sm" className="h-11 px-4 sm:h-9" onClick={handleCancelCustom}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-11 px-4 sm:h-9"
+                onClick={handleCancelCustom}
+              >
                 {t('common.cancel')}
               </Button>
               <Button size="sm" className="h-11 px-4 sm:h-9" onClick={handleApplyCustom}>

@@ -1,6 +1,7 @@
 /**
- * Charts Components
+ * Oracle Charts Components
  */
+
 export * from './AccuracySummary';
 export * from './ChartBackground';
 export * from './ChartsContent';

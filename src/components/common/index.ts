@@ -25,7 +25,11 @@ export type {
   EnhancedStatCardProps,
 } from './StatCard';
 
-export { SummaryStatsGrid, type StatItem, type SummaryStatsGridProps } from './SummaryStatsGrid';
+export {
+  SummaryStatsBase,
+  type StatItemBase,
+  type SummaryStatsBaseProps,
+} from './SummaryStatsBase';
 
 export {
   KPIOverviewBar,

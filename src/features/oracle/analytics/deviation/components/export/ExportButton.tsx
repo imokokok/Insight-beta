@@ -2,7 +2,12 @@
 
 import { useMemo } from 'react';
 
-import { ExportButton, escapeCSV, type ExportConfig } from '@/features/oracle/components/shared';
+import {
+  ExportButton,
+  escapeCSV,
+  escapeXML,
+  type ExportConfig,
+} from '@/features/oracle/components/shared';
 
 import type { DeviationReport, DeviationTrend, PriceDeviationPoint } from '../../types/deviation';
 
@@ -64,14 +69,6 @@ function anomaliesToCSV(anomalies: PriceDeviationPoint[]): string {
 }
 
 function generateExcelXML(report: DeviationReport): string {
-  const escapeXML = (str: string) =>
-    str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&apos;');
-
   return `<?xml version="1.0" encoding="UTF-8"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"

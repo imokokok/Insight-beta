@@ -4,13 +4,13 @@
  * 图表组件统一导出
  */
 
-// 价格历史图表
-export { PriceHistoryChart } from './PriceHistoryChart';
+// 价格历史图表 (从 oracle feature 导出)
+export { PriceHistoryChart } from '@/features/oracle/components/PriceHistoryChart';
 export type {
   SingleAssetDataPoint,
   MultiProtocolDataPoint,
   PriceHistoryChartProps,
-} from './PriceHistoryChart';
+} from '@/features/oracle/components/PriceHistoryChart';
 
 // 图表组件
 export {

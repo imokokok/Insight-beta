@@ -20,8 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useI18n } from '@/i18n';
 import { cn, truncateAddress, formatTime, getExplorerUrl } from '@/shared/utils';
-
-import type { Dispute } from '../../types/disputes';
+import type { Dispute } from '@/types/oracle/dispute';
 
 interface DisputeDetailPanelProps {
   dispute: Dispute | null;
@@ -67,8 +66,8 @@ function DetailRow({
 }) {
   return (
     <div className={cn('flex items-start justify-between gap-4 py-2', className)}>
-      <span className="text-sm text-muted-foreground shrink-0">{label}</span>
-      <span className="text-sm font-medium text-right break-all">{value}</span>
+      <span className="shrink-0 text-sm text-muted-foreground">{label}</span>
+      <span className="break-all text-right text-sm font-medium">{value}</span>
     </div>
   );
 }
@@ -128,16 +127,13 @@ export function DisputeDetailPanel({ dispute, isOpen, onClose }: DisputeDetailPa
   return (
     <>
       {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-          onClick={onClose}
-        />
+        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       )}
 
       <div
         className={cn(
           'fixed right-0 top-0 z-50 h-full w-full max-w-md transform overflow-y-auto bg-background shadow-2xl transition-transform duration-300 ease-in-out',
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+          isOpen ? 'translate-x-0' : 'translate-x-full',
         )}
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-background/95 p-4 backdrop-blur">
@@ -147,12 +143,14 @@ export function DisputeDetailPanel({ dispute, isOpen, onClose }: DisputeDetailPa
           </Button>
         </div>
 
-        <div className="p-4 space-y-6">
+        <div className="space-y-6 p-4">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-4">
-                <CardTitle className="text-base">{t('analytics:disputes.disputes.claim')}</CardTitle>
-                <Badge variant={config.variant} className="flex items-center gap-1 shrink-0">
+                <CardTitle className="text-base">
+                  {t('analytics:disputes.disputes.claim')}
+                </CardTitle>
+                <Badge variant={config.variant} className="flex shrink-0 items-center gap-1">
                   {config.icon}
                   {config.label}
                 </Badge>
@@ -172,16 +170,16 @@ export function DisputeDetailPanel({ dispute, isOpen, onClose }: DisputeDetailPa
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="rounded-lg bg-muted/50 p-3">
-                <p className="text-xs text-muted-foreground mb-1">
+                <p className="mb-1 text-xs text-muted-foreground">
                   {t('analytics:disputes.disputes.asserter')}
                 </p>
                 <AddressLink address={dispute.asserter} chain={dispute.chain} />
               </div>
               <div className="flex items-center justify-center">
-                <ArrowRight className="h-4 w-4 text-muted-foreground rotate-90" />
+                <ArrowRight className="h-4 w-4 rotate-90 text-muted-foreground" />
               </div>
               <div className="rounded-lg bg-muted/50 p-3">
-                <p className="text-xs text-muted-foreground mb-1">
+                <p className="mb-1 text-xs text-muted-foreground">
                   {t('analytics:disputes.disputes.disputer')}
                 </p>
                 <AddressLink address={dispute.disputer} chain={dispute.chain} />
@@ -263,7 +261,7 @@ export function DisputeDetailPanel({ dispute, isOpen, onClose }: DisputeDetailPa
                 <div
                   className={cn(
                     'flex items-center gap-2 rounded-lg p-4',
-                    dispute.resolutionResult ? 'bg-green-50' : 'bg-red-50'
+                    dispute.resolutionResult ? 'bg-green-50' : 'bg-red-50',
                   )}
                 >
                   {dispute.resolutionResult ? (
@@ -295,7 +293,7 @@ export function DisputeDetailPanel({ dispute, isOpen, onClose }: DisputeDetailPa
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="rounded-lg bg-muted/50 p-3">
-                <p className="text-xs text-muted-foreground mb-1">
+                <p className="mb-1 text-xs text-muted-foreground">
                   {t('analytics:disputes.detail.transactionHash')}
                 </p>
                 <AddressLink address={dispute.txHash} chain={dispute.chain} type="tx" />

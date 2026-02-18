@@ -4,7 +4,6 @@
 
 export * from './hooks';
 export * from './types';
-export * from './utils';
 
 export { CrossChainOverview } from './components/CrossChainOverview';
 export { CrossChainComparison } from './components/CrossChainComparison';

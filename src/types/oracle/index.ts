@@ -30,3 +30,12 @@ export type {
   PriceDeviationLevel,
   RealtimeComparisonItem,
 } from '@/types/oracle/comparison';
+
+// 导出 Dispute 相关类型
+export type {
+  DisputeStatus,
+  Dispute,
+  DisputerStats,
+  DisputeTrend,
+  DisputeReport,
+} from '@/types/oracle/dispute';

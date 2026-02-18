@@ -5,10 +5,10 @@ import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { BarChart3 } from 'lucide-react';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { AccuracySummary } from '@/features/charts/components/AccuracySummary';
-import { ChartBackground } from '@/features/charts/components/ChartBackground';
-import { ChartsContent } from '@/features/charts/components/ChartsContent';
-import { ChartsHeader } from '@/features/charts/components/ChartsHeader';
+import { AccuracySummary } from '@/features/oracle/components/charts/AccuracySummary';
+import { ChartBackground } from '@/features/oracle/components/charts/ChartBackground';
+import { ChartsContent } from '@/features/oracle/components/charts/ChartsContent';
+import { ChartsHeader } from '@/features/oracle/components/charts/ChartsHeader';
 import type {
   ChartItem,
   SyncMetricItem,
@@ -16,7 +16,7 @@ import type {
   AccuracyAnomaly,
   TabKey,
   Translator,
-} from '@/features/charts/components/types';
+} from '@/features/oracle/components/charts/types';
 import type { PricePoint } from '@/features/oracle/services/priceFetcher';
 import { calculateHealthScore } from '@/features/oracle/services/priceFetcher';
 import { useI18n } from '@/i18n/LanguageProvider';

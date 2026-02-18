@@ -6,8 +6,7 @@ import { useAutoRefreshWithCountdown, useDataCache } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
-
-import type { DisputeReport, Dispute } from '../types/disputes';
+import type { DisputeReport, Dispute } from '@/types/oracle/dispute';
 
 function generateMockDisputeReport(): DisputeReport {
   const now = new Date();
@@ -37,7 +36,9 @@ function generateMockDisputeReport(): DisputeReport {
     const isResolved = i < 8;
     const proposedAt = new Date(now.getTime() - (i + 1) * 24 * 60 * 60 * 1000);
     const disputedAt = new Date(proposedAt.getTime() + Math.random() * 48 * 60 * 60 * 1000);
-    const settledAt = isResolved ? new Date(disputedAt.getTime() + Math.random() * 72 * 60 * 60 * 1000) : undefined;
+    const settledAt = isResolved
+      ? new Date(disputedAt.getTime() + Math.random() * 72 * 60 * 60 * 1000)
+      : undefined;
     const protocolIdx = Math.floor(Math.random() * protocols.length);
     const chainIdx = Math.floor(Math.random() * chains.length);
     const disputerIdx = Math.floor(Math.random() * addresses.length);
@@ -84,8 +85,8 @@ function generateMockDisputeReport(): DisputeReport {
     },
     summary: {
       totalDisputes: disputes.length,
-      activeDisputes: disputes.filter(d => d.status === 'active').length,
-      resolvedDisputes: disputes.filter(d => d.status === 'resolved').length,
+      activeDisputes: disputes.filter((d) => d.status === 'active').length,
+      resolvedDisputes: disputes.filter((d) => d.status === 'resolved').length,
       totalBonded: disputes.reduce((sum, d) => sum + d.bond + d.disputeBond, 0),
       disputeRate: 0.15,
       successRate: 62.5,
@@ -109,9 +110,12 @@ export function useDisputeAnalytics() {
   const [filterStatus, setFilterStatus] = useState<'All' | 'Active' | 'Resolved'>('All');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [timeRangePreset, setTimeRangePreset] = useState<TimeRangePreset>('30d');
-  const [customTimeRange, setCustomTimeRange] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
+  const [customTimeRange, setCustomTimeRange] = useState<{ start: Date | null; end: Date | null }>({
+    start: null,
+    end: null,
+  });
   const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
 
@@ -121,37 +125,34 @@ export function useDisputeAnalytics() {
     report: DisputeReport;
   }>({ key: 'dispute_dashboard', ttl: 5 * 60 * 1000 });
 
-  const fetchReport = useCallback(
-    async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const fetchReport = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const cached = getCachedData();
-        if (cached && !lastUpdated) {
-          setReport(cached.report);
-          setLoading(false);
-          return;
-        }
-
-        const mockReport = generateMockDisputeReport();
-        setReport(mockReport);
-        setLastUpdated(new Date());
-
-        setCachedData({
-          report: mockReport,
-        });
-      } catch (err: unknown) {
-        const errorMessage =
-          err instanceof Error ? err.message : t('analytics:disputes.failedToLoad');
-        setError(errorMessage);
-        logger.error('Failed to fetch dispute report', { error: err });
-      } finally {
+      const cached = getCachedData();
+      if (cached && !lastUpdated) {
+        setReport(cached.report);
         setLoading(false);
+        return;
       }
-    },
-    [getCachedData, setCachedData, lastUpdated, t],
-  );
+
+      const mockReport = generateMockDisputeReport();
+      setReport(mockReport);
+      setLastUpdated(new Date());
+
+      setCachedData({
+        report: mockReport,
+      });
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : t('analytics:disputes.failedToLoad');
+      setError(errorMessage);
+      logger.error('Failed to fetch dispute report', { error: err });
+    } finally {
+      setLoading(false);
+    }
+  }, [getCachedData, setCachedData, lastUpdated, t]);
 
   const {
     isEnabled: autoRefreshEnabled,
@@ -173,7 +174,8 @@ export function useDisputeAnalytics() {
       await refresh();
     },
     enableSearch: true,
-    searchSelector: 'input[type="text"][placeholder*="' + t('analytics:disputes.searchPlaceholder') + '"]',
+    searchSelector:
+      'input[type="text"][placeholder*="' + t('analytics:disputes.searchPlaceholder') + '"]',
     showRefreshToast: true,
   });
 
@@ -183,13 +185,13 @@ export function useDisputeAnalytics() {
 
   const availableProtocols = useMemo(() => {
     const protocols = new Set<string>();
-    report?.disputes.forEach(d => protocols.add(d.protocol));
+    report?.disputes.forEach((d) => protocols.add(d.protocol));
     return Array.from(protocols);
   }, [report]);
 
   const availableChains = useMemo(() => {
     const chains = new Set<string>();
-    report?.disputes.forEach(d => chains.add(d.chain));
+    report?.disputes.forEach((d) => chains.add(d.chain));
     return Array.from(chains);
   }, [report]);
 
@@ -215,34 +217,37 @@ export function useDisputeAnalytics() {
 
   const filteredDisputes = useMemo(
     () =>
-      report?.disputes.filter(
-        (dispute) => {
-          const matchesStatus = filterStatus === 'All' || 
-            (filterStatus === 'Active' && dispute.status === 'active') ||
-            (filterStatus === 'Resolved' && dispute.status === 'resolved');
-          
-          const matchesSearch = !searchQuery ||
-            dispute.claim.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            dispute.disputer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            dispute.asserter.toLowerCase().includes(searchQuery.toLowerCase());
-          
-          const disputeDate = new Date(dispute.disputedAt);
-          const timeRangeStart = getTimeRangeDate();
-          const matchesTimeRange = disputeDate >= timeRangeStart;
-          
-          const matchesProtocol = selectedProtocols.length === 0 || selectedProtocols.includes(dispute.protocol);
-          const matchesChain = selectedChains.length === 0 || selectedChains.includes(dispute.chain);
-          
-          return matchesStatus && matchesSearch && matchesTimeRange && matchesProtocol && matchesChain;
-        },
-      ) || [],
+      report?.disputes.filter((dispute) => {
+        const matchesStatus =
+          filterStatus === 'All' ||
+          (filterStatus === 'Active' && dispute.status === 'active') ||
+          (filterStatus === 'Resolved' && dispute.status === 'resolved');
+
+        const matchesSearch =
+          !searchQuery ||
+          dispute.claim.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          dispute.disputer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          dispute.asserter.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const disputeDate = new Date(dispute.disputedAt);
+        const timeRangeStart = getTimeRangeDate();
+        const matchesTimeRange = disputeDate >= timeRangeStart;
+
+        const matchesProtocol =
+          selectedProtocols.length === 0 || selectedProtocols.includes(dispute.protocol);
+        const matchesChain = selectedChains.length === 0 || selectedChains.includes(dispute.chain);
+
+        return (
+          matchesStatus && matchesSearch && matchesTimeRange && matchesProtocol && matchesChain
+        );
+      }) || [],
     [report, searchQuery, filterStatus, getTimeRangeDate, selectedProtocols, selectedChains],
   );
 
   const filteredTrends = useMemo(() => {
     if (!report?.trends) return [];
     const timeRangeStart = getTimeRangeDate();
-    return report.trends.filter(trend => new Date(trend.timestamp) >= timeRangeStart);
+    return report.trends.filter((trend) => new Date(trend.timestamp) >= timeRangeStart);
   }, [report, getTimeRangeDate]);
 
   return {

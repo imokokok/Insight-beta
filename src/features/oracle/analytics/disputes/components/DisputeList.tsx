@@ -7,8 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { SkeletonList } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
 import { cn, truncateAddress, formatTime } from '@/shared/utils';
-
-import type { Dispute } from '../types/disputes';
+import type { Dispute } from '@/types/oracle/dispute';
 
 interface DisputeListProps {
   disputes: Dispute[];
@@ -18,17 +17,17 @@ interface DisputeListProps {
 
 function StatusBadge({ status }: { status: Dispute['status'] }) {
   const { t } = useI18n();
-  
+
   const badgeConfig = {
     active: {
       label: t('analytics:disputes.disputes.statusActive'),
       variant: 'default' as const,
-      icon: <Clock className="h-3 w-3 mr-1" />,
+      icon: <Clock className="mr-1 h-3 w-3" />,
     },
     resolved: {
       label: t('analytics:disputes.disputes.statusResolved'),
       variant: 'secondary' as const,
-      icon: <CheckCircle className="h-3 w-3 mr-1" />,
+      icon: <CheckCircle className="mr-1 h-3 w-3" />,
     },
   };
 
@@ -52,9 +51,13 @@ export function DisputeList({ disputes, isLoading, onSelect }: DisputeListProps)
   if (disputes.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <AlertCircle className="h-12 w-12 text-gray-300 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900">{t('analytics:disputes.disputes.empty')}</h3>
-        <p className="text-sm text-gray-500 mt-1">{t('analytics:disputes.disputes.emptyDescription')}</p>
+        <AlertCircle className="mb-4 h-12 w-12 text-gray-300" />
+        <h3 className="text-lg font-medium text-gray-900">
+          {t('analytics:disputes.disputes.empty')}
+        </h3>
+        <p className="mt-1 text-sm text-gray-500">
+          {t('analytics:disputes.disputes.emptyDescription')}
+        </p>
       </div>
     );
   }
@@ -66,23 +69,21 @@ export function DisputeList({ disputes, isLoading, onSelect }: DisputeListProps)
           key={dispute.id}
           className={cn(
             'cursor-pointer transition-all hover:shadow-md',
-            onSelect && 'hover:border-primary'
+            onSelect && 'hover:border-primary',
           )}
           onClick={() => onSelect?.(dispute)}
         >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <CardTitle className="text-sm font-medium truncate">
-                  {dispute.claim}
-                </CardTitle>
-                <CardDescription className="mt-1 text-xs flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <CardTitle className="truncate text-sm font-medium">{dispute.claim}</CardTitle>
+                <CardDescription className="mt-1 flex items-center gap-2 text-xs">
                   <span className="font-mono">{truncateAddress(dispute.asserter)}</span>
                   <span>→</span>
                   <span className="font-mono">{truncateAddress(dispute.disputer)}</span>
                 </CardDescription>
               </div>
-              <div className="flex flex-col items-end gap-2 shrink-0">
+              <div className="flex shrink-0 flex-col items-end gap-2">
                 <StatusBadge status={dispute.status} />
                 {dispute.resolutionResult !== undefined && (
                   <Badge variant={dispute.resolutionResult ? 'outline' : 'destructive'}>
@@ -96,11 +97,15 @@ export function DisputeList({ disputes, isLoading, onSelect }: DisputeListProps)
             <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
               <div className="flex items-center gap-1">
                 <span className="font-medium">{t('analytics:disputes.disputes.bond')}:</span>
-                <span>{dispute.bond.toFixed(0)} {dispute.currency}</span>
+                <span>
+                  {dispute.bond.toFixed(0)} {dispute.currency}
+                </span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="font-medium">{t('analytics:disputes.disputes.disputeBond')}:</span>
-                <span>{dispute.disputeBond.toFixed(0)} {dispute.currency}</span>
+                <span>
+                  {dispute.disputeBond.toFixed(0)} {dispute.currency}
+                </span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="font-medium">{t('analytics:disputes.disputes.disputedAt')}:</span>

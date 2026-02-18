@@ -1,5 +1,22 @@
 'use client';
 
+/**
+ * TimeRangeSelector - 通用时间范围选择器组件
+ *
+ * 职责：
+ * - 提供预设时间范围快捷选择（1H, 24H, 7D, 30D, ALL）
+ * - 支持自定义时间范围选择
+ * - 使用按钮组形式的 UI，适合工具栏场景
+ *
+ * 使用场景：
+ * - 通用页面/组件的时间筛选
+ * - 需要简洁按钮组样式的场景
+ *
+ * 注意：
+ * - 如需 Select 下拉样式，请使用 deviation 模块的 TimeRangeSelector
+ * - 如需更复杂的预设选项（如 6H），请使用 deviation 模块版本
+ */
+
 import { useState, useCallback } from 'react';
 
 import { Calendar } from 'lucide-react';

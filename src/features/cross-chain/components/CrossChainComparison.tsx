@@ -301,7 +301,7 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <CrossChainPriceChart data={historyData?.data} isLoading={historyLoading} height={350} />
+        <CrossChainPriceChart data={historyData} isLoading={historyLoading} height={350} />
         <CrossChainComparisonBar prices={chartPrices} isLoading={comparisonLoading} height={350} />
       </div>
 

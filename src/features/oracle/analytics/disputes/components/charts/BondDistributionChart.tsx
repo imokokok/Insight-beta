@@ -16,8 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useI18n } from '@/i18n';
 import { formatNumber } from '@/shared/utils';
-
-import type { Dispute, DisputeTrend } from '../../types/disputes';
+import type { Dispute, DisputeTrend } from '@/types/oracle/dispute';
 
 interface BondDistributionChartProps {
   disputes: Dispute[];
@@ -64,7 +63,9 @@ export function BondDistributionChart({ disputes, trends }: BondDistributionChar
       }
     });
 
-    return distribution.filter((d) => d.count > 0 || distribution.every((item) => item.count === 0));
+    return distribution.filter(
+      (d) => d.count > 0 || distribution.every((item) => item.count === 0),
+    );
   }, [disputes]);
 
   const trendData = useMemo(() => {
@@ -155,12 +156,7 @@ export function BondDistributionChart({ disputes, trends }: BondDistributionChar
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={distributionData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-              <XAxis
-                dataKey="name"
-                tick={{ fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-              />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis
                 tick={{ fontSize: 11 }}
                 axisLine={false}
@@ -195,7 +191,13 @@ export function BondDistributionChart({ disputes, trends }: BondDistributionChar
                       fontSize: '11px',
                     }}
                   />
-                  <Bar dataKey="disputes" fill="#3b82f6" radius={[2, 2, 0, 0]} opacity={0.6} name={t('analytics:disputes.chart.disputes')} />
+                  <Bar
+                    dataKey="disputes"
+                    fill="#3b82f6"
+                    radius={[2, 2, 0, 0]}
+                    opacity={0.6}
+                    name={t('analytics:disputes.chart.disputes')}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>

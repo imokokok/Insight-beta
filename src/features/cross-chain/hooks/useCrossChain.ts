@@ -25,15 +25,15 @@ export function useCrossChainComparison(symbol: string, chains?: string[]) {
 
 export function useCrossChainAlerts(_symbol?: string) {
   const url = buildApiUrl('/api/cross-chain/alerts');
-  return useSWR<CrossChainDeviationAlertsResponse>(url, (url: string) =>
-    fetchApiData<CrossChainDeviationAlertsResponse>(url),
+  return useSWR<CrossChainDeviationAlertsResponse['data']>(url, (url: string) =>
+    fetchApiData<CrossChainDeviationAlertsResponse['data']>(url),
   );
 }
 
 export function useCrossChainDashboard() {
   const url = buildApiUrl('/api/cross-chain/dashboard');
-  return useSWR<CrossChainDashboardResponse>(url, (url: string) =>
-    fetchApiData<CrossChainDashboardResponse>(url),
+  return useSWR<CrossChainDashboardResponse['data']>(url, (url: string) =>
+    fetchApiData<CrossChainDashboardResponse['data']>(url),
   );
 }
 
@@ -48,7 +48,7 @@ export function useCrossChainHistory(
   if (endTime) params.endTime = endTime;
   if (interval) params.interval = interval;
   const url = buildApiUrl('/api/cross-chain/history', params);
-  return useSWR<CrossChainHistoricalResponse>(url, (url: string) =>
-    fetchApiData<CrossChainHistoricalResponse>(url),
+  return useSWR<CrossChainHistoricalResponse['data']>(url, (url: string) =>
+    fetchApiData<CrossChainHistoricalResponse['data']>(url),
   );
 }

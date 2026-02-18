@@ -57,13 +57,8 @@ const COLORS = [
   '#10b981',
 ];
 
-// ============================================================================
-// 图表渲染器组件
-// ============================================================================
-
 type ChartRendererProps = ChartsContentProps;
 
-// 活动图表
 const ActivityChart: React.FC<ChartRendererProps> = ({ chartData, hasAssertionsData, t }) => {
   if (!hasAssertionsData) {
     return (
@@ -114,7 +109,6 @@ const ActivityChart: React.FC<ChartRendererProps> = ({ chartData, hasAssertionsD
   );
 };
 
-// TVS 图表
 const TVSChart: React.FC<ChartRendererProps> = ({ chartData, hasAssertionsData, t }) => {
   if (!hasAssertionsData) {
     return (
@@ -168,7 +162,6 @@ const TVSChart: React.FC<ChartRendererProps> = ({ chartData, hasAssertionsData, 
   );
 };
 
-// 市场图表
 const MarketsChart: React.FC<ChartRendererProps> = ({ marketsLoading, marketStats, t }) => {
   if (marketsLoading) {
     return (
@@ -226,7 +219,6 @@ const MarketsChart: React.FC<ChartRendererProps> = ({ marketsLoading, marketStat
   );
 };
 
-// 准确度图表
 const AccuracyChart: React.FC<ChartRendererProps> = ({
   accuracyLoading,
   hasAccuracyData,
@@ -326,7 +318,6 @@ const AccuracyChart: React.FC<ChartRendererProps> = ({
   );
 };
 
-// 同步图表
 const SyncChart: React.FC<ChartRendererProps> = ({
   syncLoading,
   hasSyncData,
@@ -393,10 +384,6 @@ const SyncChart: React.FC<ChartRendererProps> = ({
   );
 };
 
-// ============================================================================
-// 策略映射
-// ============================================================================
-
 const chartRenderers: Record<TabKey, React.FC<ChartRendererProps>> = {
   activity: ActivityChart,
   tvs: TVSChart,
@@ -404,10 +391,6 @@ const chartRenderers: Record<TabKey, React.FC<ChartRendererProps>> = {
   accuracy: AccuracyChart,
   sync: SyncChart,
 };
-
-// ============================================================================
-// 主组件
-// ============================================================================
 
 function ChartsContent(props: ChartsContentProps) {
   const { activeTab } = props;

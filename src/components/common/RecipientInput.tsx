@@ -6,11 +6,11 @@ import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
 import { logger } from '@/shared/logger';
-import type { AlertRule } from '@/types/oracleTypes';
+import type { OracleAlertRule } from '@/types/oracleTypes';
 
 interface RecipientInputProps {
-  rule: AlertRule;
-  onPatchRule: (id: string, patch: Partial<AlertRule>) => Promise<void>;
+  rule: OracleAlertRule;
+  onPatchRule: (id: string, patch: Partial<OracleAlertRule>) => Promise<void>;
   t: (key: string) => string;
 }
 
@@ -153,9 +153,7 @@ function RecipientInputComponent({ rule, onPatchRule, t }: RecipientInputProps) 
         </div>
         <div className="flex items-center gap-2">
           {isSuccess && (
-            <div
-              className="flex animate-fade-in items-center gap-1 text-xs font-medium text-green-600"
-            >
+            <div className="flex animate-fade-in items-center gap-1 text-xs font-medium text-green-600">
               <CheckCircle2 className="h-3 w-3" />
               {t('oracle.alerts.saved')}
             </div>

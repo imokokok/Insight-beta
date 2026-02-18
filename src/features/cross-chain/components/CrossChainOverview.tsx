@@ -9,8 +9,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArbitrageOpportunityList, BridgeStatusCard, LiquidityDistribution, RiskScore } from '@/features/cross-chain/components';
-import { useCrossChainDashboard, useArbitrage, useBridgeStatus, useLiquidity } from '@/features/cross-chain/hooks';
+import {
+  ArbitrageOpportunityList,
+  BridgeStatusCard,
+  LiquidityDistribution,
+  RiskScore,
+} from '@/features/cross-chain/components';
+import {
+  useCrossChainDashboard,
+  useArbitrage,
+  useBridgeStatus,
+  useLiquidity,
+} from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import type { CrossChainDashboardData } from '@/types/crossChainAnalysisTypes';
@@ -42,18 +52,11 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
     mutate: refreshArbitrage,
   } = useArbitrage();
 
-  const {
-    data: bridgeData,
-    isLoading: bridgeLoading,
-    mutate: refreshBridges,
-  } = useBridgeStatus();
+  const { data: bridgeData, isLoading: bridgeLoading, mutate: refreshBridges } = useBridgeStatus();
 
-  const {
-    data: liquidityData,
-    isLoading: liquidityLoading,
-  } = useLiquidity();
+  const { data: liquidityData, isLoading: liquidityLoading } = useLiquidity();
 
-  const dashboard = dashboardData?.data as CrossChainDashboardData | undefined;
+  const dashboard = dashboardData as CrossChainDashboardData | undefined;
 
   const healthyChains = dashboard?.chainHealth?.filter((c) => c.status === 'healthy').length ?? 0;
   const totalChains = dashboard?.chainHealth?.length ?? 0;
@@ -113,9 +116,7 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
                   value={deviationThreshold}
                   onChange={(e) => setDeviationThreshold(e.target.value)}
                 />
-                <p className="text-sm text-muted-foreground">
-                  当偏差超过此值时触发警告
-                </p>
+                <p className="text-sm text-muted-foreground">当偏差超过此值时触发警告</p>
               </div>
 
               <div className="space-y-2">
@@ -127,9 +128,7 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
                   value={criticalThreshold}
                   onChange={(e) => setCriticalThreshold(e.target.value)}
                 />
-                <p className="text-sm text-muted-foreground">
-                  当偏差超过此值时触发严重告警
-                </p>
+                <p className="text-sm text-muted-foreground">当偏差超过此值时触发严重告警</p>
               </div>
             </CardContent>
           </Card>
@@ -143,9 +142,7 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>启用告警</Label>
-                  <p className="text-sm text-muted-foreground">
-                    检测到偏差时接收通知
-                  </p>
+                  <p className="text-sm text-muted-foreground">检测到偏差时接收通知</p>
                 </div>
                 <Switch checked={alertEnabled} onCheckedChange={setAlertEnabled} />
               </div>
@@ -168,49 +165,66 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('crossChain.dashboard.activeAlerts')}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t('crossChain.dashboard.activeAlerts')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardLoading ? '-' : dashboard?.activeAlerts ?? 0}
+              {dashboardLoading ? '-' : (dashboard?.activeAlerts ?? 0)}
             </div>
-            <p className="text-xs text-muted-foreground">{t('crossChain.dashboard.opportunities')}</p>
+            <p className="text-xs text-muted-foreground">
+              {t('crossChain.dashboard.opportunities')}
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('crossChain.dashboard.opportunities')}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t('crossChain.dashboard.opportunities')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardLoading ? '-' : dashboard?.opportunities?.total ?? 0}
+              {dashboardLoading ? '-' : (dashboard?.opportunities?.total ?? 0)}
             </div>
-            <p className="text-xs text-muted-foreground">{t('crossChain.dashboard.actionable')}: {dashboard?.opportunities?.actionable ?? 0}</p>
+            <p className="text-xs text-muted-foreground">
+              {t('crossChain.dashboard.actionable')}: {dashboard?.opportunities?.actionable ?? 0}
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('crossChain.dashboard.chainHealth')}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t('crossChain.dashboard.chainHealth')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {dashboardLoading ? '-' : `${healthyChains}/${totalChains}`}
             </div>
-            <p className="text-xs text-muted-foreground">{t('crossChain.dashboard.overallHealth')}</p>
+            <p className="text-xs text-muted-foreground">
+              {t('crossChain.dashboard.overallHealth')}
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('crossChain.dashboard.priceStatus')}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t('crossChain.dashboard.priceStatus')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {dashboardLoading ? '-' : (dashboard?.priceComparisons?.[0]?.status ?? '-')}
             </div>
-            <p className="text-xs text-muted-foreground">{t('crossChain.dashboard.lastSync')}: {dashboard?.lastUpdated ? new Date(dashboard.lastUpdated).toLocaleTimeString() : '-'}</p>
+            <p className="text-xs text-muted-foreground">
+              {t('crossChain.dashboard.lastSync')}:{' '}
+              {dashboard?.lastUpdated ? new Date(dashboard.lastUpdated).toLocaleTimeString() : '-'}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -263,7 +277,9 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
                     </span>
                   </div>
                   {chainData.staleMinutes && (
-                    <p className="mt-1 text-xs text-muted-foreground">{chainData.staleMinutes}m stale</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {chainData.staleMinutes}m stale
+                    </p>
                   )}
                 </div>
               ))}

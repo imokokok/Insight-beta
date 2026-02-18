@@ -38,6 +38,15 @@ function escapeCSV(value: unknown): string {
   return str;
 }
 
+function escapeXML(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 function downloadFile(content: string, filename: string, mimeType: string): void {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -118,4 +127,4 @@ export function ExportButton<T>({ data, config, disabled }: ExportButtonProps<T>
   );
 }
 
-export { escapeCSV, downloadFile };
+export { escapeCSV, escapeXML, downloadFile };

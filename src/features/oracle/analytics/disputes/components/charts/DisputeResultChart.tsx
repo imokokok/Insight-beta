@@ -6,8 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useI18n } from '@/i18n';
-
-import type { Dispute } from '../../types/disputes';
+import type { Dispute } from '@/types/oracle/dispute';
 
 interface DisputeResultChartProps {
   disputes: Dispute[];
@@ -31,10 +30,10 @@ export function DisputeResultChart({ disputes }: DisputeResultChartProps) {
   const chartData = useMemo(() => {
     const active = disputes.filter((d) => d.status === 'active').length;
     const success = disputes.filter(
-      (d) => d.status === 'resolved' && d.resolutionResult === true
+      (d) => d.status === 'resolved' && d.resolutionResult === true,
     ).length;
     const failed = disputes.filter(
-      (d) => d.status === 'resolved' && d.resolutionResult === false
+      (d) => d.status === 'resolved' && d.resolutionResult === false,
     ).length;
 
     return [

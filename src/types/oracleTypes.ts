@@ -23,9 +23,9 @@ export type Assertion = {
   txHash: string;
 };
 
-export type DisputeStatus = 'Voting' | 'Pending Execution' | 'Executed';
+export type OracleDisputeStatus = 'Voting' | 'Pending Execution' | 'Executed';
 
-export type Dispute = {
+export type OracleDispute = {
   id: string;
   chain: OracleChain;
   assertionId: string;
@@ -34,7 +34,7 @@ export type Dispute = {
   disputer: string;
   disputedAt: string;
   votingEndsAt: string;
-  status: DisputeStatus;
+  status: OracleDisputeStatus;
   currentVotesFor: number;
   currentVotesAgainst: number;
   totalVotes: number;
@@ -181,19 +181,19 @@ export interface DbDisputeRow {
   total_votes: string | number;
 }
 
-export type AlertSeverity = 'info' | 'warning' | 'critical';
-export type AlertStatus = 'Open' | 'Acknowledged' | 'Resolved';
+export type OracleAlertSeverity = 'info' | 'warning' | 'critical';
+export type OracleAlertStatus = 'Open' | 'Acknowledged' | 'Resolved';
 
-export type Alert = {
+export type OracleAlert = {
   id: number;
   fingerprint: string;
   type: string;
-  severity: AlertSeverity;
+  severity: OracleAlertSeverity;
   title: string;
   message: string;
   entityType: string | null;
   entityId: string | null;
-  status: AlertStatus;
+  status: OracleAlertStatus;
   occurrences: number;
   firstSeenAt: string;
   lastSeenAt: string;
@@ -213,7 +213,7 @@ export type AuditLogEntry = {
   details: unknown;
 };
 
-export type AlertRuleEvent =
+export type OracleAlertRuleEvent =
   | 'dispute_created'
   | 'liveness_expiring'
   | 'sync_error'
@@ -232,12 +232,12 @@ export type AlertRuleEvent =
   | 'database_slow_query'
   | 'price_deviation'
   | 'low_gas';
-export type AlertRule = {
+export type OracleAlertRule = {
   id: string;
   name: string;
   enabled: boolean;
-  event: AlertRuleEvent;
-  severity: AlertSeverity;
+  event: OracleAlertRuleEvent;
+  severity: OracleAlertSeverity;
   owner?: string | null;
   runbook?: string | null;
   silencedUntil?: string | null;
@@ -252,7 +252,7 @@ export type Incident = {
   id: number;
   title: string;
   status: IncidentStatus;
-  severity: AlertSeverity;
+  severity: OracleAlertSeverity;
   owner: string | null;
   rootCause: string | null;
   summary: string | null;
@@ -265,7 +265,7 @@ export type Incident = {
   resolvedAt: string | null;
 };
 
-export type RiskSeverity = AlertSeverity;
+export type RiskSeverity = OracleAlertSeverity;
 
 export type RiskItem = {
   entityType: 'assertion' | 'market';
