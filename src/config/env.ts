@@ -171,15 +171,6 @@ const envSchema = z.object({
   // 限流配置
   INSIGHT_API_LOG_SAMPLE_RATE: optionalNumber(1),
 
-  // =============================================================================
-  // Redis 配置（用于多实例部署时的共享状态）
-  // =============================================================================
-  REDIS_URL: optionalString(),
-  REDIS_HOST: optionalString(),
-  REDIS_PORT: optionalNumber(6379),
-  REDIS_PASSWORD: optionalString(),
-  REDIS_TLS: optionalBoolean(false),
-
   // 超时配置
   INSIGHT_DEPENDENCY_TIMEOUT_MS: optionalNumber(5000),
   INSIGHT_RPC_TIMEOUT_MS: optionalNumber(30000),
