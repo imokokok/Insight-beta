@@ -15,9 +15,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { CrossChainHistoricalResponse } from '../types';
 import { useI18n } from '@/i18n';
 import { cn, formatPercentValue } from '@/shared/utils';
+
+import type { CrossChainHistoricalResponse } from '../types';
 
 interface CrossChainHistoricalCardProps {
   data?: CrossChainHistoricalResponse['data'];
@@ -34,11 +35,12 @@ export const CrossChainHistoricalCard = memo(function CrossChainHistoricalCard({
   const dataPoints = data?.dataPoints ?? [];
   const timeRange = data?.timeInterval === '1hour' ? '1 Hour' : '1 Day';
 
-  const trendDirection = summary && summary.avgPriceRangePercent > summary.maxObservedDeviation * 0.5
-    ? 'volatile'
-    : summary && summary.avgPriceRangePercent < 0.5
-      ? 'stable'
-      : 'normal';
+  const trendDirection =
+    summary && summary.avgPriceRangePercent > summary.maxObservedDeviation * 0.5
+      ? 'volatile'
+      : summary && summary.avgPriceRangePercent < 0.5
+        ? 'stable'
+        : 'normal';
 
   if (isLoading) {
     return (
@@ -138,9 +140,7 @@ export const CrossChainHistoricalCard = memo(function CrossChainHistoricalCard({
                 <TrendingUp className="h-3 w-3" />
                 {t('crossChain.historical.divergence')}
               </p>
-              <p className="font-mono text-xl font-bold text-red-600">
-                {summary.divergenceCount}
-              </p>
+              <p className="font-mono text-xl font-bold text-red-600">{summary.divergenceCount}</p>
             </div>
           </div>
         )}
@@ -151,17 +151,13 @@ export const CrossChainHistoricalCard = memo(function CrossChainHistoricalCard({
               <p className="text-xs text-muted-foreground">
                 {t('crossChain.historical.stableChain')}
               </p>
-              <p className="font-semibold capitalize text-green-600">
-                {summary.mostStableChain}
-              </p>
+              <p className="font-semibold capitalize text-green-600">{summary.mostStableChain}</p>
             </div>
             <div className="rounded-lg border bg-muted/30 p-3">
               <p className="text-xs text-muted-foreground">
                 {t('crossChain.historical.volatileChain')}
               </p>
-              <p className="font-semibold capitalize text-red-600">
-                {summary.mostVolatileChain}
-              </p>
+              <p className="font-semibold capitalize text-red-600">{summary.mostVolatileChain}</p>
             </div>
             <div className="rounded-lg border bg-muted/30 p-3">
               <p className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -179,7 +175,11 @@ export const CrossChainHistoricalCard = memo(function CrossChainHistoricalCard({
               >
                 {trendDirection === 'stable' && <TrendingDown className="mr-1 h-3 w-3" />}
                 {trendDirection === 'volatile' && <TrendingUp className="mr-1 h-3 w-3" />}
-                {trendDirection === 'stable' ? 'Stable' : trendDirection === 'volatile' ? 'Volatile' : 'Normal'}
+                {trendDirection === 'stable'
+                  ? 'Stable'
+                  : trendDirection === 'volatile'
+                    ? 'Volatile'
+                    : 'Normal'}
               </Badge>
             </div>
             <div className="rounded-lg border bg-muted/30 p-3">
@@ -210,10 +210,14 @@ export const CrossChainHistoricalCard = memo(function CrossChainHistoricalCard({
                     : `Average deviation is ${formatPercentValue(summary.avgPriceRangePercent, 1)}, showing relatively consistent pricing across chains.`}
                 </p>
                 <p className="mt-2">
-                  <span className="font-medium capitalize text-foreground">{summary.mostStableChain}</span>
-                  {' '}is the most stable chain, while{' '}
-                  <span className="font-medium capitalize text-foreground">{summary.mostVolatileChain}</span>
-                  {' '}shows the highest volatility.
+                  <span className="font-medium capitalize text-foreground">
+                    {summary.mostStableChain}
+                  </span>{' '}
+                  is the most stable chain, while{' '}
+                  <span className="font-medium capitalize text-foreground">
+                    {summary.mostVolatileChain}
+                  </span>{' '}
+                  shows the highest volatility.
                 </p>
               </>
             )}

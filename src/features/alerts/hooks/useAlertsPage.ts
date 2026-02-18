@@ -2,18 +2,26 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 
-import { AlertTriangle, Activity, TrendingUp, Network, Shield } from 'lucide-react';
+import { Activity, TrendingUp, Network, Shield } from 'lucide-react';
 
-import type { UnifiedAlert, AlertSeverity, AlertStatus, AlertSource } from './useAlerts';
-import type { TimeRange, GroupBy } from './useAlertHistory';
-import type { SortMode, GroupMode } from '../utils/alertScoring';
-import { sortAlerts, groupAlerts } from '../utils/alertScoring';
-import { useAlertRules, useAlertSelection, useNotificationChannels, useAlertHistory } from '../hooks';
+import { useToast } from '@/components/common/DashboardToast';
 import { useAutoRefreshWithCountdown, useDataCache } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { useToast } from '@/components/common/DashboardToast';
 import { logger } from '@/shared/logger';
 import { fetchApiData } from '@/shared/utils';
+
+import {
+  useAlertRules,
+  useAlertSelection,
+  useNotificationChannels,
+  useAlertHistory,
+} from '../hooks';
+import { sortAlerts, groupAlerts } from '../utils/alertScoring';
+
+import type { TimeRange, GroupBy } from './useAlertHistory';
+import type { UnifiedAlert, AlertSeverity, AlertStatus, AlertSource } from './useAlerts';
+import type { SortMode, GroupMode } from '../utils/alertScoring';
+import type { AlertTriangle } from 'lucide-react';
 
 interface AlertsData {
   alerts: UnifiedAlert[];

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 
 import { useAutoRefresh } from '../useAutoRefresh';
@@ -17,7 +17,7 @@ vi.mock('@/shared/logger', () => ({
 }));
 
 describe('useAutoRefresh', () => {
-  let mockFetchFn: ReturnType<typeof vi.fn>;
+  let mockFetchFn: Mock<(signal?: AbortSignal) => Promise<void>>;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -168,9 +168,10 @@ describe('useAutoRefresh', () => {
     it('should not make duplicate requests while refreshing', async () => {
       let resolvePromise: () => void;
       mockFetchFn.mockImplementation(
-        () => new Promise<void>((resolve) => {
-          resolvePromise = resolve;
-        }),
+        () =>
+          new Promise<void>((resolve) => {
+            resolvePromise = resolve;
+          }),
       );
 
       const { result } = renderHook(() =>

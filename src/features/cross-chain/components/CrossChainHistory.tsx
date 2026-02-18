@@ -13,12 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CrossChainHistoricalCard } from './CrossChainHistoricalCard';
-import { CrossChainPriceChart } from './CrossChainPriceChart';
-import { CrossChainDeviationChart } from './CrossChainDeviationChart';
-import { useCrossChainHistory } from '../hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
+
+import { CrossChainDeviationChart } from './CrossChainDeviationChart';
+import { CrossChainHistoricalCard } from './CrossChainHistoricalCard';
+import { CrossChainPriceChart } from './CrossChainPriceChart';
+import { useCrossChainHistory } from '../hooks';
 
 const AVAILABLE_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const AVAILABLE_CHAINS = [

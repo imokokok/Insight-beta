@@ -14,13 +14,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { CrossChainComparisonCard } from './CrossChainComparisonCard';
-import { CrossChainPriceChart } from './CrossChainPriceChart';
-import { CrossChainComparisonBar } from './CrossChainComparisonBar';
-import { CorrelationMatrix } from './CorrelationMatrix';
-import { useCrossChainComparison, useCrossChainHistory, useCorrelation } from '../hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
+
+import { CorrelationMatrix } from './CorrelationMatrix';
+import { CrossChainComparisonBar } from './CrossChainComparisonBar';
+import { CrossChainComparisonCard } from './CrossChainComparisonCard';
+import { CrossChainPriceChart } from './CrossChainPriceChart';
+import { useCrossChainComparison, useCrossChainHistory, useCorrelation } from '../hooks';
 
 const AVAILABLE_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const AVAILABLE_CHAINS = [
@@ -76,20 +77,17 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
     mutate: refreshComparison,
   } = useCrossChainComparison(selectedSymbol, selectedChains);
 
-  const {
-    data: historyData,
-    isLoading: historyLoading,
-  } = useCrossChainHistory(
+  const { data: historyData, isLoading: historyLoading } = useCrossChainHistory(
     selectedSymbol,
     timeRangeDates.startTime.toISOString(),
     timeRangeDates.endTime.toISOString(),
     timeRange === '24h' ? '1hour' : '1day',
   );
 
-  const {
-    data: correlationData,
-    isLoading: correlationLoading,
-  } = useCorrelation(selectedSymbol, timeRange);
+  const { data: correlationData, isLoading: correlationLoading } = useCorrelation(
+    selectedSymbol,
+    timeRange,
+  );
 
   const chartPrices = useMemo(() => {
     if (!comparisonData?.data) return [];
@@ -132,7 +130,11 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowDataSourceSettings(!showDataSourceSettings)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowDataSourceSettings(!showDataSourceSettings)}
+          >
             <Database className="mr-2 h-4 w-4" />
             数据源
           </Button>
@@ -192,10 +194,16 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
             <Minus className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className={cn(
-              'text-2xl font-bold',
-              stats.priceRangePercent > 2 ? 'text-red-600' : stats.priceRangePercent > 0.5 ? 'text-yellow-600' : 'text-green-600'
-            )}>
+            <div
+              className={cn(
+                'text-2xl font-bold',
+                stats.priceRangePercent > 2
+                  ? 'text-red-600'
+                  : stats.priceRangePercent > 0.5
+                    ? 'text-yellow-600'
+                    : 'text-green-600',
+              )}
+            >
               {stats.priceRangePercent.toFixed(2)}%
             </div>
           </CardContent>
@@ -207,11 +215,21 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
             <DollarSign className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className={cn(
-              'text-2xl font-bold capitalize',
-              stats.priceRangePercent > 2 ? 'text-red-600' : stats.priceRangePercent > 0.5 ? 'text-yellow-600' : 'text-green-600'
-            )}>
-              {stats.priceRangePercent > 2 ? 'Critical' : stats.priceRangePercent > 0.5 ? 'Warning' : 'Normal'}
+            <div
+              className={cn(
+                'text-2xl font-bold capitalize',
+                stats.priceRangePercent > 2
+                  ? 'text-red-600'
+                  : stats.priceRangePercent > 0.5
+                    ? 'text-yellow-600'
+                    : 'text-green-600',
+              )}
+            >
+              {stats.priceRangePercent > 2
+                ? 'Critical'
+                : stats.priceRangePercent > 0.5
+                  ? 'Warning'
+                  : 'Normal'}
             </div>
           </CardContent>
         </Card>

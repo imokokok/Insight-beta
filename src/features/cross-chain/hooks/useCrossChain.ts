@@ -3,7 +3,8 @@
 import useSWR from 'swr';
 
 import { buildApiUrl } from '@/shared/utils';
-import {
+
+import type {
   CrossChainComparisonResult,
   CrossChainDeviationAlertsResponse,
   CrossChainDashboardResponse,

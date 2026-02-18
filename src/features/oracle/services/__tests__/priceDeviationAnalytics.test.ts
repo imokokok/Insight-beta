@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { QueryResult, QueryResultRow } from '@/lib/database/db';
 
 import { PriceDeviationAnalytics } from '../priceDeviationAnalytics';
 
@@ -88,7 +89,13 @@ describe('PriceDeviationAnalytics', () => {
   describe('analyzeDeviationTrend', () => {
     it('should return correct structure for trend analysis', async () => {
       const { query } = await import('@/lib/database/db');
-      vi.mocked(query).mockResolvedValueOnce({ rows: [] });
+      vi.mocked(query).mockResolvedValueOnce({
+        rows: [],
+        rowCount: 0,
+        command: 'SELECT',
+        oid: 0,
+        fields: [],
+      } as QueryResult<QueryResultRow>);
 
       const result = await service.analyzeDeviationTrend('TEST/USD');
 
@@ -102,7 +109,13 @@ describe('PriceDeviationAnalytics', () => {
   describe('compareSymbols', () => {
     it('should compare multiple symbols and rank by deviation', async () => {
       const { query } = await import('@/lib/database/db');
-      vi.mocked(query).mockResolvedValue({ rows: [] });
+      vi.mocked(query).mockResolvedValue({
+        rows: [],
+        rowCount: 0,
+        command: 'SELECT',
+        oid: 0,
+        fields: [],
+      } as QueryResult<QueryResultRow>);
 
       const result = await service.compareSymbols(['BTC/USD', 'ETH/USD']);
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertTriangle, RefreshCw, Download } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 
 import { StatCard } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
@@ -20,8 +21,6 @@ import {
 } from '@/components/ui/select';
 import { SkeletonList, StatCardSkeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Filter } from 'lucide-react';
-import { cn } from '@/shared/utils';
 import {
   AlertCard,
   AlertDetailPanel,
@@ -35,7 +34,9 @@ import {
   ResponseTimeStats,
 } from '@/features/alerts/components';
 import { useAlertsPage, sourceIcons } from '@/features/alerts/hooks';
+import type { AlertSeverity, AlertStatus } from '@/features/alerts/hooks/useAlerts';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { cn } from '@/shared/utils';
 
 export default function AlertsCenterPage() {
   const { t } = useI18n();
@@ -243,7 +244,7 @@ export default function AlertsCenterPage() {
                 <Filter className="h-4 w-4 text-muted-foreground" />
                 <Select
                   value={filterSeverity}
-                  onValueChange={(v) => setFilterSeverity(v as any)}
+                  onValueChange={(v) => setFilterSeverity(v as AlertSeverity | 'all')}
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue />
@@ -258,7 +259,7 @@ export default function AlertsCenterPage() {
                 </Select>
                 <Select
                   value={filterStatus}
-                  onValueChange={(v) => setFilterStatus(v as any)}
+                  onValueChange={(v) => setFilterStatus(v as AlertStatus | 'all')}
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue />
@@ -266,22 +267,24 @@ export default function AlertsCenterPage() {
                   <SelectContent>
                     <SelectItem value="all">{t('alerts.filters.allStatus')}</SelectItem>
                     <SelectItem value="active">{t('alerts.filters.active')}</SelectItem>
-                    <SelectItem value="investigating">{t('alerts.filters.investigating')}</SelectItem>
+                    <SelectItem value="investigating">
+                      {t('alerts.filters.investigating')}
+                    </SelectItem>
                     <SelectItem value="resolved">{t('alerts.filters.resolved')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <AlertGroupSelector
-                  groupMode={groupMode as any}
-                  onGroupModeChange={setGroupMode as any}
-                  sortMode={sortMode as any}
-                  onSortModeChange={setSortMode as any}
+                  groupMode={groupMode}
+                  onGroupModeChange={setGroupMode}
+                  sortMode={sortMode}
+                  onSortModeChange={setSortMode}
                 />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <TabsContent value={activeTab as any} className="space-y-6">
+        <TabsContent value={activeTab} className="space-y-6">
           <AlertBatchActions
             selectedAlerts={selectedAlerts}
             onClearSelection={deselectAll}
@@ -295,7 +298,11 @@ export default function AlertsCenterPage() {
                   <CardTitle className="flex items-center gap-2">
                     {(() => {
                       const Icon = sourceIcons[activeTab as keyof typeof sourceIcons];
-                      return Icon ? <Icon className="h-5 w-5" /> : <sourceIcons.all className="h-5 w-5" />;
+                      return Icon ? (
+                        <Icon className="h-5 w-5" />
+                      ) : (
+                        <sourceIcons.all className="h-5 w-5" />
+                      );
                     })()}
                     {t('alerts.cards.alertList')}
                     <Badge variant="secondary" className="ml-2">
@@ -310,10 +317,9 @@ export default function AlertsCenterPage() {
                         className={cn(isIndeterminate && 'opacity-50')}
                       />
                       <span className="text-sm text-muted-foreground">
-                        {isAllSelected 
+                        {isAllSelected
                           ? t('alerts.batchActions.deselectAll')
-                          : t('alerts.batchActions.selectAll')
-                        }
+                          : t('alerts.batchActions.selectAll')}
                       </span>
                     </div>
                   )}
@@ -394,16 +400,13 @@ export default function AlertsCenterPage() {
           <AlertTrendChart
             data={historyData?.data?.trend || []}
             stats={historyData?.data?.stats || null}
-            timeRange={historyTimeRange as any}
-            groupBy={historyGroupBy as any}
-            onTimeRangeChange={setHistoryTimeRange as any}
-            onGroupByChange={setHistoryGroupBy as any}
+            timeRange={historyTimeRange}
+            groupBy={historyGroupBy}
+            onTimeRangeChange={setHistoryTimeRange}
+            onGroupByChange={setHistoryGroupBy}
             loading={historyLoading}
           />
-          <AlertHeatmap
-            data={historyData?.data?.heatmap || []}
-            loading={historyLoading}
-          />
+          <AlertHeatmap data={historyData?.data?.heatmap || []} loading={historyLoading} />
         </TabsContent>
       </Tabs>
     </div>

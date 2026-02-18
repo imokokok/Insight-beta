@@ -18,10 +18,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { CrossChainDashboardData } from '../types';
 import { useI18n } from '@/i18n';
 import { cn, formatPercentValue, formatPercent } from '@/shared/utils';
 import { STATUS_COLORS } from '@/types/common';
+
+import type { CrossChainDashboardData } from '../types';
 
 interface CrossChainDashboardCardProps {
   data?: CrossChainDashboardData;

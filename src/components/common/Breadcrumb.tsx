@@ -51,16 +51,12 @@ export const Breadcrumb = memo(function Breadcrumb({
     ? [{ label: '', href: homeHref, icon: <Home className="h-3.5 w-3.5" /> }, ...items]
     : items;
 
-  const defaultSeparator = <ChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/50" />;
+  const defaultSeparator = (
+    <ChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/50" />
+  );
 
   const content = (
-    <nav
-      aria-label="Breadcrumb"
-      className={cn(
-        'flex items-center gap-1.5 text-sm',
-        className,
-      )}
-    >
+    <nav aria-label="Breadcrumb" className={cn('flex items-center gap-1.5 text-sm', className)}>
       {allItems.map((item, index) => {
         const isLast = index === allItems.length - 1;
         const isHome = showHome && index === 0;
@@ -77,7 +73,7 @@ export const Breadcrumb = memo(function Breadcrumb({
             >
               {item.href && !isLast ? (
                 <Link
-                  href={item.href as any}
+                  href={item.href as unknown as any}
                   className={cn(
                     'flex items-center gap-1.5 transition-colors hover:text-foreground',
                     isHome && 'rounded-md p-1 hover:bg-muted',
@@ -101,11 +97,7 @@ export const Breadcrumb = memo(function Breadcrumb({
 
   if (animated) {
     return (
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
+      <motion.div variants={containerVariants} initial="hidden" animate="visible">
         {content}
       </motion.div>
     );
@@ -126,7 +118,12 @@ export const BreadcrumbWithActions = memo(function BreadcrumbWithActions({
   ...props
 }: BreadcrumbWithActionsProps) {
   return (
-    <div className={cn('flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between', className)}>
+    <div
+      className={cn(
+        'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between',
+        className,
+      )}
+    >
       <Breadcrumb items={items} {...props} />
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>

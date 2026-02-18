@@ -6,99 +6,156 @@
 ![Tailwind](https://img.shields.io/badge/Tailwind-3.4-cyan)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
 
-Insight is a professional **Oracle Data Analytics Platform** designed for DeFi protocols and data providers. It provides comprehensive real-time aggregation, analysis, and monitoring of oracle data from multiple protocols.
+Insight 是一个专业的**预言机数据分析平台**，专为 DeFi 协议和数据提供商设计。它提供来自多个协议的预言机数据的全面实时聚合、分析和监控。
 
-## ✨ Features
+## ✨ 功能特性
 
-### Multi-Protocol Support (4 Protocols Integrated)
+### 多协议支持（集成 4 个协议）
 
-- **Chainlink** - Industry-standard price feeds and data oracles
-- **Pyth** - Low-latency financial data from institutional sources
-- **RedStone** - Modular oracle optimized for L2s and rollups
-- **UMA** - Optimistic Oracle with assertion and dispute mechanisms
+- **Chainlink** - 行业标准价格源和数据预言机
+- **Pyth** - 来自机构来源的低延迟金融数据
+- **RedStone** - 专为 L2 和 Rollup 优化的模块化预言机
+- **UMA** - 具有断言和争议机制的乐观预言机
 
-### Architecture Highlights
+### 核心功能模块
 
-- **Shared Module Library** - Reusable components for database, blockchain, sync, errors, and logging
-- **Factory Pattern** - `SyncManagerFactory` and `EvmOracleClient` for rapid protocol integration
-- **Code Reusability** - 54% code reduction through shared abstractions
-- **Type Safety** - Full TypeScript coverage with strict type checking
+- 📊 **仪表盘** - 统一视图展示所有预言机协议的状态和关键指标
+- 🔍 **预言机分析** - 价格偏差分析、争议分析、协议对比
+- 📈 **价格比较** - 实时价格对比、热力图、延迟分析
+- 🌐 **跨链分析** - 跨链价格比较、相关性分析、套利机会
+- 🔎 **数据探索** - 市场概览、热门价格源、协议和地址探索
+- 🔔 **智能告警** - 价格偏差告警、陈旧检测、同步健康监控
+- 🌍 **多语言支持** - 支持中英文
+- 🔌 **钱包连接** - 支持 MetaMask、Phantom、WalletConnect 等
 
-### Core Capabilities
+### 技术特性
 
-- 🔴 **Real-time Price Aggregation** - Aggregate prices from multiple protocols with intelligent outlier detection
-- 📊 **Deviation Analytics** - Advanced price deviation analysis with trend detection and anomaly identification
-- 🔔 **Smart Alerting** - Price deviation alerts, staleness detection, sync health monitoring
-- 🌐 **WebSocket Streaming** - Real-time price updates via WebSocket
-- 📈 **Unified Dashboard** - Single pane of glass for all oracle protocols
-- 🔒 **Enterprise Security** - RBAC, API key management, audit logging
-- 🚀 **Serverless Ready** - Optimized for Vercel + Supabase
-- 🌍 **Multi-language Support** - 2 languages (English, Chinese)
+- 🔴 **实时价格聚合** - 智能异常检测聚合多个协议的价格
+- 📊 **偏差分析** - 高级价格偏差分析，含趋势检测和异常识别
+- 🌐 **WebSocket 流式传输** - 通过 WebSocket 实时价格更新
+- 🔒 **企业级安全** - API 密钥管理、审计日志
+- 🚀 **无服务器就绪** - 为 Vercel + Supabase 优化
+- 📝 **完整 API 文档** - Swagger/OpenAPI 规范
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
-### Prerequisites
+### 环境要求
 
 - Node.js 20+
-- Supabase account (or PostgreSQL 16+)
-- RPC URLs (Alchemy, Infura, etc.)
+- Supabase 账户（或 PostgreSQL 16+）
+- RPC URLs（Alchemy、Infura 等）
 
-### Installation
+### 本地开发
 
 ```bash
+# 克隆仓库
 git clone https://github.com/your-org/insight-beta.git
 cd insight-beta
+
+# 安装依赖
 npm install
+
+# 配置环境变量
 cp .env.example .env.local
-npm run supabase:push
+# 编辑 .env.local 填入你的配置
+
+# 启动开发服务器
 npm run dev
 ```
 
-Visit http://localhost:3000
+访问 http://localhost:3000 查看应用
 
-## 📖 Documentation
-
-| Document | Description |
-|----------|-------------|
-| [User Manual](./docs/USER_MANUAL.md) | End user guide |
-| [Development Guide](./docs/DEVELOPMENT_GUIDE.md) | Development environment setup |
-| [Architecture](./docs/ARCHITECTURE.md) | System architecture design |
-| [API Documentation](./docs/API.md) | Complete API reference |
-| [Database Documentation](./docs/DATABASE.md) | Database design and schema |
-| [Deployment Guide](./docs/DEPLOYMENT.md) | Production deployment |
-| [Troubleshooting](./TROUBLESHOOTING.md) | Common issues and solutions |
-| [Error Codes](./docs/ERROR_CODES.md) | Error code reference |
-| [UI Guidelines](./docs/UI_GUIDELINES.md) | User interface design standards |
-
-## 🛠️ Development
-
-### Available Scripts
+### 生产构建
 
 ```bash
-npm run dev              # Start development server
-npm run build            # Build production version
-npm run lint             # Run ESLint
-npm run typecheck        # Run TypeScript type check
-npm run test             # Run unit tests
-npm run test:coverage    # Run tests with coverage
-npm run test:e2e        # Run E2E tests
-npm run supabase:push   # Push database changes
-npm run supabase:studio # Open Supabase Studio
+# 构建生产版本
+npm run build
+
+# 启动生产服务器
+npm start
 ```
 
-## 🤝 Contributing
+## 📖 文档
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+### 📚 文档中心
 
-See [Contributing Guide](./CONTRIBUTING.md) and [Coding Standards](./CODING_STANDARDS.md) for details.
+访问 [完整文档中心](./docs/README.md) 查看所有文档。
 
-## 📄 License
+### 快速链接
 
-This project is licensed under the MIT License.
+| 类别           | 文档                                                                    | 描述                   |
+| -------------- | ----------------------------------------------------------------------- | ---------------------- |
+| **用户文档**   | [用户快速入门](./docs/user-guide/getting-started.md)                    | 新用户快速上手指南     |
+|                | [功能说明](./docs/user-guide/features.md)                               | 详细功能介绍           |
+|                | [常见问题 FAQ](./docs/user-guide/faq.md)                                | 常见问题解答           |
+| **开发者文档** | [开发环境设置](./docs/developer/setup.md)                               | 本地开发环境配置       |
+|                | [调试指南](./docs/developer/debugging.md)                               | 调试技巧和问题排查     |
+|                | [测试指南](./docs/developer/testing.md)                                 | 测试策略和最佳实践     |
+|                | [API 使用指南](./docs/developer/api.md)                                 | API 接口文档           |
+| **部署文档**   | [生产部署](./docs/deployment/production.md)                             | 生产环境部署指南       |
+|                | [备份与恢复](./docs/deployment/backup.md)                               | 数据备份和恢复         |
+|                | [安全最佳实践](./docs/deployment/security.md)                           | 安全配置指南           |
+| **架构文档**   | [系统架构概述](./docs/architecture/overview.md)                         | 整体架构介绍           |
+|                | [模块设计](./docs/architecture/modules.md)                              | 各模块详细设计         |
+|                | [数据流图](./docs/architecture/data-flow.md)                            | 关键功能数据流         |
+|                | [数据库设计](./docs/architecture/database.md)                           | 数据库 schema          |
+| **参考资料**   | [编码标准](./CODING_STANDARDS.md)                                       | 代码风格和规范         |
+|                | [贡献指南](./CONTRIBUTING.md)                                           | 如何贡献代码           |
+|                | [生产检查清单](./PRODUCTION_CHECKLIST.md)                               | 上线前检查清单         |
+|                | [故障排查指南](./TROUBLESHOOTING.md)                                    | 常见问题排查           |
+|                | [变更日志](./CHANGELOG.md)                                              | 版本发布历史           |
+| **项目规格**   | [部署指南](./.trae/specs/oracle-analytics-platform-launch/spec.md)      | 生产部署和上线指南     |
+|                | [实现计划](./.trae/specs/oracle-analytics-platform-launch/tasks.md)     | 项目任务分解和实现计划 |
+|                | [验证清单](./.trae/specs/oracle-analytics-platform-launch/checklist.md) | 上线前验证检查清单     |
+| **API**        | [Swagger UI](./#api-文档)                                               | 访问 /api/docs/swagger |
+
+## 🛠️ 开发
+
+### 可用脚本
+
+```bash
+npm run dev              # 启动开发服务器
+npm run build            # 构建生产版本
+npm run lint             # 运行 ESLint
+npm run typecheck        # 运行 TypeScript 类型检查
+npm run test             # 运行单元测试
+npm run test:ci          # 运行 CI 测试
+npm run test:coverage    # 运行带覆盖率的测试
+npm run test:e2e         # 运行 E2E 测试
+npm run supabase:push    # 推送数据库变更
+npm run supabase:studio  # 打开 Supabase Studio
+```
+
+## 🎯 上线状态
+
+✅ **已验证**:
+
+- 核心功能完整性
+- 代码质量检查（lint, typecheck）
+- 生产构建成功
+- 多语言功能（中英文）
+- API 文档完整
+- 钱包连接功能
+
+📋 **部署准备**:
+
+- 项目已准备好部署
+- 环境变量配置完整
+- 生产服务器可正常启动
+
+## 🤝 贡献
+
+1. Fork 本仓库
+2. 创建特性分支（`git checkout -b feature/amazing-feature`）
+3. 提交变更（`git commit -m 'Add amazing feature'`）
+4. 推送到分支（`git push origin feature/amazing-feature`）
+5. 开启 Pull Request
+
+详情请参阅 [Contributing Guide](./CONTRIBUTING.md) 和 [Coding Standards](./CODING_STANDARDS.md)。
+
+## 📄 许可证
+
+本项目采用 MIT 许可证。
 
 ---
 
