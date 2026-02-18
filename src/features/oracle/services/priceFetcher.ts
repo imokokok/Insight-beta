@@ -554,7 +554,7 @@ export async function fetchReferencePriceHistory(
   opts?: { rpcUrl?: string | null },
 ): Promise<PricePoint[]> {
   const safeDays = Math.min(90, Math.max(1, Math.floor(days)));
-  const provider = (env.INSIGHT_REFERENCE_PRICE_PROVIDER || 'mock').trim().toLowerCase();
+  const provider = env.INSIGHT_REFERENCE_PRICE_PROVIDER.trim().toLowerCase();
 
   if (provider !== 'mock') {
     let closes: Array<{ timestamp: string; close: number }> | null = null;
@@ -626,7 +626,7 @@ export async function fetchCurrentPrice(
   symbol: string = 'ETH',
   opts?: { rpcUrl?: string | null },
 ): Promise<{ referencePrice: number; oraclePrice: number }> {
-  const provider = (env.INSIGHT_REFERENCE_PRICE_PROVIDER || 'mock').trim().toLowerCase();
+  const provider = env.INSIGHT_REFERENCE_PRICE_PROVIDER.trim().toLowerCase();
 
   if (provider !== 'mock') {
     const normalizedSymbol = normalizeSymbol(symbol);
