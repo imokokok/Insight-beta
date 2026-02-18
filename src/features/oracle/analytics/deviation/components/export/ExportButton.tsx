@@ -1,36 +1,14 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useMemo } from 'react';
 
-import { Download, FileJson, FileSpreadsheet, FileText, Loader2 } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useI18n } from '@/i18n';
+import { ExportButton, escapeCSV, type ExportConfig } from '@/features/oracle/components/shared';
 
 import type { DeviationReport, DeviationTrend, PriceDeviationPoint } from '../../types/deviation';
 
-type ExportFormat = 'json' | 'csv' | 'excel';
-
-interface ExportButtonProps {
+interface DeviationExportButtonProps {
   report: DeviationReport | null;
   disabled?: boolean;
-}
-
-function escapeCSV(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '';
-  }
-  const str = String(value);
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
 }
 
 function trendsToCSV(trends: DeviationTrend[]): string {
@@ -54,7 +32,7 @@ function trendsToCSV(trends: DeviationTrend[]): string {
       escapeCSV(trend.volatility),
       escapeCSV(trend.anomalyScore),
       escapeCSV(trend.recommendation),
-    ].join(',')
+    ].join(','),
   );
   return [headers.join(','), ...rows].join('\n');
 }
@@ -80,7 +58,7 @@ function anomaliesToCSV(anomalies: PriceDeviationPoint[]): string {
       escapeCSV(anomaly.maxDeviation),
       escapeCSV(anomaly.maxDeviationPercent),
       escapeCSV(anomaly.outlierProtocols.join(';')),
-    ].join(',')
+    ].join(','),
   );
   return [headers.join(','), ...rows].join('\n');
 }
@@ -94,7 +72,7 @@ function generateExcelXML(report: DeviationReport): string {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&apos;');
 
-  const trendsSheet = `<?xml version="1.0" encoding="UTF-8"?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
   xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
@@ -121,7 +99,7 @@ ${report.trends
         <Cell><Data ss:Type="Number">${trend.volatility}</Data></Cell>
         <Cell><Data ss:Type="Number">${trend.anomalyScore}</Data></Cell>
         <Cell><Data ss:Type="String">${escapeXML(trend.recommendation)}</Data></Cell>
-      </Row>`
+      </Row>`,
   )
   .join('\n')}
     </Table>
@@ -149,7 +127,7 @@ ${report.anomalies
         <Cell><Data ss:Type="Number">${anomaly.maxDeviation}</Data></Cell>
         <Cell><Data ss:Type="Number">${anomaly.maxDeviationPercent}</Data></Cell>
         <Cell><Data ss:Type="String">${escapeXML(anomaly.outlierProtocols.join(';'))}</Data></Cell>
-      </Row>`
+      </Row>`,
   )
   .join('\n')}
     </Table>
@@ -187,109 +165,44 @@ ${report.anomalies
     </Table>
   </Worksheet>
 </Workbook>`;
-
-  return trendsSheet;
 }
 
-function downloadFile(content: string, filename: string, mimeType: string): void {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+function generateCSV(report: DeviationReport): string {
+  const trendsCSV = trendsToCSV(report.trends);
+  const anomaliesCSV = anomaliesToCSV(report.anomalies);
+
+  const summaryCSV = [
+    'key,value',
+    `generatedAt,${escapeCSV(report.generatedAt)}`,
+    `periodStart,${escapeCSV(report.period.start)}`,
+    `periodEnd,${escapeCSV(report.period.end)}`,
+    `totalSymbols,${report.summary.totalSymbols}`,
+    `symbolsWithHighDeviation,${report.summary.symbolsWithHighDeviation}`,
+    `avgDeviationAcrossAll,${report.summary.avgDeviationAcrossAll}`,
+    `mostVolatileSymbol,${escapeCSV(report.summary.mostVolatileSymbol)}`,
+  ].join('\n');
+
+  return [
+    '=== SUMMARY ===',
+    summaryCSV,
+    '',
+    '=== TRENDS ===',
+    trendsCSV,
+    '',
+    '=== ANOMALIES ===',
+    anomaliesCSV,
+  ].join('\n');
 }
 
-export function ExportButton({ report, disabled }: ExportButtonProps) {
-  const { t } = useI18n();
-  const [isExporting, setIsExporting] = useState(false);
-
-  const handleExport = useCallback(
-    async (format: ExportFormat) => {
-      if (!report) return;
-
-      setIsExporting(true);
-
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        const timestamp = new Date().toISOString().split('T')[0];
-
-        switch (format) {
-          case 'json': {
-            const content = JSON.stringify(report, null, 2);
-            downloadFile(content, `deviation-report-${timestamp}.json`, 'application/json');
-            break;
-          }
-          case 'csv': {
-            const trendsCSV = trendsToCSV(report.trends);
-            const anomaliesCSV = anomaliesToCSV(report.anomalies);
-
-            const summaryCSV = [
-              'key,value',
-              `generatedAt,${escapeCSV(report.generatedAt)}`,
-              `periodStart,${escapeCSV(report.period.start)}`,
-              `periodEnd,${escapeCSV(report.period.end)}`,
-              `totalSymbols,${report.summary.totalSymbols}`,
-              `symbolsWithHighDeviation,${report.summary.symbolsWithHighDeviation}`,
-              `avgDeviationAcrossAll,${report.summary.avgDeviationAcrossAll}`,
-              `mostVolatileSymbol,${escapeCSV(report.summary.mostVolatileSymbol)}`,
-            ].join('\n');
-
-            const combinedCSV = [
-              '=== SUMMARY ===',
-              summaryCSV,
-              '',
-              '=== TRENDS ===',
-              trendsCSV,
-              '',
-              '=== ANOMALIES ===',
-              anomaliesCSV,
-            ].join('\n');
-
-            downloadFile(combinedCSV, `deviation-report-${timestamp}.csv`, 'text/csv;charset=utf-8');
-            break;
-          }
-          case 'excel': {
-            const content = generateExcelXML(report);
-            downloadFile(content, `deviation-report-${timestamp}.xls`, 'application/vnd.ms-excel');
-            break;
-          }
-        }
-      } finally {
-        setIsExporting(false);
-      }
-    },
-    [report]
+export function DeviationExportButton({ report, disabled }: DeviationExportButtonProps) {
+  const config: ExportConfig<DeviationReport> = useMemo(
+    () => ({
+      filenamePrefix: 'deviation-report',
+      generateCSV,
+      generateExcel: generateExcelXML,
+    }),
+    [],
   );
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" disabled={disabled || !report || isExporting}>
-          {isExporting ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="mr-2 h-4 w-4" />
-          )}
-          {isExporting ? t('common.exporting') : t('common.export')}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleExport('json')} className="cursor-pointer">
-          <FileJson className="mr-2 h-4 w-4" />
-          JSON
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('csv')} className="cursor-pointer">
-          <FileText className="mr-2 h-4 w-4" />
-          CSV
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('excel')} className="cursor-pointer">
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Excel
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+  return <ExportButton data={report} config={config} disabled={disabled} />;
 }

@@ -1,1 +1,1 @@
-export { ExportButton } from './ExportButton';
+export { DeviationExportButton as ExportButton } from './ExportButton';

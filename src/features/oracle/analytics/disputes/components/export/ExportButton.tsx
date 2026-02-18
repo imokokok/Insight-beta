@@ -1,36 +1,14 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useMemo } from 'react';
 
-import { Download, FileJson, FileSpreadsheet, FileText, Loader2 } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useI18n } from '@/i18n';
+import { ExportButton, escapeCSV, type ExportConfig } from '@/features/oracle/components/shared';
 
 import type { DisputeReport, Dispute, DisputeTrend } from '../../types/disputes';
 
-type ExportFormat = 'json' | 'csv' | 'excel';
-
-interface ExportButtonProps {
+interface DisputeExportButtonProps {
   report: DisputeReport | null;
   disabled?: boolean;
-}
-
-function escapeCSV(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '';
-  }
-  const str = String(value);
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
 }
 
 function disputesToCSV(disputes: Dispute[]): string {
@@ -72,7 +50,7 @@ function disputesToCSV(disputes: Dispute[]): string {
       escapeCSV(dispute.settledAt),
       escapeCSV(dispute.txHash),
       escapeCSV(dispute.blockNumber),
-    ].join(',')
+    ].join(','),
   );
   return [headers.join(','), ...rows].join('\n');
 }
@@ -92,7 +70,7 @@ function trendsToCSV(trends: DisputeTrend[]): string {
       escapeCSV(trend.activeDisputes),
       escapeCSV(trend.resolvedDisputes),
       escapeCSV(trend.disputeRate),
-    ].join(',')
+    ].join(','),
   );
   return [headers.join(','), ...rows].join('\n');
 }
@@ -106,7 +84,7 @@ function generateExcelXML(report: DisputeReport): string {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&apos;');
 
-  const disputesSheet = `<?xml version="1.0" encoding="UTF-8"?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
   xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
@@ -151,7 +129,7 @@ ${report.disputes
         <Cell><Data ss:Type="String">${dispute.settledAt ? escapeXML(dispute.settledAt) : ''}</Data></Cell>
         <Cell><Data ss:Type="String">${escapeXML(dispute.txHash)}</Data></Cell>
         <Cell><Data ss:Type="Number">${dispute.blockNumber}</Data></Cell>
-      </Row>`
+      </Row>`,
   )
   .join('\n')}
     </Table>
@@ -173,7 +151,7 @@ ${report.trends
         <Cell><Data ss:Type="Number">${trend.activeDisputes}</Data></Cell>
         <Cell><Data ss:Type="Number">${trend.resolvedDisputes}</Data></Cell>
         <Cell><Data ss:Type="Number">${trend.disputeRate}</Data></Cell>
-      </Row>`
+      </Row>`,
   )
   .join('\n')}
     </Table>
@@ -223,112 +201,47 @@ ${report.trends
     </Table>
   </Worksheet>
 </Workbook>`;
-
-  return disputesSheet;
 }
 
-function downloadFile(content: string, filename: string, mimeType: string): void {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+function generateCSV(report: DisputeReport): string {
+  const disputesCSV = disputesToCSV(report.disputes);
+  const trendsCSV = trendsToCSV(report.trends);
+
+  const summaryCSV = [
+    'key,value',
+    `generatedAt,${escapeCSV(report.generatedAt)}`,
+    `periodStart,${escapeCSV(report.period.start)}`,
+    `periodEnd,${escapeCSV(report.period.end)}`,
+    `totalDisputes,${report.summary.totalDisputes}`,
+    `activeDisputes,${report.summary.activeDisputes}`,
+    `resolvedDisputes,${report.summary.resolvedDisputes}`,
+    `totalBonded,${report.summary.totalBonded}`,
+    `disputeRate,${report.summary.disputeRate}`,
+    `successRate,${report.summary.successRate}`,
+    `avgResolutionTimeHours,${report.summary.avgResolutionTimeHours}`,
+  ].join('\n');
+
+  return [
+    '=== SUMMARY ===',
+    summaryCSV,
+    '',
+    '=== DISPUTES ===',
+    disputesCSV,
+    '',
+    '=== TRENDS ===',
+    trendsCSV,
+  ].join('\n');
 }
 
-export function ExportButton({ report, disabled }: ExportButtonProps) {
-  const { t } = useI18n();
-  const [isExporting, setIsExporting] = useState(false);
-
-  const handleExport = useCallback(
-    async (format: ExportFormat) => {
-      if (!report) return;
-
-      setIsExporting(true);
-
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        const timestamp = new Date().toISOString().split('T')[0];
-
-        switch (format) {
-          case 'json': {
-            const content = JSON.stringify(report, null, 2);
-            downloadFile(content, `dispute-report-${timestamp}.json`, 'application/json');
-            break;
-          }
-          case 'csv': {
-            const disputesCSV = disputesToCSV(report.disputes);
-            const trendsCSV = trendsToCSV(report.trends);
-
-            const summaryCSV = [
-              'key,value',
-              `generatedAt,${escapeCSV(report.generatedAt)}`,
-              `periodStart,${escapeCSV(report.period.start)}`,
-              `periodEnd,${escapeCSV(report.period.end)}`,
-              `totalDisputes,${report.summary.totalDisputes}`,
-              `activeDisputes,${report.summary.activeDisputes}`,
-              `resolvedDisputes,${report.summary.resolvedDisputes}`,
-              `totalBonded,${report.summary.totalBonded}`,
-              `disputeRate,${report.summary.disputeRate}`,
-              `successRate,${report.summary.successRate}`,
-              `avgResolutionTimeHours,${report.summary.avgResolutionTimeHours}`,
-            ].join('\n');
-
-            const combinedCSV = [
-              '=== SUMMARY ===',
-              summaryCSV,
-              '',
-              '=== DISPUTES ===',
-              disputesCSV,
-              '',
-              '=== TRENDS ===',
-              trendsCSV,
-            ].join('\n');
-
-            downloadFile(combinedCSV, `dispute-report-${timestamp}.csv`, 'text/csv;charset=utf-8');
-            break;
-          }
-          case 'excel': {
-            const content = generateExcelXML(report);
-            downloadFile(content, `dispute-report-${timestamp}.xls`, 'application/vnd.ms-excel');
-            break;
-          }
-        }
-      } finally {
-        setIsExporting(false);
-      }
-    },
-    [report]
+export function DisputeExportButton({ report, disabled }: DisputeExportButtonProps) {
+  const config: ExportConfig<DisputeReport> = useMemo(
+    () => ({
+      filenamePrefix: 'dispute-report',
+      generateCSV,
+      generateExcel: generateExcelXML,
+    }),
+    [],
   );
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" disabled={disabled || !report || isExporting}>
-          {isExporting ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="mr-2 h-4 w-4" />
-          )}
-          {isExporting ? t('common.exporting') : t('common.export')}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleExport('json')} className="cursor-pointer">
-          <FileJson className="mr-2 h-4 w-4" />
-          JSON
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('csv')} className="cursor-pointer">
-          <FileText className="mr-2 h-4 w-4" />
-          CSV
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('excel')} className="cursor-pointer">
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Excel
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+  return <ExportButton data={report} config={config} disabled={disabled} />;
 }

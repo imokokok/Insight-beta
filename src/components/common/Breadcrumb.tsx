@@ -9,6 +9,8 @@ import { ChevronRight, Home } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
 
+import type { Route } from 'next';
+
 export interface BreadcrumbItem {
   label: string;
   href?: string;
@@ -73,7 +75,7 @@ export const Breadcrumb = memo(function Breadcrumb({
             >
               {item.href && !isLast ? (
                 <Link
-                  href={item.href as unknown as any}
+                  href={item.href as Route}
                   className={cn(
                     'flex items-center gap-1.5 transition-colors hover:text-foreground',
                     isHome && 'rounded-md p-1 hover:bg-muted',

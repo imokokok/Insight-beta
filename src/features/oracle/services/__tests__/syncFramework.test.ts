@@ -13,7 +13,7 @@ import {
   withRetry,
   DEFAULT_SYNC_CONFIG,
   type SyncContext,
-} from './syncFramework';
+} from '../syncFramework';
 import { query } from '@/lib/database/db';
 import { getUnifiedInstance } from '@/features/oracle/services/unifiedConfig';
 
@@ -22,7 +22,7 @@ vi.mock('@/lib/database/db', () => ({
   query: vi.fn(),
 }));
 
-vi.mock('@/services/oracle/unifiedConfig', () => ({
+vi.mock('@/features/oracle/services/unifiedConfig', () => ({
   getUnifiedInstance: vi.fn(),
   updateSyncState: vi.fn(),
   recordSyncError: vi.fn(),

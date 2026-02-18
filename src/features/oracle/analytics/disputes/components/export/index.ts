@@ -1,1 +1,1 @@
-export { ExportButton } from './ExportButton';
+export { DisputeExportButton as ExportButton } from './ExportButton';

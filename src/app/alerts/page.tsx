@@ -398,15 +398,15 @@ export default function AlertsCenterPage() {
         <TabsContent value="analysis" className="space-y-6">
           <ResponseTimeStats />
           <AlertTrendChart
-            data={historyData?.data?.trend || []}
-            stats={historyData?.data?.stats || null}
+            data={historyData?.trend || []}
+            stats={historyData?.stats || null}
             timeRange={historyTimeRange}
             groupBy={historyGroupBy}
             onTimeRangeChange={setHistoryTimeRange}
             onGroupByChange={setHistoryGroupBy}
             loading={historyLoading}
           />
-          <AlertHeatmap data={historyData?.data?.heatmap || []} loading={historyLoading} />
+          <AlertHeatmap data={historyData?.heatmap || []} loading={historyLoading} />
         </TabsContent>
       </Tabs>
     </div>

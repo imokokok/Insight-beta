@@ -20,7 +20,7 @@ describe('priceFetcher fetchCurrentPrice', () => {
       }),
     );
 
-    const mod = await import('./priceFetcher');
+    const mod = await import('../priceFetcher');
     const out = await mod.fetchCurrentPrice('ETH');
     expect(out.referencePrice).toBe(3500);
     expect(out.oraclePrice).toBe(3500);

@@ -3,6 +3,7 @@
 import useSWR from 'swr';
 
 import { buildApiUrl } from '@/shared/utils';
+import { fetchApiData } from '@/shared/utils/api';
 
 import type { AlertSource, AlertSeverity } from '../types';
 
@@ -38,13 +39,15 @@ export interface AlertHistoryStats {
   trendPercent: number;
 }
 
+export interface AlertHistoryData {
+  trend: AlertHistoryPoint[];
+  heatmap: AlertHeatmapCell[];
+  stats: AlertHistoryStats;
+}
+
 export interface AlertHistoryResponse {
   success: boolean;
-  data: {
-    trend: AlertHistoryPoint[];
-    heatmap: AlertHeatmapCell[];
-    stats: AlertHistoryStats;
-  };
+  data: AlertHistoryData;
   timestamp: string;
 }
 
@@ -54,21 +57,6 @@ export interface UseAlertHistoryOptions {
   source?: AlertSource | 'all';
   severity?: AlertSeverity | 'all';
 }
-
-const fetcher = async <T>(url: string): Promise<T> => {
-  const res = await fetch(url);
-  if (!res.ok) {
-    const errorData: Record<string, unknown> = await res.json().catch(() => ({}));
-    const error = new Error(
-      (errorData.error as string) || `HTTP ${res.status}: Failed to fetch data`,
-    );
-    (error as { code?: string; status?: number }).code =
-      (errorData.code as string) || 'FETCH_ERROR';
-    (error as { code?: string; status?: number }).status = res.status;
-    throw error;
-  }
-  return res.json() as Promise<T>;
-};
 
 export function useAlertHistory(options: UseAlertHistoryOptions = {}) {
   const { timeRange = '24h', groupBy = 'none', source = 'all', severity = 'all' } = options;
@@ -82,14 +70,10 @@ export function useAlertHistory(options: UseAlertHistoryOptions = {}) {
 
   const url = buildApiUrl('/api/alerts/history', params);
 
-  return useSWR<AlertHistoryResponse>(
-    url,
-    (url: string) => fetcher<AlertHistoryResponse>(url),
-    {
-      refreshInterval: 60000,
-      revalidateOnFocus: true,
-    },
-  );
+  return useSWR<AlertHistoryData>(url, (url: string) => fetchApiData<AlertHistoryData>(url), {
+    refreshInterval: 60000,
+    revalidateOnFocus: true,
+  });
 }
 
 export function useAlertHistoryStats(options: UseAlertHistoryOptions = {}) {
@@ -97,11 +81,7 @@ export function useAlertHistoryStats(options: UseAlertHistoryOptions = {}) {
   const params: Record<string, string> = { timeRange };
   const url = buildApiUrl('/api/alerts/history/stats', params);
 
-  return useSWR<AlertHistoryResponse>(
-    url,
-    (url: string) => fetcher<AlertHistoryResponse>(url),
-    {
-      refreshInterval: 60000,
-    },
-  );
+  return useSWR<AlertHistoryData>(url, (url: string) => fetchApiData<AlertHistoryData>(url), {
+    refreshInterval: 60000,
+  });
 }

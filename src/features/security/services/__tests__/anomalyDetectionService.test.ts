@@ -13,7 +13,7 @@ import {
   BehaviorPatternDetector,
   type DetectionConfig,
   type TimeSeriesPoint,
-} from './anomaly';
+} from '../anomaly';
 
 // Mock logger
 vi.mock('@/lib/logger', () => ({

@@ -34,7 +34,7 @@ import {
   recordSyncError,
   getSyncState,
   clearSyncError,
-} from './unifiedConfig';
+} from '../unifiedConfig';
 
 describe('unifiedConfig', () => {
   beforeEach(() => {
