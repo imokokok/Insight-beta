@@ -3,39 +3,15 @@ import { NextResponse } from 'next/server';
 
 import type {
   AlertSource,
-  AlertSeverity,
   AlertStatus,
   UnifiedAlert,
   AlertsSummary,
 } from '@/features/alerts/types';
 import { getSeverityFromDeviation } from '@/features/alerts/utils/alertScoring';
+import { normalizeSeverity, normalizeStatus } from '@/features/alerts/utils/normalize';
 import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
 import { priceDeviationAnalytics } from '@/features/oracle/services/priceDeviationAnalytics';
 import { logger } from '@/shared/logger';
-
-function normalizeSeverity(severity: string): AlertSeverity {
-  const mapping: Record<string, AlertSeverity> = {
-    info: 'info',
-    warning: 'warning',
-    low: 'low',
-    medium: 'medium',
-    high: 'high',
-    critical: 'critical',
-  };
-  return mapping[severity] || 'medium';
-}
-
-function normalizeStatus(status: string): AlertStatus {
-  const mapping: Record<string, AlertStatus> = {
-    active: 'active',
-    resolved: 'resolved',
-    investigating: 'investigating',
-    new: 'active',
-    acknowledged: 'investigating',
-    closed: 'resolved',
-  };
-  return mapping[status.toLowerCase()] || 'active';
-}
 
 async function fetchPriceAnomalies(): Promise<UnifiedAlert[]> {
   try {

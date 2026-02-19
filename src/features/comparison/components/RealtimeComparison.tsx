@@ -29,7 +29,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
-import { statusColors } from '@/lib/design-system';
+import { HEALTH_COLORS } from '@/lib/design-system';
 import { cn, formatPrice } from '@/shared/utils';
 import type { RealtimeComparisonItem, ComparisonFilter } from '@/types/oracle';
 
@@ -300,7 +300,7 @@ export function RealtimeComparisonView({
                             ? 'bg-red-500'
                             : maxDeviation > 0.5
                               ? 'bg-amber-500'
-                              : statusColors.healthy.dot,
+                              : HEALTH_COLORS.healthy.dot,
                         )}
                       />
                       <div>

@@ -1,66 +1,16 @@
 import useSWR from 'swr';
 
-import type { TimePeriod } from '@/lib/database/reliabilityTables';
+import type {
+  TimePeriod,
+  ReliabilityScore,
+  ProtocolRanking,
+  ReliabilityApiResponse,
+  TrendDataPoint,
+} from '@/types/oracle/reliability';
+
+export type { ReliabilityScore, ProtocolRanking, ReliabilityApiResponse, TrendDataPoint };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-export interface ProtocolRanking {
-  protocol: string;
-  score: number;
-  rank: number;
-  metrics: {
-    protocol: string;
-    symbol: string | null;
-    chain: string | null;
-    periodStart: Date;
-    periodEnd: Date;
-    score: number;
-    accuracyScore: number;
-    latencyScore: number;
-    availabilityScore: number;
-    deviationAvg: number;
-    deviationMax: number;
-    deviationMin: number;
-    latencyAvgMs: number;
-    successCount: number;
-    totalCount: number;
-    sampleCount: number;
-  };
-}
-
-export interface ReliabilityScore {
-  id: number;
-  protocol: string;
-  symbol: string | null;
-  chain: string | null;
-  score: number;
-  accuracy_score: number | null;
-  latency_score: number | null;
-  availability_score: number | null;
-  deviation_avg: number | null;
-  deviation_max: number | null;
-  deviation_min: number | null;
-  latency_avg_ms: number | null;
-  success_count: number | null;
-  total_count: number | null;
-  sample_count: number | null;
-  period_start: Date;
-  period_end: Date;
-  calculated_at: Date;
-}
-
-export interface ReliabilityApiResponse {
-  success: boolean;
-  period: TimePeriod;
-  rankings: ProtocolRanking[];
-  scores: ReliabilityScore[];
-  lastUpdated: string;
-}
-
-export interface TrendDataPoint {
-  date: Date;
-  score: number;
-}
 
 export function useReliabilityScores(period: TimePeriod = '30d') {
   const { data, error, isLoading, mutate } = useSWR<ReliabilityApiResponse>(

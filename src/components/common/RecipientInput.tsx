@@ -6,7 +6,7 @@ import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
 import { logger } from '@/shared/logger';
-import type { OracleAlertRule } from '@/types/oracleTypes';
+import type { OracleAlertRule } from '@/types/unifiedOracleTypes';
 
 interface RecipientInputProps {
   rule: OracleAlertRule;

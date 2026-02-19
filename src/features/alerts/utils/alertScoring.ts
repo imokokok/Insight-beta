@@ -33,12 +33,21 @@ const SEVERITY_SCORES: Record<AlertSeverity, number> = {
   low: 25,
   warning: 40,
   info: 10,
+  emergency: 120,
 };
 
 const STATUS_SCORES: Record<AlertStatus, number> = {
   active: 20,
-  investigating: 10,
   resolved: 0,
+  investigating: 10,
+  Open: 20,
+  Acknowledged: 10,
+  Resolved: 0,
+  open: 20,
+  acknowledged: 10,
+  firing: 25,
+  pending: 15,
+  silenced: 0,
 };
 
 export function calculateFreshnessScore(timestamp: string): number {
@@ -77,12 +86,13 @@ export function sortAlertsByTime(alerts: UnifiedAlert[]): UnifiedAlert[] {
 
 export function sortAlertsBySeverity(alerts: UnifiedAlert[]): UnifiedAlert[] {
   const severityOrder: Record<AlertSeverity, number> = {
-    critical: 0,
-    high: 1,
-    medium: 2,
-    low: 3,
-    warning: 4,
-    info: 5,
+    emergency: 0,
+    critical: 1,
+    high: 2,
+    medium: 3,
+    low: 4,
+    warning: 5,
+    info: 6,
   };
 
   return [...alerts].sort((a, b) => {

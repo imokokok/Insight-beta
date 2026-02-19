@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import useSWR from 'swr';
 
 import { fetchApiData } from '@/shared/utils';
-import type { UserStats } from '@/types/oracleTypes';
+import type { UserStats } from '@/types/unifiedOracleTypes';
 
 const TOKEN_KEY = 'oracle-monitor_admin_token';
 const ACTOR_KEY = 'oracle-monitor_admin_actor';

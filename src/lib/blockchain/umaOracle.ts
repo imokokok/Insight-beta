@@ -79,7 +79,7 @@ export const UMA_CONTRACT_ADDRESSES: Partial<
 // 类型定义
 // ============================================================================
 
-export interface UMAAssertion {
+export interface OnChainUMAAssertion {
   assertionId: string;
   identifier: string;
   timestamp: number;
@@ -93,7 +93,7 @@ export interface UMAAssertion {
   expirationTime: number;
 }
 
-export interface UMADispute {
+export interface OnChainUMADispute {
   disputeId: string;
   assertionId: string;
   disputer: Address;
@@ -167,10 +167,21 @@ export interface DisputeDetails {
   disputeTimestamp: number;
   disputeBond: bigint;
   status: DisputeStatus;
-  assertion: UMAAssertion | null;
+  assertion: OnChainUMAAssertion | null;
   canSettle: boolean;
   timeUntilSettlement: number;
 }
+
+export {
+  type UMAChain,
+  type UMAAssertionStatus,
+  type UMAAssertion,
+  type UMADisputeStatus,
+  type UMADispute,
+  type UMAVote,
+  type UMAConfig,
+  type UMAStats,
+} from '@/types/protocol';
 
 // ============================================================================
 // UMA Client (安全增强版)
@@ -263,7 +274,7 @@ export class UMAClient {
   // 断言相关方法
   // ============================================================================
 
-  async getAssertion(assertionId: string): Promise<UMAAssertion | null> {
+  async getAssertion(assertionId: string): Promise<OnChainUMAAssertion | null> {
     const validation = this.validateAssertionId(assertionId);
     if (!validation.valid) {
       logger.warn('Invalid assertion ID', { errors: validation.errors });
@@ -271,7 +282,7 @@ export class UMAClient {
     }
 
     const cacheKey = `assertion:${assertionId}`;
-    const cached = this.getCached<UMAAssertion>(cacheKey);
+    const cached = this.getCached<OnChainUMAAssertion>(cacheKey);
     if (cached) return cached;
 
     this.checkRateLimit();
@@ -303,7 +314,7 @@ export class UMAClient {
         expirationTime: bigint;
       };
 
-      const data: UMAAssertion = {
+      const data: OnChainUMAAssertion = {
         assertionId,
         identifier: assertion.identifier,
         timestamp: Number(assertion.timestamp),
@@ -473,12 +484,12 @@ export class UMAClient {
   // 争议相关方法
   // ============================================================================
 
-  async getDispute(assertionId: string): Promise<UMADispute | null> {
+  async getDispute(assertionId: string): Promise<OnChainUMADispute | null> {
     const validation = this.validateAssertionId(assertionId);
     if (!validation.valid) return null;
 
     const cacheKey = `dispute:${assertionId}`;
-    const cached = this.getCached<UMADispute>(cacheKey);
+    const cached = this.getCached<OnChainUMADispute>(cacheKey);
     if (cached) return cached;
 
     this.checkRateLimit();
@@ -503,7 +514,7 @@ export class UMAClient {
       };
       const statusMap: DisputeStatus[] = ['None', 'Active', 'Resolved'];
 
-      const data: UMADispute = {
+      const data: OnChainUMADispute = {
         disputeId: `${assertionId}-dispute`,
         assertionId,
         disputer: dispute.disputer,
@@ -553,7 +564,7 @@ export class UMAClient {
     fromBlock?: bigint,
     toBlock?: bigint,
   ): Promise<{
-    disputes: UMADispute[];
+    disputes: OnChainUMADispute[];
     totalDisputes: number;
     pendingDisputes: number;
   }> {
@@ -577,7 +588,7 @@ export class UMAClient {
         }),
       );
 
-      const disputes: UMADispute[] = [];
+      const disputes: OnChainUMADispute[] = [];
       let pendingDisputes = 0;
 
       for (const log of logs) {

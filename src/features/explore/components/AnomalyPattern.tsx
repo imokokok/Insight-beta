@@ -4,34 +4,11 @@ import { AlertTriangle, TrendingUp, Activity, Clock, ChevronRight } from 'lucide
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getSeverityConfig } from '@/features/alerts/constants';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 
 import type { AnomalyPatternItem } from '../hooks/useDataDiscovery';
-
-const severityConfig = {
-  critical: {
-    color: 'text-red-600',
-    bgColor: 'bg-red-500/10',
-    borderColor: 'border-red-500/30',
-    badgeVariant: 'danger' as const,
-    iconColor: 'text-red-500',
-  },
-  warning: {
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-500/10',
-    borderColor: 'border-yellow-500/30',
-    badgeVariant: 'warning' as const,
-    iconColor: 'text-yellow-500',
-  },
-  info: {
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/30',
-    badgeVariant: 'info' as const,
-    iconColor: 'text-blue-500',
-  },
-};
 
 const anomalyTypeConfig = {
   price_spike: {
@@ -110,7 +87,7 @@ export function AnomalyPattern({ anomalies, isLoading, onItemClick }: AnomalyPat
       </CardHeader>
       <CardContent className="space-y-3">
         {anomalies.map((anomaly) => {
-          const severity = severityConfig[anomaly.severity] || severityConfig.info;
+          const severity = getSeverityConfig(anomaly.severity);
           const typeConfig = anomalyTypeConfig[anomaly.anomalyType] || anomalyTypeConfig.deviation;
           const TypeIcon = typeConfig.icon;
 
@@ -144,7 +121,7 @@ export function AnomalyPattern({ anomalies, isLoading, onItemClick }: AnomalyPat
                     <span className="text-sm text-muted-foreground">{anomaly.protocol}</span>
                   </div>
 
-                  <p className="text-sm text-muted-foreground line-clamp-1">
+                  <p className="line-clamp-1 text-sm text-muted-foreground">
                     {anomaly.description}
                   </p>
 

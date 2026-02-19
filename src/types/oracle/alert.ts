@@ -3,18 +3,15 @@
  */
 
 import type { SupportedChain } from '@/types/chains';
+import type {
+  AlertSeverity as AlertSeverityBase,
+  AlertStatus as AlertStatusBase,
+} from '@/types/common/status';
 
 import type { OracleProtocol } from './protocol';
 
-export type AlertSeverity = 'info' | 'warning' | 'critical';
-
-export type AlertStatus =
-  | 'Open'
-  | 'Acknowledged'
-  | 'Resolved'
-  | 'open'
-  | 'acknowledged'
-  | 'resolved';
+export type AlertSeverity = AlertSeverityBase;
+export type AlertStatus = AlertStatusBase;
 
 export type AlertEvent =
   | 'price_deviation'

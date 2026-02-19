@@ -9,8 +9,12 @@ import {
   type BaseResponse,
 } from '@/hooks';
 import { fetchApiData, buildApiUrl } from '@/shared/utils';
-import type { Assertion, OracleStats, OracleStatus } from '@/types/oracleTypes';
-import type { OracleConfig } from '@/types/oracleTypes';
+import type {
+  Assertion,
+  OracleStats,
+  OracleStatus,
+  OracleConfig,
+} from '@/types/unifiedOracleTypes';
 
 export function useOracleData(
   filterStatus: OracleStatus | 'All',

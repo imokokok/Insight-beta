@@ -21,6 +21,10 @@ export {
   CHAIN_COLORS,
   CHART_COLORS,
   MONITOR_STATUS_COLORS,
+  SEVERITY_COLORS,
+  RISK_COLORS,
+  STATUS_THEME_COLORS,
+  HEALTH_COLORS,
   type SemanticColor,
   type BrandColor,
   type StatusColor,
@@ -28,17 +32,18 @@ export {
   type ProtocolColor,
   type ChainColor,
   type MonitorStatus,
+  type SeverityColor,
+  type RiskColor,
+  type StatusThemeColor,
+  type HealthColor,
   getStatusColor,
   getProtocolColor,
+  getSeverityColor,
+  getRiskColor,
+  getHealthColor,
 } from './tokens/colors';
 
-// 状态类型和颜色
-export {
-  STATUS_COLORS as statusColors,
-  STATUS_THEME_COLORS,
-  RISK_COLORS,
-  SEVERITY_COLORS,
-} from '../../types/common/status';
+// 状态类型 - 从 types/common/status 导出
 export type {
   EntityStatus,
   HealthStatus,
@@ -49,6 +54,8 @@ export type {
   DisputeStatus,
   AssertionStatus,
   VotingStatus,
+  StatusType,
+  AlertSeverity,
 } from '../../types/common/status';
 
 // 响应式设计

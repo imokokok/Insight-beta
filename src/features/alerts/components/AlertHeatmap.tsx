@@ -6,12 +6,7 @@ import { Grid3X3, Info } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/shared/utils';
 
@@ -37,6 +32,7 @@ const severityColors: Record<AlertSeverity, string> = {
   low: '#fdba74',
   info: '#93c5fd',
   warning: '#fcd34d',
+  emergency: '#7f1d1d',
 };
 
 function getCellColor(count: number, severity: AlertSeverity): string {
@@ -116,12 +112,10 @@ export function AlertHeatmap({ data, loading, className }: AlertHeatmapProps) {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                <Info className="h-4 w-4 cursor-help text-muted-foreground" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="max-w-xs text-xs">
-                  {t('alerts.analysis.heatmapTooltip')}
-                </p>
+                <p className="max-w-xs text-xs">{t('alerts.analysis.heatmapTooltip')}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -131,18 +125,20 @@ export function AlertHeatmap({ data, loading, className }: AlertHeatmapProps) {
         <div className="overflow-x-auto">
           <svg width={svgWidth} height={svgHeight} className="mx-auto">
             <g transform={`translate(${labelWidth + 10}, 10)`}>
-              {hours.filter((_, i) => i % 3 === 0).map((hour) => (
-                <text
-                  key={hour}
-                  x={hour * (cellWidth + gap) + cellWidth / 2}
-                  y={labelHeight - 10}
-                  textAnchor="middle"
-                  fontSize={10}
-                  fill="#6b7280"
-                >
-                  {hour}:00
-                </text>
-              ))}
+              {hours
+                .filter((_, i) => i % 3 === 0)
+                .map((hour) => (
+                  <text
+                    key={hour}
+                    x={hour * (cellWidth + gap) + cellWidth / 2}
+                    y={labelHeight - 10}
+                    textAnchor="middle"
+                    fontSize={10}
+                    fill="#6b7280"
+                  >
+                    {hour}:00
+                  </text>
+                ))}
             </g>
 
             <g transform={`translate(10, ${labelHeight})`}>
@@ -190,7 +186,11 @@ export function AlertHeatmap({ data, loading, className }: AlertHeatmapProps) {
                                 ? 'stroke-gray-800 stroke-2'
                                 : 'stroke-none',
                             )}
-                            onMouseEnter={() => setHoveredCell(cell || { source, hour, day: 0, count: 0, severity: 'low' })}
+                            onMouseEnter={() =>
+                              setHoveredCell(
+                                cell || { source, hour, day: 0, count: 0, severity: 'low' },
+                              )
+                            }
                             onMouseLeave={() => setHoveredCell(null)}
                           />
                         </TooltipTrigger>
@@ -217,10 +217,22 @@ export function AlertHeatmap({ data, loading, className }: AlertHeatmapProps) {
             <span className="text-xs text-muted-foreground">{t('common.low')}</span>
             <div className="flex gap-0.5">
               <div className="h-4 w-6 rounded bg-gray-100" />
-              <div className="h-4 w-6 rounded" style={{ backgroundColor: severityColors.low, opacity: 0.5 }} />
-              <div className="h-4 w-6 rounded" style={{ backgroundColor: severityColors.medium, opacity: 0.7 }} />
-              <div className="h-4 w-6 rounded" style={{ backgroundColor: severityColors.high, opacity: 0.85 }} />
-              <div className="h-4 w-6 rounded" style={{ backgroundColor: severityColors.critical }} />
+              <div
+                className="h-4 w-6 rounded"
+                style={{ backgroundColor: severityColors.low, opacity: 0.5 }}
+              />
+              <div
+                className="h-4 w-6 rounded"
+                style={{ backgroundColor: severityColors.medium, opacity: 0.7 }}
+              />
+              <div
+                className="h-4 w-6 rounded"
+                style={{ backgroundColor: severityColors.high, opacity: 0.85 }}
+              />
+              <div
+                className="h-4 w-6 rounded"
+                style={{ backgroundColor: severityColors.critical }}
+              />
             </div>
             <span className="text-xs text-muted-foreground">{t('common.high')}</span>
           </div>

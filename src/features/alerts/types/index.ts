@@ -4,11 +4,15 @@
  * 用于价格异常、跨链分析、安全等告警
  */
 
+import type {
+  AlertSeverity as AlertSeverityBase,
+  AlertStatus as AlertStatusBase,
+} from '@/types/common/status';
+
+export type AlertSeverity = AlertSeverityBase;
+export type AlertStatus = AlertStatusBase;
+
 export type AlertSource = 'price_anomaly' | 'cross_chain' | 'security';
-
-export type AlertSeverity = 'low' | 'medium' | 'high' | 'critical' | 'info' | 'warning';
-
-export type AlertStatus = 'active' | 'resolved' | 'investigating';
 
 export interface UnifiedAlert {
   id: string;

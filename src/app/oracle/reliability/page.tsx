@@ -16,7 +16,7 @@ import {
 } from '@/features/oracle/reliability/components';
 import { useReliabilityScores, useReliabilityTrend } from '@/features/oracle/reliability/hooks';
 import { useI18n } from '@/i18n';
-import type { TimePeriod } from '@/lib/database/reliabilityTables';
+import type { TimePeriod } from '@/types/oracle/reliability';
 
 const periods: { value: TimePeriod; labelKey: string }[] = [
   { value: '7d', labelKey: 'oracle.reliability.7d' },

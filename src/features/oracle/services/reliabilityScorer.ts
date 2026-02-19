@@ -1,10 +1,10 @@
 import { query, hasDatabase } from '@/lib/database/db';
+import { getTimePeriodDates } from '@/lib/database/reliabilityTables';
 import type {
   InsertReliabilityScoreParams,
   ReliabilityScoreRecord,
   TimePeriod,
-} from '@/lib/database/reliabilityTables';
-import { getTimePeriodDates } from '@/lib/database/reliabilityTables';
+} from '@/types/oracle/reliability';
 
 export interface ReliabilityMetrics {
   protocol: string;

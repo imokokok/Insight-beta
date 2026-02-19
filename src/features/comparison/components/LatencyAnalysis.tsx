@@ -22,7 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
-import { statusColors } from '@/lib/design-system';
+import { HEALTH_COLORS } from '@/lib/design-system';
 import { cn } from '@/shared/utils';
 import type { LatencyAnalysis, LatencyTrend } from '@/types/oracle';
 
@@ -36,13 +36,13 @@ interface LatencyAnalysisProps {
 /** 状态配置 - 使用统一的状态色板 */
 const statusConfig = {
   healthy: {
-    color: statusColors.healthy.dot,
+    color: HEALTH_COLORS.healthy.dot,
     labelKey: 'comparison.status.healthy',
     icon: Zap,
     ariaLabelKey: 'status.healthy',
   },
   degraded: {
-    color: statusColors.degraded.dot,
+    color: HEALTH_COLORS.degraded.dot,
     labelKey: 'comparison.status.degraded',
     icon: AlertCircle,
     ariaLabelKey: 'status.degraded',
@@ -298,10 +298,7 @@ export function LatencyAnalysisView({
                     strokeDasharray="3 3"
                     label={t('comparison.latency.threshold')}
                   />
-                  <Bar
-                    dataKey="latency"
-                    radius={[4, 4, 0, 0]}
-                  >
+                  <Bar dataKey="latency" radius={[4, 4, 0, 0]}>
                     {chartData.map((entry, index) => {
                       const statusColor =
                         entry.status === 'healthy'
@@ -309,12 +306,7 @@ export function LatencyAnalysisView({
                           : entry.status === 'degraded'
                             ? '#f59e0b'
                             : '#ef4444';
-                      return (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={statusColor}
-                        />
-                      );
+                      return <Cell key={`cell-${index}`} fill={statusColor} />;
                     })}
                   </Bar>
                 </BarChart>

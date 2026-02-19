@@ -434,12 +434,267 @@ export const MONITOR_STATUS_COLORS = {
 } as const;
 
 // ============================================================================
+// 严重级别颜色配置
+// ============================================================================
+
+export type SeverityColor = keyof typeof SEVERITY_COLORS;
+
+export const SEVERITY_COLORS = {
+  low: {
+    primary: 'success',
+    bg: 'bg-success/10',
+    text: 'text-success-dark',
+    border: 'border-success/30',
+    dot: 'bg-success',
+    label: 'Low',
+  },
+  medium: {
+    primary: 'warning',
+    bg: 'bg-warning/10',
+    text: 'text-warning-dark',
+    border: 'border-warning/30',
+    dot: 'bg-warning',
+    label: 'Medium',
+  },
+  high: {
+    primary: 'warning',
+    bg: 'bg-warning/10',
+    text: 'text-warning-dark',
+    border: 'border-warning/30',
+    dot: 'bg-warning',
+    label: 'High',
+  },
+  critical: {
+    primary: 'error',
+    bg: 'bg-error/10',
+    text: 'text-error-dark',
+    border: 'border-error/30',
+    dot: 'bg-error',
+    label: 'Critical',
+  },
+  info: {
+    primary: 'primary',
+    bg: 'bg-primary/10',
+    text: 'text-primary-dark',
+    border: 'border-primary/30',
+    dot: 'bg-primary',
+    label: 'Info',
+  },
+  warning: {
+    primary: 'warning',
+    bg: 'bg-warning/10',
+    text: 'text-warning-dark',
+    border: 'border-warning/30',
+    dot: 'bg-warning',
+    label: 'Warning',
+  },
+  emergency: {
+    primary: 'error',
+    bg: 'bg-error/10',
+    text: 'text-error-dark',
+    border: 'border-error/30',
+    dot: 'bg-error',
+    label: 'Emergency',
+  },
+} as const;
+
+// ============================================================================
+// 风险等级颜色配置
+// ============================================================================
+
+export type RiskColor = keyof typeof RISK_COLORS;
+
+export const RISK_COLORS = {
+  low: {
+    primary: 'success',
+    bg: 'bg-success/10',
+    text: 'text-success-dark',
+    border: 'border-success/30',
+    dot: 'bg-success',
+    label: 'Low Risk',
+  },
+  medium: {
+    primary: 'warning',
+    bg: 'bg-warning/10',
+    text: 'text-warning-dark',
+    border: 'border-warning/30',
+    dot: 'bg-warning',
+    label: 'Medium Risk',
+  },
+  high: {
+    primary: 'warning',
+    bg: 'bg-warning/10',
+    text: 'text-warning-dark',
+    border: 'border-warning/30',
+    dot: 'bg-warning',
+    label: 'High Risk',
+  },
+  critical: {
+    primary: 'error',
+    bg: 'bg-error/10',
+    text: 'text-error-dark',
+    border: 'border-error/30',
+    dot: 'bg-error',
+    label: 'Critical Risk',
+  },
+} as const;
+
+// ============================================================================
+// Badge 状态颜色配置（用于 StatusBadge 组件）
+// ============================================================================
+
+export type StatusThemeColor = keyof typeof STATUS_THEME_COLORS;
+
+export const STATUS_THEME_COLORS = {
+  active: {
+    label: 'Active',
+    dotColor: 'bg-success',
+    bgColor: 'bg-success/20',
+    textColor: 'text-success-dark',
+  },
+  stale: {
+    label: 'Stale',
+    dotColor: 'bg-warning',
+    bgColor: 'bg-warning/20',
+    textColor: 'text-warning-dark',
+  },
+  error: {
+    label: 'Error',
+    dotColor: 'bg-error',
+    bgColor: 'bg-error/20',
+    textColor: 'text-error-dark',
+  },
+  pending: {
+    label: 'Pending',
+    dotColor: 'bg-primary',
+    bgColor: 'bg-primary/20',
+    textColor: 'text-primary-dark',
+  },
+  settled: {
+    label: 'Settled',
+    dotColor: 'bg-success',
+    bgColor: 'bg-success/20',
+    textColor: 'text-success-dark',
+  },
+  disputed: {
+    label: 'Disputed',
+    dotColor: 'bg-warning',
+    bgColor: 'bg-warning/20',
+    textColor: 'text-warning-dark',
+  },
+  expired: {
+    label: 'Expired',
+    dotColor: 'bg-muted-foreground',
+    bgColor: 'bg-muted/30',
+    textColor: 'text-muted-foreground',
+  },
+  inactive: {
+    label: 'Inactive',
+    dotColor: 'bg-muted-foreground',
+    bgColor: 'bg-muted/30',
+    textColor: 'text-muted-foreground',
+  },
+  resolved: {
+    label: 'Resolved',
+    dotColor: 'bg-success',
+    bgColor: 'bg-success/20',
+    textColor: 'text-success-dark',
+  },
+  unknown: {
+    label: 'Unknown',
+    dotColor: 'bg-muted-foreground',
+    bgColor: 'bg-muted/30',
+    textColor: 'text-muted-foreground',
+  },
+  online: {
+    label: 'Online',
+    dotColor: 'bg-success',
+    bgColor: 'bg-success/20',
+    textColor: 'text-success-dark',
+  },
+  offline: {
+    label: 'Offline',
+    dotColor: 'bg-error',
+    bgColor: 'bg-error/20',
+    textColor: 'text-error-dark',
+  },
+  warning: {
+    label: 'Warning',
+    dotColor: 'bg-warning',
+    bgColor: 'bg-warning/20',
+    textColor: 'text-warning-dark',
+  },
+  success: {
+    label: 'Success',
+    dotColor: 'bg-success',
+    bgColor: 'bg-success/20',
+    textColor: 'text-success-dark',
+  },
+} as const;
+
+// ============================================================================
+// 健康状态颜色配置
+// ============================================================================
+
+export type HealthColor = keyof typeof HEALTH_COLORS;
+
+export const HEALTH_COLORS = {
+  healthy: {
+    primary: 'success',
+    bg: 'bg-success/10',
+    text: 'text-success-dark',
+    border: 'border-success/30',
+    dot: 'bg-success',
+    label: 'Healthy',
+  },
+  degraded: {
+    primary: 'warning',
+    bg: 'bg-warning/10',
+    text: 'text-warning-dark',
+    border: 'border-warning/30',
+    dot: 'bg-warning',
+    label: 'Degraded',
+  },
+  unhealthy: {
+    primary: 'error',
+    bg: 'bg-error/10',
+    text: 'text-error-dark',
+    border: 'border-error/30',
+    dot: 'bg-error',
+    label: 'Unhealthy',
+  },
+  unknown: {
+    primary: 'muted',
+    bg: 'bg-muted/30',
+    text: 'text-muted-foreground',
+    border: 'border-muted',
+    dot: 'bg-muted-foreground',
+    label: 'Unknown',
+  },
+} as const;
+
+// ============================================================================
 // 工具函数
 // ============================================================================
 
 export function getStatusColor(status: string): (typeof STATUS_COLORS)[StatusColor] {
   const key = status.toLowerCase() as StatusColor;
   return STATUS_COLORS[key] || STATUS_COLORS.unknown;
+}
+
+export function getSeverityColor(severity: string): (typeof SEVERITY_COLORS)[SeverityColor] {
+  const key = severity.toLowerCase() as SeverityColor;
+  return SEVERITY_COLORS[key] || SEVERITY_COLORS.info;
+}
+
+export function getRiskColor(risk: string): (typeof RISK_COLORS)[RiskColor] {
+  const key = risk.toLowerCase() as RiskColor;
+  return RISK_COLORS[key] || RISK_COLORS.medium;
+}
+
+export function getHealthColor(health: string): (typeof HEALTH_COLORS)[HealthColor] {
+  const key = health.toLowerCase() as HealthColor;
+  return HEALTH_COLORS[key] || HEALTH_COLORS.unknown;
 }
 
 export function getProtocolColor(protocol: string): string {

@@ -1,4 +1,12 @@
+import type {
+  ReliabilityScoreRecord,
+  InsertReliabilityScoreParams,
+  TimePeriod,
+} from '@/types/oracle/reliability';
+
 import type { TableDefinition, IndexDefinition, QueryFn } from './types';
+
+export { type ReliabilityScoreRecord, type InsertReliabilityScoreParams, type TimePeriod };
 
 export const reliabilityTables: TableDefinition[] = [
   {
@@ -63,48 +71,6 @@ export async function createReliabilityIndexes(queryFn: QueryFn): Promise<void> 
     await queryFn(index.sql);
   }
 }
-
-export interface ReliabilityScoreRecord {
-  id: number;
-  protocol: string;
-  symbol: string | null;
-  chain: string | null;
-  score: number;
-  accuracy_score: number | null;
-  latency_score: number | null;
-  availability_score: number | null;
-  deviation_avg: number | null;
-  deviation_max: number | null;
-  deviation_min: number | null;
-  latency_avg_ms: number | null;
-  success_count: number | null;
-  total_count: number | null;
-  sample_count: number | null;
-  period_start: Date;
-  period_end: Date;
-  calculated_at: Date;
-}
-
-export interface InsertReliabilityScoreParams {
-  protocol: string;
-  symbol?: string;
-  chain?: string;
-  score: number;
-  accuracy_score?: number;
-  latency_score?: number;
-  availability_score?: number;
-  deviation_avg?: number;
-  deviation_max?: number;
-  deviation_min?: number;
-  latency_avg_ms?: number;
-  success_count?: number;
-  total_count?: number;
-  sample_count?: number;
-  period_start: Date;
-  period_end: Date;
-}
-
-export type TimePeriod = '7d' | '30d' | '90d';
 
 export function getTimePeriodDates(period: TimePeriod): { start: Date; end: Date } {
   const end = new Date();

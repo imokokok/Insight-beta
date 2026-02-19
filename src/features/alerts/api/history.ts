@@ -3,6 +3,7 @@ import { priceDeviationAnalytics } from '@/features/oracle/services/priceDeviati
 import { logger } from '@/shared/logger';
 
 import { getSeverityFromDeviation } from '../utils/alertScoring';
+import { normalizeSeverity, normalizeStatus } from '../utils/normalize';
 
 import type {
   AlertHistoryPoint,
@@ -11,31 +12,7 @@ import type {
   TimeRange,
   GroupBy,
 } from '../hooks/useAlertHistory';
-import type { AlertSource, AlertSeverity, UnifiedAlert } from '../types';
-
-function normalizeSeverity(severity: string): AlertSeverity {
-  const mapping: Record<string, AlertSeverity> = {
-    info: 'info',
-    warning: 'warning',
-    low: 'low',
-    medium: 'medium',
-    high: 'high',
-    critical: 'critical',
-  };
-  return mapping[severity] || 'medium';
-}
-
-function normalizeStatus(status: string): 'active' | 'resolved' | 'investigating' {
-  const mapping: Record<string, 'active' | 'resolved' | 'investigating'> = {
-    active: 'active',
-    resolved: 'resolved',
-    investigating: 'investigating',
-    new: 'active',
-    acknowledged: 'investigating',
-    closed: 'resolved',
-  };
-  return mapping[status.toLowerCase()] || 'active';
-}
+import type { AlertSource, UnifiedAlert } from '../types';
 
 async function fetchPriceAnomalies(): Promise<UnifiedAlert[]> {
   try {

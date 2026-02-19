@@ -22,6 +22,11 @@ export const nav = {
   deviation: '偏差',
   protocols: '协议',
   oracleProtocols: '预言机协议',
+  api3: 'API3',
+  band: 'Band Protocol',
+  api3Analysis: 'API3 分析',
+  bandAnalysis: 'Band 分析',
+  umaAnalysis: 'UMA 分析',
   address: '地址查询',
   favorites: '收藏夹',
   groups: {
@@ -30,6 +35,7 @@ export const nav = {
     analytics: '分析',
     operations: '运营',
     protocolsGroup: '协议',
+    protocolAnalysis: '协议分析',
   },
   descriptions: {
     dashboard: '系统概览',
@@ -53,8 +59,11 @@ export const nav = {
     address: '搜索地址资料',
     favorites: '查看收藏的项目',
     oracleProtocols: 'API3 和 Band Protocol 预言机监控',
-    api3: 'API3 第一方预言机技术',
-    band: 'Band Protocol 跨链预言机',
+    api3: '第一方预言机 - Airnode 技术与签名数据验证',
+    band: '跨链预言机 - Cosmos 生态与数据桥监控',
+    api3Analysis: '第一方预言机 - Airnode 技术与签名数据验证',
+    bandAnalysis: '跨链预言机 - Cosmos 生态与数据桥监控',
+    umaAnalysis: '乐观预言机 - 争议仲裁与断言验证',
   },
   labels: {
     search: '搜索导航...',

@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 
 import { calculateAndStoreReliabilityScores } from '@/features/oracle/services/reliabilityScorer';
 import { hasDatabase } from '@/lib/database/db';
-import type { TimePeriod } from '@/lib/database/reliabilityTables';
 import { logger } from '@/shared/logger';
+import type { TimePeriod } from '@/types/oracle/reliability';
 
 export async function POST(request: NextRequest) {
   try {

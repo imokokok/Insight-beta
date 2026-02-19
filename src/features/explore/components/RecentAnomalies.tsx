@@ -7,6 +7,7 @@ import { AlertTriangle, ArrowRight, Zap, Clock, TrendingUp } from 'lucide-react'
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getSeverityConfig } from '@/features/alerts/constants';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { formatTime, cn } from '@/shared/utils';
 
@@ -42,16 +43,6 @@ const anomalyTypeConfig: Record<
     color: 'text-purple-500',
     bgColor: 'bg-purple-50',
   },
-};
-
-const severityConfig: Record<
-  AnomalySummary['severity'],
-  { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }
-> = {
-  low: { variant: 'secondary', label: 'Low' },
-  medium: { variant: 'outline', label: 'Medium' },
-  high: { variant: 'default', label: 'High' },
-  critical: { variant: 'destructive', label: 'Critical' },
 };
 
 export function RecentAnomalies({ anomalies, isLoading, maxItems = 5 }: RecentAnomaliesProps) {
@@ -104,7 +95,7 @@ export function RecentAnomalies({ anomalies, isLoading, maxItems = 5 }: RecentAn
           <div className="space-y-3">
             {displayAnomalies.map((anomaly) => {
               const typeConfig = anomalyTypeConfig[anomaly.type];
-              const severityConf = severityConfig[anomaly.severity];
+              const severityConf = getSeverityConfig(anomaly.severity);
               const Icon = typeConfig.icon;
 
               return (
@@ -128,9 +119,7 @@ export function RecentAnomalies({ anomalies, isLoading, maxItems = 5 }: RecentAn
                         {severityConf.label}
                       </Badge>
                     </div>
-                    <p className="truncate text-sm text-muted-foreground">
-                      {anomaly.description}
-                    </p>
+                    <p className="truncate text-sm text-muted-foreground">{anomaly.description}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {formatTime(anomaly.timestamp)}
                     </p>

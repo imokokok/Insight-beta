@@ -7,17 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 
-export interface Bridge {
-  bridgeId: string;
-  sourceChain: string;
-  destinationChain: string;
-  status: 'active' | 'inactive' | 'degraded';
-  lastTransferAt: string;
-  totalTransfers: number;
-  totalVolume: number;
-  avgLatencyMs: number;
-  successRate: number;
-}
+import type { Bridge } from '../types/band';
 
 interface BridgeStatusCardProps {
   bridge: Bridge;

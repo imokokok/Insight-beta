@@ -11,17 +11,9 @@ import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 
 import { AlertActionButtons } from './AlertActionButtons';
+import { getSeverityConfig } from '../constants';
 
-import type { UnifiedAlert, AlertSeverity, AlertSource } from '../hooks/useAlerts';
-
-const severityConfig: Record<AlertSeverity, { color: string; bgColor: string; borderColor: string }> = {
-  critical: { color: 'text-red-600', bgColor: 'bg-red-500', borderColor: 'border-red-500/30 bg-red-500/10' },
-  high: { color: 'text-orange-600', bgColor: 'bg-orange-500', borderColor: 'border-orange-500/30 bg-orange-500/10' },
-  medium: { color: 'text-yellow-600', bgColor: 'bg-yellow-500', borderColor: 'border-yellow-500/30 bg-yellow-500/10' },
-  low: { color: 'text-green-600', bgColor: 'bg-green-500', borderColor: 'border-green-500/30 bg-green-500/10' },
-  warning: { color: 'text-yellow-600', bgColor: 'bg-yellow-500', borderColor: 'border-yellow-500/30 bg-yellow-500/10' },
-  info: { color: 'text-blue-600', bgColor: 'bg-blue-500', borderColor: 'border-blue-500/30 bg-blue-500/10' },
-};
+import type { UnifiedAlert, AlertSource } from '../hooks/useAlerts';
 
 const sourceConfig: Record<AlertSource, { icon: typeof AlertTriangle; label: string }> = {
   price_anomaly: { icon: TrendingUp, label: 'Price Anomaly' },
@@ -39,10 +31,10 @@ interface AlertCardProps {
   onCheckChange?: (checked: boolean) => void;
 }
 
-export function AlertCard({ 
-  alert, 
-  onClick, 
-  isSelected, 
+export function AlertCard({
+  alert,
+  onClick,
+  isSelected,
   compact = false,
   showCheckbox = false,
   isChecked = false,
@@ -50,7 +42,7 @@ export function AlertCard({
 }: AlertCardProps) {
   const { t } = useI18n();
 
-  const config = severityConfig[alert.severity] || severityConfig.medium;
+  const config = getSeverityConfig(alert.severity);
   const source = sourceConfig[alert.source] || sourceConfig.price_anomaly;
   const SourceIcon = source.icon;
 
@@ -88,22 +80,19 @@ export function AlertCard({
       className={cn(
         'cursor-pointer transition-all hover:shadow-md',
         isSelected && 'ring-2 ring-primary',
-        isChecked && 'ring-2 ring-primary/50 bg-primary/5',
+        isChecked && 'bg-primary/5 ring-2 ring-primary/50',
       )}
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           {showCheckbox && (
-            <div 
+            <div
               className="pt-1"
               onClick={(e) => {
                 e.stopPropagation();
               }}
             >
-              <Checkbox
-                checked={isChecked}
-                onCheckedChange={onCheckChange}
-              />
+              <Checkbox checked={isChecked} onCheckedChange={onCheckChange} />
             </div>
           )}
           <div className="flex-1" onClick={onClick}>
@@ -215,7 +204,7 @@ export function AlertDetailPanel({ alert, onAlertUpdate }: AlertDetailPanelProps
     );
   }
 
-  const config = severityConfig[currentAlert.severity] || severityConfig.medium;
+  const config = getSeverityConfig(currentAlert.severity);
   const source = sourceConfig[currentAlert.source] || sourceConfig.price_anomaly;
   const SourceIcon = source.icon;
 

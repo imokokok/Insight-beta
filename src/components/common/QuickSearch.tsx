@@ -13,6 +13,8 @@ import { cn } from '@/shared/utils';
 
 import { defaultNavConfig } from './EnhancedSidebar';
 
+import type { Route } from 'next';
+
 interface QuickSearchProps {
   isOpen: boolean;
   onClose: () => void;
@@ -60,7 +62,7 @@ export function QuickSearch({ isOpen, onClose }: QuickSearchProps) {
 
   const handleSelect = useCallback(
     (item: SearchItem) => {
-      router.push(item.href as any);
+      router.push(item.href as Route);
       onClose();
       setQuery('');
     },

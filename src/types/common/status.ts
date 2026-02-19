@@ -2,6 +2,9 @@
  * Status Types - 统一状态类型定义
  *
  * 集中管理所有状态相关的类型定义，避免重复
+ *
+ * 注意：颜色常量已统一迁移到 @/lib/design-system/tokens/colors.ts
+ * 此文件仅保留类型定义，颜色常量从 colors.ts 重新导出以保持向后兼容
  */
 
 // ============================================================================
@@ -17,16 +20,38 @@ export type EntityStatus = 'active' | 'inactive' | 'pending' | 'archived';
 export type HealthStatus = 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
 
 // ============================================================================
-// 告警严重级别
+// 告警严重级别（统一类型）
 // ============================================================================
 
-export type SeverityLevel = 'info' | 'warning' | 'critical' | 'emergency';
+export type AlertSeverity =
+  | 'low'
+  | 'medium'
+  | 'high'
+  | 'critical'
+  | 'info'
+  | 'warning'
+  | 'emergency';
+
+export type SeverityLevel = AlertSeverity;
 
 // ============================================================================
-// 告警状态
+// 告警状态（统一类型）
 // ============================================================================
 
-export type AlertStatus = 'firing' | 'pending' | 'resolved' | 'silenced';
+export type AlertStatus =
+  | 'active'
+  | 'resolved'
+  | 'investigating'
+  | 'Open'
+  | 'Acknowledged'
+  | 'Resolved'
+  | 'open'
+  | 'acknowledged'
+  | 'firing'
+  | 'pending'
+  | 'silenced';
+
+export type OracleAlertStatus = 'Open' | 'Acknowledged' | 'Resolved';
 
 // ============================================================================
 // 同步状态
@@ -86,218 +111,18 @@ export type StatusType =
   | 'success';
 
 // ============================================================================
-// 状态颜色配置
+// 颜色常量 - 从 colors.ts 重新导出（向后兼容）
 // ============================================================================
 
-export const STATUS_COLORS: {
-  [K in HealthStatus]: {
-    primary: string;
-    bg: string;
-    text: string;
-    border: string;
-    dot: string;
-  };
-} = {
-  healthy: {
-    primary: 'success',
-    bg: 'bg-success/10',
-    text: 'text-success-dark',
-    border: 'border-success/30',
-    dot: 'bg-success',
-  },
-  degraded: {
-    primary: 'warning',
-    bg: 'bg-warning/10',
-    text: 'text-warning-dark',
-    border: 'border-warning/30',
-    dot: 'bg-warning',
-  },
-  unhealthy: {
-    primary: 'error',
-    bg: 'bg-error/10',
-    text: 'text-error-dark',
-    border: 'border-error/30',
-    dot: 'bg-error',
-  },
-  unknown: {
-    primary: 'muted',
-    bg: 'bg-muted/30',
-    text: 'text-muted-foreground',
-    border: 'border-muted',
-    dot: 'bg-muted-foreground',
-  },
-} as const;
-
-// ============================================================================
-// Badge 状态颜色配置（带 label）
-// ============================================================================
-
-export const STATUS_THEME_COLORS: {
-  [K in StatusType]: {
-    label: string;
-    dotColor: string;
-    bgColor: string;
-    textColor: string;
-  };
-} = {
-  active: {
-    label: 'Active',
-    dotColor: 'bg-success',
-    bgColor: 'bg-success/20',
-    textColor: 'text-success-dark',
-  },
-  stale: {
-    label: 'Stale',
-    dotColor: 'bg-warning',
-    bgColor: 'bg-warning/20',
-    textColor: 'text-warning-dark',
-  },
-  error: {
-    label: 'Error',
-    dotColor: 'bg-error',
-    bgColor: 'bg-error/20',
-    textColor: 'text-error-dark',
-  },
-  pending: {
-    label: 'Pending',
-    dotColor: 'bg-primary',
-    bgColor: 'bg-primary/20',
-    textColor: 'text-primary-dark',
-  },
-  settled: {
-    label: 'Settled',
-    dotColor: 'bg-success',
-    bgColor: 'bg-success/20',
-    textColor: 'text-success-dark',
-  },
-  disputed: {
-    label: 'Disputed',
-    dotColor: 'bg-warning',
-    bgColor: 'bg-warning/20',
-    textColor: 'text-warning-dark',
-  },
-  expired: {
-    label: 'Expired',
-    dotColor: 'bg-muted-foreground',
-    bgColor: 'bg-muted/30',
-    textColor: 'text-muted-foreground',
-  },
-  inactive: {
-    label: 'Inactive',
-    dotColor: 'bg-muted-foreground',
-    bgColor: 'bg-muted/30',
-    textColor: 'text-muted-foreground',
-  },
-  resolved: {
-    label: 'Resolved',
-    dotColor: 'bg-success',
-    bgColor: 'bg-success/20',
-    textColor: 'text-success-dark',
-  },
-  unknown: {
-    label: 'Unknown',
-    dotColor: 'bg-muted-foreground',
-    bgColor: 'bg-muted/30',
-    textColor: 'text-muted-foreground',
-  },
-  online: {
-    label: 'Online',
-    dotColor: 'bg-success',
-    bgColor: 'bg-success/20',
-    textColor: 'text-success-dark',
-  },
-  offline: {
-    label: 'Offline',
-    dotColor: 'bg-error',
-    bgColor: 'bg-error/20',
-    textColor: 'text-error-dark',
-  },
-  warning: {
-    label: 'Warning',
-    dotColor: 'bg-warning',
-    bgColor: 'bg-warning/20',
-    textColor: 'text-warning-dark',
-  },
-  success: {
-    label: 'Success',
-    dotColor: 'bg-success',
-    bgColor: 'bg-success/20',
-    textColor: 'text-success-dark',
-  },
-} as const;
-
-// ============================================================================
-// 风险等级颜色配置
-// ============================================================================
-
-export const RISK_COLORS: {
-  [K in RiskLevel]: {
-    primary: string;
-    bg: string;
-    text: string;
-    border: string;
-  };
-} = {
-  low: {
-    primary: 'success',
-    bg: 'bg-success/10',
-    text: 'text-success-dark',
-    border: 'border-success/30',
-  },
-  medium: {
-    primary: 'warning',
-    bg: 'bg-warning/10',
-    text: 'text-warning-dark',
-    border: 'border-warning/30',
-  },
-  high: {
-    primary: 'warning',
-    bg: 'bg-warning/10',
-    text: 'text-warning-dark',
-    border: 'border-warning/30',
-  },
-  critical: {
-    primary: 'error',
-    bg: 'bg-error/10',
-    text: 'text-error-dark',
-    border: 'border-error/30',
-  },
-} as const;
-
-// ============================================================================
-// 严重级别颜色配置
-// ============================================================================
-
-export const SEVERITY_COLORS: {
-  [K in SeverityLevel]: {
-    primary: string;
-    bg: string;
-    text: string;
-    border: string;
-  };
-} = {
-  info: {
-    primary: 'primary',
-    bg: 'bg-primary/10',
-    text: 'text-primary-dark',
-    border: 'border-primary/30',
-  },
-  warning: {
-    primary: 'warning',
-    bg: 'bg-warning/10',
-    text: 'text-warning-dark',
-    border: 'border-warning/30',
-  },
-  critical: {
-    primary: 'error',
-    bg: 'bg-error/10',
-    text: 'text-error-dark',
-    border: 'border-error/30',
-  },
-  emergency: {
-    primary: 'error',
-    bg: 'bg-error/10',
-    text: 'text-error-dark',
-    border: 'border-error/30',
-  },
-} as const;
+export {
+  STATUS_COLORS,
+  STATUS_THEME_COLORS,
+  SEVERITY_COLORS,
+  RISK_COLORS,
+  HEALTH_COLORS,
+  type StatusColor,
+  type StatusThemeColor,
+  type SeverityColor,
+  type RiskColor,
+  type HealthColor,
+} from '@/lib/design-system/tokens/colors';

@@ -19,7 +19,7 @@ import {
   truncateAddress,
   getAssertionStatusColor,
 } from '@/shared/utils';
-import type { Assertion, OracleStatus } from '@/types/oracleTypes';
+import type { Assertion, OracleStatus } from '@/types/unifiedOracleTypes';
 
 import type { Route } from 'next';
 

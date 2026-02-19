@@ -86,11 +86,19 @@ export {
   getSupportedUMAChains,
   getUMAContractAddresses,
   UMA_CONTRACT_ADDRESSES,
-  type UMAAssertion,
-  type UMADispute,
+  type OnChainUMAAssertion,
+  type OnChainUMADispute,
   type DisputeStatus,
   type UMAHealthStatus,
   type UMAProtocolConfig,
+  type UMAAssertion,
+  type UMADispute,
+  type UMAChain,
+  type UMAAssertionStatus,
+  type UMADisputeStatus,
+  type UMAVote,
+  type UMAConfig,
+  type UMAStats,
 } from './umaOracle';
 
 // ============================================================================

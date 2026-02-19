@@ -22,6 +22,11 @@ export const nav = {
   deviation: 'Deviation',
   protocols: 'Protocols',
   oracleProtocols: 'Oracle Protocols',
+  api3: 'API3',
+  band: 'Band Protocol',
+  api3Analysis: 'API3 Analysis',
+  bandAnalysis: 'Band Analysis',
+  umaAnalysis: 'UMA Analysis',
   address: 'Address Lookup',
   favorites: 'Favorites',
   groups: {
@@ -30,6 +35,7 @@ export const nav = {
     analytics: 'Analytics',
     operations: 'Operations',
     protocolsGroup: 'Protocols',
+    protocolAnalysis: 'Protocol Analysis',
   },
   descriptions: {
     dashboard: 'Overview of your system',
@@ -53,8 +59,11 @@ export const nav = {
     address: 'Search address profile',
     favorites: 'View your favorite items',
     oracleProtocols: 'API3 and Band Protocol oracle monitoring',
-    api3: 'API3 first-party oracle with Airnode technology',
-    band: 'Band Protocol cross-chain oracle with Cosmos support',
+    api3: 'First-party oracle with Airnode technology and signed data verification',
+    band: 'Cross-chain oracle with Cosmos ecosystem and data bridge monitoring',
+    api3Analysis: 'First-party oracle with Airnode technology and signed data verification',
+    bandAnalysis: 'Cross-chain oracle with Cosmos ecosystem and data bridge monitoring',
+    umaAnalysis: 'Optimistic oracle for dispute resolution and assertion verification',
   },
   labels: {
     search: 'Search navigation...',

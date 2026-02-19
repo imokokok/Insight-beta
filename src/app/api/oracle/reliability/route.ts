@@ -7,7 +7,7 @@ import {
   getReliabilityTrend,
 } from '@/features/oracle/services/reliabilityScorer';
 import { hasDatabase } from '@/lib/database/db';
-import type { TimePeriod } from '@/lib/database/reliabilityTables';
+import type { TimePeriod } from '@/types/oracle/reliability';
 
 export async function GET(request: NextRequest) {
   try {

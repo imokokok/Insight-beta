@@ -1,7 +1,2 @@
-export function formatPercentage(value: number): string {
-  return `${value.toFixed(2)}%`;
-}
-
-export function formatNumber(value: number): string {
-  return new Intl.NumberFormat().format(value);
-}
+export { formatNumber } from '@/shared/utils';
+export { formatPercentValue as formatPercentage } from '@/shared/utils';

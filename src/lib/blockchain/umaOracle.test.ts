@@ -12,7 +12,7 @@ import {
   getSupportedUMAChains,
   isChainSupportedByUMA,
   getUMAContractAddresses,
-  type UMAAssertion,
+  type OnChainUMAAssertion,
   type UMAHealthStatus,
 } from './umaOracle';
 
@@ -208,8 +208,8 @@ describe('Utility Functions', () => {
 });
 
 describe('UMA Types', () => {
-  it('should have correct UMAAssertion structure', () => {
-    const assertion: UMAAssertion = {
+  it('should have correct OnChainUMAAssertion structure', () => {
+    const assertion: OnChainUMAAssertion = {
       assertionId: '0x123',
       identifier: '0x456',
       timestamp: 1234567890,

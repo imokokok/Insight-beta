@@ -39,3 +39,14 @@ export type {
   DisputeTrend,
   DisputeReport,
 } from '@/types/oracle/dispute';
+
+// 导出 Reliability 相关类型
+export type {
+  ReliabilityScore,
+  ReliabilityScoreRecord,
+  InsertReliabilityScoreParams,
+  ProtocolRanking,
+  ReliabilityApiResponse,
+  TrendDataPoint,
+  TimePeriod,
+} from '@/types/oracle/reliability';
