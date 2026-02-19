@@ -81,6 +81,50 @@ export const monitoringTables: TableDefinition[] = [
       )
     `,
   },
+  {
+    name: 'alert_rules',
+    sql: `
+      CREATE TABLE IF NOT EXISTS alert_rules (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        enabled BOOLEAN NOT NULL DEFAULT true,
+        event TEXT NOT NULL,
+        severity TEXT NOT NULL,
+        protocols TEXT[],
+        chains TEXT[],
+        instances TEXT[],
+        symbols TEXT[],
+        params JSONB,
+        channels TEXT[],
+        recipients TEXT[],
+        cooldown_minutes INTEGER DEFAULT 5,
+        max_notifications_per_hour INTEGER DEFAULT 10,
+        runbook TEXT,
+        owner TEXT,
+        silenced_until TIMESTAMP WITH TIME ZONE,
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+      )
+    `,
+  },
+  {
+    name: 'notification_channels',
+    sql: `
+      CREATE TABLE IF NOT EXISTS notification_channels (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        enabled BOOLEAN NOT NULL DEFAULT true,
+        config JSONB NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        last_used_at TIMESTAMP WITH TIME ZONE,
+        test_status TEXT,
+        test_message TEXT
+      )
+    `,
+  },
 ];
 
 export const monitoringIndexes: IndexDefinition[] = [
@@ -148,6 +192,36 @@ export const monitoringIndexes: IndexDefinition[] = [
     name: 'idx_config_history_instance_created',
     table: 'oracle_config_history',
     sql: 'CREATE INDEX IF NOT EXISTS idx_config_history_instance_created ON oracle_config_history(instance_id, created_at DESC)',
+  },
+  {
+    name: 'idx_alert_rules_enabled',
+    table: 'alert_rules',
+    sql: 'CREATE INDEX IF NOT EXISTS idx_alert_rules_enabled ON alert_rules(enabled)',
+  },
+  {
+    name: 'idx_alert_rules_event',
+    table: 'alert_rules',
+    sql: 'CREATE INDEX IF NOT EXISTS idx_alert_rules_event ON alert_rules(event)',
+  },
+  {
+    name: 'idx_alert_rules_severity',
+    table: 'alert_rules',
+    sql: 'CREATE INDEX IF NOT EXISTS idx_alert_rules_severity ON alert_rules(severity)',
+  },
+  {
+    name: 'idx_alert_rules_owner',
+    table: 'alert_rules',
+    sql: 'CREATE INDEX IF NOT EXISTS idx_alert_rules_owner ON alert_rules(owner)',
+  },
+  {
+    name: 'idx_notification_channels_type',
+    table: 'notification_channels',
+    sql: 'CREATE INDEX IF NOT EXISTS idx_notification_channels_type ON notification_channels(type)',
+  },
+  {
+    name: 'idx_notification_channels_enabled',
+    table: 'notification_channels',
+    sql: 'CREATE INDEX IF NOT EXISTS idx_notification_channels_enabled ON notification_channels(enabled)',
   },
 ];
 

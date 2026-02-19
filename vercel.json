@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/price-collection",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/reliability-calculation",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}
