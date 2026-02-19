@@ -100,3 +100,36 @@ export const DEFAULT_FALLBACK_PRICES = Object.freeze({
 // ============================================================================
 
 export const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'] as const;
+
+// ============================================================================
+// 告警阈值配置
+// ============================================================================
+
+export const ALERT_THRESHOLDS = Object.freeze({
+  /** 价格偏差严重程度阈值（小数形式，如 0.05 = 5%） */
+  severity: {
+    /** 严重级别阈值 - 偏差 >= 5% */
+    critical: 0.05,
+    /** 高级别阈值 - 偏差 >= 3% */
+    high: 0.03,
+    /** 中级别阈值 - 偏差 >= 1% */
+    medium: 0.01,
+  },
+  /** 跨链偏差阈值（百分比形式） */
+  crossChain: {
+    /** 严重级别阈值 */
+    critical: 2.0,
+    /** 警告级别阈值 */
+    warning: 0.5,
+  },
+  /** 数据陈旧阈值（秒） */
+  staleness: {
+    /** 数据过期阈值 - 超过此时间视为过期 */
+    expired: 300,
+    /** 数据警告阈值 */
+    warning: 60,
+  },
+} as const);
+
+export type AlertSeverityThreshold = typeof ALERT_THRESHOLDS.severity;
+export type AlertCrossChainThreshold = typeof ALERT_THRESHOLDS.crossChain;

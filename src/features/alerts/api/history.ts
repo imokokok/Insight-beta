@@ -2,6 +2,8 @@ import { crossChainAnalysisService } from '@/features/oracle/services/crossChain
 import { priceDeviationAnalytics } from '@/features/oracle/services/priceDeviationAnalytics';
 import { logger } from '@/shared/logger';
 
+import { getSeverityFromDeviation } from '../utils/alertScoring';
+
 import type {
   AlertHistoryPoint,
   AlertHeatmapCell,
@@ -41,10 +43,7 @@ async function fetchPriceAnomalies(): Promise<UnifiedAlert[]> {
     const anomalies = report.anomalies || [];
 
     return anomalies.map((anomaly) => {
-      let severity: AlertSeverity = 'low';
-      if (anomaly.maxDeviationPercent >= 0.05) severity = 'critical';
-      else if (anomaly.maxDeviationPercent >= 0.03) severity = 'high';
-      else if (anomaly.maxDeviationPercent >= 0.01) severity = 'medium';
+      const severity = getSeverityFromDeviation(anomaly.maxDeviationPercent);
 
       return {
         id: `anomaly-${anomaly.symbol}-${anomaly.timestamp}`,
@@ -107,10 +106,6 @@ async function fetchCrossChainAlerts(): Promise<UnifiedAlert[]> {
   }
 }
 
-async function fetchSecurityAlerts(): Promise<UnifiedAlert[]> {
-  return [];
-}
-
 function getTimeRangeMs(timeRange: TimeRange): number {
   const ranges: Record<TimeRange, number> = {
     '1h': 60 * 60 * 1000,
@@ -166,7 +161,7 @@ function generateTrendData(
           }
         } else if (groupBy === 'source') {
           const src = alert.source as keyof AlertHistoryPoint;
-          if (src === 'price_anomaly' || src === 'cross_chain' || src === 'security') {
+          if (src === 'price_anomaly' || src === 'cross_chain') {
             interval[src] = ((interval[src] as number) || 0) + 1;
           }
         }
@@ -289,13 +284,12 @@ export interface AlertHistoryResult {
 export async function getAlertHistory(options: AlertHistoryOptions): Promise<AlertHistoryResult> {
   const { timeRange, groupBy, source, severity } = options;
 
-  const [priceAnomalies, crossChainAlerts, securityAlerts] = await Promise.all([
+  const [priceAnomalies, crossChainAlerts] = await Promise.all([
     fetchPriceAnomalies(),
     fetchCrossChainAlerts(),
-    fetchSecurityAlerts(),
   ]);
 
-  let allAlerts: UnifiedAlert[] = [...priceAnomalies, ...crossChainAlerts, ...securityAlerts];
+  let allAlerts: UnifiedAlert[] = [...priceAnomalies, ...crossChainAlerts];
 
   if (source && source !== 'all') {
     allAlerts = allAlerts.filter((a) => a.source === source);

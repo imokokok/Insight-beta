@@ -1,3 +1,5 @@
+import { ALERT_THRESHOLDS } from '@/config/constants';
+
 import type { UnifiedAlert, AlertSeverity, AlertStatus } from '../types';
 
 export type SortMode = 'time' | 'smart' | 'severity';
@@ -7,6 +9,21 @@ export interface AlertScore {
   severityScore: number;
   freshnessScore: number;
   statusScore: number;
+}
+
+export function getSeverityFromDeviation(deviationPercent: number): AlertSeverity {
+  const { severity } = ALERT_THRESHOLDS;
+
+  if (deviationPercent >= severity.critical) {
+    return 'critical';
+  }
+  if (deviationPercent >= severity.high) {
+    return 'high';
+  }
+  if (deviationPercent >= severity.medium) {
+    return 'medium';
+  }
+  return 'low';
 }
 
 const SEVERITY_SCORES: Record<AlertSeverity, number> = {
@@ -28,11 +45,11 @@ export function calculateFreshnessScore(timestamp: string): number {
   const alertTime = new Date(timestamp).getTime();
   const now = Date.now();
   const hoursDiff = (now - alertTime) / (1000 * 60 * 60);
-  
+
   if (hoursDiff <= 1) {
     return 50;
   }
-  
+
   const score = 50 - Math.floor(hoursDiff - 1) * 5;
   return Math.max(0, score);
 }
@@ -41,7 +58,7 @@ export function calculateAlertScore(alert: UnifiedAlert): AlertScore {
   const severityScore = SEVERITY_SCORES[alert.severity] || 25;
   const freshnessScore = calculateFreshnessScore(alert.timestamp);
   const statusScore = STATUS_SCORES[alert.status] || 0;
-  
+
   return {
     total: severityScore + freshnessScore + statusScore,
     severityScore,
@@ -67,15 +84,15 @@ export function sortAlertsBySeverity(alerts: UnifiedAlert[]): UnifiedAlert[] {
     warning: 4,
     info: 5,
   };
-  
+
   return [...alerts].sort((a, b) => {
     const orderA = severityOrder[a.severity] ?? 6;
     const orderB = severityOrder[b.severity] ?? 6;
-    
+
     if (orderA !== orderB) {
       return orderA - orderB;
     }
-    
+
     const timeA = new Date(a.timestamp).getTime();
     const timeB = new Date(b.timestamp).getTime();
     return timeB - timeA;
@@ -86,11 +103,11 @@ export function sortAlertsBySmart(alerts: UnifiedAlert[]): UnifiedAlert[] {
   return [...alerts].sort((a, b) => {
     const scoreA = calculateAlertScore(a);
     const scoreB = calculateAlertScore(b);
-    
+
     if (scoreA.total !== scoreB.total) {
       return scoreB.total - scoreA.total;
     }
-    
+
     const timeA = new Date(a.timestamp).getTime();
     const timeB = new Date(b.timestamp).getTime();
     return timeB - timeA;
@@ -121,7 +138,7 @@ export interface AlertGroup {
 
 export function groupAlertsByRule(alerts: UnifiedAlert[]): AlertGroup[] {
   const groups = new Map<string, UnifiedAlert[]>();
-  
+
   alerts.forEach((alert) => {
     const key = alert.source;
     if (!groups.has(key)) {
@@ -129,13 +146,13 @@ export function groupAlertsByRule(alerts: UnifiedAlert[]): AlertGroup[] {
     }
     groups.get(key)!.push(alert);
   });
-  
+
   const labels: Record<string, string> = {
     price_anomaly: 'Price Anomaly',
     cross_chain: 'Cross-Chain',
     security: 'Security',
   };
-  
+
   return Array.from(groups.entries())
     .map(([key, groupAlerts]) => ({
       key,
@@ -148,7 +165,7 @@ export function groupAlertsByRule(alerts: UnifiedAlert[]): AlertGroup[] {
 
 export function groupAlertsBySymbol(alerts: UnifiedAlert[]): AlertGroup[] {
   const groups = new Map<string, UnifiedAlert[]>();
-  
+
   alerts.forEach((alert) => {
     const key = alert.symbol || 'Unknown';
     if (!groups.has(key)) {
@@ -156,7 +173,7 @@ export function groupAlertsBySymbol(alerts: UnifiedAlert[]): AlertGroup[] {
     }
     groups.get(key)!.push(alert);
   });
-  
+
   return Array.from(groups.entries())
     .map(([key, groupAlerts]) => ({
       key,

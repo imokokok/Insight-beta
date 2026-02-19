@@ -8,6 +8,7 @@ import type {
   UnifiedAlert,
   AlertsSummary,
 } from '@/features/alerts/types';
+import { getSeverityFromDeviation } from '@/features/alerts/utils/alertScoring';
 import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
 import { priceDeviationAnalytics } from '@/features/oracle/services/priceDeviationAnalytics';
 import { logger } from '@/shared/logger';
@@ -42,10 +43,7 @@ async function fetchPriceAnomalies(): Promise<UnifiedAlert[]> {
     const anomalies = report.anomalies || [];
 
     return anomalies.map((anomaly) => {
-      let severity: AlertSeverity = 'low';
-      if (anomaly.maxDeviationPercent >= 0.05) severity = 'critical';
-      else if (anomaly.maxDeviationPercent >= 0.03) severity = 'high';
-      else if (anomaly.maxDeviationPercent >= 0.01) severity = 'medium';
+      const severity = getSeverityFromDeviation(anomaly.maxDeviationPercent);
 
       return {
         id: `anomaly-${anomaly.symbol}-${anomaly.timestamp}`,
@@ -80,7 +78,8 @@ async function fetchCrossChainAlerts(): Promise<UnifiedAlert[]> {
           allAlerts.push({
             id: `crosschain-${alert.id}`,
             source: 'cross_chain' as AlertSource,
-            timestamp: typeof alert.timestamp === 'string' ? alert.timestamp : alert.timestamp.toISOString(),
+            timestamp:
+              typeof alert.timestamp === 'string' ? alert.timestamp : alert.timestamp.toISOString(),
             severity: normalizeSeverity(alert.severity),
             status: normalizeStatus(alert.status),
             title: `${alert.symbol} Cross-Chain Deviation`,
@@ -105,10 +104,6 @@ async function fetchCrossChainAlerts(): Promise<UnifiedAlert[]> {
     logger.warn('Failed to fetch cross-chain alerts', { error });
     return [];
   }
-}
-
-async function fetchSecurityAlerts(): Promise<UnifiedAlert[]> {
-  return [];
 }
 
 function calculateSummary(alerts: UnifiedAlert[]): AlertsSummary {
@@ -149,13 +144,12 @@ export async function GET(request: NextRequest) {
     const severity = searchParams.get('severity');
     const status = searchParams.get('status');
 
-    const [priceAnomalies, crossChainAlerts, securityAlerts] = await Promise.all([
+    const [priceAnomalies, crossChainAlerts] = await Promise.all([
       fetchPriceAnomalies(),
       fetchCrossChainAlerts(),
-      fetchSecurityAlerts(),
     ]);
 
-    let allAlerts: UnifiedAlert[] = [...priceAnomalies, ...crossChainAlerts, ...securityAlerts];
+    let allAlerts: UnifiedAlert[] = [...priceAnomalies, ...crossChainAlerts];
 
     if (source && source !== 'all') {
       allAlerts = allAlerts.filter((a) => a.source === source);
@@ -169,9 +163,7 @@ export async function GET(request: NextRequest) {
       allAlerts = allAlerts.filter((a) => a.status === status);
     }
 
-    allAlerts.sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-    );
+    allAlerts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
     const summary = calculateSummary(allAlerts);
 
