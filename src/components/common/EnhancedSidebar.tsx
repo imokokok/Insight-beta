@@ -37,10 +37,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { useFavoritesContext } from '@/contexts/FavoritesContext';
 import { ConnectWallet } from '@/features/wallet/components/ConnectWallet';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useI18n } from '@/i18n';
+import { useFavoritesContext } from '@/shared/contexts/FavoritesContext';
 import { cn } from '@/shared/utils';
 
 import type { Route } from 'next';

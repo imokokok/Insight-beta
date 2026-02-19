@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const protocols = protocolsParam ? protocolsParam.split(',') : undefined;
 
     // 动态导入 PriceAggregationEngine 以避免构建时执行
-    const { PriceAggregationEngine } = await import('@/services/oracle/priceAggregation');
+    const { PriceAggregationEngine } = await import('@/features/oracle/services/priceAggregation');
     const priceEngine = new PriceAggregationEngine();
 
     // 并行获取所有交易对的聚合数据

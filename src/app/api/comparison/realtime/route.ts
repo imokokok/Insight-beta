@@ -22,7 +22,7 @@ async function handleGet(request: NextRequest) {
     : ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD', 'SOL/USD'];
   const protocols = protocolsParam ? protocolsParam.split(',') : undefined;
 
-  const { PriceAggregationEngine } = await import('@/services/oracle/priceAggregation');
+  const { PriceAggregationEngine } = await import('@/features/oracle/services/priceAggregation');
   const priceEngine = new PriceAggregationEngine();
 
   const comparisons = await priceEngine.aggregateMultipleSymbols(symbols);

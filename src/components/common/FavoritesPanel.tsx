@@ -10,11 +10,8 @@ import { Star, Trash2, CircleDot, FileCode, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useI18n } from '@/i18n';
+import { useFavoritesContext, type FavoriteItem } from '@/shared/contexts/FavoritesContext';
 import { cn } from '@/shared/utils';
-
-import { useFavoritesContext } from '../../contexts/FavoritesContext';
-
-import type { FavoriteItem } from '../../contexts/FavoritesContext';
 
 interface FavoritesPanelProps {
   className?: string;

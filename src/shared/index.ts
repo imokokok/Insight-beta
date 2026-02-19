@@ -5,6 +5,9 @@
 export * from './logger';
 export * from './auth';
 
+// Contexts
+export * from './contexts/FavoritesContext';
+
 // 从 utils 导出，排除 getErrorMessage（已在 errors 中定义）
 export {
   ApiClientError,

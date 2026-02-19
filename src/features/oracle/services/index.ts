@@ -2,7 +2,7 @@
  * Oracle Services - Oracle 相关服务
  */
 
-// priceAggregation 已从 @/services/oracle/priceAggregation 导出
+export * from './priceAggregation';
 export * from './realtime';
 export * from './priceFetcher';
 export * from './unifiedPriceService';

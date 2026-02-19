@@ -8,8 +8,6 @@
  */
 
 import { query } from '@/lib/database/db';
-import { AGGREGATION_CONFIG } from '@/services/oracle/priceAggregation/config';
-import { detectOutliers } from '@/services/oracle/priceAggregation/utils';
 import { logger } from '@/shared/logger';
 import { generateMockData } from '@/shared/utils/mockData';
 import { robustTrendAnalysis } from '@/shared/utils/robustTrendAnalysis';
@@ -19,6 +17,9 @@ import type {
   DeviationTrend,
   DeviationReport,
 } from '@/types/analytics/deviation';
+
+import { AGGREGATION_CONFIG } from './priceAggregation/config';
+import { detectOutliers } from './priceAggregation/utils';
 
 export type { DeviationAnalyticsConfig, PriceDeviationPoint, DeviationTrend, DeviationReport };
 

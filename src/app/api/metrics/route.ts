@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const { priceAggregationEngine } = await import('@/services/oracle/priceAggregation');
+    const { priceAggregationEngine } = await import('@/features/oracle/services/priceAggregation');
 
     const metrics = {
       // 价格聚合指标

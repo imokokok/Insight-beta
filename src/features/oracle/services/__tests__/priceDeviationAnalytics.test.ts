@@ -7,11 +7,11 @@ vi.mock('@/lib/database/db', () => ({
   query: vi.fn(),
 }));
 
-vi.mock('@/services/oracle/priceAggregation/utils', () => ({
+vi.mock('../priceAggregation/utils', () => ({
   detectOutliers: vi.fn((deviations) => deviations.map((_: number, i: number) => i)),
 }));
 
-vi.mock('@/services/oracle/priceAggregation/config', () => ({
+vi.mock('../priceAggregation/config', () => ({
   AGGREGATION_CONFIG: {
     outlierDetection: {
       method: 'threshold',

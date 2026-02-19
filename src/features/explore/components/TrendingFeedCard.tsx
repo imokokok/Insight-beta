@@ -4,8 +4,8 @@ import { motion } from 'framer-motion';
 import { Star, Activity, Database, TrendingUp, TrendingDown } from 'lucide-react';
 
 import { CardEnhanced } from '@/components/ui/card';
-import { useFavoritesContext } from '@/contexts/FavoritesContext';
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { useFavoritesContext } from '@/shared/contexts/FavoritesContext';
 import { cn, formatNumber } from '@/shared/utils';
 
 import type { TrendingFeed } from '../types';
