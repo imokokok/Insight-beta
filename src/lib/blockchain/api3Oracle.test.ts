@@ -247,7 +247,7 @@ describe('API3Client', () => {
         value: 0n,
         timestamp: BigInt(Math.floor(Date.now() / 1000)),
         signature: '0x1234' as `0x${string}`,
-        airnode: '0x1234567890123456789012345678901234567890',
+        airnode: '0x1234567890123456789012345678901234567890' as `0x${string}`,
         templateId: '0x1234' as `0x${string}`,
       };
       expect(client.verifySignedData(signedData)).toBe(false);
@@ -259,7 +259,7 @@ describe('API3Client', () => {
         value: 1000000000000000000n,
         timestamp: oldTimestamp,
         signature: '0x1234' as `0x${string}`,
-        airnode: '0x1234567890123456789012345678901234567890',
+        airnode: '0x1234567890123456789012345678901234567890' as `0x${string}`,
         templateId: '0x1234' as `0x${string}`,
       };
       expect(client.verifySignedData(signedData)).toBe(false);
@@ -271,7 +271,7 @@ describe('API3Client', () => {
         value: 1000000000000000000n,
         timestamp: validTimestamp,
         signature: '0x1234' as `0x${string}`,
-        airnode: '0x1234567890123456789012345678901234567890',
+        airnode: '0x1234567890123456789012345678901234567890' as `0x${string}`,
         templateId: '0x1234' as `0x${string}`,
       };
       expect(client.verifySignedData(signedData)).toBe(true);

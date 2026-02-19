@@ -7,14 +7,14 @@
   - [x] SubTask 1.2: 实现 dAPIs 价格数据获取方法
   - [x] SubTask 1.3: 实现签名数据验证功能
   - [x] SubTask 1.4: 配置 API3 合约地址和链支持
-  - [ ] SubTask 1.5: 编写单元测试
+  - [x] SubTask 1.5: 编写单元测试
 
 - [x] Task 2: 创建 Band Protocol 预言机客户端
   - [x] SubTask 2.1: 创建 Band Protocol 客户端基础类
   - [x] SubTask 2.2: 实现价格数据获取方法
   - [x] SubTask 2.3: 实现数据聚合验证功能
   - [x] SubTask 2.4: 配置 Band Protocol 合约地址和 Cosmos 链支持
-  - [ ] SubTask 2.5: 编写单元测试
+  - [x] SubTask 2.5: 编写单元测试
 
 - [x] Task 3: 扩展协议配置
   - [x] SubTask 3.1: 更新 protocols.ts 添加 API3 和 Band Protocol 配置
