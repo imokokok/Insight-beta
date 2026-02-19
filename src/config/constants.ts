@@ -102,6 +102,94 @@ export const DEFAULT_FALLBACK_PRICES = Object.freeze({
 export const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'] as const;
 
 // ============================================================================
+// 支持的区块链网络配置
+// ============================================================================
+
+export interface ChainInfo {
+  id: string;
+  name: string;
+  symbol: string;
+  chainId: number;
+  category: 'mainnet' | 'layer2' | 'alt';
+  explorer: string;
+}
+
+export const SUPPORTED_CHAINS: ChainInfo[] = [
+  {
+    id: 'ethereum',
+    name: 'Ethereum',
+    symbol: 'ETH',
+    chainId: 1,
+    category: 'mainnet',
+    explorer: 'https://etherscan.io',
+  },
+  {
+    id: 'polygon',
+    name: 'Polygon',
+    symbol: 'MATIC',
+    chainId: 137,
+    category: 'mainnet',
+    explorer: 'https://polygonscan.com',
+  },
+  {
+    id: 'arbitrum',
+    name: 'Arbitrum One',
+    symbol: 'ETH',
+    chainId: 42161,
+    category: 'layer2',
+    explorer: 'https://arbiscan.io',
+  },
+  {
+    id: 'optimism',
+    name: 'Optimism',
+    symbol: 'ETH',
+    chainId: 10,
+    category: 'layer2',
+    explorer: 'https://optimistic.etherscan.io',
+  },
+  {
+    id: 'base',
+    name: 'Base',
+    symbol: 'ETH',
+    chainId: 8453,
+    category: 'layer2',
+    explorer: 'https://basescan.org',
+  },
+  {
+    id: 'bsc',
+    name: 'BNB Smart Chain',
+    symbol: 'BNB',
+    chainId: 56,
+    category: 'mainnet',
+    explorer: 'https://bscscan.com',
+  },
+  {
+    id: 'avalanche',
+    name: 'Avalanche C-Chain',
+    symbol: 'AVAX',
+    chainId: 43114,
+    category: 'mainnet',
+    explorer: 'https://snowtrace.io',
+  },
+];
+
+export const SUPPORTED_CHAIN_IDS = Object.freeze(
+  SUPPORTED_CHAINS.reduce(
+    (acc, chain) => {
+      acc[chain.id] = chain.chainId;
+      return acc;
+    },
+    {} as Record<string, number>,
+  ),
+);
+
+export const LAYER2_CHAINS = Object.freeze(
+  SUPPORTED_CHAINS.filter((chain) => chain.category === 'layer2').map((chain) => chain.id),
+);
+
+export type SupportedChain = (typeof SUPPORTED_CHAINS)[number]['id'];
+
+// ============================================================================
 // 告警阈值配置
 // ============================================================================
 
