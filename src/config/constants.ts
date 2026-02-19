@@ -68,6 +68,8 @@ export const DEFAULT_STALENESS_THRESHOLDS = Object.freeze({
   CHAINLINK: 3600,
   REDSTONE: 60,
   UMA: 600,
+  API3: 300,
+  BAND: 300,
 } as const);
 
 // ============================================================================

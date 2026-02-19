@@ -2,17 +2,15 @@
  * Protocol Types - 预言机协议相关类型定义
  */
 
-export type OracleProtocol =
-  | 'uma'
-  | 'chainlink'
-  | 'pyth'
-  | 'redstone';
+export type OracleProtocol = 'uma' | 'chainlink' | 'pyth' | 'redstone' | 'api3' | 'band';
 
 export const ORACLE_PROTOCOLS: OracleProtocol[] = [
   'chainlink',
   'pyth',
   'redstone',
   'uma',
+  'api3',
+  'band',
 ];
 
 export const PROTOCOL_DISPLAY_NAMES: Record<OracleProtocol, string> = {
@@ -20,6 +18,8 @@ export const PROTOCOL_DISPLAY_NAMES: Record<OracleProtocol, string> = {
   pyth: 'Pyth Network',
   redstone: 'RedStone',
   uma: 'UMA',
+  api3: 'API3',
+  band: 'Band Protocol',
 };
 
 export const PROTOCOL_DESCRIPTIONS: Record<OracleProtocol, string> = {
@@ -27,6 +27,8 @@ export const PROTOCOL_DESCRIPTIONS: Record<OracleProtocol, string> = {
   pyth: 'Low-latency financial data from institutional sources',
   redstone: 'Modular oracle with on-demand data',
   uma: 'Optimistic oracle for custom data verification',
+  api3: 'First-party oracle with Airnode technology and dAPIs',
+  band: 'Cross-chain data oracle with Cosmos ecosystem support',
 };
 
 export type OracleFeature =
@@ -89,6 +91,24 @@ export const PROTOCOL_INFO: Record<OracleProtocol, OracleProtocolInfo> = {
     supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base'],
     features: ['price_feeds', 'dispute_resolution', 'governance'],
     category: 'optimistic',
+  },
+  api3: {
+    id: 'api3',
+    name: 'API3',
+    description: PROTOCOL_DESCRIPTIONS.api3,
+    website: 'https://api3.org',
+    supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base', 'avalanche', 'bsc'],
+    features: ['price_feeds'],
+    category: 'price_feed',
+  },
+  band: {
+    id: 'band',
+    name: 'Band Protocol',
+    description: PROTOCOL_DESCRIPTIONS.band,
+    website: 'https://bandprotocol.com',
+    supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'avalanche', 'bsc', 'fantom'],
+    features: ['price_feeds'],
+    category: 'price_feed',
   },
 };
 

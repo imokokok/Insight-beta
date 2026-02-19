@@ -46,6 +46,8 @@ const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
   pyth: '🐍',
   redstone: '💎',
   uma: '⚖️',
+  api3: '🔮',
+  band: '🎸',
 };
 
 export function ProtocolFilter({

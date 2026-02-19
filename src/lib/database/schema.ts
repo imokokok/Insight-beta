@@ -1,6 +1,8 @@
 import { hasDatabase, query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
 
+import { createAPI3Tables, createAPI3Indexes, insertAPI3InitialData } from './api3Tables';
+import { createBandTables, createBandIndexes, insertBandInitialData } from './bandTables';
 import {
   createCoreTables,
   createCoreIndexes,
@@ -66,6 +68,14 @@ export async function ensureSchema(): Promise<void> {
     await createReliabilityTables(query as QueryFn);
     logger.debug('Reliability tables created');
 
+    // Create API3 tables
+    await createAPI3Tables(query as QueryFn);
+    logger.debug('API3 tables created');
+
+    // Create Band Protocol tables
+    await createBandTables(query as QueryFn);
+    logger.debug('Band Protocol tables created');
+
     // Create all indexes
     await createCoreIndexes(query as QueryFn);
     await createUMAIndexes(query as QueryFn);
@@ -73,6 +83,8 @@ export async function ensureSchema(): Promise<void> {
     await createUtilityIndexes(query as QueryFn);
     await createPriceHistoryIndexes(query as QueryFn);
     await createReliabilityIndexes(query as QueryFn);
+    await createAPI3Indexes(query as QueryFn);
+    await createBandIndexes(query as QueryFn);
     logger.debug('Indexes created');
 
     // Run migrations for schema updates
@@ -82,6 +94,8 @@ export async function ensureSchema(): Promise<void> {
     // Insert initial data
     await insertCoreInitialData(query as QueryFn);
     await insertUMAInitialData(query as QueryFn);
+    await insertAPI3InitialData(query as QueryFn);
+    await insertBandInitialData(query as QueryFn);
     logger.debug('Initial data inserted');
 
     logger.info('Database schema initialization completed successfully');

@@ -123,7 +123,9 @@ export type ProtocolSpecificConfig =
   | UMAProtocolConfig
   | ChainlinkProtocolConfig
   | PythProtocolConfig
-  | RedStoneProtocolConfig;
+  | RedStoneProtocolConfig
+  | BandProtocolConfig
+  | API3ProtocolConfig;
 
 export type UMAProtocolConfig = {
   optimisticOracleV2Address?: string;
@@ -152,6 +154,21 @@ export type RedStoneProtocolConfig = {
   feedIds?: string[];
   apiEndpoint?: string;
   stalenessThreshold?: number;
+};
+
+export type BandProtocolConfig = {
+  stdReferenceAddress?: string;
+  symbols?: string[];
+  stalenessThreshold?: number;
+  bandChainRestUrl?: string;
+  enableCosmosSupport?: boolean;
+};
+
+export type API3ProtocolConfig = {
+  dapisContractAddress?: string;
+  feedIds?: string[];
+  stalenessThreshold?: number;
+  oevEnabled?: boolean;
 };
 
 // ============================================================================

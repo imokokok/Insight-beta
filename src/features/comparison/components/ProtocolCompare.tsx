@@ -34,6 +34,8 @@ const generateMockMetrics = (protocols: OracleProtocol[]): ProtocolMetrics[] => 
     pyth: { latency: 25, accuracy: 99.5, updateFrequency: 98, priceDeviation: 0.03 },
     redstone: { latency: 35, accuracy: 99.3, updateFrequency: 92, priceDeviation: 0.04 },
     uma: { latency: 120, accuracy: 98.5, updateFrequency: 75, priceDeviation: 0.08 },
+    api3: { latency: 30, accuracy: 99.6, updateFrequency: 96, priceDeviation: 0.025 },
+    band: { latency: 50, accuracy: 99.4, updateFrequency: 90, priceDeviation: 0.035 },
   };
 
   return protocols.map((protocol) => ({

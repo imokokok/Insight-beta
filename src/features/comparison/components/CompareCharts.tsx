@@ -49,6 +49,8 @@ const PROTOCOL_COLORS: Record<OracleProtocol, string> = {
   pyth: '#EC255A',
   redstone: '#FF4444',
   uma: '#FF6B35',
+  api3: '#6366F1',
+  band: '#5E6AD2',
 };
 
 const MetricLabels: Record<string, string> = {

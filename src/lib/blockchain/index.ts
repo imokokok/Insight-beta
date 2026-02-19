@@ -52,6 +52,25 @@ export { ChainlinkClient, createChainlinkClient } from './chainlinkDataFeeds';
 // Pyth
 export { PythClient, createPythClient, getAvailablePythSymbols } from './pythOracle';
 
+// API3
+export {
+  API3Client,
+  createAPI3Client,
+  getAvailableAPI3Symbols,
+  API3_CONTRACT_ADDRESSES,
+  API3_FEED_IDS,
+  getSupportedAPI3Chains,
+  isChainSupportedByAPI3,
+  getDataFeedId,
+  getAPI3ContractAddress,
+  symbolToFeedId,
+  feedIdToSymbol,
+  type API3PriceData,
+  type API3SignedData,
+  type API3OEVData,
+  type API3HealthStatus,
+} from './api3Oracle';
+
 // RedStone
 export {
   RedStoneClient,

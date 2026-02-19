@@ -5,7 +5,7 @@ export interface ProtocolHighlight {
   icon: string;
   status: 'active' | 'beta' | 'coming_soon';
   features: string[];
-  category: 'price_feed' | 'optimistic' | 'hybrid';
+  category: 'price_feed' | 'optimistic' | 'hybrid' | 'first_party' | 'cross_chain';
 }
 
 export const PROTOCOLS: ProtocolHighlight[] = [
@@ -44,5 +44,23 @@ export const PROTOCOLS: ProtocolHighlight[] = [
     status: 'active',
     features: ['Optimistic Oracle', 'Assertions', 'Disputes'],
     category: 'optimistic',
+  },
+  {
+    id: 'api3',
+    name: 'API3',
+    description: 'First-party oracle with Airnode technology and signed data feeds',
+    icon: '🔷',
+    status: 'active',
+    features: ['First-party Data', 'Airnode', 'dAPIs', 'OEV Monitoring', 'Signed Data'],
+    category: 'first_party',
+  },
+  {
+    id: 'band',
+    name: 'Band Protocol',
+    description: 'Cross-chain data oracle with Cosmos ecosystem support',
+    icon: '🎸',
+    status: 'active',
+    features: ['Cross-chain', 'Cosmos Support', 'Custom Data Sources', 'IBC'],
+    category: 'cross_chain',
   },
 ];

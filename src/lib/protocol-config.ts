@@ -34,6 +34,8 @@ export const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
   pyth: '🐍',
   redstone: '💎',
   uma: '⚖️',
+  api3: '🔮',
+  band: '🎸',
 };
 
 // Chainlink 配置
@@ -316,12 +318,93 @@ const umaConfig: ProtocolConfig = {
   },
 };
 
+// API3 配置
+const api3Config: ProtocolConfig = {
+  id: 'api3',
+  name: 'API3 Monitor',
+  description: 'First-Party Oracle with Airnode',
+  icon: '🔮',
+  officialUrl: 'https://api3.org',
+  supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base', 'avalanche', 'bsc'],
+  features: {
+    hasNodes: true,
+    hasPublishers: true,
+    hasPriceHistory: true,
+    hasComparison: true,
+    hasAlerts: true,
+    hasAnalytics: true,
+  },
+  mockData: {
+    feeds: [
+      {
+        id: 'eth-usd',
+        name: 'ETH / USD',
+        symbol: 'ETH/USD',
+        value: 3500.0,
+        timestamp: Date.now(),
+        status: 'active',
+      },
+    ],
+    stats: {
+      totalFeeds: 20,
+      activeFeeds: 20,
+      staleFeeds: 0,
+      totalAirnodes: 15,
+      avgUpdateLatency: 30000,
+      networkUptime: 99.9,
+    },
+  },
+};
+
+// Band Protocol 配置
+const bandConfig: ProtocolConfig = {
+  id: 'band',
+  name: 'Band Protocol Monitor',
+  description: 'Cross-Chain Data Oracle with Cosmos Support',
+  icon: '🎸',
+  officialUrl: 'https://bandprotocol.com',
+  supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'avalanche', 'bsc', 'fantom'],
+  features: {
+    hasNodes: true,
+    hasPublishers: true,
+    hasPriceHistory: true,
+    hasComparison: true,
+    hasAlerts: true,
+    hasAnalytics: true,
+  },
+  mockData: {
+    feeds: [
+      {
+        id: 'eth-usd',
+        name: 'ETH / USD',
+        symbol: 'ETH/USD',
+        price: 3250.0,
+        decimals: 9,
+        updatedAt: new Date(Date.now() - 60000).toISOString(),
+        chain: 'ethereum',
+        contractAddress: '0xDA7a001b254CD22e46d3eAB04d937489c93174C3',
+        status: 'active',
+      },
+    ],
+    stats: {
+      totalFeeds: 25,
+      activeFeeds: 25,
+      staleFeeds: 0,
+      totalValidators: 100,
+      avgUpdateLatency: 45000,
+      networkUptime: 99.8,
+    },
+  },
+};
+
 // 所有协议配置
 export const PROTOCOL_CONFIGS: Record<OracleProtocol, ProtocolConfig> = {
   chainlink: chainlinkConfig,
   pyth: pythConfig,
   redstone: redstoneConfig,
   uma: umaConfig,
+  api3: api3Config,
+  band: bandConfig,
 };
 
 // 获取协议配置

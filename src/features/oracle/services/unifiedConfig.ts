@@ -488,6 +488,24 @@ function getDefaultTemplate(
         votingPeriodHours: 72,
       },
     },
+    api3: {
+      maxBlockRange: 5000,
+      confirmationBlocks: 12,
+      syncIntervalMs: 30000,
+      protocolConfig: {
+        stalenessThreshold: 300,
+        oevEnabled: false,
+      },
+    },
+    band: {
+      maxBlockRange: 5000,
+      confirmationBlocks: 12,
+      syncIntervalMs: 45000,
+      protocolConfig: {
+        stalenessThreshold: 300,
+        enableCosmosSupport: false,
+      },
+    },
   };
 
   return defaults[protocol] || {};
