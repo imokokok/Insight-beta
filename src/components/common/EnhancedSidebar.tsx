@@ -28,6 +28,8 @@ import {
   Gavel,
   Star,
   Shield,
+  Server,
+  GitBranch,
 } from 'lucide-react';
 
 import { FavoritesPanel } from '@/components/common/FavoritesPanel';
@@ -133,6 +135,28 @@ export const defaultNavConfig: SidebarConfig = {
           href: '/explore',
           icon: Compass,
           description: 'nav.descriptions.explore',
+        },
+        {
+          id: 'oracleProtocols',
+          label: 'nav.oracleProtocols',
+          icon: Server,
+          description: 'nav.descriptions.oracleProtocols',
+          items: [
+            {
+              id: 'api3',
+              label: 'nav.protocols.api3',
+              href: '/oracle/api3/airnodes',
+              icon: Server,
+              description: 'nav.descriptions.api3',
+            },
+            {
+              id: 'band',
+              label: 'nav.protocols.band',
+              href: '/oracle/band/bridges',
+              icon: GitBranch,
+              description: 'nav.descriptions.band',
+            },
+          ],
         },
       ],
     },

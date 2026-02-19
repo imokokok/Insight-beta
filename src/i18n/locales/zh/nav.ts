@@ -21,6 +21,7 @@ export const nav = {
   trends: '趋势',
   deviation: '偏差',
   protocols: '协议',
+  oracleProtocols: '预言机协议',
   address: '地址查询',
   favorites: '收藏夹',
   groups: {
@@ -51,6 +52,9 @@ export const nav = {
     protocolList: '协议列表',
     address: '搜索地址资料',
     favorites: '查看收藏的项目',
+    oracleProtocols: 'API3 和 Band Protocol 预言机监控',
+    api3: 'API3 第一方预言机技术',
+    band: 'Band Protocol 跨链预言机',
   },
   labels: {
     search: '搜索导航...',

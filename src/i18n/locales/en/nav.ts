@@ -21,6 +21,7 @@ export const nav = {
   trends: 'Trends',
   deviation: 'Deviation',
   protocols: 'Protocols',
+  oracleProtocols: 'Oracle Protocols',
   address: 'Address Lookup',
   favorites: 'Favorites',
   groups: {
@@ -51,6 +52,9 @@ export const nav = {
     protocolList: 'Protocol list',
     address: 'Search address profile',
     favorites: 'View your favorite items',
+    oracleProtocols: 'API3 and Band Protocol oracle monitoring',
+    api3: 'API3 first-party oracle with Airnode technology',
+    band: 'Band Protocol cross-chain oracle with Cosmos support',
   },
   labels: {
     search: 'Search navigation...',
