@@ -36,6 +36,8 @@ export const nav = {
     operations: 'Operations',
     protocolsGroup: 'Protocols',
     protocolAnalysis: 'Protocol Analysis',
+    oracleMonitoring: 'Oracle Monitoring',
+    tools: 'Tools & Settings',
   },
   descriptions: {
     dashboard: 'Overview of your system',

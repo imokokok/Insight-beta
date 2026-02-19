@@ -111,16 +111,16 @@ export const defaultNavConfig: SidebarConfig = {
   defaultCollapsed: false,
   groups: [
     {
-      id: 'main',
-      label: 'nav.groups.main',
+      id: 'oracleMonitoring',
+      label: 'nav.groups.oracleMonitoring',
       collapsible: false,
       items: [
         {
           id: 'analytics',
-          label: 'nav.monitoring',
+          label: 'nav.dashboard',
           href: '/analytics',
           icon: Activity,
-          description: 'nav.descriptions.monitoring',
+          description: 'nav.descriptions.dashboard',
         },
         {
           id: 'crossChain',
@@ -128,6 +128,13 @@ export const defaultNavConfig: SidebarConfig = {
           href: '/cross-chain',
           icon: Globe,
           description: 'nav.descriptions.crossChain',
+        },
+        {
+          id: 'reliability',
+          label: 'nav.reliability',
+          href: '/oracle/reliability',
+          icon: Shield,
+          description: 'nav.descriptions.reliability',
         },
         {
           id: 'explore',
@@ -167,8 +174,8 @@ export const defaultNavConfig: SidebarConfig = {
       ],
     },
     {
-      id: 'operations',
-      label: 'nav.groups.operations',
+      id: 'tools',
+      label: 'nav.groups.tools',
       collapsible: false,
       items: [
         {
@@ -177,13 +184,6 @@ export const defaultNavConfig: SidebarConfig = {
           href: '/alerts',
           icon: AlertTriangle,
           description: 'nav.descriptions.alertsCenter',
-        },
-        {
-          id: 'reliability',
-          label: 'nav.reliability',
-          href: '/oracle/reliability',
-          icon: Shield,
-          description: 'nav.descriptions.reliability',
         },
         {
           id: 'favorites',

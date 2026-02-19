@@ -36,6 +36,8 @@ export const nav = {
     operations: '运营',
     protocolsGroup: '协议',
     protocolAnalysis: '协议分析',
+    oracleMonitoring: '预言机监控',
+    tools: '工具与设置',
   },
   descriptions: {
     dashboard: '系统概览',
