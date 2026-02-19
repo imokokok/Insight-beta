@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp,
@@ -10,6 +12,7 @@ import {
   ChevronRight,
   BarChart3,
   Zap,
+  History,
 } from 'lucide-react';
 
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
@@ -37,6 +40,8 @@ import {
   DeviationHeatmap,
   AnalysisPeriodCard,
 } from '@/features/oracle/analytics/deviation';
+import { HistoricalDeviationChart } from '@/features/oracle/analytics/deviation/components/charts/HistoricalDeviationChart';
+import { HistoricalPriceChart } from '@/features/oracle/analytics/deviation/components/charts/HistoricalPriceChart';
 import { ExportButton } from '@/features/oracle/analytics/deviation/components/export';
 import {
   ProtocolFilter,
@@ -46,7 +51,10 @@ import {
   WelcomeGuide,
   HelpTooltip,
 } from '@/features/oracle/analytics/deviation/components/onboarding';
-import { useDeviationAnalytics } from '@/features/oracle/analytics/deviation/hooks';
+import {
+  useDeviationAnalytics,
+  usePriceHistory,
+} from '@/features/oracle/analytics/deviation/hooks';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
@@ -264,7 +272,7 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
           animate={{ opacity: 1 }}
           className="rounded-lg bg-muted/30 p-1"
         >
-          <TabsList className="grid w-full grid-cols-3 bg-transparent">
+          <TabsList className="grid w-full grid-cols-4 bg-transparent">
             <TabsTrigger value="overview" className="h-11 text-xs sm:h-10 sm:text-sm">
               <Activity className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">{t('analytics.deviation.tabs.overview')}</span>
@@ -289,6 +297,14 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
                   t('analytics.deviation.tabs.anomalies')}
               </span>
               <span className="ml-1">({report?.anomalies.length || 0})</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className="h-11 text-xs sm:h-10 sm:text-sm">
+              <History className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">{t('analytics.deviation.tabs.history')}</span>
+              <span className="sm:hidden">
+                {t('analytics.deviation.tabs.historyShort') ||
+                  t('analytics.deviation.tabs.history')}
+              </span>
             </TabsTrigger>
           </TabsList>
         </motion.div>
@@ -427,9 +443,68 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
                 </div>
               </TabsContent>
             )}
+
+            {activeTab === 'history' && (
+              <TabsContent value="history" className="mt-0 space-y-4 sm:space-y-6">
+                <HistoricalTrendContent />
+              </TabsContent>
+            )}
           </motion.div>
         </AnimatePresence>
       </Tabs>
     </div>
+  );
+}
+
+function HistoricalTrendContent() {
+  const { t } = useI18n();
+  const [selectedSymbol, setSelectedSymbol] = useState('ETH/USD');
+
+  const symbols = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'AVAX/USD', 'MATIC/USD'];
+
+  const { data: chainlinkData, isLoading: loadingChainlink } = usePriceHistory(
+    'chainlink',
+    selectedSymbol,
+    { limit: 500 },
+  );
+  const { data: pythData, isLoading: loadingPyth } = usePriceHistory('pyth', selectedSymbol, {
+    limit: 500,
+  });
+  const { data: redstoneData, isLoading: loadingRedstone } = usePriceHistory(
+    'redstone',
+    selectedSymbol,
+    { limit: 500 },
+  );
+
+  const allData = [...chainlinkData, ...pythData, ...redstoneData];
+  const isLoading = loadingChainlink || loadingPyth || loadingRedstone;
+
+  return (
+    <>
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">{t('analytics.deviation.selectSymbol')}:</span>
+              <div className="flex flex-wrap gap-1">
+                {symbols.map((symbol) => (
+                  <Button
+                    key={symbol}
+                    variant={selectedSymbol === symbol ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedSymbol(symbol)}
+                  >
+                    {symbol}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <HistoricalPriceChart data={allData} isLoading={isLoading} />
+      <HistoricalDeviationChart data={allData} isLoading={isLoading} />
+    </>
   );
 }

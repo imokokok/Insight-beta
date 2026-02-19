@@ -33,6 +33,7 @@ const routeTitleMap: Record<string, string> = {
   '/oracle/protocols': 'nav.protocols',
   '/oracle/address': 'nav.address',
   '/oracle/comparison': 'nav.oracleComparison',
+  '/oracle/reliability': 'nav.reliability',
 };
 
 function getPageTitle(pathname: string | null): string {

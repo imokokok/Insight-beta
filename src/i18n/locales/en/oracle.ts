@@ -4,13 +4,13 @@ export const oracle = {
     asserter: 'Asserter',
     bond: 'Bond',
     disputer: 'Disputer',
-    marketQuestion: 'Market Question'
+    marketQuestion: 'Market Question',
   },
   stats: {
     totalAssertions: 'Total Assertions',
     totalBonded: 'Total Bonded',
     totalDisputes: 'Total Disputes',
-    winRate: 'Win Rate'
+    winRate: 'Win Rate',
   },
   sync: {
     block: 'Block Height',
@@ -18,14 +18,14 @@ export const oracle = {
     lagging: 'Lagging',
     lastUpdate: 'Last Update',
     status: 'Indexer Status',
-    synced: 'Synced'
+    synced: 'Synced',
   },
   healthScore: {
     critical: 'Critical',
     degraded: 'Degraded',
     excellent: 'Excellent',
     good: 'Good',
-    title: 'Oracle Health Score'
+    title: 'Oracle Health Score',
   },
   leaderboard: {
     assertions: 'Assertions',
@@ -35,10 +35,10 @@ export const oracle = {
     topAsserters: 'Top Asserters',
     topAssertersDesc: 'Most active contributors',
     topDisputers: 'Top Disputers',
-    topDisputersDesc: 'Most active verifiers'
+    topDisputersDesc: 'Most active verifiers',
   },
   profile: {
-    title: 'Address Profile'
+    title: 'Address Profile',
   },
   address: {
     title: 'Address Lookup',
@@ -55,9 +55,42 @@ export const oracle = {
     popularDesc: 'Quick access to well-known addresses',
     typeContract: 'Contract',
     typeWallet: 'Wallet',
-    detectingType: 'Detecting type...'
+    detectingType: 'Detecting type...',
   },
   priceService: {
-    refreshedMaterializedView: 'Successfully refreshed materialized view: {{viewName}}'
-  }
+    refreshedMaterializedView: 'Successfully refreshed materialized view: {{viewName}}',
+  },
+  reliability: {
+    pageTitle: 'Oracle Reliability Scores',
+    pageDescription: 'Objective assessment based on historical data',
+    rank: 'Rank',
+    accuracy: 'Accuracy',
+    latency: 'Latency',
+    availability: 'Availability',
+    overallScore: 'Overall Score',
+    avgDeviation: 'Avg Deviation',
+    samples: 'Samples',
+    excellent: 'Excellent',
+    good: 'Good',
+    fair: 'Fair',
+    poor: 'Poor',
+    critical: 'Critical',
+    comparisonTitle: 'Detailed Metrics Comparison',
+    trendTitle: 'Historical Score Trend',
+    trendAnalysis: 'Trend Analysis',
+    trendDescription: 'View score changes over time for each protocol',
+    methodology: 'Scoring Methodology',
+    methodologyDesc: 'Overall score is calculated using weighted average of three dimensions',
+    accuracyDesc: 'Based on price deviation, lower deviation means higher score',
+    latencyDesc: 'Based on response latency, lower latency means higher score',
+    availabilityDesc: 'Based on request success rate, higher rate means higher score',
+    noData: 'No score data available',
+    noTrendData: 'No trend data available',
+    loadError: 'Failed to load score data',
+    '7d': '7 Days',
+    '30d': '30 Days',
+    '90d': '90 Days',
+    score: 'Score',
+    protocol: 'Protocol',
+  },
 };

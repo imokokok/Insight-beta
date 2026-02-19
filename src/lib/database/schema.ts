@@ -8,6 +8,8 @@ import {
   insertCoreInitialData,
 } from './coreTables';
 import { createMonitoringTables, createMonitoringIndexes } from './monitoringTables';
+import { createPriceHistoryTables, createPriceHistoryIndexes } from './priceHistoryTables';
+import { createReliabilityTables, createReliabilityIndexes } from './reliabilityTables';
 import { createUMATables, createUMAIndexes, insertUMAInitialData } from './umaTables';
 import { createUtilityTables, createUtilityIndexes } from './utilityTables';
 
@@ -56,11 +58,21 @@ export async function ensureSchema(): Promise<void> {
     await createUtilityTables(query as QueryFn);
     logger.debug('Utility tables created');
 
+    // Create price history tables
+    await createPriceHistoryTables(query as QueryFn);
+    logger.debug('Price history tables created');
+
+    // Create reliability tables
+    await createReliabilityTables(query as QueryFn);
+    logger.debug('Reliability tables created');
+
     // Create all indexes
     await createCoreIndexes(query as QueryFn);
     await createUMAIndexes(query as QueryFn);
     await createMonitoringIndexes(query as QueryFn);
     await createUtilityIndexes(query as QueryFn);
+    await createPriceHistoryIndexes(query as QueryFn);
+    await createReliabilityIndexes(query as QueryFn);
     logger.debug('Indexes created');
 
     // Run migrations for schema updates

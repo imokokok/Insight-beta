@@ -78,11 +78,14 @@ export const analytics = {
     },
     guide: {
       step1Title: 'Welcome to Arbitration Analytics',
-      step1Desc: 'This is the central hub for oracle dispute data analysis. You can view and analyze all arbitration-related data here.',
+      step1Desc:
+        'This is the central hub for oracle dispute data analysis. You can view and analyze all arbitration-related data here.',
       step2Title: 'Filtering Features',
-      step2Desc: 'Use time range, protocol, and chain filters to quickly locate the data you care about.',
+      step2Desc:
+        'Use time range, protocol, and chain filters to quickly locate the data you care about.',
       step3Title: 'Dispute Details',
-      step3Desc: 'Click on any dispute item to view complete details, including timeline, bond information, and block explorer links.',
+      step3Desc:
+        'Click on any dispute item to view complete details, including timeline, bond information, and block explorer links.',
       step4Title: 'Data Export',
       step4Desc: 'Supports JSON, CSV, and Excel export formats for offline analysis.',
     },
@@ -95,7 +98,7 @@ export const analytics = {
     insights: {
       activeDisputes: 'Active Disputes',
       pendingBonds: 'Pending Bonds',
-      todayDisputes: 'Today\'s New',
+      todayDisputes: "Today's New",
       avgResolution: 'Avg Resolution',
     },
     searchPlaceholder: 'Search by claim or address...',
@@ -121,6 +124,8 @@ export const analytics = {
       overview: 'Overview',
       trends: 'Trends',
       anomalies: 'Anomalies',
+      history: 'Historical Trends',
+      historyShort: 'History',
     },
     trends: {
       title: 'Deviation Trends',
@@ -147,6 +152,12 @@ export const analytics = {
       deviationHeatmap: 'Deviation Heatmap',
       deviationHeatmapDesc: 'Time-series deviation across symbols',
     },
+    historicalPriceTitle: 'Historical Price Trends',
+    historicalPriceDesc: 'Historical price comparison across oracle protocols',
+    historicalDeviationTitle: 'Historical Deviation Distribution',
+    historicalDeviationDesc: 'Historical deviation distribution across oracle protocols',
+    noHistoricalData: 'No historical data available',
+    selectSymbol: 'Select Trading Pair',
     searchPlaceholder: 'Search by symbol or recommendation...',
     failedToLoad: 'Failed to load deviation report',
   },
@@ -195,7 +206,8 @@ export const analytics = {
   },
   settings: {
     title: 'Deviation Thresholds',
-    description: 'Configure the deviation thresholds for anomaly detection. These determine when alerts are triggered.',
+    description:
+      'Configure the deviation thresholds for anomaly detection. These determine when alerts are triggered.',
     thresholdsAscending: 'Thresholds must be in ascending order: low < medium < high < critical',
     saved: 'Settings saved successfully!',
     failed: 'Failed to save settings',

@@ -4,13 +4,13 @@ export const oracle = {
     asserter: '断言者',
     bond: '保证金',
     disputer: '争议者',
-    marketQuestion: '市场问题'
+    marketQuestion: '市场问题',
   },
   stats: {
     totalAssertions: '总断言数',
     totalBonded: '总质押',
     totalDisputes: '总争议数',
-    winRate: '胜率'
+    winRate: '胜率',
   },
   sync: {
     block: '区块高度',
@@ -18,14 +18,14 @@ export const oracle = {
     lagging: '滞后',
     lastUpdate: '最后更新',
     status: '索引器状态',
-    synced: '已同步'
+    synced: '已同步',
   },
   healthScore: {
     critical: '严重',
     degraded: '降级',
     excellent: '优秀',
     good: '良好',
-    title: '预言机健康评分'
+    title: '预言机健康评分',
   },
   leaderboard: {
     assertions: '断言',
@@ -35,10 +35,10 @@ export const oracle = {
     topAsserters: '顶级断言者',
     topAssertersDesc: '最活跃的贡献者',
     topDisputers: '顶级争议者',
-    topDisputersDesc: '最活跃的验证者'
+    topDisputersDesc: '最活跃的验证者',
   },
   profile: {
-    title: '地址资料'
+    title: '地址资料',
   },
   address: {
     title: '地址查询',
@@ -55,9 +55,42 @@ export const oracle = {
     popularDesc: '快速访问知名地址',
     typeContract: '合约',
     typeWallet: '钱包',
-    detectingType: '正在检测类型...'
+    detectingType: '正在检测类型...',
   },
   priceService: {
-    refreshedMaterializedView: '成功刷新物化视图：{{viewName}}'
-  }
+    refreshedMaterializedView: '成功刷新物化视图：{{viewName}}',
+  },
+  reliability: {
+    pageTitle: '预言机可靠性评分',
+    pageDescription: '基于历史数据的客观评估',
+    rank: '排名',
+    accuracy: '准确度',
+    latency: '延迟',
+    availability: '可用性',
+    overallScore: '综合评分',
+    avgDeviation: '平均偏差',
+    samples: '样本数',
+    excellent: '优秀',
+    good: '良好',
+    fair: '一般',
+    poor: '较差',
+    critical: '严重',
+    comparisonTitle: '详细指标对比',
+    trendTitle: '历史评分趋势',
+    trendAnalysis: '趋势分析',
+    trendDescription: '查看各协议评分随时间的变化趋势',
+    methodology: '评分方法',
+    methodologyDesc: '综合评分基于以下三个维度加权计算',
+    accuracyDesc: '基于价格偏差计算，偏差越小分数越高',
+    latencyDesc: '基于响应延迟计算，延迟越低分数越高',
+    availabilityDesc: '基于请求成功率计算，成功率越高分数越高',
+    noData: '暂无评分数据',
+    noTrendData: '暂无趋势数据',
+    loadError: '加载评分数据失败',
+    '7d': '7天',
+    '30d': '30天',
+    '90d': '90天',
+    score: '评分',
+    protocol: '协议',
+  },
 };

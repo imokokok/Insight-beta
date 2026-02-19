@@ -27,6 +27,7 @@ import {
   Compass,
   Gavel,
   Star,
+  Shield,
 } from 'lucide-react';
 
 import { FavoritesPanel } from '@/components/common/FavoritesPanel';
@@ -153,6 +154,13 @@ export const defaultNavConfig: SidebarConfig = {
           href: '/oracle/analytics/disputes',
           icon: Gavel,
           description: 'nav.descriptions.arbitration',
+        },
+        {
+          id: 'reliability',
+          label: 'nav.reliability',
+          href: '/oracle/reliability',
+          icon: Shield,
+          description: 'nav.descriptions.reliability',
         },
         {
           id: 'favorites',
