@@ -30,6 +30,8 @@ import {
   Shield,
   Server,
   GitBranch,
+  Link2,
+  Zap,
 } from 'lucide-react';
 
 import { FavoritesPanel } from '@/components/common/FavoritesPanel';
@@ -150,6 +152,20 @@ export const defaultNavConfig: SidebarConfig = {
       label: 'nav.groups.protocolAnalysis',
       collapsible: false,
       items: [
+        {
+          id: 'chainlink',
+          label: 'nav.chainlinkAnalysis',
+          href: '/oracle/chainlink',
+          icon: Link2,
+          description: 'nav.descriptions.chainlinkAnalysis',
+        },
+        {
+          id: 'pyth',
+          label: 'nav.pythAnalysis',
+          href: '/oracle/pyth',
+          icon: Zap,
+          description: 'nav.descriptions.pythAnalysis',
+        },
         {
           id: 'api3',
           label: 'nav.api3Analysis',
