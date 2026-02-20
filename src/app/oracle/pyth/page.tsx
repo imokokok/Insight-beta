@@ -2,8 +2,20 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-import { RefreshCw, Zap, Users, Activity, Server, Clock, Shield } from 'lucide-react';
+import {
+  RefreshCw,
+  Zap,
+  Users,
+  Activity,
+  Server,
+  Clock,
+  Shield,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+} from 'lucide-react';
 
+import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +23,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { PythExportButton } from '@/features/oracle/pyth/components';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
 import { cn } from '@/shared/utils/ui';
@@ -46,6 +67,196 @@ interface OverviewStats {
   avgLatency: number;
 }
 
+interface PublisherDetail {
+  id: string;
+  name: string;
+  credibilityScore: number;
+  publishFrequency: number;
+  supportedFeeds: number;
+  status: 'active' | 'inactive' | 'degraded';
+}
+
+interface PriceFeedDetail {
+  id: string;
+  name: string;
+  symbol: string;
+  latestPrice: number;
+  priceChange: number;
+  updateFrequency: number;
+  avgLatency: number;
+  status: 'active' | 'stale' | 'error';
+}
+
+const mockPublisherDetails: PublisherDetail[] = [
+  {
+    id: '1',
+    name: 'Binance',
+    credibilityScore: 98,
+    publishFrequency: 2.3,
+    supportedFeeds: 156,
+    status: 'active',
+  },
+  {
+    id: '2',
+    name: 'OKX',
+    credibilityScore: 95,
+    publishFrequency: 2.5,
+    supportedFeeds: 142,
+    status: 'active',
+  },
+  {
+    id: '3',
+    name: 'Coinbase',
+    credibilityScore: 97,
+    publishFrequency: 3.1,
+    supportedFeeds: 98,
+    status: 'active',
+  },
+  {
+    id: '4',
+    name: 'Kraken',
+    credibilityScore: 94,
+    publishFrequency: 2.8,
+    supportedFeeds: 87,
+    status: 'active',
+  },
+  {
+    id: '5',
+    name: 'Bybit',
+    credibilityScore: 92,
+    publishFrequency: 2.4,
+    supportedFeeds: 134,
+    status: 'active',
+  },
+  {
+    id: '6',
+    name: 'Gate.io',
+    credibilityScore: 88,
+    publishFrequency: 3.5,
+    supportedFeeds: 76,
+    status: 'degraded',
+  },
+  {
+    id: '7',
+    name: 'KuCoin',
+    credibilityScore: 85,
+    publishFrequency: 4.2,
+    supportedFeeds: 65,
+    status: 'inactive',
+  },
+  {
+    id: '8',
+    name: 'Bitget',
+    credibilityScore: 90,
+    publishFrequency: 2.9,
+    supportedFeeds: 89,
+    status: 'active',
+  },
+];
+
+const mockPriceFeedDetails: PriceFeedDetail[] = [
+  {
+    id: '1',
+    name: 'Bitcoin',
+    symbol: 'BTC/USD',
+    latestPrice: 67234.56,
+    priceChange: 2.34,
+    updateFrequency: 1.2,
+    avgLatency: 85,
+    status: 'active',
+  },
+  {
+    id: '2',
+    name: 'Ethereum',
+    symbol: 'ETH/USD',
+    latestPrice: 3456.78,
+    priceChange: -1.23,
+    updateFrequency: 1.5,
+    avgLatency: 92,
+    status: 'active',
+  },
+  {
+    id: '3',
+    name: 'Solana',
+    symbol: 'SOL/USD',
+    latestPrice: 178.45,
+    priceChange: 5.67,
+    updateFrequency: 1.8,
+    avgLatency: 78,
+    status: 'active',
+  },
+  {
+    id: '4',
+    name: 'BNB',
+    symbol: 'BNB/USD',
+    latestPrice: 598.23,
+    priceChange: 0.89,
+    updateFrequency: 2.1,
+    avgLatency: 105,
+    status: 'active',
+  },
+  {
+    id: '5',
+    name: 'XRP',
+    symbol: 'XRP/USD',
+    latestPrice: 0.5234,
+    priceChange: -0.45,
+    updateFrequency: 2.3,
+    avgLatency: 112,
+    status: 'active',
+  },
+  {
+    id: '6',
+    name: 'Cardano',
+    symbol: 'ADA/USD',
+    latestPrice: 0.4567,
+    priceChange: 1.23,
+    updateFrequency: 3.2,
+    avgLatency: 156,
+    status: 'stale',
+  },
+  {
+    id: '7',
+    name: 'Avalanche',
+    symbol: 'AVAX/USD',
+    latestPrice: 35.67,
+    priceChange: 3.45,
+    updateFrequency: 1.9,
+    avgLatency: 88,
+    status: 'active',
+  },
+  {
+    id: '8',
+    name: 'Dogecoin',
+    symbol: 'DOGE/USD',
+    latestPrice: 0.1234,
+    priceChange: -2.34,
+    updateFrequency: 4.5,
+    avgLatency: 234,
+    status: 'error',
+  },
+  {
+    id: '9',
+    name: 'Polkadot',
+    symbol: 'DOT/USD',
+    latestPrice: 7.89,
+    priceChange: 0.56,
+    updateFrequency: 2.8,
+    avgLatency: 134,
+    status: 'active',
+  },
+  {
+    id: '10',
+    name: 'Chainlink',
+    symbol: 'LINK/USD',
+    latestPrice: 14.56,
+    priceChange: 1.89,
+    updateFrequency: 2.0,
+    avgLatency: 95,
+    status: 'active',
+  },
+];
+
 export default function PythPage() {
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState('overview');
@@ -58,6 +269,10 @@ export default function PythPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState(30);
+  const [timeUntilRefresh, setTimeUntilRefresh] = useState(0);
 
   const fetchAllData = useCallback(async () => {
     try {
@@ -99,6 +314,26 @@ export default function PythPage() {
     fetchAllData();
   }, [fetchAllData]);
 
+  useEffect(() => {
+    if (!autoRefreshEnabled) {
+      setTimeUntilRefresh(0);
+      return;
+    }
+
+    setTimeUntilRefresh(refreshInterval);
+    const interval = setInterval(() => {
+      setTimeUntilRefresh((prev) => {
+        if (prev <= 1) {
+          fetchAllData();
+          return refreshInterval;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [autoRefreshEnabled, refreshInterval, fetchAllData]);
+
   const breadcrumbItems = [{ label: t('nav.oracle'), href: '/oracle' }, { label: 'Pyth' }];
 
   const formatLatency = (ms: number) => {
@@ -131,6 +366,27 @@ export default function PythPage() {
             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             {t('common.refresh')}
           </Button>
+          <AutoRefreshControl
+            isEnabled={autoRefreshEnabled}
+            onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+            interval={refreshInterval}
+            onIntervalChange={setRefreshInterval}
+            timeUntilRefresh={timeUntilRefresh}
+          />
+          <PythExportButton
+            data={
+              overviewStats || publisherStats || priceFeedStats || hermesStatus
+                ? {
+                    overviewStats,
+                    publisherStats,
+                    priceFeedStats,
+                    hermesStatus,
+                    generatedAt: lastUpdated?.toISOString() || new Date().toISOString(),
+                  }
+                : null
+            }
+            disabled={loading}
+          />
           <RefreshIndicator
             lastUpdated={lastUpdated}
             isRefreshing={loading}
@@ -371,25 +627,82 @@ export default function PythPage() {
         <TabsContent value="publishers" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Publisher 监控</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Publisher 详细列表
+              </CardTitle>
               <CardDescription>Pyth 数据发布者状态与性能监控</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {[...Array(6)].map((_, i) => (
-                    <Card key={i}>
-                      <CardContent className="p-4">
-                        <Skeleton className="h-24 w-full" />
-                      </CardContent>
-                    </Card>
+                <div className="space-y-2">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="h-12 animate-pulse rounded bg-muted" />
                   ))}
                 </div>
               ) : (
-                <div className="py-12 text-center text-muted-foreground">
-                  <Users className="mx-auto h-12 w-12 opacity-50" />
-                  <p className="mt-2">Publisher 详细数据加载中...</p>
-                  <p className="mt-1 text-sm">请稍后刷新页面查看完整数据</p>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Publisher 名称</TableHead>
+                        <TableHead className="text-right">可信度评分</TableHead>
+                        <TableHead className="text-right">发布频率 (s)</TableHead>
+                        <TableHead className="text-right">支持的价格源</TableHead>
+                        <TableHead className="text-center">状态</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {mockPublisherDetails.map((publisher) => (
+                        <TableRow key={publisher.id}>
+                          <TableCell className="font-medium">{publisher.name}</TableCell>
+                          <TableCell className="text-right">
+                            <span
+                              className={cn(
+                                'font-semibold',
+                                publisher.credibilityScore >= 95
+                                  ? 'text-green-500'
+                                  : publisher.credibilityScore >= 90
+                                    ? 'text-blue-500'
+                                    : publisher.credibilityScore >= 85
+                                      ? 'text-yellow-500'
+                                      : 'text-red-500',
+                              )}
+                            >
+                              {publisher.credibilityScore}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {publisher.publishFrequency}s
+                          </TableCell>
+                          <TableCell className="text-right">{publisher.supportedFeeds}</TableCell>
+                          <TableCell className="text-center">
+                            <Badge
+                              variant={
+                                publisher.status === 'active'
+                                  ? 'success'
+                                  : publisher.status === 'degraded'
+                                    ? 'warning'
+                                    : 'destructive'
+                              }
+                              className="flex items-center justify-center gap-1"
+                            >
+                              {publisher.status === 'active' && <CheckCircle className="h-3 w-3" />}
+                              {publisher.status === 'degraded' && (
+                                <AlertTriangle className="h-3 w-3" />
+                              )}
+                              {publisher.status === 'inactive' && <XCircle className="h-3 w-3" />}
+                              {publisher.status === 'active'
+                                ? '活跃'
+                                : publisher.status === 'degraded'
+                                  ? '降级'
+                                  : '离线'}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </CardContent>
@@ -399,33 +712,92 @@ export default function PythPage() {
         <TabsContent value="price-feeds" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>价格推送统计</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                价格推送详细统计
+              </CardTitle>
               <CardDescription>实时价格更新频率与延迟分析</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="space-y-6">
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {[...Array(4)].map((_, i) => (
-                      <Card key={i}>
-                        <CardContent className="p-4">
-                          <Skeleton className="h-4 w-20" />
-                          <Skeleton className="mt-2 h-8 w-16" />
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                  <Card>
-                    <CardContent className="p-6">
-                      <Skeleton className="h-64 w-full" />
-                    </CardContent>
-                  </Card>
+                <div className="space-y-2">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="h-12 animate-pulse rounded bg-muted" />
+                  ))}
                 </div>
               ) : (
-                <div className="py-12 text-center text-muted-foreground">
-                  <Activity className="mx-auto h-12 w-12 opacity-50" />
-                  <p className="mt-2">价格推送详细数据加载中...</p>
-                  <p className="mt-1 text-sm">请稍后刷新页面查看完整数据</p>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>价格源名称</TableHead>
+                        <TableHead className="text-right">最新价格</TableHead>
+                        <TableHead className="text-right">更新频率 (s)</TableHead>
+                        <TableHead className="text-right">平均延迟</TableHead>
+                        <TableHead className="text-center">状态</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {mockPriceFeedDetails.map((feed) => (
+                        <TableRow key={feed.id}>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{feed.name}</span>
+                              <span className="text-xs text-muted-foreground">{feed.symbol}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex flex-col items-end">
+                              <span className="font-semibold">
+                                {feed.latestPrice >= 1
+                                  ? feed.latestPrice.toLocaleString(undefined, {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })
+                                  : feed.latestPrice.toFixed(4)}
+                              </span>
+                              <span
+                                className={cn(
+                                  'text-xs',
+                                  feed.priceChange >= 0 ? 'text-green-500' : 'text-red-500',
+                                )}
+                              >
+                                {feed.priceChange >= 0 ? '+' : ''}
+                                {feed.priceChange.toFixed(2)}%
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">{feed.updateFrequency}s</TableCell>
+                          <TableCell className="text-right">
+                            <span className={cn('font-medium', getLatencyColor(feed.avgLatency))}>
+                              {formatLatency(feed.avgLatency)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge
+                              variant={
+                                feed.status === 'active'
+                                  ? 'success'
+                                  : feed.status === 'stale'
+                                    ? 'warning'
+                                    : 'destructive'
+                              }
+                              className="flex items-center justify-center gap-1"
+                            >
+                              {feed.status === 'active' && <CheckCircle className="h-3 w-3" />}
+                              {feed.status === 'stale' && <AlertTriangle className="h-3 w-3" />}
+                              {feed.status === 'error' && <XCircle className="h-3 w-3" />}
+                              {feed.status === 'active'
+                                ? '活跃'
+                                : feed.status === 'stale'
+                                  ? '延迟'
+                                  : '异常'}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </CardContent>

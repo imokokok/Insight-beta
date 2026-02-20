@@ -1,35 +1,27 @@
 'use client';
 
-import {
-  RefreshCw,
-  Gavel,
-  Clock,
-  DollarSign,
-  TrendingUp,
-  AlertCircle,
-} from 'lucide-react';
+import { RefreshCw, Gavel, Clock, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
 
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
+import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
-import {
-  DisputeContent,
-} from '@/features/oracle/analytics/disputes';
+import { DisputeContent } from '@/features/oracle/analytics/disputes';
 import { ExportButton } from '@/features/oracle/analytics/disputes/components/export';
 import { WelcomeGuide } from '@/features/oracle/analytics/disputes/components/onboarding';
 import { useDisputeAnalytics } from '@/features/oracle/analytics/disputes/hooks';
 import { useI18n } from '@/i18n';
 
-function InsightCard({ 
-  icon, 
-  title, 
-  value, 
+function InsightCard({
+  icon,
+  title,
+  value,
   trend,
-  color 
-}: { 
+  color,
+}: {
   icon: React.ReactNode;
   title: string;
   value: string | number;
@@ -37,19 +29,19 @@ function InsightCard({
   color: string;
 }) {
   return (
-    <Card className="flex-1 min-w-[140px]">
+    <Card className="min-w-[140px] flex-1">
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
-          <div className={`rounded-lg p-2 ${color}`}>
-            {icon}
-          </div>
+          <div className={`rounded-lg p-2 ${color}`}>{icon}</div>
           {trend && (
-            <TrendingUp 
+            <TrendingUp
               className={`h-4 w-4 ${
-                trend === 'up' ? 'text-green-500' : 
-                trend === 'down' ? 'text-red-500 rotate-180' : 
-                'text-gray-400'
-              }`} 
+                trend === 'up'
+                  ? 'text-green-500'
+                  : trend === 'down'
+                    ? 'rotate-180 text-red-500'
+                    : 'text-gray-400'
+              }`}
             />
           )}
         </div>
@@ -65,7 +57,7 @@ function InsightCard({
 export default function DisputeAnalyticsPage() {
   const { t } = useI18n();
   const { toasts, removeToast } = useToast();
-  
+
   const {
     loading,
     report,
@@ -100,42 +92,52 @@ export default function DisputeAnalyticsPage() {
   if (error && !loading && !report) {
     return (
       <div className="container mx-auto p-6">
-        <ErrorBanner error={new Error(error)} onRetry={() => refresh()} title={t('analytics:disputes.failedToLoad')} isRetrying={loading} />
+        <ErrorBanner
+          error={new Error(error)}
+          onRetry={() => refresh()}
+          title={t('analytics:disputes.failedToLoad')}
+          isRetrying={loading}
+        />
       </div>
     );
   }
 
-  const insightCards = report ? [
-    {
-      icon: <AlertCircle className="h-4 w-4 text-amber-600" />,
-      title: t('analytics:disputes.insights.activeDisputes'),
-      value: report.summary.activeDisputes,
-      trend: report.summary.activeDisputes > 3 ? 'up' as const : 'neutral' as const,
-      color: 'bg-amber-100',
-    },
-    {
-      icon: <DollarSign className="h-4 w-4 text-purple-600" />,
-      title: t('analytics:disputes.insights.pendingBonds'),
-      value: `${(report.summary.totalBonded / 1000).toFixed(1)}K`,
-      color: 'bg-purple-100',
-    },
-    {
-      icon: <Gavel className="h-4 w-4 text-blue-600" />,
-      title: t('analytics:disputes.insights.todayDisputes'),
-      value: report.recentActivity.length,
-      trend: 'up' as const,
-      color: 'bg-blue-100',
-    },
-    {
-      icon: <Clock className="h-4 w-4 text-green-600" />,
-      title: t('analytics:disputes.insights.avgResolution'),
-      value: `${report.summary.avgResolutionTimeHours}h`,
-      color: 'bg-green-100',
-    },
-  ] : [];
+  const insightCards = report
+    ? [
+        {
+          icon: <AlertCircle className="h-4 w-4 text-amber-600" />,
+          title: t('analytics:disputes.insights.activeDisputes'),
+          value: report.summary.activeDisputes,
+          trend: report.summary.activeDisputes > 3 ? ('up' as const) : ('neutral' as const),
+          color: 'bg-amber-100',
+        },
+        {
+          icon: <DollarSign className="h-4 w-4 text-purple-600" />,
+          title: t('analytics:disputes.insights.pendingBonds'),
+          value: `${(report.summary.totalBonded / 1000).toFixed(1)}K`,
+          color: 'bg-purple-100',
+        },
+        {
+          icon: <Gavel className="h-4 w-4 text-blue-600" />,
+          title: t('analytics:disputes.insights.todayDisputes'),
+          value: report.recentActivity.length,
+          trend: 'up' as const,
+          color: 'bg-blue-100',
+        },
+        {
+          icon: <Clock className="h-4 w-4 text-green-600" />,
+          title: t('analytics:disputes.insights.avgResolution'),
+          value: `${report.summary.avgResolutionTimeHours}h`,
+          color: 'bg-green-100',
+        },
+      ]
+    : [];
+
+  const breadcrumbItems = [{ label: t('nav.oracle'), href: '/oracle' }, { label: 'UMA 分析' }];
 
   return (
     <div className="container mx-auto space-y-6 p-4 sm:p-6">
+      <Breadcrumb items={breadcrumbItems} />
       <WelcomeGuide />
       <ToastContainer toasts={toasts} onRemove={removeToast} />
 
@@ -145,7 +147,9 @@ export default function DisputeAnalyticsPage() {
             <Gavel className="h-6 w-6 text-purple-600" />
             <span>{t('analytics:disputes.pageName')}</span>
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t('analytics:disputes.pageDescription')}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('analytics:disputes.pageDescription')}
+          </p>
         </div>
         <div className="flex flex-col items-start gap-2 sm:items-end">
           <div className="flex flex-wrap items-center gap-2">

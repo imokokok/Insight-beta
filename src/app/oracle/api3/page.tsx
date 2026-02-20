@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { RefreshCw, Server, TrendingUp, Database, Shield } from 'lucide-react';
 
+import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,12 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { OevOverview, DapiList, SignatureVerifyPanel } from '@/features/oracle/api3';
+import {
+  OevOverview,
+  DapiList,
+  SignatureVerifyPanel,
+  Api3ExportButton,
+} from '@/features/oracle/api3';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
 import { formatTime } from '@/shared/utils/format/date';
@@ -96,6 +102,10 @@ export default function Api3Page() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState(30);
+  const [timeUntilRefresh, setTimeUntilRefresh] = useState(0);
+
   const fetchAllData = useCallback(async () => {
     try {
       setLoading(true);
@@ -130,6 +140,26 @@ export default function Api3Page() {
     fetchAllData();
   }, [fetchAllData]);
 
+  useEffect(() => {
+    if (!autoRefreshEnabled) {
+      setTimeUntilRefresh(0);
+      return;
+    }
+
+    setTimeUntilRefresh(refreshInterval);
+    const interval = setInterval(() => {
+      setTimeUntilRefresh((prev) => {
+        if (prev <= 1) {
+          fetchAllData();
+          return refreshInterval;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [autoRefreshEnabled, refreshInterval, fetchAllData]);
+
   const breadcrumbItems = [{ label: t('nav.oracle'), href: '/oracle' }, { label: 'API3' }];
 
   const formatCurrency = (value: number) => {
@@ -163,6 +193,27 @@ export default function Api3Page() {
             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             {t('common.refresh')}
           </Button>
+          <AutoRefreshControl
+            isEnabled={autoRefreshEnabled}
+            onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+            interval={refreshInterval}
+            onIntervalChange={setRefreshInterval}
+            timeUntilRefresh={timeUntilRefresh}
+          />
+          <Api3ExportButton
+            data={
+              overviewStats || airnodesData || oevData || _dapisData
+                ? {
+                    overviewStats,
+                    airnodesData,
+                    oevData,
+                    dapisData: _dapisData,
+                    generatedAt: lastUpdated?.toISOString() || new Date().toISOString(),
+                  }
+                : null
+            }
+            disabled={loading}
+          />
           <RefreshIndicator
             lastUpdated={lastUpdated}
             isRefreshing={loading}

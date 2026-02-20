@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { RefreshCw, Database, Server, Clock, Activity, Shield, Link2, Users } from 'lucide-react';
 
+import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,10 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ChainlinkExportButton } from '@/features/oracle/chainlink/components';
+import { FeedAggregation } from '@/features/oracle/chainlink/components/FeedAggregation';
+import { OcrRoundMonitor } from '@/features/oracle/chainlink/components/OcrRoundMonitor';
+import { OperatorList } from '@/features/oracle/chainlink/components/OperatorList';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
 
@@ -47,6 +52,10 @@ export default function ChainlinkPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState(30);
+  const [timeUntilRefresh, setTimeUntilRefresh] = useState(0);
+
   const fetchAllData = useCallback(async () => {
     try {
       setLoading(true);
@@ -77,6 +86,26 @@ export default function ChainlinkPage() {
     fetchAllData();
   }, [fetchAllData]);
 
+  useEffect(() => {
+    if (!autoRefreshEnabled) {
+      setTimeUntilRefresh(0);
+      return;
+    }
+
+    setTimeUntilRefresh(refreshInterval);
+    const interval = setInterval(() => {
+      setTimeUntilRefresh((prev) => {
+        if (prev <= 1) {
+          fetchAllData();
+          return refreshInterval;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [autoRefreshEnabled, refreshInterval, fetchAllData]);
+
   const breadcrumbItems = [{ label: t('nav.oracle'), href: '/oracle' }, { label: 'Chainlink' }];
 
   return (
@@ -98,6 +127,25 @@ export default function ChainlinkPage() {
             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             {t('common.refresh')}
           </Button>
+          <AutoRefreshControl
+            isEnabled={autoRefreshEnabled}
+            onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+            interval={refreshInterval}
+            onIntervalChange={setRefreshInterval}
+            timeUntilRefresh={timeUntilRefresh}
+          />
+          <ChainlinkExportButton
+            data={
+              overviewStats || overviewData
+                ? {
+                    overviewStats,
+                    overviewData,
+                    generatedAt: lastUpdated?.toISOString() || new Date().toISOString(),
+                  }
+                : null
+            }
+            disabled={loading}
+          />
           <RefreshIndicator
             lastUpdated={lastUpdated}
             isRefreshing={loading}
@@ -255,51 +303,15 @@ export default function ChainlinkPage() {
         </TabsContent>
 
         <TabsContent value="ocr" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>OCR 轮次监控</CardTitle>
-              <CardDescription>Offchain Reporting 协议轮次状态</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <Activity className="h-12 w-12 opacity-50" />
-                <p className="mt-2">OCR 轮次数据加载中...</p>
-                <p className="mt-1 text-sm">此功能正在开发中</p>
-              </div>
-            </CardContent>
-          </Card>
+          <OcrRoundMonitor />
         </TabsContent>
 
         <TabsContent value="nodes" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>节点运营商列表</CardTitle>
-              <CardDescription>Chainlink 网络节点运营商状态</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <Server className="h-12 w-12 opacity-50" />
-                <p className="mt-2">节点运营商数据加载中...</p>
-                <p className="mt-1 text-sm">此功能正在开发中</p>
-              </div>
-            </CardContent>
-          </Card>
+          <OperatorList />
         </TabsContent>
 
         <TabsContent value="feeds" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>喂价聚合详情</CardTitle>
-              <CardDescription>数据喂价源与聚合状态</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <Database className="h-12 w-12 opacity-50" />
-                <p className="mt-2">喂价聚合数据加载中...</p>
-                <p className="mt-1 text-sm">此功能正在开发中</p>
-              </div>
-            </CardContent>
-          </Card>
+          <FeedAggregation />
         </TabsContent>
       </Tabs>
     </div>
