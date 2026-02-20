@@ -39,6 +39,14 @@ export {
   type KPIOverviewBarProps,
 } from './KPIOverviewBar';
 
+export {
+  TrendIndicator,
+  TrendIndicatorCompact,
+  TrendIndicatorBadge,
+  type Trend,
+  type TrendIndicatorProps,
+} from './TrendIndicator';
+
 // ==================== 页面布局 ====================
 export {
   PageHeader,
@@ -124,5 +132,16 @@ export {
   type TimeRangePreset,
 } from './TimeRangeSelector';
 
+// ==================== 协议健康状态 ====================
+export { ProtocolHealthBadge } from './ProtocolHealthBadge';
+export type { ProtocolHealthBadgeProps, ProtocolHealthStatus } from './ProtocolHealthBadge';
+
 // ==================== 其他 ====================
 export { HoverCard } from './PageTransitions';
+
+// ==================== 表格组件 ====================
+export {
+  SortableTableHeader,
+  type SortState,
+  type SortableTableHeaderProps,
+} from './SortableTableHeader';

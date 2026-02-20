@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-import { RefreshCw, Server, TrendingUp, Database, Shield } from 'lucide-react';
+import { RefreshCw, Server, TrendingUp, Database, Shield, LayoutDashboard } from 'lucide-react';
 
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
+import { ProtocolHealthBadge } from '@/components/common/ProtocolHealthBadge';
+import { TrendIndicator } from '@/components/common/TrendIndicator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -183,6 +185,24 @@ export default function Api3Page() {
           <h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl">
             <Server className="h-6 w-6 text-blue-600" />
             <span>API3</span>
+            {overviewStats && (
+              <ProtocolHealthBadge
+                status={
+                  overviewStats.totalAirnodes > 0 &&
+                  overviewStats.onlineAirnodes / overviewStats.totalAirnodes >= 0.9
+                    ? 'healthy'
+                    : overviewStats.totalAirnodes > 0 &&
+                        overviewStats.onlineAirnodes / overviewStats.totalAirnodes >= 0.7
+                      ? 'warning'
+                      : 'critical'
+                }
+                label={
+                  overviewStats.totalAirnodes > 0
+                    ? `${((overviewStats.onlineAirnodes / overviewStats.totalAirnodes) * 100).toFixed(0)}% 在线`
+                    : undefined
+                }
+              />
+            )}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             第一方预言机 - Airnode 技术与签名数据验证
@@ -250,7 +270,10 @@ export default function Api3Page() {
                 <span className="text-sm font-medium text-muted-foreground">总 Airnodes</span>
                 <Server className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="mt-2 text-2xl font-bold">{overviewStats.totalAirnodes}</div>
+              <div className="mt-2 flex items-center gap-2">
+                <div className="text-2xl font-bold">{overviewStats.totalAirnodes}</div>
+                <TrendIndicator trend="up" value={2.5} />
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -259,8 +282,11 @@ export default function Api3Page() {
                 <span className="text-sm font-medium text-muted-foreground">在线 Airnodes</span>
                 <div className="h-2 w-2 rounded-full bg-green-500" />
               </div>
-              <div className="mt-2 text-2xl font-bold text-green-600">
-                {overviewStats.onlineAirnodes}
+              <div className="mt-2 flex items-center gap-2">
+                <div className="text-2xl font-bold text-green-600">
+                  {overviewStats.onlineAirnodes}
+                </div>
+                <TrendIndicator trend="up" value={3.1} />
               </div>
             </CardContent>
           </Card>
@@ -270,8 +296,11 @@ export default function Api3Page() {
                 <span className="text-sm font-medium text-muted-foreground">OEV 总量</span>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="mt-2 text-2xl font-bold text-purple-600">
-                {formatCurrency(overviewStats.totalOev)}
+              <div className="mt-2 flex items-center gap-2">
+                <div className="text-2xl font-bold text-purple-600">
+                  {formatCurrency(overviewStats.totalOev)}
+                </div>
+                <TrendIndicator trend="up" value={15.8} />
               </div>
             </CardContent>
           </Card>
@@ -281,7 +310,10 @@ export default function Api3Page() {
                 <span className="text-sm font-medium text-muted-foreground">dAPIs 数量</span>
                 <Database className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="mt-2 text-2xl font-bold">{overviewStats.totalDapis}</div>
+              <div className="mt-2 flex items-center gap-2">
+                <div className="text-2xl font-bold">{overviewStats.totalDapis}</div>
+                <TrendIndicator trend="up" value={1.2} />
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -289,11 +321,26 @@ export default function Api3Page() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">概览</TabsTrigger>
-          <TabsTrigger value="airnodes">Airnodes</TabsTrigger>
-          <TabsTrigger value="oev">OEV</TabsTrigger>
-          <TabsTrigger value="dapis">dAPIs</TabsTrigger>
-          <TabsTrigger value="verify">签名验证</TabsTrigger>
+          <TabsTrigger value="overview" className="flex items-center gap-1.5">
+            <LayoutDashboard className="h-4 w-4" />
+            概览
+          </TabsTrigger>
+          <TabsTrigger value="airnodes" className="flex items-center gap-1.5">
+            <Server className="h-4 w-4" />
+            Airnodes
+          </TabsTrigger>
+          <TabsTrigger value="oev" className="flex items-center gap-1.5">
+            <TrendingUp className="h-4 w-4" />
+            OEV
+          </TabsTrigger>
+          <TabsTrigger value="dapis" className="flex items-center gap-1.5">
+            <Database className="h-4 w-4" />
+            dAPIs
+          </TabsTrigger>
+          <TabsTrigger value="verify" className="flex items-center gap-1.5">
+            <Shield className="h-4 w-4" />
+            签名验证
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 space-y-6">

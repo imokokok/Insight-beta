@@ -2,10 +2,20 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-import { RefreshCw, GitBranch, Activity, Database, Shield, Globe } from 'lucide-react';
+import {
+  RefreshCw,
+  GitBranch,
+  Activity,
+  Database,
+  Shield,
+  Globe,
+  LayoutDashboard,
+} from 'lucide-react';
 
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
+import { ProtocolHealthBadge } from '@/components/common/ProtocolHealthBadge';
+import { TrendIndicator } from '@/components/common/TrendIndicator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -145,6 +155,14 @@ export default function BandProtocolPage() {
     });
   };
 
+  const getProtocolHealth = (): 'healthy' | 'warning' | 'critical' => {
+    if (!bridgesData || bridgesData.summary.total === 0) return 'critical';
+    const activeRatio = bridgesData.summary.active / bridgesData.summary.total;
+    if (activeRatio >= 0.8) return 'healthy';
+    if (activeRatio >= 0.5) return 'warning';
+    return 'critical';
+  };
+
   return (
     <div className="container mx-auto space-y-6 p-4 sm:p-6">
       <Breadcrumb items={breadcrumbItems} />
@@ -154,6 +172,7 @@ export default function BandProtocolPage() {
           <h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl">
             <Globe className="h-6 w-6 text-orange-600" />
             <span>Band Protocol</span>
+            <ProtocolHealthBadge status={getProtocolHealth()} />
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">跨链预言机 - Cosmos 生态与数据桥监控</p>
         </div>
@@ -219,7 +238,10 @@ export default function BandProtocolPage() {
                   <span className="text-sm font-medium text-muted-foreground">总数据桥数</span>
                   <GitBranch className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <div className="mt-2 text-2xl font-bold">{overviewStats.totalBridges}</div>
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="text-2xl font-bold">{overviewStats.totalBridges}</div>
+                  <TrendIndicator trend="up" value={1.8} />
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -228,8 +250,11 @@ export default function BandProtocolPage() {
                   <span className="text-sm font-medium text-muted-foreground">活跃数据桥数</span>
                   <div className="h-2 w-2 rounded-full bg-green-500" />
                 </div>
-                <div className="mt-2 text-2xl font-bold text-green-600">
-                  {overviewStats.activeBridges}
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="text-2xl font-bold text-green-600">
+                    {overviewStats.activeBridges}
+                  </div>
+                  <TrendIndicator trend="up" value={2.3} />
                 </div>
               </CardContent>
             </Card>
@@ -239,8 +264,11 @@ export default function BandProtocolPage() {
                   <span className="text-sm font-medium text-muted-foreground">总传输量</span>
                   <Activity className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <div className="mt-2 text-2xl font-bold">
-                  {overviewStats.totalTransfers.toLocaleString()}
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="text-2xl font-bold">
+                    {overviewStats.totalTransfers.toLocaleString()}
+                  </div>
+                  <TrendIndicator trend="up" value={12.5} />
                 </div>
               </CardContent>
             </Card>
@@ -250,18 +278,36 @@ export default function BandProtocolPage() {
                   <span className="text-sm font-medium text-muted-foreground">数据源数量</span>
                   <Database className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <div className="mt-2 text-2xl font-bold">{overviewStats.totalSources}</div>
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="text-2xl font-bold">{overviewStats.totalSources}</div>
+                  <TrendIndicator trend="neutral" />
+                </div>
               </CardContent>
             </Card>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-4">
-              <TabsTrigger value="overview">概览</TabsTrigger>
-              <TabsTrigger value="bridges">数据桥</TabsTrigger>
-              <TabsTrigger value="sources">数据源</TabsTrigger>
-              <TabsTrigger value="transfers">传输历史</TabsTrigger>
-              <TabsTrigger value="cosmos">Cosmos</TabsTrigger>
+              <TabsTrigger value="overview">
+                <LayoutDashboard className="mr-1.5 h-4 w-4" />
+                概览
+              </TabsTrigger>
+              <TabsTrigger value="bridges">
+                <GitBranch className="mr-1.5 h-4 w-4" />
+                数据桥
+              </TabsTrigger>
+              <TabsTrigger value="sources">
+                <Database className="mr-1.5 h-4 w-4" />
+                数据源
+              </TabsTrigger>
+              <TabsTrigger value="transfers">
+                <Activity className="mr-1.5 h-4 w-4" />
+                传输历史
+              </TabsTrigger>
+              <TabsTrigger value="cosmos">
+                <Globe className="mr-1.5 h-4 w-4" />
+                Cosmos
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview">

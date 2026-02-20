@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import {
   RefreshCw,
@@ -13,10 +13,15 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
+  LayoutDashboard,
 } from 'lucide-react';
 
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
+import { ProtocolHealthBadge } from '@/components/common/ProtocolHealthBadge';
+import type { SortState } from '@/components/common/SortableTableHeader';
+import { SortableTableHeader } from '@/components/common/SortableTableHeader';
+import { TrendIndicator } from '@/components/common/TrendIndicator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -274,6 +279,111 @@ export default function PythPage() {
   const [refreshInterval, setRefreshInterval] = useState(30);
   const [timeUntilRefresh, setTimeUntilRefresh] = useState(0);
 
+  const [publisherSort, setPublisherSort] = useState<SortState | null>(null);
+  const [priceFeedSort, setPriceFeedSort] = useState<SortState | null>(null);
+
+  const handlePublisherSort = useCallback((key: string) => {
+    setPublisherSort((prev) => {
+      if (prev?.key === key) {
+        return prev.direction === 'asc' ? { key, direction: 'desc' } : null;
+      }
+      return { key, direction: 'asc' };
+    });
+  }, []);
+
+  const handlePriceFeedSort = useCallback((key: string) => {
+    setPriceFeedSort((prev) => {
+      if (prev?.key === key) {
+        return prev.direction === 'asc' ? { key, direction: 'desc' } : null;
+      }
+      return { key, direction: 'asc' };
+    });
+  }, []);
+
+  const sortedPublisherDetails = useMemo(() => {
+    if (!publisherSort) return mockPublisherDetails;
+    const { key, direction } = publisherSort;
+    const sorted = [...mockPublisherDetails].sort((a, b) => {
+      let aVal: number | string = 0;
+      let bVal: number | string = 0;
+      switch (key) {
+        case 'name':
+          aVal = a.name;
+          bVal = b.name;
+          break;
+        case 'credibilityScore':
+          aVal = a.credibilityScore;
+          bVal = b.credibilityScore;
+          break;
+        case 'publishFrequency':
+          aVal = a.publishFrequency;
+          bVal = b.publishFrequency;
+          break;
+        case 'supportedFeeds':
+          aVal = a.supportedFeeds;
+          bVal = b.supportedFeeds;
+          break;
+        default:
+          return 0;
+      }
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      }
+      return direction === 'asc'
+        ? (aVal as number) - (bVal as number)
+        : (bVal as number) - (aVal as number);
+    });
+    return sorted;
+  }, [publisherSort]);
+
+  const sortedPriceFeedDetails = useMemo(() => {
+    if (!priceFeedSort) return mockPriceFeedDetails;
+    const { key, direction } = priceFeedSort;
+    const sorted = [...mockPriceFeedDetails].sort((a, b) => {
+      let aVal: number | string = 0;
+      let bVal: number | string = 0;
+      switch (key) {
+        case 'name':
+          aVal = a.name;
+          bVal = b.name;
+          break;
+        case 'latestPrice':
+          aVal = a.latestPrice;
+          bVal = b.latestPrice;
+          break;
+        case 'updateFrequency':
+          aVal = a.updateFrequency;
+          bVal = b.updateFrequency;
+          break;
+        case 'avgLatency':
+          aVal = a.avgLatency;
+          bVal = b.avgLatency;
+          break;
+        default:
+          return 0;
+      }
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      }
+      return direction === 'asc'
+        ? (aVal as number) - (bVal as number)
+        : (bVal as number) - (aVal as number);
+    });
+    return sorted;
+  }, [priceFeedSort]);
+
+  const protocolHealthStatus = useMemo(() => {
+    if (hermesStatus?.status === 'down') return 'critical';
+    if (hermesStatus?.status === 'degraded') return 'warning';
+    if (overviewStats && overviewStats.totalPublishers > 0) {
+      const activeRatio = overviewStats.activePublishers / overviewStats.totalPublishers;
+      if (activeRatio >= 0.8) return 'healthy';
+      if (activeRatio >= 0.5) return 'warning';
+      return 'critical';
+    }
+    return 'healthy';
+  }, [hermesStatus, overviewStats]);
+
   const fetchAllData = useCallback(async () => {
     try {
       setLoading(true);
@@ -356,6 +466,7 @@ export default function PythPage() {
           <h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl">
             <Zap className="h-6 w-6 text-yellow-500" />
             <span>Pyth Network</span>
+            <ProtocolHealthBadge status={protocolHealthStatus} />
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             高频预言机 - 实时价格推送与 Publisher 监控
@@ -423,7 +534,10 @@ export default function PythPage() {
                 <span className="text-sm font-medium text-muted-foreground">总 Publisher 数</span>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="mt-2 text-2xl font-bold">{overviewStats.totalPublishers}</div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-2xl font-bold">{overviewStats.totalPublishers}</span>
+                <TrendIndicator trend="up" value={2.1} />
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -432,8 +546,11 @@ export default function PythPage() {
                 <span className="text-sm font-medium text-muted-foreground">活跃 Publisher</span>
                 <div className="h-2 w-2 rounded-full bg-green-500" />
               </div>
-              <div className="mt-2 text-2xl font-bold text-green-600">
-                {overviewStats.activePublishers}
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-2xl font-bold text-green-600">
+                  {overviewStats.activePublishers}
+                </span>
+                <TrendIndicator trend="up" value={1.5} />
               </div>
             </CardContent>
           </Card>
@@ -443,8 +560,11 @@ export default function PythPage() {
                 <span className="text-sm font-medium text-muted-foreground">活跃价格源</span>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="mt-2 text-2xl font-bold text-yellow-600">
-                {overviewStats.activePriceFeeds}
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-2xl font-bold text-yellow-600">
+                  {overviewStats.activePriceFeeds}
+                </span>
+                <TrendIndicator trend="up" value={4.3} />
               </div>
             </CardContent>
           </Card>
@@ -454,10 +574,13 @@ export default function PythPage() {
                 <span className="text-sm font-medium text-muted-foreground">平均延迟</span>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div
-                className={cn('mt-2 text-2xl font-bold', getLatencyColor(overviewStats.avgLatency))}
-              >
-                {formatLatency(overviewStats.avgLatency)}
+              <div className="mt-2 flex items-center gap-2">
+                <span
+                  className={cn('text-2xl font-bold', getLatencyColor(overviewStats.avgLatency))}
+                >
+                  {formatLatency(overviewStats.avgLatency)}
+                </span>
+                <TrendIndicator trend="down" value={12.3} />
               </div>
             </CardContent>
           </Card>
@@ -466,10 +589,22 @@ export default function PythPage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">概览</TabsTrigger>
-          <TabsTrigger value="publishers">Publisher</TabsTrigger>
-          <TabsTrigger value="price-feeds">价格推送</TabsTrigger>
-          <TabsTrigger value="hermes">服务状态</TabsTrigger>
+          <TabsTrigger value="overview" className="flex items-center gap-1.5">
+            <LayoutDashboard className="h-4 w-4" />
+            <span>概览</span>
+          </TabsTrigger>
+          <TabsTrigger value="publishers" className="flex items-center gap-1.5">
+            <Users className="h-4 w-4" />
+            <span>Publisher</span>
+          </TabsTrigger>
+          <TabsTrigger value="price-feeds" className="flex items-center gap-1.5">
+            <Activity className="h-4 w-4" />
+            <span>价格推送</span>
+          </TabsTrigger>
+          <TabsTrigger value="hermes" className="flex items-center gap-1.5">
+            <Server className="h-4 w-4" />
+            <span>服务状态</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 space-y-6">
@@ -645,15 +780,42 @@ export default function PythPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Publisher 名称</TableHead>
-                        <TableHead className="text-right">可信度评分</TableHead>
-                        <TableHead className="text-right">发布频率 (s)</TableHead>
-                        <TableHead className="text-right">支持的价格源</TableHead>
+                        <SortableTableHeader
+                          sortKey="name"
+                          currentSort={publisherSort}
+                          onSort={handlePublisherSort}
+                        >
+                          Publisher 名称
+                        </SortableTableHeader>
+                        <SortableTableHeader
+                          sortKey="credibilityScore"
+                          currentSort={publisherSort}
+                          onSort={handlePublisherSort}
+                          className="text-right"
+                        >
+                          可信度评分
+                        </SortableTableHeader>
+                        <SortableTableHeader
+                          sortKey="publishFrequency"
+                          currentSort={publisherSort}
+                          onSort={handlePublisherSort}
+                          className="text-right"
+                        >
+                          发布频率 (s)
+                        </SortableTableHeader>
+                        <SortableTableHeader
+                          sortKey="supportedFeeds"
+                          currentSort={publisherSort}
+                          onSort={handlePublisherSort}
+                          className="text-right"
+                        >
+                          支持的价格源
+                        </SortableTableHeader>
                         <TableHead className="text-center">状态</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {mockPublisherDetails.map((publisher) => (
+                      {sortedPublisherDetails.map((publisher) => (
                         <TableRow key={publisher.id}>
                           <TableCell className="font-medium">{publisher.name}</TableCell>
                           <TableCell className="text-right">
@@ -730,15 +892,42 @@ export default function PythPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>价格源名称</TableHead>
-                        <TableHead className="text-right">最新价格</TableHead>
-                        <TableHead className="text-right">更新频率 (s)</TableHead>
-                        <TableHead className="text-right">平均延迟</TableHead>
+                        <SortableTableHeader
+                          sortKey="name"
+                          currentSort={priceFeedSort}
+                          onSort={handlePriceFeedSort}
+                        >
+                          价格源名称
+                        </SortableTableHeader>
+                        <SortableTableHeader
+                          sortKey="latestPrice"
+                          currentSort={priceFeedSort}
+                          onSort={handlePriceFeedSort}
+                          className="text-right"
+                        >
+                          最新价格
+                        </SortableTableHeader>
+                        <SortableTableHeader
+                          sortKey="updateFrequency"
+                          currentSort={priceFeedSort}
+                          onSort={handlePriceFeedSort}
+                          className="text-right"
+                        >
+                          更新频率 (s)
+                        </SortableTableHeader>
+                        <SortableTableHeader
+                          sortKey="avgLatency"
+                          currentSort={priceFeedSort}
+                          onSort={handlePriceFeedSort}
+                          className="text-right"
+                        >
+                          平均延迟
+                        </SortableTableHeader>
                         <TableHead className="text-center">状态</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {mockPriceFeedDetails.map((feed) => (
+                      {sortedPriceFeedDetails.map((feed) => (
                         <TableRow key={feed.id}>
                           <TableCell>
                             <div className="flex flex-col">

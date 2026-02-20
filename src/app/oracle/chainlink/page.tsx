@@ -2,8 +2,19 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-import { RefreshCw, Database, Server, Clock, Activity, Shield, Link2, Users } from 'lucide-react';
+import {
+  RefreshCw,
+  Database,
+  Server,
+  Clock,
+  Activity,
+  Shield,
+  Link2,
+  Users,
+  LayoutDashboard,
+} from 'lucide-react';
 
+import { TrendIndicator, ProtocolHealthBadge } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { Badge } from '@/components/ui/badge';
@@ -117,6 +128,9 @@ export default function ChainlinkPage() {
           <h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl">
             <Link2 className="h-6 w-6 text-blue-600" />
             <span>Chainlink</span>
+            <ProtocolHealthBadge
+              status={overviewStats && overviewStats.activeNodes > 0 ? 'healthy' : 'warning'}
+            />
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             去中心化预言机网络 - OCR 轮次与节点运营商监控
@@ -182,7 +196,10 @@ export default function ChainlinkPage() {
                 <span className="text-sm font-medium text-muted-foreground">总喂价数</span>
                 <Database className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="mt-2 text-2xl font-bold">{overviewStats.totalFeeds}</div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-2xl font-bold">{overviewStats.totalFeeds}</span>
+                <TrendIndicator trend="up" value={3.2} />
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -191,8 +208,11 @@ export default function ChainlinkPage() {
                 <span className="text-sm font-medium text-muted-foreground">活跃节点数</span>
                 <Server className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="mt-2 text-2xl font-bold text-green-600">
-                {overviewStats.activeNodes}
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-2xl font-bold text-green-600">
+                  {overviewStats.activeNodes}
+                </span>
+                <TrendIndicator trend="up" value={5.1} />
               </div>
             </CardContent>
           </Card>
@@ -202,7 +222,10 @@ export default function ChainlinkPage() {
                 <span className="text-sm font-medium text-muted-foreground">OCR 轮次</span>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="mt-2 text-2xl font-bold">{overviewStats.ocrRounds}</div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-2xl font-bold">{overviewStats.ocrRounds}</span>
+                <TrendIndicator trend="neutral" />
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -211,8 +234,11 @@ export default function ChainlinkPage() {
                 <span className="text-sm font-medium text-muted-foreground">平均延迟</span>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="mt-2 text-2xl font-bold text-blue-600">
-                {overviewStats.avgLatency}ms
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-2xl font-bold text-blue-600">
+                  {overviewStats.avgLatency}ms
+                </span>
+                <TrendIndicator trend="down" value={8.5} />
               </div>
             </CardContent>
           </Card>
@@ -221,10 +247,22 @@ export default function ChainlinkPage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">概览</TabsTrigger>
-          <TabsTrigger value="ocr">OCR轮次</TabsTrigger>
-          <TabsTrigger value="nodes">节点运营商</TabsTrigger>
-          <TabsTrigger value="feeds">喂价聚合</TabsTrigger>
+          <TabsTrigger value="overview">
+            <LayoutDashboard className="mr-1.5 h-4 w-4" />
+            概览
+          </TabsTrigger>
+          <TabsTrigger value="ocr">
+            <Activity className="mr-1.5 h-4 w-4" />
+            OCR轮次
+          </TabsTrigger>
+          <TabsTrigger value="nodes">
+            <Users className="mr-1.5 h-4 w-4" />
+            节点运营商
+          </TabsTrigger>
+          <TabsTrigger value="feeds">
+            <Database className="mr-1.5 h-4 w-4" />
+            喂价聚合
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 space-y-6">
