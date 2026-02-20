@@ -18,6 +18,14 @@ interface SkeletonProps {
 }
 
 /**
+ * 统一的骨架屏颜色配置
+ */
+const SKELETON_BASE_STYLES = 'bg-gray-200 dark:bg-gray-700';
+const SKELETON_SHIMMER_STYLES =
+  'bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700';
+const SKELETON_PULSE_STYLES = 'animate-pulse';
+
+/**
  * 基础骨架屏组件
  * @param shimmer - 是否启用 Shimmer 动画效果
  */
@@ -26,17 +34,21 @@ function Skeleton({ className, shimmer = true }: SkeletonProps) {
     return (
       <div
         className={cn(
-          'relative overflow-hidden rounded-md bg-gray-200',
+          'relative overflow-hidden rounded-md',
+          SKELETON_BASE_STYLES,
           'before:absolute before:inset-0',
-          'before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent',
+          'before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent',
           'before:animate-shimmer',
+          'before:bg-[length:200%_100%]',
           className,
         )}
       />
     );
   }
 
-  return <div className={cn('animate-pulse rounded-md bg-gray-200 dark:bg-gray-800', className)} />;
+  return (
+    <div className={cn(SKELETON_PULSE_STYLES, 'rounded-md', SKELETON_BASE_STYLES, className)} />
+  );
 }
 
 /**
@@ -327,6 +339,52 @@ function ProtocolCardSkeleton({ className }: SkeletonProps) {
 }
 
 /**
+ * AlertCard 骨架屏
+ */
+function AlertCardSkeleton({ className }: SkeletonProps) {
+  return (
+    <div
+      className={cn(
+        'rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800',
+        className,
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div className="flex-1 space-y-3">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-4 rounded" />
+            <Skeleton className="h-5 w-24 rounded-full" />
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </div>
+          <Skeleton className="h-5 w-3/4 rounded" />
+          <Skeleton className="h-4 w-full rounded" />
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-3 w-20 rounded" />
+            <Skeleton className="h-3 w-16 rounded" />
+          </div>
+        </div>
+        <div className="text-right">
+          <Skeleton className="h-5 w-16 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Alert 列表骨架屏
+ */
+function AlertListSkeleton({ count = 5, className }: SkeletonProps & { count?: number }) {
+  return (
+    <div className={cn('space-y-3', className)}>
+      {Array.from({ length: count }).map((_, i) => (
+        <AlertCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
+/**
  * 列表骨架屏（从 SkeletonList 迁移）
  */
 function SkeletonList({
@@ -347,28 +405,28 @@ function SkeletonList({
         <div
           key={i}
           className={cn(
-            'glass-card animate-pulse rounded-2xl border border-white/60 p-5',
+            'animate-pulse rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800',
             viewMode === 'grid' ? 'h-[220px]' : 'h-[120px]',
           )}
         >
           <div className="mb-6 flex items-center gap-4">
-            <div className="h-10 w-10 rounded-xl bg-gray-200/50" />
+            <Skeleton className="h-10 w-10 rounded-xl" />
             <div className="space-y-2">
-              <div className="h-3 w-20 rounded bg-gray-200/50" />
-              <div className="h-4 w-32 rounded bg-gray-200/50" />
+              <Skeleton className="h-3 w-20 rounded" />
+              <Skeleton className="h-4 w-32 rounded" />
             </div>
-            <div className="ml-auto h-6 w-20 rounded-full bg-gray-200/50" />
+            <Skeleton className="ml-auto h-6 w-20 rounded-full" />
           </div>
           <div className="space-y-4">
             <div className="flex justify-between">
-              <div className="h-3 w-24 rounded bg-gray-200/50" />
-              <div className="h-3 w-16 rounded bg-gray-200/50" />
+              <Skeleton className="h-3 w-24 rounded" />
+              <Skeleton className="h-3 w-16 rounded" />
             </div>
             <div className="flex justify-between">
-              <div className="h-3 w-24 rounded bg-gray-200/50" />
-              <div className="h-3 w-16 rounded bg-gray-200/50" />
+              <Skeleton className="h-3 w-24 rounded" />
+              <Skeleton className="h-3 w-16 rounded" />
             </div>
-            <div className="mt-4 h-3 w-full rounded bg-gray-200/50" />
+            <Skeleton className="mt-4 h-3 w-full rounded" />
           </div>
         </div>
       ))}
@@ -557,6 +615,8 @@ export {
   TableSkeleton,
   LoadingSpinner,
   LoadingOverlay,
+  AlertCardSkeleton,
+  AlertListSkeleton,
 };
 
 export default Skeleton;

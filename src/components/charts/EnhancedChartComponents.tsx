@@ -113,18 +113,20 @@ export const CustomTooltip = memo(function CustomTooltip({
     <motion.div
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-primary/10 bg-white p-4 shadow-xl"
+      className="rounded-xl border border-border/50 bg-card p-4 shadow-xl backdrop-blur-sm"
     >
       {title && (
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">{title}</p>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {title}
+        </p>
       )}
-      <p className="mb-2 text-xs text-gray-500">{labelFormatter(label!)}</p>
+      <p className="mb-2 text-xs text-muted-foreground">{labelFormatter(label!)}</p>
       <div className="space-y-1.5">
         {payload.map((entry, index) => (
           <div key={index} className="flex items-center gap-2">
             <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-            <span className="flex-1 text-sm text-gray-600">{entry.name}</span>
-            <span className="text-sm font-bold text-gray-900">{valueFormatter(entry.value)}</span>
+            <span className="flex-1 text-sm text-muted-foreground">{entry.name}</span>
+            <span className="text-sm font-bold text-foreground">{valueFormatter(entry.value)}</span>
           </div>
         ))}
       </div>
@@ -160,13 +162,14 @@ export const EnhancedAreaChart = memo(function EnhancedAreaChart({
   strokeWidth = 2,
   valueFormatter = (v) => formatNumber(v, 2),
   labelFormatter = (l) => String(l),
-}: EnhancedAreaChartProps) {
+  ariaLabel,
+}: EnhancedAreaChartProps & { ariaLabel?: string }) {
   const gradientId = useMemo(() => generateGradientId(color, 'area'), [color]);
 
   const hasCritical = useMemo(() => thresholds.some((t) => t.type === 'critical'), [thresholds]);
 
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('w-full', className)} role="img" aria-label={ariaLabel || '数据图表'}>
       <ResponsiveContainer width="100%" height={height}>
         <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           {gradient && (
@@ -241,8 +244,10 @@ export const EnhancedAreaChart = memo(function EnhancedAreaChart({
             stroke={color}
             strokeWidth={strokeWidth}
             fill={gradient ? `url(#${gradientId})` : color}
-            dot={showDots}
-            activeDot={{ r: 6, strokeWidth: 0, fill: color }}
+            dot={
+              showDots ? { r: 4, strokeWidth: 2, stroke: color, fill: 'var(--background)' } : false
+            }
+            activeDot={{ r: 8, strokeWidth: 0, fill: color }}
             animationDuration={CHART_ANIMATIONS.chart.animationDuration}
             animationEasing={CHART_ANIMATIONS.chart.animationEasing}
           />
@@ -278,9 +283,10 @@ export const EnhancedLineChart = memo(function EnhancedLineChart({
   showLegend = true,
   valueFormatter = (v) => formatNumber(v, 2),
   labelFormatter = (l) => String(l),
-}: EnhancedLineChartProps) {
+  ariaLabel,
+}: EnhancedLineChartProps & { ariaLabel?: string }) {
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('w-full', className)} role="img" aria-label={ariaLabel || '数据图表'}>
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           {showGrid && (
@@ -313,21 +319,28 @@ export const EnhancedLineChart = memo(function EnhancedLineChart({
             }
           />
 
-          {lines.map((line, index) => (
-            <Line
-              key={line.dataKey}
-              type="monotone"
-              dataKey={line.dataKey}
-              name={line.name}
-              stroke={line.color || getSeriesColor(index)}
-              strokeWidth={line.strokeWidth || 2}
-              dot={showDots}
-              activeDot={{ r: 6, strokeWidth: 0 }}
-              fill={line.color || getSeriesColor(index)}
-              fillOpacity={showArea ? 0.1 : 0}
-              animationDuration={CHART_ANIMATIONS.chart.animationDuration}
-            />
-          ))}
+          {lines.map((line, index) => {
+            const lineColor = line.color || getSeriesColor(index);
+            return (
+              <Line
+                key={line.dataKey}
+                type="monotone"
+                dataKey={line.dataKey}
+                name={line.name}
+                stroke={lineColor}
+                strokeWidth={line.strokeWidth || 2}
+                dot={
+                  showDots
+                    ? { r: 4, strokeWidth: 2, stroke: lineColor, fill: 'var(--background)' }
+                    : false
+                }
+                activeDot={{ r: 8, strokeWidth: 0, fill: lineColor }}
+                fill={lineColor}
+                fillOpacity={showArea ? 0.1 : 0}
+                animationDuration={CHART_ANIMATIONS.chart.animationDuration}
+              />
+            );
+          })}
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -360,9 +373,10 @@ export const EnhancedBarChart = memo(function EnhancedBarChart({
   showBackground = false,
   valueFormatter = (v) => formatNumber(v, 2),
   labelFormatter = (l) => String(l),
-}: EnhancedBarChartProps) {
+  ariaLabel,
+}: EnhancedBarChartProps & { ariaLabel?: string }) {
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('w-full', className)} role="img" aria-label={ariaLabel || '数据图表'}>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} layout={layout} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           {showGrid && (
@@ -411,7 +425,7 @@ export const EnhancedBarChart = memo(function EnhancedBarChart({
               fill={bar.color || getSeriesColor(index)}
               stackId={bar.stackId}
               radius={[4, 4, 0, 0]}
-              background={showBackground ? { fill: '#f3f4f6' } : undefined}
+              background={showBackground ? { fill: 'var(--muted)' } : undefined}
               animationDuration={CHART_ANIMATIONS.chart.animationDuration}
             />
           ))}
@@ -449,11 +463,12 @@ export const EnhancedPieChart = memo(function EnhancedPieChart({
   showLegend = true,
   showLabels = true,
   valueFormatter = (v) => formatNumber(v, 0),
-}: EnhancedPieChartProps) {
+  ariaLabel,
+}: EnhancedPieChartProps & { ariaLabel?: string }) {
   const total = useMemo(() => data.reduce((sum, item) => sum + item.value, 0), [data]);
 
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('w-full', className)} role="img" aria-label={ariaLabel || '饼图'}>
       <ResponsiveContainer width="100%" height={height}>
         <PieChart>
           {showLegend && <Legend layout="vertical" align="right" verticalAlign="middle" />}
@@ -464,12 +479,12 @@ export const EnhancedPieChart = memo(function EnhancedPieChart({
               const item = payload[0];
               const percentage = ((item.value as number) / total) * 100;
               return (
-                <div className="rounded-xl border border-primary/10 bg-white p-3 shadow-xl">
-                  <p className="text-sm font-semibold text-gray-900">{item.name}</p>
+                <div className="rounded-xl border border-border/50 bg-card p-3 shadow-xl backdrop-blur-sm">
+                  <p className="text-sm font-semibold text-foreground">{item.name}</p>
                   <p className="text-lg font-bold" style={{ color: item.payload.color }}>
                     {valueFormatter(item.value as number)}
                   </p>
-                  <p className="text-xs text-gray-500">{percentage.toFixed(1)}%</p>
+                  <p className="text-xs text-muted-foreground">{percentage.toFixed(1)}%</p>
                 </div>
               );
             }}
@@ -522,9 +537,10 @@ export const EnhancedRadarChart = memo(function EnhancedRadarChart({
   className,
   color = CHART_COLORS.primary.DEFAULT,
   showGrid = true,
-}: EnhancedRadarChartProps) {
+  ariaLabel,
+}: EnhancedRadarChartProps & { ariaLabel?: string }) {
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('w-full', className)} role="img" aria-label={ariaLabel || '雷达图'}>
       <ResponsiveContainer width="100%" height={height}>
         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
           {showGrid && <PolarGrid stroke={CHART_COLORS.grid.line} />}
@@ -547,8 +563,8 @@ export const EnhancedRadarChart = memo(function EnhancedRadarChart({
               if (!active || !payload?.length) return null;
               const item = payload[0];
               return (
-                <div className="rounded-xl border border-primary/10 bg-white p-3 shadow-xl">
-                  <p className="text-sm font-semibold text-gray-900">{item.payload.metric}</p>
+                <div className="rounded-xl border border-border/50 bg-card p-3 shadow-xl backdrop-blur-sm">
+                  <p className="text-sm font-semibold text-foreground">{item.payload.metric}</p>
                   <p className="text-lg font-bold" style={{ color }}>
                     {formatNumber(item.value as number, 1)}
                   </p>
@@ -587,7 +603,8 @@ export const EnhancedGaugeChart = memo(function EnhancedGaugeChart({
   title,
   unit = '%',
   thresholds = { warning: 70, critical: 90 },
-}: EnhancedGaugeChartProps) {
+  ariaLabel,
+}: EnhancedGaugeChartProps & { ariaLabel?: string }) {
   const percentage = Math.min((value / max) * 100, 100);
   const color = getStatusColor(percentage, thresholds);
 
@@ -597,8 +614,12 @@ export const EnhancedGaugeChart = memo(function EnhancedGaugeChart({
   );
 
   return (
-    <div className={cn('flex w-full flex-col items-center', className)}>
-      {title && <p className="mb-2 text-sm font-medium text-gray-600">{title}</p>}
+    <div
+      className={cn('flex w-full flex-col items-center', className)}
+      role="img"
+      aria-label={ariaLabel || '仪表图'}
+    >
+      {title && <p className="mb-2 text-sm font-medium text-muted-foreground">{title}</p>}
       <ResponsiveContainer width="100%" height={height}>
         <RadialBarChart
           cx="50%"
@@ -610,7 +631,7 @@ export const EnhancedGaugeChart = memo(function EnhancedGaugeChart({
           endAngle={0}
         >
           <RadialBar
-            background={{ fill: '#f3f4f6' }}
+            background={{ fill: 'var(--muted)' }}
             dataKey="value"
             cornerRadius={10}
             animationDuration={CHART_ANIMATIONS.chart.animationDuration}
@@ -621,7 +642,7 @@ export const EnhancedGaugeChart = memo(function EnhancedGaugeChart({
         <span className="text-3xl font-bold" style={{ color }}>
           {formatNumber(value, 1)}
         </span>
-        <span className="ml-1 text-sm text-gray-500">{unit}</span>
+        <span className="ml-1 text-sm text-muted-foreground">{unit}</span>
       </div>
     </div>
   );
@@ -647,7 +668,8 @@ export const Sparkline = memo(function Sparkline({
   color = CHART_COLORS.primary.DEFAULT,
   showArea = true,
   className,
-}: SparklineProps) {
+  ariaLabel,
+}: SparklineProps & { ariaLabel?: string }) {
   if (!data || data.length < 2) return null;
 
   const min = Math.min(...data);
@@ -673,7 +695,11 @@ export const Sparkline = memo(function Sparkline({
   const lastPoint = points[points.length - 1];
 
   return (
-    <div className={cn('flex items-center gap-2', className)}>
+    <div
+      className={cn('flex items-center gap-2', className)}
+      role="img"
+      aria-label={ariaLabel || '趋势图'}
+    >
       <svg width={width} height={height} className="overflow-visible">
         <defs>
           <linearGradient id="sparklineGradient" x1="0" y1="0" x2="0" y2="1">
@@ -726,7 +752,8 @@ export const StatComparison = memo(function StatComparison({
   unit = '',
   className,
   reverseTrend = false,
-}: StatComparisonProps) {
+  ariaLabel,
+}: StatComparisonProps & { ariaLabel?: string }) {
   const change = previous !== 0 ? ((current - previous) / previous) * 100 : 0;
   const isPositive = reverseTrend ? change < 0 : change > 0;
   const trendColor = isPositive
@@ -734,15 +761,19 @@ export const StatComparison = memo(function StatComparison({
     : CHART_COLORS.semantic.error.DEFAULT;
 
   return (
-    <div className={cn('flex items-center gap-3', className)}>
+    <div
+      className={cn('flex items-center gap-3', className)}
+      role="img"
+      aria-label={ariaLabel || '统计数据对比'}
+    >
       <div className="flex-1">
-        {label && <p className="mb-1 text-xs text-gray-500">{label}</p>}
+        {label && <p className="mb-1 text-xs text-muted-foreground">{label}</p>}
         <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-bold text-gray-900">{formatNumber(current, 2)}</span>
-          {unit && <span className="text-sm text-gray-500">{unit}</span>}
+          <span className="text-2xl font-bold text-foreground">{formatNumber(current, 2)}</span>
+          {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
         </div>
       </div>
-      <div className="flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1">
+      <div className="flex items-center gap-1 rounded-full bg-muted px-2 py-1">
         {isPositive ? (
           <TrendingUp className="h-3.5 w-3.5" style={{ color: trendColor }} />
         ) : (

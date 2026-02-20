@@ -4,14 +4,16 @@ import { motion } from 'framer-motion';
 
 import { cn } from '@/shared/utils';
 
-// ==================== 基础 Card 组件 ====================
+import type { HTMLMotionProps } from 'framer-motion';
 
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        'rounded-2xl border border-border/50 bg-card text-foreground shadow-sm backdrop-blur-xl transition-all hover:bg-card/80 hover:shadow-md',
+        'rounded-2xl border border-border bg-card text-card-foreground shadow-sm backdrop-blur-xl',
+        'transition-all duration-300 ease-out will-change-transform',
+        'hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10',
         className,
       )}
       {...props}
@@ -55,9 +57,12 @@ const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
 );
 CardContent.displayName = 'CardContent';
 
-// ==================== 增强版 Card 组件 ====================
-
-import type { HTMLMotionProps } from 'framer-motion';
+const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('flex items-center p-6 pt-0', className)} {...props} />
+  ),
+);
+CardFooter.displayName = 'CardFooter';
 
 interface CardEnhancedProps extends HTMLMotionProps<'div'> {
   hover?: boolean;
@@ -72,12 +77,11 @@ const CardEnhanced = React.forwardRef<HTMLDivElement, CardEnhancedProps>(
       <motion.div
         ref={ref}
         className={cn(
-          'relative overflow-hidden rounded-2xl border border-border/50 bg-card p-6 backdrop-blur-xl',
+          'relative overflow-hidden rounded-2xl border border-border bg-card p-6 backdrop-blur-xl',
           'transition-all duration-300',
-          hover &&
-            'hover:border-primary/30 hover:bg-card/80 hover:shadow-xl hover:shadow-primary/10',
+          hover && 'hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10',
           clickable && 'cursor-pointer active:scale-[0.98]',
-          gradient && 'via-primary-5/10 to-blue-5/10 bg-gradient-to-br from-card',
+          gradient && 'via-primary-5/10 to-accent-5/10 bg-gradient-to-br from-card',
           glow && 'shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30',
           className,
         )}
@@ -85,14 +89,12 @@ const CardEnhanced = React.forwardRef<HTMLDivElement, CardEnhancedProps>(
         whileTap={clickable ? { scale: 0.98 } : undefined}
         {...props}
       >
-        {/* Shimmer effect on hover */}
         {hover && (
           <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:animate-shimmer group-hover:opacity-100" />
         )}
 
-        {/* Gradient border effect */}
         {gradient && (
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 via-transparent to-blue-500/10 opacity-0 transition-opacity duration-300 hover:opacity-100" />
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 via-transparent to-accent-500/10 opacity-0 transition-opacity duration-300 hover:opacity-100" />
         )}
 
         <div className="relative z-10">{children as React.ReactNode}</div>
@@ -101,8 +103,6 @@ const CardEnhanced = React.forwardRef<HTMLDivElement, CardEnhancedProps>(
   },
 );
 CardEnhanced.displayName = 'CardEnhanced';
-
-// ==================== 交互式统计卡片 ====================
 
 interface StatCardProps {
   title: string;
@@ -128,8 +128,8 @@ function InteractiveStatCard({
   const [isHovered, setIsHovered] = React.useState(false);
 
   const trendColors = {
-    up: 'text-emerald-500',
-    down: 'text-rose-500',
+    up: 'text-success',
+    down: 'text-error',
     neutral: 'text-muted-foreground',
   };
 
@@ -142,9 +142,9 @@ function InteractiveStatCard({
   return (
     <motion.div
       className={cn(
-        'relative cursor-pointer overflow-hidden rounded-2xl border border-border/50 bg-card p-6 backdrop-blur-xl',
+        'relative cursor-pointer overflow-hidden rounded-2xl border border-border bg-card p-6 backdrop-blur-xl',
         'transition-all duration-300',
-        'hover:border-primary/30 hover:bg-card/80 hover:shadow-lg hover:shadow-primary/10',
+        'hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10',
         className,
       )}
       onHoverStart={() => setIsHovered(true)}
@@ -153,16 +153,14 @@ function InteractiveStatCard({
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
       whileTap={{ scale: 0.98 }}
     >
-      {/* Background glow on hover */}
       <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-500/5"
+        className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent-500/5"
         initial={{ opacity: 0 }}
         animate={{ opacity: isHovered ? 1 : 0 }}
         transition={{ duration: 0.3 }}
       />
 
       <div className="relative z-10">
-        {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <span className="text-sm font-medium text-muted-foreground">{title}</span>
           {icon && (
@@ -176,7 +174,6 @@ function InteractiveStatCard({
           )}
         </div>
 
-        {/* Value */}
         <div className="mb-2">
           {loading ? (
             <div className="h-8 w-24 animate-pulse rounded bg-primary/20" />
@@ -193,7 +190,6 @@ function InteractiveStatCard({
           )}
         </div>
 
-        {/* Change indicator */}
         {change !== undefined && !loading && (
           <motion.div
             className={cn('flex items-center gap-1 text-sm font-medium', trendColors[trend])}
@@ -210,8 +206,6 @@ function InteractiveStatCard({
     </motion.div>
   );
 }
-
-// ==================== 可展开卡片 ====================
 
 interface ExpandableCardProps {
   title: string;
@@ -267,6 +261,7 @@ export {
   CardTitle,
   CardDescription,
   CardContent,
+  CardFooter,
   CardEnhanced,
   InteractiveStatCard,
   ExpandableCard,

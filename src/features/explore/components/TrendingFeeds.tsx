@@ -1,12 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { TrendingUp, RefreshCw } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 
 import { StaggerContainer, StaggerItem } from '@/components/common/AnimatedContainer';
+import { EmptyDataState } from '@/components/common/EmptyState';
 import { RefreshIndicator } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PriceCardSkeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 
 import { SortSelector } from './SortSelector';
@@ -72,44 +73,19 @@ export function TrendingFeeds({ onFeedClick, initialSortBy = 'volume' }: Trendin
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
             >
-              <div className="rounded-2xl border border-border/50 bg-card p-4 backdrop-blur-xl md:p-6">
-                <div className="space-y-3 md:space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <Skeleton className="h-6 w-24" />
-                      <Skeleton className="h-4 w-32" />
-                    </div>
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                  </div>
-                  <div className="space-y-2">
-                    <Skeleton className="h-8 w-28" />
-                    <Skeleton className="h-4 w-20" />
-                  </div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:gap-3">
-                    <Skeleton className="h-8 w-full sm:h-4" />
-                    <Skeleton className="h-8 w-full sm:h-4" />
-                  </div>
-                  <Skeleton className="h-3 w-full" />
-                </div>
-              </div>
+              <PriceCardSkeleton />
             </motion.div>
           ))}
         </div>
       )}
 
       {!isLoading && !isError && feeds.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <TrendingUp className="h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 text-lg font-medium text-foreground">暂无热门交易对</h3>
-          <p className="mt-2 text-sm text-muted-foreground">当前没有可用的热门交易对数据</p>
-          <button
-            onClick={refresh}
-            className="text-primary-foreground mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-medium transition-colors hover:bg-primary/90"
-          >
-            <RefreshCw className="h-4 w-4" />
-            刷新
-          </button>
-        </div>
+        <EmptyDataState
+          icon={TrendingUp}
+          title="暂无热门交易对"
+          description="当前没有可用的热门交易对数据"
+          onRefresh={refresh}
+        />
       )}
 
       {!isLoading && !isError && feeds.length > 0 && (

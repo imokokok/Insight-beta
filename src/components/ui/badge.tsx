@@ -7,10 +7,6 @@ import { STATUS_THEME_COLORS, type StatusType } from '@/types/common';
 
 export type { StatusType };
 
-// ============================================================================
-// 基础 Badge 变体
-// ============================================================================
-
 const badgeVariants = cva(
   'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
   {
@@ -21,16 +17,14 @@ const badgeVariants = cva(
           'bg-secondary text-secondary-foreground hover:bg-secondary/80 border-transparent',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/80 border-transparent',
-        outline: 'text-foreground',
-        // 语义化变体
+        outline: 'border-border text-foreground',
         success: 'border-transparent bg-success/20 text-success-dark hover:bg-success/30',
         warning: 'border-transparent bg-warning/20 text-warning-dark hover:bg-warning/30',
         danger: 'border-transparent bg-error/20 text-error-dark hover:bg-error/30',
         info: 'text-primary-dark border-transparent bg-primary/20 hover:bg-primary/30',
-        // 特殊效果
         ghost: 'text-primary-dark border-transparent hover:bg-primary/10',
         pulse: 'text-primary-dark animate-pulse border-transparent bg-primary/10',
-        glow: 'border-transparent bg-primary text-white shadow-[0_0_10px_rgba(147,51,234,0.5)]',
+        glow: 'border-transparent bg-primary text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]',
       },
       size: {
         default: 'text-xs',
@@ -52,10 +46,6 @@ interface BaseBadgeProps
 const Badge = React.memo(function Badge({ className, variant, size, ...props }: BaseBadgeProps) {
   return <div className={cn(badgeVariants({ variant, size }), className)} {...props} />;
 });
-
-// ============================================================================
-// StatusBadge - 状态徽章
-// ============================================================================
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -123,10 +113,6 @@ const StatusBadge = React.memo(function StatusBadge({
   );
 });
 
-// ============================================================================
-// CountBadge - 计数徽章
-// ============================================================================
-
 interface CountBadgeProps {
   count: number;
   max?: number;
@@ -147,10 +133,6 @@ const CountBadge = React.memo(function CountBadge({ count, max = 99, className }
     </span>
   );
 });
-
-// ============================================================================
-// ProgressBadge - 进度徽章
-// ============================================================================
 
 interface ProgressBadgeProps {
   progress: number;
@@ -187,10 +169,6 @@ const ProgressBadge = React.memo(function ProgressBadge({
     </span>
   );
 });
-
-// ============================================================================
-// 导出
-// ============================================================================
 
 export { Badge, StatusBadge, CountBadge, ProgressBadge, badgeVariants };
 export type { BaseBadgeProps as BadgeProps, StatusBadgeProps, CountBadgeProps, ProgressBadgeProps };

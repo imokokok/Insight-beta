@@ -7,6 +7,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
 
@@ -58,7 +59,29 @@ export function PageTransition({
   mode = 'wait',
 }: PageTransitionProps) {
   const pathname = usePathname();
-  const variants = pageVariants[variant];
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  const variants = prefersReducedMotion
+    ? {
+        initial: { opacity: 1 },
+        animate: { opacity: 1 },
+        exit: { opacity: 1 },
+      }
+    : pageVariants[variant];
+
+  const transitionDuration = prefersReducedMotion ? 0 : duration;
 
   return (
     <AnimatePresence mode={mode}>
@@ -69,7 +92,7 @@ export function PageTransition({
         exit="exit"
         variants={variants}
         transition={{
-          duration,
+          duration: transitionDuration,
           ease: [0.25, 0.1, 0.25, 1],
         }}
         className={className}
@@ -93,6 +116,24 @@ export function StaggerContainer({
   staggerDelay = 0.05,
   initialDelay = 0,
 }: StaggerContainerProps) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  if (prefersReducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div
       initial="hidden"
@@ -127,6 +168,24 @@ export function StaggerItem({
   direction = 'up',
   distance = 20,
 }: StaggerItemProps) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  if (prefersReducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
   const directionOffset = {
     up: { y: distance, x: 0 },
     down: { y: -distance, x: 0 },
@@ -177,6 +236,32 @@ export function AnimatedList<T>({
   staggerDelay = 0.05,
   layout = true,
 }: AnimatedListProps<T>) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  if (prefersReducedMotion) {
+    return (
+      <div className={className}>
+        {items.map((item, index) => (
+          <div key={keyExtractor(item)} className={itemClassName}>
+            {renderItem(item, index)}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial="hidden"
@@ -245,6 +330,32 @@ export function AnimatedGrid<T>({
   itemClassName,
   staggerDelay = 0.03,
 }: AnimatedGridProps<T>) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  if (prefersReducedMotion) {
+    return (
+      <div className={className}>
+        {items.map((item, index) => (
+          <div key={keyExtractor(item)} className={itemClassName}>
+            {renderItem(item, index)}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial="hidden"
@@ -315,6 +426,24 @@ export function ScrollReveal({
   once = true,
   threshold = 0.1,
 }: ScrollRevealProps) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  if (prefersReducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
   const directionOffset = {
     up: { y: 40, x: 0 },
     down: { y: -40, x: 0 },
@@ -365,6 +494,24 @@ export function HoverCard({
   hoverShadow = false,
   hoverBorder = false,
 }: HoverCardProps) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  if (prefersReducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
   const scaleValue = hoverScale === false ? 1 : hoverScale;
 
   return (

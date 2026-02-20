@@ -29,6 +29,7 @@ import {
   Database,
   WifiOff,
   Box,
+  FilterX,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -94,75 +95,81 @@ const iconVariants: Variants = {
 
 const variantStyles = {
   default: {
-    iconBg: 'bg-primary/20',
+    iconBg: 'bg-gradient-to-br from-primary/20 to-primary/10',
     iconColor: 'text-primary',
     borderColor: 'border-primary/20',
     bgColor: 'bg-card/50',
-    gradient: 'from-primary/5 to-transparent',
+    gradient: 'from-primary/5 via-primary/3 to-transparent',
     buttonColor: 'bg-primary hover:bg-primary-600',
+    shadow: 'shadow-primary/10',
   },
   healthy: {
-    iconBg: 'bg-green-500/20',
-    iconColor: 'text-green-500',
+    iconBg: 'bg-gradient-to-br from-green-500/20 to-green-400/10',
+    iconColor: 'text-green-600',
     borderColor: 'border-green-500/20',
     bgColor: 'bg-green-500/5',
-    gradient: 'from-green-500/5 to-transparent',
-    buttonColor: 'bg-green-500 hover:bg-green-600',
+    gradient: 'from-green-500/5 via-green-500/3 to-transparent',
+    buttonColor: 'bg-green-600 hover:bg-green-700',
+    shadow: 'shadow-green-500/10',
   },
   action: {
-    iconBg: 'bg-primary/20',
+    iconBg: 'bg-gradient-to-br from-primary/20 to-primary/10',
     iconColor: 'text-primary',
     borderColor: 'border-primary/20',
     bgColor: 'bg-primary/5',
-    gradient: 'from-primary/5 to-transparent',
+    gradient: 'from-primary/5 via-primary/3 to-transparent',
     buttonColor: 'bg-primary hover:bg-primary-600',
+    shadow: 'shadow-primary/10',
   },
   info: {
-    iconBg: 'bg-blue-500/20',
-    iconColor: 'text-blue-400',
+    iconBg: 'bg-gradient-to-br from-blue-500/20 to-blue-400/10',
+    iconColor: 'text-blue-600',
     borderColor: 'border-blue-500/20',
     bgColor: 'bg-blue-500/5',
-    gradient: 'from-blue-500/5 to-transparent',
-    buttonColor: 'bg-blue-500 hover:bg-blue-600',
+    gradient: 'from-blue-500/5 via-blue-500/3 to-transparent',
+    buttonColor: 'bg-blue-600 hover:bg-blue-700',
+    shadow: 'shadow-blue-500/10',
   },
   warning: {
-    iconBg: 'bg-amber-500/20',
-    iconColor: 'text-amber-500',
+    iconBg: 'bg-gradient-to-br from-amber-500/20 to-amber-400/10',
+    iconColor: 'text-amber-600',
     borderColor: 'border-amber-500/20',
     bgColor: 'bg-amber-500/5',
-    gradient: 'from-amber-500/5 to-transparent',
-    buttonColor: 'bg-amber-500 hover:bg-amber-600',
+    gradient: 'from-amber-500/5 via-amber-500/3 to-transparent',
+    buttonColor: 'bg-amber-600 hover:bg-amber-700',
+    shadow: 'shadow-amber-500/10',
   },
   error: {
-    iconBg: 'bg-red-500/20',
-    iconColor: 'text-red-500',
+    iconBg: 'bg-gradient-to-br from-red-500/20 to-red-400/10',
+    iconColor: 'text-red-600',
     borderColor: 'border-red-500/20',
     bgColor: 'bg-red-500/5',
-    gradient: 'from-red-500/5 to-transparent',
-    buttonColor: 'bg-red-500 hover:bg-red-600',
+    gradient: 'from-red-500/5 via-red-500/3 to-transparent',
+    buttonColor: 'bg-red-600 hover:bg-red-700',
+    shadow: 'shadow-red-500/10',
   },
 };
 
 const sizeStyles = {
   sm: {
     container: 'p-6',
-    icon: 'h-12 w-12',
-    iconWrapper: 'h-16 w-16',
-    title: 'text-base',
+    icon: 'h-10 w-10',
+    iconWrapper: 'h-14 w-14',
+    title: 'text-base font-semibold',
     description: 'text-sm',
   },
   md: {
-    container: 'p-8',
-    icon: 'h-8 w-8',
-    iconWrapper: 'h-16 w-16',
-    title: 'text-lg',
+    container: 'p-10',
+    icon: 'h-10 w-10',
+    iconWrapper: 'h-18 w-18',
+    title: 'text-lg font-semibold',
     description: 'text-sm',
   },
   lg: {
-    container: 'p-12',
-    icon: 'h-10 w-10',
-    iconWrapper: 'h-20 w-20',
-    title: 'text-xl',
+    container: 'p-14',
+    icon: 'h-12 w-12',
+    iconWrapper: 'h-24 w-24',
+    title: 'text-xl font-semibold',
     description: 'text-base',
   },
 };
@@ -194,11 +201,13 @@ export function UnifiedEmptyState({
   return (
     <Wrapper
       className={cn(
-        'flex flex-col items-center justify-center rounded-2xl border-2 border-dashed text-center',
+        'flex flex-col items-center justify-center rounded-2xl border text-center transition-all duration-300',
         'bg-gradient-to-br',
         styles.borderColor,
         styles.gradient,
         sizes.container,
+        'hover:shadow-lg',
+        styles.shadow,
         className,
       )}
       {...wrapperProps}
@@ -207,7 +216,7 @@ export function UnifiedEmptyState({
         <motion.div
           variants={animated ? iconVariants : undefined}
           className={cn(
-            'mb-4 flex items-center justify-center rounded-full',
+            'mb-5 flex items-center justify-center rounded-2xl shadow-sm',
             styles.iconBg,
             sizes.iconWrapper,
           )}
@@ -218,7 +227,7 @@ export function UnifiedEmptyState({
 
       <motion.h3
         variants={animated ? itemVariants : undefined}
-        className={cn('font-semibold text-gray-900', sizes.title)}
+        className={cn('text-gray-900 dark:text-gray-100', sizes.title)}
       >
         {title}
       </motion.h3>
@@ -226,14 +235,17 @@ export function UnifiedEmptyState({
       {description && (
         <motion.p
           variants={animated ? itemVariants : undefined}
-          className={cn('mt-2 max-w-sm text-gray-500', sizes.description)}
+          className={cn(
+            'mt-3 max-w-md leading-relaxed text-gray-600 dark:text-gray-400',
+            sizes.description,
+          )}
         >
           {description}
         </motion.p>
       )}
 
       {children && (
-        <motion.div variants={animated ? itemVariants : undefined} className="mt-4">
+        <motion.div variants={animated ? itemVariants : undefined} className="mt-5">
           {children}
         </motion.div>
       )}
@@ -241,17 +253,22 @@ export function UnifiedEmptyState({
       {(action || secondaryAction) && (
         <motion.div
           variants={animated ? itemVariants : undefined}
-          className="mt-6 flex flex-wrap items-center justify-center gap-3"
+          className="mt-7 flex flex-wrap items-center justify-center gap-3"
         >
           {secondaryAction && (
-            <Button onClick={secondaryAction.onClick} variant="outline" size="sm">
+            <Button
+              onClick={secondaryAction.onClick}
+              variant="outline"
+              size="sm"
+              className="shadow-sm"
+            >
               {secondaryAction.label}
             </Button>
           )}
           {action && (
             <Button
               onClick={action.onClick}
-              className={cn('gap-2', styles.buttonColor)}
+              className={cn('gap-2 shadow-sm', styles.buttonColor)}
               variant={action.variant || 'default'}
               size="sm"
             >
@@ -278,32 +295,66 @@ export const EnhancedEmptyState = UnifiedEmptyState;
 export function EmptySearchState({
   searchTerm,
   onClear,
+  onRefresh,
   className,
   animated = true,
+  suggestions,
 }: {
   searchTerm?: string;
   onClear?: () => void;
+  onRefresh?: () => void;
   className?: string;
   animated?: boolean;
+  suggestions?: string[];
 }) {
   const { t } = useI18n();
   return (
     <UnifiedEmptyState
-      icon={Search}
-      title={searchTerm ? `${t('common.noResults')} "${searchTerm}"` : t('common.noResults')}
-      description={t('common.clearFilters')}
+      icon={searchTerm ? FilterX : Search}
+      title={searchTerm ? `未找到 "${searchTerm}" 的结果` : '暂无搜索结果'}
+      description={
+        searchTerm ? '请尝试使用其他关键词，或检查拼写是否正确' : '开始搜索以查找您需要的数据'
+      }
       variant="info"
       className={className}
       animated={animated}
       action={
         onClear
           ? {
-              label: t('common.clearFilters'),
+              label: '清除筛选',
               onClick: onClear,
+              variant: 'default',
+            }
+          : onRefresh
+            ? {
+                label: '刷新搜索',
+                onClick: onRefresh,
+                variant: 'default',
+              }
+            : undefined
+      }
+      secondaryAction={
+        onRefresh && onClear
+          ? {
+              label: '刷新',
+              onClick: onRefresh,
             }
           : undefined
       }
-    />
+    >
+      {suggestions && suggestions.length > 0 && (
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          {suggestions.map((suggestion, index) => (
+            <span
+              key={index}
+              className="inline-flex cursor-pointer items-center rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50"
+            >
+              {suggestion}
+            </span>
+          ))}
+        </div>
+      )}
+    </UnifiedEmptyState>
   );
 }
 
@@ -793,6 +844,71 @@ export function EmptyBoxState({
           : undefined
       }
     />
+  );
+}
+
+export function EmptyAlertsListState({
+  isFiltered,
+  onClearFilters,
+  onRefresh,
+  onCreateRule,
+  className,
+  animated = true,
+}: {
+  isFiltered?: boolean;
+  onClearFilters?: () => void;
+  onRefresh?: () => void;
+  onCreateRule?: () => void;
+  className?: string;
+  animated?: boolean;
+}) {
+  const { t } = useI18n();
+  return (
+    <UnifiedEmptyState
+      icon={isFiltered ? FilterX : ShieldCheck}
+      title={isFiltered ? '没有匹配的告警' : '一切正常！'}
+      description={
+        isFiltered
+          ? '当前筛选条件下没有找到任何告警，请尝试调整筛选条件'
+          : '没有活动的告警，所有系统运行正常'
+      }
+      variant={isFiltered ? 'info' : 'healthy'}
+      className={className}
+      animated={animated}
+      action={
+        isFiltered && onClearFilters
+          ? {
+              label: '清除筛选',
+              onClick: onClearFilters,
+            }
+          : onCreateRule
+            ? {
+                label: '创建告警规则',
+                onClick: onCreateRule,
+              }
+            : onRefresh
+              ? {
+                  label: '刷新',
+                  onClick: onRefresh,
+                }
+              : undefined
+      }
+      secondaryAction={
+        isFiltered && onRefresh
+          ? {
+              label: '刷新',
+              onClick: onRefresh,
+            }
+          : undefined
+      }
+    >
+      {!isFiltered && (
+        <div className="mt-4 flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-2 text-sm text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
+          <Sparkles className="h-4 w-4" />
+          <span>所有系统运行正常，继续保持</span>
+        </div>
+      )}
+    </UnifiedEmptyState>
   );
 }
 

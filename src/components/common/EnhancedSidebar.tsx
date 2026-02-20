@@ -245,15 +245,17 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
     <>
       <item.icon
         className={cn(
-          'h-5 w-5 flex-shrink-0 transition-colors',
-          isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
+          'h-5 w-5 flex-shrink-0 transition-all duration-200',
+          isActive
+            ? 'scale-110 text-primary'
+            : 'text-muted-foreground group-hover:scale-105 group-hover:text-foreground',
         )}
       />
 
       <span
         className={cn(
-          'ml-3 flex-1 truncate text-sm font-medium transition-colors',
-          isActive ? 'font-semibold text-primary' : 'text-foreground group-hover:text-foreground',
+          'ml-3 flex-1 truncate text-sm font-medium transition-all duration-200',
+          isActive ? 'font-bold text-primary' : 'text-foreground group-hover:text-foreground',
         )}
       >
         {t(item.label)}
@@ -277,12 +279,13 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
   );
 
   const baseClassName = cn(
-    'relative flex items-center rounded-lg px-3 py-2 transition-all duration-200',
-    'hover:bg-muted',
+    'group relative flex items-center rounded-lg px-3 py-2 transition-all duration-200',
+    'hover:bg-muted hover:shadow-sm',
     isActive && [
-      'bg-primary/10 hover:bg-primary/15',
+      'bg-primary/12 hover:bg-primary/18 shadow-sm',
+      'border border-primary/20',
       'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2',
-      'before:h-6 before:w-1 before:rounded-r before:bg-primary',
+      'before:h-8 before:w-1.5 before:rounded-r before:bg-primary before:shadow-[0_0_8px_rgba(0,0,0,0.1)]',
     ],
     level > 0 && 'ml-4',
     item.disabled && 'cursor-not-allowed opacity-50',

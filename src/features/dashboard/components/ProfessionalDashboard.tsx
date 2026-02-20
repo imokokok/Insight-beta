@@ -11,10 +11,6 @@
 
 import { cn } from '@/shared/utils';
 
-// ============================================================================
-// Types
-// ============================================================================
-
 interface DashboardSectionProps {
   title: string;
   description?: string;
@@ -37,10 +33,6 @@ interface TimeRangeSelectorProps {
   className?: string;
 }
 
-// ============================================================================
-// Dashboard Section
-// ============================================================================
-
 export function DashboardSection({
   title,
   description,
@@ -52,8 +44,8 @@ export function DashboardSection({
     <section className={cn('mb-8', className)}>
       <div className="mb-4 flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-          {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}
+          <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+          {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
         </div>
         {action && <div>{action}</div>}
       </div>
@@ -61,10 +53,6 @@ export function DashboardSection({
     </section>
   );
 }
-
-// ============================================================================
-// Dashboard Grid
-// ============================================================================
 
 export function DashboardGrid({
   children,
@@ -91,10 +79,6 @@ export function DashboardGrid({
   );
 }
 
-// ============================================================================
-// Time Range Selector
-// ============================================================================
-
 export function TimeRangeSelector({
   value,
   onChange,
@@ -108,7 +92,7 @@ export function TimeRangeSelector({
   className,
 }: TimeRangeSelectorProps) {
   return (
-    <div className={cn('inline-flex rounded-lg border border-primary/10 bg-white p-1', className)}>
+    <div className={cn('inline-flex rounded-lg border border-primary/10 bg-card p-1', className)}>
       {options.map((option) => (
         <button
           key={option.value}
@@ -117,7 +101,7 @@ export function TimeRangeSelector({
             'rounded-md px-3 py-1.5 text-sm font-medium transition-all',
             value === option.value
               ? 'text-primary-dark bg-primary/10'
-              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
           )}
         >
           {option.label}

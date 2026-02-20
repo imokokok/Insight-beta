@@ -7,7 +7,7 @@ import { AlertTriangle, RefreshCw, Download } from 'lucide-react';
 import { Search, Filter } from 'lucide-react';
 import { Virtuoso } from 'react-virtuoso';
 
-import { StatCard } from '@/components/common';
+import { StatCard, EmptyAlertsListState } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SkeletonList, StatCardSkeleton } from '@/components/ui/skeleton';
+import { AlertListSkeleton, StatCardSkeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AlertCard,
@@ -337,12 +337,19 @@ export default function AlertsCenterPage() {
               </CardHeader>
               <CardContent>
                 {loading && !data ? (
-                  <SkeletonList count={5} />
+                  <AlertListSkeleton count={5} />
                 ) : filteredAlerts.length === 0 ? (
-                  <div className="py-12 text-center text-muted-foreground">
-                    <AlertTriangle className="mx-auto h-8 w-8 opacity-50" />
-                    <p className="mt-2">{t('alerts.noAlerts')}</p>
-                  </div>
+                  <EmptyAlertsListState
+                    isFiltered={
+                      searchQuery !== '' || filterSeverity !== 'all' || filterStatus !== 'all'
+                    }
+                    onClearFilters={() => {
+                      setSearchQuery('');
+                      setFilterSeverity('all');
+                      setFilterStatus('all');
+                    }}
+                    onRefresh={refresh}
+                  />
                 ) : groupMode !== 'none' && alertGroups.length > 0 ? (
                   <div className="max-h-[600px] space-y-3 overflow-y-auto pr-2">
                     <AlertGroupList

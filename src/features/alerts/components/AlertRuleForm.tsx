@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-import { X, Plus } from 'lucide-react';
+import { X, Plus, Loader2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -403,10 +403,11 @@ export function AlertRuleForm({ rule, onSubmit, onCancel }: AlertRuleFormProps) 
       </div>
 
       <div className="flex justify-end gap-3 border-t pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
           {t('common.cancel')}
         </Button>
         <Button type="submit" disabled={loading || !formData.name}>
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {loading ? t('common.saving') : rule ? t('common.update') : t('common.create')}
         </Button>
       </div>

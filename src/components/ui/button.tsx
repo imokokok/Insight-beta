@@ -7,22 +7,22 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/shared/utils';
 
 const buttonVariants = cva(
-  'relative inline-flex items-center justify-center overflow-hidden whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-95 disabled:pointer-events-none disabled:opacity-50',
+  'relative inline-flex items-center justify-center overflow-hidden whitespace-nowrap rounded-lg text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
         default:
-          'bg-primary text-white shadow-md shadow-primary/25 hover:bg-primary-600 hover:shadow-lg hover:shadow-primary/30',
+          'text-primary-foreground bg-primary shadow-md shadow-primary/25 hover:bg-primary-600 hover:shadow-lg hover:shadow-primary/30',
         destructive:
-          'bg-red-600 text-white shadow-md shadow-red-500/25 hover:bg-red-700 hover:shadow-lg hover:shadow-red-500/30',
+          'bg-error text-white shadow-md shadow-error/25 hover:bg-error-dark hover:shadow-lg hover:shadow-error/30',
         outline:
           'border-2 border-primary/20 bg-card/50 text-primary backdrop-blur-sm hover:border-primary/40 hover:bg-primary/10',
         secondary: 'bg-primary/10 text-primary hover:bg-primary/20',
-        ghost: 'text-primary hover:bg-primary/10 hover:text-primary-700',
-        link: 'text-blue-400 underline-offset-4 hover:text-blue-300 hover:underline',
+        ghost: 'text-primary hover:bg-primary/10',
+        link: 'text-primary underline-offset-4 hover:text-primary-400 hover:underline',
         gradient:
-          'bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary-600 hover:shadow-xl hover:shadow-primary/40',
-        glow: 'bg-primary text-white shadow-[0_0_20px_rgba(59,130,246,0.5)] hover:bg-primary-600 hover:shadow-[0_0_30px_rgba(59,130,246,0.7)]',
+          'text-primary-foreground bg-primary shadow-lg shadow-primary/30 hover:bg-primary-600 hover:shadow-xl hover:shadow-primary/40',
+        glow: 'text-primary-foreground bg-primary shadow-[0_0_20px_rgba(59,130,246,0.5)] hover:bg-primary-600 hover:shadow-[0_0_30px_rgba(59,130,246,0.7)]',
       },
       size: {
         default: 'h-10 px-4 py-2',
@@ -50,6 +50,7 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, loading, ripple = true, children, onClick, ...props }, ref) => {
     const [ripples, setRipples] = React.useState<Array<{ x: number; y: number; id: number }>>([]);
+    const [isPressed, setIsPressed] = React.useState(false);
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (ripple && !loading) {
@@ -70,23 +71,33 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <button
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(
+          buttonVariants({ variant, size, className }),
+          'transition-all duration-200 ease-out will-change-transform',
+          'hover:-translate-y-0.5',
+          'active:translate-y-0 active:scale-[0.97]',
+        )}
         ref={ref}
         onClick={handleClick}
+        onMouseDown={() => setIsPressed(true)}
+        onMouseUp={() => setIsPressed(false)}
+        onMouseLeave={() => setIsPressed(false)}
+        onTouchStart={() => setIsPressed(true)}
+        onTouchEnd={() => setIsPressed(false)}
         disabled={loading || props.disabled}
         {...props}
       >
         {ripples.map((ripple) => (
           <span
             key={ripple.id}
-            className="animate-ripple pointer-events-none absolute rounded-full bg-white/40"
+            className="animate-ripple pointer-events-none absolute rounded-full bg-white/35"
             style={{
               left: ripple.x,
               top: ripple.y,
-              width: 10,
-              height: 10,
-              marginLeft: -5,
-              marginTop: -5,
+              width: 8,
+              height: 8,
+              marginLeft: -4,
+              marginTop: -4,
             }}
           />
         ))}
@@ -96,7 +107,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
 
         <span
-          className={cn('relative z-10 inline-flex items-center gap-2', loading && 'opacity-80')}
+          className={cn(
+            'relative z-10 inline-flex items-center gap-2',
+            loading && 'opacity-80',
+            'transition-all duration-200 ease-out',
+            isPressed && 'scale-[0.98]',
+          )}
         >
           {children}
         </span>

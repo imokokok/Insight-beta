@@ -15,9 +15,11 @@ import {
 } from 'lucide-react';
 
 import { useToast } from '@/components/common/DashboardToast';
+import { EmptyFirstItemState } from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { TableSkeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import {
   Table,
@@ -165,19 +167,15 @@ export function AlertRulesList({
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            </div>
+            <TableSkeleton rows={5} columns={7} />
           ) : rules.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <Bell className="h-12 w-12 opacity-50" />
-              <p className="mt-4 text-lg font-medium">{t('alerts.rules.noRules')}</p>
-              <p className="mt-1 text-sm">{t('alerts.rules.noRulesDesc')}</p>
-              <Button onClick={() => setShowForm(true)} className="mt-4" size="sm">
-                <Plus className="mr-2 h-4 w-4" />
-                {t('alerts.rules.createFirstRule')}
-              </Button>
-            </div>
+            <EmptyFirstItemState
+              icon={Bell}
+              title={t('alerts.rules.noRules')}
+              description={t('alerts.rules.noRulesDesc')}
+              onAdd={() => setShowForm(true)}
+              actionLabel={t('alerts.rules.createFirstRule')}
+            />
           ) : (
             <div className="rounded-md border">
               <Table>
