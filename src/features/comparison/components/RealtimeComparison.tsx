@@ -300,7 +300,7 @@ export function RealtimeComparisonView({
                             ? 'bg-red-500'
                             : maxDeviation > 0.5
                               ? 'bg-amber-500'
-                              : HEALTH_COLORS.healthy.dot,
+                              : (HEALTH_COLORS.healthy?.dot ?? 'bg-green-500'),
                         )}
                       />
                       <div>

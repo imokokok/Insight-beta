@@ -41,7 +41,7 @@ declare global {
   }
 }
 
-interface WalletState {
+export interface WalletState {
   address: Address | null;
   chainId: number | null;
   isConnecting: boolean;
@@ -52,13 +52,16 @@ interface WalletState {
   walletName: string | null;
 }
 
-interface WalletContextType extends WalletState {
+export interface WalletActions {
   connect: (type?: WalletConnectionType) => Promise<void>;
   disconnect: () => void;
   switchChain: (targetChainId: number) => Promise<void>;
   getWalletClient: (chainIdOverride?: number) => Promise<WalletClient | null>;
   clearError: () => void;
   addNetwork: (targetChainId: number) => Promise<void>;
+}
+
+export interface WalletStatic {
   isMobile: boolean;
   isWalletBrowser: boolean;
   recommendedConnectionType: WalletConnectionType;
@@ -66,7 +69,13 @@ interface WalletContextType extends WalletState {
   hasWalletConnect: boolean;
 }
 
-const WalletContext = createContext<WalletContextType | null>(null);
+type WalletStateContextType = WalletState;
+type WalletActionsContextType = WalletActions;
+type WalletStaticContextType = WalletStatic;
+
+const WalletStateContext = createContext<WalletStateContextType | null>(null);
+const WalletActionsContext = createContext<WalletActionsContextType | null>(null);
+const WalletStaticContext = createContext<WalletStaticContextType | null>(null);
 
 const chainConfigs: Record<number, { name: string; chain: Chain }> = {
   [polygon.id]: { name: 'Polygon', chain: polygon },
@@ -99,12 +108,35 @@ function getAddChainParams(targetChainId: number) {
   };
 }
 
-export function useWallet() {
-  const context = useContext(WalletContext);
+export function useWalletState() {
+  const context = useContext(WalletStateContext);
   if (!context) {
-    throw new Error('useWallet must be used within a WalletProvider');
+    throw new Error('useWalletState must be used within WalletProvider');
   }
   return context;
+}
+
+export function useWalletActions() {
+  const context = useContext(WalletActionsContext);
+  if (!context) {
+    throw new Error('useWalletActions must be used within WalletProvider');
+  }
+  return context;
+}
+
+export function useWalletStatic() {
+  const context = useContext(WalletStaticContext);
+  if (!context) {
+    throw new Error('useWalletStatic must be used within WalletProvider');
+  }
+  return context;
+}
+
+export function useWallet() {
+  const state = useWalletState();
+  const actions = useWalletActions();
+  const static_ = useWalletStatic();
+  return { ...state, ...static_, ...actions };
 }
 
 interface WalletProviderProps {
@@ -125,10 +157,33 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const isConnected = address !== null && chainId !== null;
 
   const hasBrowserWallet = typeof window !== 'undefined' && !!window.ethereum;
-
   const hasWalletConnect = !!WALLET_CONNECT_PROJECT_ID;
-
   const recommendedConnectionType = getRecommendedConnectionType();
+
+  const staticValue = useMemo<WalletStatic>(
+    () => ({
+      isMobile: isMobile(),
+      isWalletBrowser: isWalletBrowser(),
+      recommendedConnectionType,
+      hasBrowserWallet,
+      hasWalletConnect,
+    }),
+    [recommendedConnectionType, hasBrowserWallet, hasWalletConnect],
+  );
+
+  const stateValue = useMemo<WalletState>(
+    () => ({
+      address,
+      chainId,
+      isConnecting,
+      isConnected,
+      error,
+      errorKind,
+      connectionType,
+      walletName,
+    }),
+    [address, chainId, isConnecting, isConnected, error, errorKind, connectionType, walletName],
+  );
 
   const clearError = useCallback(() => {
     setError(null);
@@ -468,48 +523,25 @@ export function WalletProvider({ children }: WalletProviderProps) {
     [address, chainId, connectionType],
   );
 
-  const value: WalletContextType = useMemo(
+  const actionsValue = useMemo<WalletActions>(
     () => ({
-      address,
-      chainId,
-      isConnecting,
-      isConnected,
-      error,
-      errorKind,
-      connectionType,
-      walletName,
       connect,
       disconnect,
       switchChain,
       getWalletClient,
       clearError,
       addNetwork,
-      isMobile: isMobile(),
-      isWalletBrowser: isWalletBrowser(),
-      recommendedConnectionType,
-      hasBrowserWallet,
-      hasWalletConnect,
     }),
-    [
-      address,
-      chainId,
-      isConnecting,
-      isConnected,
-      error,
-      errorKind,
-      connectionType,
-      walletName,
-      connect,
-      disconnect,
-      switchChain,
-      getWalletClient,
-      clearError,
-      addNetwork,
-      recommendedConnectionType,
-      hasBrowserWallet,
-      hasWalletConnect,
-    ],
+    [connect, disconnect, switchChain, getWalletClient, clearError, addNetwork],
   );
 
-  return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
+  return (
+    <WalletStaticContext.Provider value={staticValue}>
+      <WalletStateContext.Provider value={stateValue}>
+        <WalletActionsContext.Provider value={actionsValue}>
+          {children}
+        </WalletActionsContext.Provider>
+      </WalletStateContext.Provider>
+    </WalletStaticContext.Provider>
+  );
 }

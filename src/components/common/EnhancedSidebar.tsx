@@ -221,7 +221,7 @@ interface NavItemProps {
   level?: number;
 }
 
-function NavItemComponent({ item, level = 0 }: NavItemProps) {
+const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 }: NavItemProps) {
   const pathname = usePathname();
   const prefersReducedMotion = useReducedMotion();
   const { t } = useI18n();
@@ -237,9 +237,9 @@ function NavItemComponent({ item, level = 0 }: NavItemProps) {
 
   const handleClick = useCallback(() => {
     if (hasChildren) {
-      setIsExpanded(!isExpanded);
+      setIsExpanded((prev) => !prev);
     }
-  }, [hasChildren, isExpanded]);
+  }, [hasChildren]);
 
   const content = (
     <>
@@ -336,7 +336,7 @@ function NavItemComponent({ item, level = 0 }: NavItemProps) {
       </AnimatePresence>
     </div>
   );
-}
+});
 
 // ============================================================================
 // Nav Group Component

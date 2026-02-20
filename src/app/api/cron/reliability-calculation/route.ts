@@ -1,8 +1,9 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
 import { calculateAndStoreReliabilityScores } from '@/features/oracle/services/reliabilityScorer';
+import { error, ok } from '@/lib/api/apiResponse';
 import { hasDatabase } from '@/lib/database/db';
+import { AppError, ValidationError } from '@/lib/errors';
 import { logger } from '@/shared/logger';
 import type { TimePeriod } from '@/types/oracle/reliability';
 
@@ -18,12 +19,16 @@ function verifyCronRequest(request: NextRequest): boolean {
     if (authHeader !== expectedAuth) {
       return false;
     }
+    return true;
   }
 
   const isVercelCron = request.headers.get('x-vercel-cron') === 'true';
-  const isLocalDev = process.env.NODE_ENV === 'development';
 
-  return isVercelCron || isLocalDev;
+  if (isVercelCron) {
+    return true;
+  }
+
+  return false;
 }
 
 export async function GET(request: NextRequest) {
@@ -35,14 +40,23 @@ export async function GET(request: NextRequest) {
         hasAuthHeader: !!request.headers.get('authorization'),
         isVercelCron: request.headers.get('x-vercel-cron'),
       });
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      return error(
+        new AppError('Unauthorized', {
+          category: 'AUTHENTICATION',
+          statusCode: 401,
+          code: 'UNAUTHORIZED',
+        }),
+      );
     }
 
     if (!hasDatabase()) {
       logger.warn('Database not available for reliability calculation cron');
-      return NextResponse.json(
-        { success: false, error: 'Database not available' },
-        { status: 503 },
+      return error(
+        new AppError('Database not available', {
+          category: 'UNAVAILABLE',
+          statusCode: 503,
+          code: 'SERVICE_UNAVAILABLE',
+        }),
       );
     }
 
@@ -50,10 +64,7 @@ export async function GET(request: NextRequest) {
     const period = (searchParams.get('period') || '30d') as TimePeriod;
 
     if (!['7d', '30d', '90d'].includes(period)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid period. Must be one of: 7d, 30d, 90d' },
-        { status: 400 },
-      );
+      return error(new ValidationError('Invalid period. Must be one of: 7d, 30d, 90d'));
     }
 
     logger.info('Starting scheduled reliability calculation', {
@@ -72,31 +83,32 @@ export async function GET(request: NextRequest) {
       durationMs: duration,
     });
 
-    return NextResponse.json({
-      success: true,
+    return ok({
       timestamp: new Date().toISOString(),
-      duration: duration,
+      duration,
       period,
       count: results.length,
       data: results,
     });
-  } catch (error) {
+  } catch (err) {
     const duration = Date.now() - startTime;
 
     logger.error('Reliability calculation cron failed', {
-      error: error instanceof Error ? error.message : String(error),
+      error: err instanceof Error ? err.message : String(err),
       durationMs: duration,
     });
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Reliability calculation failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-        duration: duration,
-      },
-      { status: 500 },
+    return error(
+      new AppError('Reliability calculation failed', {
+        category: 'INTERNAL',
+        statusCode: 500,
+        code: 'INTERNAL_ERROR',
+        details: {
+          message: err instanceof Error ? err.message : 'Unknown error',
+          timestamp: new Date().toISOString(),
+          duration,
+        },
+      }),
     );
   }
 }

@@ -1,10 +1,11 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { AppError, isAppError } from '@/lib/errors';
 import { rateLimit as rateLimitCheck } from '@/lib/security/rateLimit';
 import { requireAuth } from '@/shared/auth';
 
-export interface ApiError {
+export interface ApiErrorInput {
   code: string;
   message?: string;
   details?: unknown;
@@ -12,9 +13,11 @@ export interface ApiError {
 
 export interface ApiErrorPayload {
   success: false;
-  error: string;
-  code?: string;
-  details?: unknown;
+  error: {
+    code: string;
+    message: string;
+    details?: unknown;
+  };
 }
 
 export interface ApiOk<T = unknown> {
@@ -27,16 +30,39 @@ export interface ApiOk<T = unknown> {
   };
 }
 
-export function error(err: ApiError | string, status: number = 500): NextResponse {
-  const errorObj: ApiError = typeof err === 'string' ? { code: err } : err;
+export type ApiResponse<T = unknown> = ApiOk<T> | ApiErrorPayload;
+
+export function error(err: AppError | ApiErrorInput | string, status?: number): NextResponse {
+  let appError: AppError;
+
+  if (typeof err === 'string') {
+    appError = new AppError(err, { statusCode: status ?? 500 });
+  } else if (err instanceof AppError) {
+    appError = err;
+  } else {
+    appError = new AppError(err.message || err.code, {
+      code: err.code,
+      statusCode: status ?? 500,
+      details: err.details as Record<string, unknown> | undefined,
+    });
+  }
+
+  const isProduction = process.env.NODE_ENV === 'production';
+  const statusCode = status ?? appError.statusCode;
+
   return NextResponse.json(
     {
       success: false,
-      error: errorObj.message || errorObj.code,
-      code: errorObj.code,
-      details: errorObj.details,
+      error: {
+        code: appError.code,
+        message:
+          isProduction && appError.category === 'INTERNAL'
+            ? 'Internal server error'
+            : appError.message,
+        details: isProduction ? undefined : appError.details,
+      },
     },
-    { status },
+    { status: statusCode },
   );
 }
 
@@ -55,8 +81,22 @@ export async function handleApi(
   try {
     return await handler();
   } catch (err) {
+    if (isAppError(err)) {
+      return error(err);
+    }
+
+    const isProduction = process.env.NODE_ENV === 'production';
     const message = err instanceof Error ? err.message : 'Internal server error';
-    return error({ code: 'internal_error', message }, 500);
+
+    console.error('[API Error]', isProduction ? 'Internal error' : message, err);
+
+    return error(
+      {
+        code: 'internal_error',
+        message: isProduction ? 'Internal server error' : message,
+      },
+      500,
+    );
   }
 }
 
@@ -71,24 +111,14 @@ export async function rateLimit(
   });
 
   if (!result.allowed) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Rate limit exceeded',
+    const retryAfter = Math.ceil((result.resetTime - Date.now()) / 1000);
+    return error(
+      new AppError('Rate limit exceeded', {
+        category: 'RATE_LIMIT',
+        statusCode: 429,
         code: 'RATE_LIMIT_EXCEEDED',
-        details: {
-          retryAfter: Math.ceil((result.resetTime - Date.now()) / 1000),
-        },
-      },
-      {
-        status: 429,
-        headers: {
-          'X-RateLimit-Limit': String(result.totalLimit),
-          'X-RateLimit-Remaining': String(result.remaining),
-          'X-RateLimit-Reset': String(result.resetTime),
-          'Retry-After': String(Math.ceil((result.resetTime - Date.now()) / 1000)),
-        },
-      },
+        details: { retryAfter },
+      }),
     );
   }
 
@@ -105,13 +135,12 @@ export async function requireAdmin(
     if (options?.strict === false) {
       return null;
     }
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Unauthorized',
+    return error(
+      new AppError('Unauthorized', {
+        category: 'AUTHENTICATION',
+        statusCode: 401,
         code: 'UNAUTHORIZED',
-      },
-      { status: 401 },
+      }),
     );
   }
 
@@ -132,13 +161,12 @@ export async function requireAdminWithToken(
     if (options?.strict === false) {
       return null;
     }
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Unauthorized',
+    return error(
+      new AppError('Unauthorized', {
+        category: 'AUTHENTICATION',
+        statusCode: 401,
         code: 'UNAUTHORIZED',
-      },
-      { status: 401 },
+      }),
     );
   }
 
@@ -150,24 +178,22 @@ export async function requireAdminWithToken(
   try {
     isValid = aBuf.length === bBuf.length && crypto.timingSafeEqual(aBuf, bBuf);
   } catch {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Unauthorized',
+    return error(
+      new AppError('Unauthorized', {
+        category: 'AUTHENTICATION',
+        statusCode: 401,
         code: 'UNAUTHORIZED',
-      },
-      { status: 401 },
+      }),
     );
   }
 
   if (!isValid) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Unauthorized',
+    return error(
+      new AppError('Unauthorized', {
+        category: 'AUTHENTICATION',
+        statusCode: 401,
         code: 'UNAUTHORIZED',
-      },
-      { status: 401 },
+      }),
     );
   }
 

@@ -197,125 +197,133 @@ export const COMPONENT_COLORS = {
 } as const;
 
 // ============================================================================
-// 状态颜色映射
+// 工厂函数 - 用于生成重复的颜色配置
 // ============================================================================
 
-export type StatusColor = keyof typeof STATUS_COLORS;
+type LevelColorTheme = 'success' | 'warning' | 'error' | 'primary' | 'muted';
 
-export const STATUS_COLORS = {
-  active: {
+interface LevelColorConfig {
+  primary: LevelColorTheme;
+  bg: string;
+  text: string;
+  border: string;
+  dot: string;
+  label: string;
+}
+
+const LEVEL_THEMES: Record<LevelColorTheme, Omit<LevelColorConfig, 'primary' | 'label'>> = {
+  success: {
     bg: 'bg-success/10',
     text: 'text-success-dark',
     border: 'border-success/30',
     dot: 'bg-success',
-    label: 'Active',
-    component: 'green' as ComponentColor,
-  },
-  stale: {
-    bg: 'bg-warning/10',
-    text: 'text-warning-dark',
-    border: 'border-warning/30',
-    dot: 'bg-warning',
-    label: 'Stale',
-    component: 'amber' as ComponentColor,
-  },
-  error: {
-    bg: 'bg-error/10',
-    text: 'text-error-dark',
-    border: 'border-error/30',
-    dot: 'bg-error',
-    label: 'Error',
-    component: 'red' as ComponentColor,
-  },
-  pending: {
-    bg: 'bg-primary/10',
-    text: 'text-primary-dark',
-    border: 'border-primary/30',
-    dot: 'bg-primary',
-    label: 'Pending',
-    component: 'blue' as ComponentColor,
-  },
-  settled: {
-    bg: 'bg-primary/10',
-    text: 'text-primary-dark',
-    border: 'border-primary/30',
-    dot: 'bg-primary',
-    label: 'Settled',
-    component: 'purple' as ComponentColor,
-  },
-  disputed: {
-    bg: 'bg-warning/10',
-    text: 'text-warning-dark',
-    border: 'border-warning/30',
-    dot: 'bg-warning',
-    label: 'Disputed',
-    component: 'amber' as ComponentColor,
-  },
-  expired: {
-    bg: 'bg-muted/30',
-    text: 'text-muted-foreground',
-    border: 'border-muted',
-    dot: 'bg-muted-foreground',
-    label: 'Expired',
-    component: 'blue' as ComponentColor,
-  },
-  inactive: {
-    bg: 'bg-muted/30',
-    text: 'text-muted-foreground',
-    border: 'border-muted',
-    dot: 'bg-muted-foreground',
-    label: 'Inactive',
-    component: 'blue' as ComponentColor,
-  },
-  resolved: {
-    bg: 'bg-success/10',
-    text: 'text-success-dark',
-    border: 'border-success/30',
-    dot: 'bg-success',
-    label: 'Resolved',
-    component: 'green' as ComponentColor,
-  },
-  unknown: {
-    bg: 'bg-muted/30',
-    text: 'text-muted-foreground',
-    border: 'border-muted',
-    dot: 'bg-muted-foreground',
-    label: 'Unknown',
-    component: 'blue' as ComponentColor,
-  },
-  online: {
-    bg: 'bg-success/10',
-    text: 'text-success-dark',
-    border: 'border-success/30',
-    dot: 'bg-success',
-    label: 'Online',
-    component: 'green' as ComponentColor,
-  },
-  offline: {
-    bg: 'bg-error/10',
-    text: 'text-error-dark',
-    border: 'border-error/30',
-    dot: 'bg-error',
-    label: 'Offline',
-    component: 'red' as ComponentColor,
   },
   warning: {
     bg: 'bg-warning/10',
     text: 'text-warning-dark',
     border: 'border-warning/30',
     dot: 'bg-warning',
-    label: 'Warning',
-    component: 'amber' as ComponentColor,
   },
-  success: {
-    bg: 'bg-success/10',
-    text: 'text-success-dark',
-    border: 'border-success/30',
-    dot: 'bg-success',
-    label: 'Success',
-    component: 'green' as ComponentColor,
+  error: {
+    bg: 'bg-error/10',
+    text: 'text-error-dark',
+    border: 'border-error/30',
+    dot: 'bg-error',
   },
-} as const;
+  primary: {
+    bg: 'bg-primary/10',
+    text: 'text-primary-dark',
+    border: 'border-primary/30',
+    dot: 'bg-primary',
+  },
+  muted: {
+    bg: 'bg-muted/30',
+    text: 'text-muted-foreground',
+    border: 'border-muted',
+    dot: 'bg-muted-foreground',
+  },
+};
+
+function createLevelColorConfig<T extends string>(
+  configs: Record<T, { theme: LevelColorTheme; label: string }>,
+): Record<T, LevelColorConfig> {
+  const result = {} as Record<T, LevelColorConfig>;
+  for (const key in configs) {
+    const { theme, label } = configs[key];
+    result[key] = {
+      primary: theme,
+      ...LEVEL_THEMES[theme],
+      label,
+    };
+  }
+  return result;
+}
+
+// ============================================================================
+// 状态颜色映射
+// ============================================================================
+
+type StatusKey =
+  | 'active'
+  | 'stale'
+  | 'error'
+  | 'pending'
+  | 'settled'
+  | 'disputed'
+  | 'expired'
+  | 'inactive'
+  | 'resolved'
+  | 'unknown'
+  | 'online'
+  | 'offline'
+  | 'warning'
+  | 'success';
+
+const STATUS_CONFIGS: Record<
+  StatusKey,
+  { theme: LevelColorTheme; label: string; component: ComponentColor }
+> = {
+  active: { theme: 'success', label: 'Active', component: 'green' },
+  stale: { theme: 'warning', label: 'Stale', component: 'amber' },
+  error: { theme: 'error', label: 'Error', component: 'red' },
+  pending: { theme: 'primary', label: 'Pending', component: 'blue' },
+  settled: { theme: 'primary', label: 'Settled', component: 'purple' },
+  disputed: { theme: 'warning', label: 'Disputed', component: 'amber' },
+  expired: { theme: 'muted', label: 'Expired', component: 'blue' },
+  inactive: { theme: 'muted', label: 'Inactive', component: 'blue' },
+  resolved: { theme: 'success', label: 'Resolved', component: 'green' },
+  unknown: { theme: 'muted', label: 'Unknown', component: 'blue' },
+  online: { theme: 'success', label: 'Online', component: 'green' },
+  offline: { theme: 'error', label: 'Offline', component: 'red' },
+  warning: { theme: 'warning', label: 'Warning', component: 'amber' },
+  success: { theme: 'success', label: 'Success', component: 'green' },
+};
+
+interface StatusColorValue {
+  bg: string;
+  text: string;
+  border: string;
+  dot: string;
+  label: string;
+  component: ComponentColor;
+}
+
+const STATUS_COLORS_INTERNAL: Record<StatusKey, StatusColorValue> = (() => {
+  const result = {} as Record<StatusKey, StatusColorValue>;
+  for (const key in STATUS_CONFIGS) {
+    const { theme, label, component } = STATUS_CONFIGS[key as StatusKey];
+    result[key as StatusKey] = {
+      ...LEVEL_THEMES[theme],
+      label,
+      component,
+    };
+  }
+  return result;
+})();
+
+export type StatusColor = StatusKey;
+
+export const STATUS_COLORS: Record<StatusKey, StatusColorValue> = STATUS_COLORS_INTERNAL;
 
 // ============================================================================
 // 协议颜色
@@ -439,64 +447,15 @@ export const MONITOR_STATUS_COLORS = {
 
 export type SeverityColor = keyof typeof SEVERITY_COLORS;
 
-export const SEVERITY_COLORS = {
-  low: {
-    primary: 'success',
-    bg: 'bg-success/10',
-    text: 'text-success-dark',
-    border: 'border-success/30',
-    dot: 'bg-success',
-    label: 'Low',
-  },
-  medium: {
-    primary: 'warning',
-    bg: 'bg-warning/10',
-    text: 'text-warning-dark',
-    border: 'border-warning/30',
-    dot: 'bg-warning',
-    label: 'Medium',
-  },
-  high: {
-    primary: 'warning',
-    bg: 'bg-warning/10',
-    text: 'text-warning-dark',
-    border: 'border-warning/30',
-    dot: 'bg-warning',
-    label: 'High',
-  },
-  critical: {
-    primary: 'error',
-    bg: 'bg-error/10',
-    text: 'text-error-dark',
-    border: 'border-error/30',
-    dot: 'bg-error',
-    label: 'Critical',
-  },
-  info: {
-    primary: 'primary',
-    bg: 'bg-primary/10',
-    text: 'text-primary-dark',
-    border: 'border-primary/30',
-    dot: 'bg-primary',
-    label: 'Info',
-  },
-  warning: {
-    primary: 'warning',
-    bg: 'bg-warning/10',
-    text: 'text-warning-dark',
-    border: 'border-warning/30',
-    dot: 'bg-warning',
-    label: 'Warning',
-  },
-  emergency: {
-    primary: 'error',
-    bg: 'bg-error/10',
-    text: 'text-error-dark',
-    border: 'border-error/30',
-    dot: 'bg-error',
-    label: 'Emergency',
-  },
-} as const;
+export const SEVERITY_COLORS: Record<string, LevelColorConfig> = createLevelColorConfig({
+  low: { theme: 'success', label: 'Low' },
+  medium: { theme: 'warning', label: 'Medium' },
+  high: { theme: 'warning', label: 'High' },
+  critical: { theme: 'error', label: 'Critical' },
+  info: { theme: 'primary', label: 'Info' },
+  warning: { theme: 'warning', label: 'Warning' },
+  emergency: { theme: 'error', label: 'Emergency' },
+});
 
 // ============================================================================
 // 风险等级颜色配置
@@ -504,133 +463,43 @@ export const SEVERITY_COLORS = {
 
 export type RiskColor = keyof typeof RISK_COLORS;
 
-export const RISK_COLORS = {
-  low: {
-    primary: 'success',
-    bg: 'bg-success/10',
-    text: 'text-success-dark',
-    border: 'border-success/30',
-    dot: 'bg-success',
-    label: 'Low Risk',
-  },
-  medium: {
-    primary: 'warning',
-    bg: 'bg-warning/10',
-    text: 'text-warning-dark',
-    border: 'border-warning/30',
-    dot: 'bg-warning',
-    label: 'Medium Risk',
-  },
-  high: {
-    primary: 'warning',
-    bg: 'bg-warning/10',
-    text: 'text-warning-dark',
-    border: 'border-warning/30',
-    dot: 'bg-warning',
-    label: 'High Risk',
-  },
-  critical: {
-    primary: 'error',
-    bg: 'bg-error/10',
-    text: 'text-error-dark',
-    border: 'border-error/30',
-    dot: 'bg-error',
-    label: 'Critical Risk',
-  },
-} as const;
+export const RISK_COLORS: Record<string, LevelColorConfig> = createLevelColorConfig({
+  low: { theme: 'success', label: 'Low Risk' },
+  medium: { theme: 'warning', label: 'Medium Risk' },
+  high: { theme: 'warning', label: 'High Risk' },
+  critical: { theme: 'error', label: 'Critical Risk' },
+});
 
 // ============================================================================
 // Badge 状态颜色配置（用于 StatusBadge 组件）
 // ============================================================================
 
-export type StatusThemeColor = keyof typeof STATUS_THEME_COLORS;
+interface StatusThemeColorValue {
+  label: string;
+  dotColor: string;
+  bgColor: string;
+  textColor: string;
+}
 
-export const STATUS_THEME_COLORS = {
-  active: {
-    label: 'Active',
-    dotColor: 'bg-success',
-    bgColor: 'bg-success/20',
-    textColor: 'text-success-dark',
-  },
-  stale: {
-    label: 'Stale',
-    dotColor: 'bg-warning',
-    bgColor: 'bg-warning/20',
-    textColor: 'text-warning-dark',
-  },
-  error: {
-    label: 'Error',
-    dotColor: 'bg-error',
-    bgColor: 'bg-error/20',
-    textColor: 'text-error-dark',
-  },
-  pending: {
-    label: 'Pending',
-    dotColor: 'bg-primary',
-    bgColor: 'bg-primary/20',
-    textColor: 'text-primary-dark',
-  },
-  settled: {
-    label: 'Settled',
-    dotColor: 'bg-success',
-    bgColor: 'bg-success/20',
-    textColor: 'text-success-dark',
-  },
-  disputed: {
-    label: 'Disputed',
-    dotColor: 'bg-warning',
-    bgColor: 'bg-warning/20',
-    textColor: 'text-warning-dark',
-  },
-  expired: {
-    label: 'Expired',
-    dotColor: 'bg-muted-foreground',
-    bgColor: 'bg-muted/30',
-    textColor: 'text-muted-foreground',
-  },
-  inactive: {
-    label: 'Inactive',
-    dotColor: 'bg-muted-foreground',
-    bgColor: 'bg-muted/30',
-    textColor: 'text-muted-foreground',
-  },
-  resolved: {
-    label: 'Resolved',
-    dotColor: 'bg-success',
-    bgColor: 'bg-success/20',
-    textColor: 'text-success-dark',
-  },
-  unknown: {
-    label: 'Unknown',
-    dotColor: 'bg-muted-foreground',
-    bgColor: 'bg-muted/30',
-    textColor: 'text-muted-foreground',
-  },
-  online: {
-    label: 'Online',
-    dotColor: 'bg-success',
-    bgColor: 'bg-success/20',
-    textColor: 'text-success-dark',
-  },
-  offline: {
-    label: 'Offline',
-    dotColor: 'bg-error',
-    bgColor: 'bg-error/20',
-    textColor: 'text-error-dark',
-  },
-  warning: {
-    label: 'Warning',
-    dotColor: 'bg-warning',
-    bgColor: 'bg-warning/20',
-    textColor: 'text-warning-dark',
-  },
-  success: {
-    label: 'Success',
-    dotColor: 'bg-success',
-    bgColor: 'bg-success/20',
-    textColor: 'text-success-dark',
-  },
-} as const;
+const STATUS_THEME_COLORS_INTERNAL: Record<StatusKey, StatusThemeColorValue> = (() => {
+  const result = {} as Record<StatusKey, StatusThemeColorValue>;
+  for (const key in STATUS_CONFIGS) {
+    const { theme, label } = STATUS_CONFIGS[key as StatusKey];
+    const themeConfig = LEVEL_THEMES[theme];
+    result[key as StatusKey] = {
+      label,
+      dotColor: themeConfig.dot,
+      bgColor: themeConfig.bg.replace('/10', '/20'),
+      textColor: themeConfig.text,
+    };
+  }
+  return result;
+})();
+
+export type StatusThemeColor = StatusKey;
+
+export const STATUS_THEME_COLORS: Record<StatusKey, StatusThemeColorValue> =
+  STATUS_THEME_COLORS_INTERNAL;
 
 // ============================================================================
 // 健康状态颜色配置
@@ -638,40 +507,12 @@ export const STATUS_THEME_COLORS = {
 
 export type HealthColor = keyof typeof HEALTH_COLORS;
 
-export const HEALTH_COLORS = {
-  healthy: {
-    primary: 'success',
-    bg: 'bg-success/10',
-    text: 'text-success-dark',
-    border: 'border-success/30',
-    dot: 'bg-success',
-    label: 'Healthy',
-  },
-  degraded: {
-    primary: 'warning',
-    bg: 'bg-warning/10',
-    text: 'text-warning-dark',
-    border: 'border-warning/30',
-    dot: 'bg-warning',
-    label: 'Degraded',
-  },
-  unhealthy: {
-    primary: 'error',
-    bg: 'bg-error/10',
-    text: 'text-error-dark',
-    border: 'border-error/30',
-    dot: 'bg-error',
-    label: 'Unhealthy',
-  },
-  unknown: {
-    primary: 'muted',
-    bg: 'bg-muted/30',
-    text: 'text-muted-foreground',
-    border: 'border-muted',
-    dot: 'bg-muted-foreground',
-    label: 'Unknown',
-  },
-} as const;
+export const HEALTH_COLORS: Record<string, LevelColorConfig> = createLevelColorConfig({
+  healthy: { theme: 'success', label: 'Healthy' },
+  degraded: { theme: 'warning', label: 'Degraded' },
+  unhealthy: { theme: 'error', label: 'Unhealthy' },
+  unknown: { theme: 'muted', label: 'Unknown' },
+});
 
 // ============================================================================
 // 工具函数
@@ -682,19 +523,28 @@ export function getStatusColor(status: string): (typeof STATUS_COLORS)[StatusCol
   return STATUS_COLORS[key] || STATUS_COLORS.unknown;
 }
 
-export function getSeverityColor(severity: string): (typeof SEVERITY_COLORS)[SeverityColor] {
-  const key = severity.toLowerCase() as SeverityColor;
-  return SEVERITY_COLORS[key] || SEVERITY_COLORS.info;
+const DEFAULT_LEVEL_COLOR: LevelColorConfig = {
+  primary: 'muted',
+  bg: 'bg-muted/30',
+  text: 'text-muted-foreground',
+  border: 'border-muted',
+  dot: 'bg-muted-foreground',
+  label: 'Unknown',
+};
+
+export function getSeverityColor(severity: string): LevelColorConfig {
+  const key = severity.toLowerCase();
+  return (SEVERITY_COLORS as Record<string, LevelColorConfig>)[key] ?? DEFAULT_LEVEL_COLOR;
 }
 
-export function getRiskColor(risk: string): (typeof RISK_COLORS)[RiskColor] {
-  const key = risk.toLowerCase() as RiskColor;
-  return RISK_COLORS[key] || RISK_COLORS.medium;
+export function getRiskColor(risk: string): LevelColorConfig {
+  const key = risk.toLowerCase();
+  return (RISK_COLORS as Record<string, LevelColorConfig>)[key] ?? DEFAULT_LEVEL_COLOR;
 }
 
-export function getHealthColor(health: string): (typeof HEALTH_COLORS)[HealthColor] {
-  const key = health.toLowerCase() as HealthColor;
-  return HEALTH_COLORS[key] || HEALTH_COLORS.unknown;
+export function getHealthColor(health: string): LevelColorConfig {
+  const key = health.toLowerCase();
+  return (HEALTH_COLORS as Record<string, LevelColorConfig>)[key] ?? DEFAULT_LEVEL_COLOR;
 }
 
 export function getProtocolColor(protocol: string): string {

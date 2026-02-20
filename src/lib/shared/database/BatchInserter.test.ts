@@ -18,17 +18,17 @@ describe('BatchInserter', () => {
   });
 
   it('should insert single batch correctly', async () => {
-    const inserter = new BatchInserter<{ id: string; name: string }>({
-      tableName: 'test_table',
-      columns: ['id', 'name'],
+    const inserter = new BatchInserter<{ id: string; symbol: string }>({
+      tableName: 'price_history',
+      columns: ['id', 'symbol'],
       batchSize: 10,
     });
 
     (query as ReturnType<typeof vi.fn>).mockResolvedValue({ rowCount: 2 });
 
     const items = [
-      { id: '1', name: 'Alice' },
-      { id: '2', name: 'Bob' },
+      { id: '1', symbol: 'BTC' },
+      { id: '2', symbol: 'ETH' },
     ];
 
     const result = await inserter.insert(items);
@@ -36,14 +36,14 @@ describe('BatchInserter', () => {
     expect(result).toBe(2);
     expect(query).toHaveBeenCalledTimes(1);
     expect(query).toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO test_table'),
-      expect.arrayContaining(['1', 'Alice', '2', 'Bob']),
+      expect.stringContaining('INSERT INTO price_history'),
+      expect.arrayContaining(['1', 'BTC', '2', 'ETH']),
     );
   });
 
   it('should split large batches', async () => {
     const inserter = new BatchInserter<{ id: string }>({
-      tableName: 'test_table',
+      tableName: 'price_history',
       columns: ['id'],
       batchSize: 2,
     });
@@ -59,7 +59,7 @@ describe('BatchInserter', () => {
 
   it('should handle empty array', async () => {
     const inserter = new BatchInserter<{ id: string }>({
-      tableName: 'test_table',
+      tableName: 'price_history',
       columns: ['id'],
       batchSize: 100,
     });
@@ -71,27 +71,27 @@ describe('BatchInserter', () => {
   });
 
   it('should build correct SQL with onConflict', async () => {
-    const inserter = new BatchInserter<{ id: string; value: number }>({
-      tableName: 'test_table',
-      columns: ['id', 'value'],
+    const inserter = new BatchInserter<{ id: string; price: number }>({
+      tableName: 'price_history',
+      columns: ['id', 'price'],
       batchSize: 100,
-      onConflict: 'ON CONFLICT (id) DO UPDATE SET value = EXCLUDED.value',
+      onConflict: 'ON CONFLICT (id) DO UPDATE SET price = EXCLUDED.price',
     });
 
     (query as ReturnType<typeof vi.fn>).mockResolvedValue({ rowCount: 1 });
 
-    await inserter.insert([{ id: '1', value: 100 }]);
+    await inserter.insert([{ id: '1', price: 100 }]);
 
     expect(query).toHaveBeenCalledWith(
-      expect.stringContaining('ON CONFLICT (id) DO UPDATE SET value = EXCLUDED.value'),
+      expect.stringContaining('ON CONFLICT (id) DO UPDATE SET price = EXCLUDED.price'),
       expect.any(Array),
     );
   });
 
   it('should generate correct placeholders', async () => {
     const inserter = new BatchInserter<{ a: string; b: string }>({
-      tableName: 'test',
-      columns: ['a', 'b'],
+      tableName: 'price_history',
+      columns: ['id', 'symbol'],
       batchSize: 10,
     });
 
@@ -106,9 +106,28 @@ describe('BatchInserter', () => {
     const callArgs = (query as ReturnType<typeof vi.fn>).mock.calls[0];
     const sql = (callArgs?.[0] ?? '') as string;
 
-    // Should have placeholders ($1,$2),($3,$4),($5,$6)
     expect(sql).toContain('($1,$2)');
     expect(sql).toContain('($3,$4)');
     expect(sql).toContain('($5,$6)');
+  });
+
+  it('should reject invalid table names', () => {
+    expect(() => {
+      new BatchInserter({
+        tableName: 'invalid_table',
+        columns: ['id'],
+        batchSize: 10,
+      });
+    }).toThrow('Invalid table name');
+  });
+
+  it('should reject invalid column names', () => {
+    expect(() => {
+      new BatchInserter({
+        tableName: 'price_history',
+        columns: ['id', 'invalid_column'],
+        batchSize: 10,
+      });
+    }).toThrow('Invalid column name');
   });
 });

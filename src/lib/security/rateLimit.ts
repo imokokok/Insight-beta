@@ -1,10 +1,11 @@
 /**
  * Rate Limiting - 速率限制
  *
- * 使用内存存储，适合单实例部署（如 Vercel）
+ * 支持内存存储（单实例）和 Redis 存储（多实例）
  *
- * 注意：如果未来需要多实例部署，可以添加 Redis 支持
- * 参考：https://github.com/vercel/next.js/tree/canary/examples/with-redis
+ * 配置环境变量：
+ * - REDIS_URL: Redis 连接地址（如 redis://localhost:6379）
+ * - 未配置时默认使用内存存储
  */
 
 import type { NextRequest } from 'next/server';
@@ -33,7 +34,7 @@ export interface RateLimitResult {
   totalLimit: number;
 }
 
-export type RateLimitStoreType = 'memory';
+export type RateLimitStoreType = 'memory' | 'redis';
 
 // ============================================================================
 // 存储接口定义
@@ -101,17 +102,138 @@ class MemoryStore implements RateLimitStore {
 }
 
 // ============================================================================
+// Redis 存储实现（可选）
+// ============================================================================
+
+interface RedisClient {
+  get(key: string): Promise<string | null>;
+  setex(key: string, ttl: number, value: string): Promise<'OK' | string>;
+  del(key: string): Promise<number>;
+}
+
+let redisClient: RedisClient | null = null;
+
+async function getRedisClient(): Promise<RedisClient | null> {
+  if (redisClient) {
+    return redisClient;
+  }
+
+  try {
+    const Redis = (await import('ioredis')).default;
+    const redisUrl = process.env.REDIS_URL;
+    if (!redisUrl) {
+      throw new Error('REDIS_URL not configured');
+    }
+    redisClient = new Redis(redisUrl) as RedisClient;
+    logger.info('Redis rate limit store initialized');
+    return redisClient;
+  } catch (error) {
+    logger.warn('Failed to initialize Redis, falling back to memory store', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
+class RedisStore implements RateLimitStore {
+  private readonly prefix = 'ratelimit:';
+
+  async getRecord(key: string): Promise<RateLimitRecord | null> {
+    const redis = await getRedisClient();
+    if (!redis) {
+      throw new Error('Redis not available');
+    }
+
+    const data = await redis.get(`${this.prefix}${key}`);
+    if (!data) return null;
+
+    try {
+      const record = JSON.parse(data) as RateLimitRecord;
+      if (Date.now() > record.resetTime) {
+        await redis.del(`${this.prefix}${key}`);
+        return null;
+      }
+      return record;
+    } catch {
+      return null;
+    }
+  }
+
+  async setRecord(key: string, record: RateLimitRecord): Promise<void> {
+    const redis = await getRedisClient();
+    if (!redis) {
+      throw new Error('Redis not available');
+    }
+
+    const ttl = Math.ceil((record.resetTime - Date.now()) / 1000);
+    await redis.setex(`${this.prefix}${key}`, Math.max(ttl, 1), JSON.stringify(record));
+  }
+
+  async incrementRecord(key: string, windowMs: number): Promise<RateLimitRecord> {
+    const redis = await getRedisClient();
+    if (!redis) {
+      throw new Error('Redis not available');
+    }
+
+    const now = Date.now();
+    const redisKey = `${this.prefix}${key}`;
+    const data = await redis.get(redisKey);
+
+    if (!data) {
+      const record: RateLimitRecord = {
+        count: 1,
+        resetTime: now + windowMs,
+      };
+      await this.setRecord(key, record);
+      return record;
+    }
+
+    try {
+      const record = JSON.parse(data) as RateLimitRecord;
+      record.count++;
+      await this.setRecord(key, record);
+      return record;
+    } catch {
+      const record: RateLimitRecord = {
+        count: 1,
+        resetTime: now + windowMs,
+      };
+      await this.setRecord(key, record);
+      return record;
+    }
+  }
+}
+
+// ============================================================================
 // 存储实例
 // ============================================================================
 
 let currentStore: RateLimitStore | null = null;
-const storeType: RateLimitStoreType = 'memory';
+let storeType: RateLimitStoreType = 'memory';
 
 function getStore(): RateLimitStore {
-  if (!currentStore) {
+  if (currentStore) {
+    return currentStore;
+  }
+
+  const redisUrl = process.env.REDIS_URL;
+
+  if (redisUrl) {
+    try {
+      currentStore = new RedisStore();
+      storeType = 'redis';
+      logger.info('Using Redis rate limit store');
+    } catch {
+      currentStore = new MemoryStore();
+      storeType = 'memory';
+      logger.info('Using memory rate limit store (Redis fallback)');
+    }
+  } else {
     currentStore = new MemoryStore();
+    storeType = 'memory';
     logger.info('Using memory rate limit store');
   }
+
   return currentStore;
 }
 

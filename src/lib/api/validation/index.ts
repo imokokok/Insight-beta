@@ -1,12 +1,12 @@
-import { VALID_SYMBOLS } from '@/config/constants';
+import { validateSymbol as validateSymbolCore } from '@/lib/blockchain/security/inputValidation';
 
 export function validateSymbol(symbol: string | null): string | null {
   if (!symbol || typeof symbol !== 'string') {
     return null;
   }
-  const upperSymbol = symbol.toUpperCase().trim();
-  if (!(VALID_SYMBOLS as readonly string[]).includes(upperSymbol)) {
+  const result = validateSymbolCore(symbol);
+  if (!result.valid) {
     return null;
   }
-  return upperSymbol;
+  return result.sanitized as string;
 }

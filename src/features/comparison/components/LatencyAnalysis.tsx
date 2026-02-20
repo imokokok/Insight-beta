@@ -36,13 +36,13 @@ interface LatencyAnalysisProps {
 /** 状态配置 - 使用统一的状态色板 */
 const statusConfig = {
   healthy: {
-    color: HEALTH_COLORS.healthy.dot,
+    color: HEALTH_COLORS.healthy?.dot ?? 'bg-green-500',
     labelKey: 'comparison.status.healthy',
     icon: Zap,
     ariaLabelKey: 'status.healthy',
   },
   degraded: {
-    color: HEALTH_COLORS.degraded.dot,
+    color: HEALTH_COLORS.degraded?.dot ?? 'bg-amber-500',
     labelKey: 'comparison.status.degraded',
     icon: AlertCircle,
     ariaLabelKey: 'status.degraded',

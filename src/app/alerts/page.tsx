@@ -1,7 +1,11 @@
 'use client';
 
+import { forwardRef } from 'react';
+import type { ComponentPropsWithoutRef } from 'react';
+
 import { AlertTriangle, RefreshCw, Download } from 'lucide-react';
 import { Search, Filter } from 'lucide-react';
+import { Virtuoso } from 'react-virtuoso';
 
 import { StatCard } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
@@ -37,6 +41,15 @@ import { useAlertsPage, sourceIcons } from '@/features/alerts/hooks';
 import type { AlertSeverity, AlertStatus } from '@/features/alerts/hooks/useAlerts';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/shared/utils';
+
+const ListContainer = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
+  ({ style, children, ...props }, ref) => (
+    <div ref={ref} {...props} style={style} className="space-y-3 pr-2">
+      {children}
+    </div>
+  ),
+);
+ListContainer.displayName = 'ListContainer';
 
 export default function AlertsCenterPage() {
   const { t } = useI18n();
@@ -341,8 +354,13 @@ export default function AlertsCenterPage() {
                     />
                   </div>
                 ) : (
-                  <div className="max-h-[600px] space-y-3 overflow-y-auto pr-2">
-                    {filteredAlerts.map((alert) => (
+                  <Virtuoso
+                    data={filteredAlerts}
+                    style={{ height: '600px' }}
+                    components={{
+                      List: ListContainer,
+                    }}
+                    itemContent={(_index, alert) => (
                       <AlertCard
                         key={alert.id}
                         alert={alert}
@@ -352,8 +370,8 @@ export default function AlertsCenterPage() {
                         isChecked={isSelected(alert.id)}
                         onCheckChange={() => toggleSelection(alert.id)}
                       />
-                    ))}
-                  </div>
+                    )}
+                  />
                 )}
               </CardContent>
             </Card>

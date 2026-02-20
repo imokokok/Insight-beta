@@ -6,9 +6,46 @@
  * - 冲突处理（ON CONFLICT）
  * - 类型安全
  * - SQL 占位符自动生成
+ * - 表名和列名白名单验证
  */
 
 import { query } from '@/lib/database/db';
+
+const ALLOWED_TABLES = new Set([
+  'price_history',
+  'price_updates',
+  'reliability_scores',
+  'protocol_rankings',
+  'alerts',
+  'alert_rules',
+  'notification_channels',
+  'price_deviations',
+  'oracle_health_checks',
+]);
+
+const ALLOWED_COLUMNS = new Set([
+  'id',
+  'symbol',
+  'price',
+  'timestamp',
+  'protocol',
+  'chain',
+  'source',
+  'status',
+  'severity',
+  'title',
+  'description',
+  'metadata',
+  'deviation',
+  'latency_ms',
+  'success_count',
+  'total_count',
+  'score',
+  'rank',
+  'period',
+  'created_at',
+  'updated_at',
+]);
 
 export interface BatchInserterConfig {
   /** 每批大小 */
@@ -21,10 +58,24 @@ export interface BatchInserterConfig {
   onConflict?: string;
 }
 
+function validateIdentifier(identifier: string, allowedSet: Set<string>, type: string): void {
+  if (!allowedSet.has(identifier)) {
+    throw new Error(`Invalid ${type}: ${identifier}. Must be in whitelist.`);
+  }
+}
+
+function validateIdentifiers(tableName: string, columns: string[]): void {
+  validateIdentifier(tableName, ALLOWED_TABLES, 'table name');
+  for (const column of columns) {
+    validateIdentifier(column, ALLOWED_COLUMNS, 'column name');
+  }
+}
+
 export class BatchInserter<T extends Record<string, unknown>> {
   private readonly config: BatchInserterConfig;
 
   constructor(config: BatchInserterConfig) {
+    validateIdentifiers(config.tableName, config.columns);
     this.config = config;
   }
 
@@ -99,7 +150,6 @@ export class BatchInserter<T extends Record<string, unknown>> {
   private extractValues(item: T): unknown[] {
     return this.config.columns.map((col) => {
       const value = item[col];
-      // 处理数组类型（PostgreSQL 数组格式）
       if (Array.isArray(value)) {
         return value;
       }

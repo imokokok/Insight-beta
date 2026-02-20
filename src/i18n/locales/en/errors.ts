@@ -30,5 +30,8 @@ export const errors = {
   failedToFetchPriceStats: 'Unable to calculate price statistics',
   failedToInsertPriceHistory: 'Unable to save price history records',
   failedToRefreshMaterializedView: 'Unable to refresh materialized view',
-  noPriceDataFound: 'No price data available for the specified criteria'
+  noPriceDataFound: 'No price data available for the specified criteria',
+  componentLoadFailed: 'Component failed to load',
+  tryRefresh: 'An error occurred with this component. Please try refreshing.',
+  retry: 'Retry',
 };

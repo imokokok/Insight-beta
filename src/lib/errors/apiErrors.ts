@@ -2,7 +2,12 @@
  * API Errors - API 错误处理
  *
  * 统一的 API 错误码和错误处理工具
+ * ApiError 继承自 AppError，保持错误处理的一致性
  */
+
+import type { PaginationMeta } from '@/types/common/pagination';
+
+import { AppError, type ErrorCategory } from './AppError';
 
 // ============================================================================
 // 错误码枚举
@@ -114,34 +119,77 @@ export const ErrorCodeToMessage: Record<ApiErrorCode, string> = {
 };
 
 // ============================================================================
-// API 错误类
+// API 错误类 - 继承自 AppError
 // ============================================================================
 
-export class ApiError extends Error {
-  public readonly code: ApiErrorCode;
-  public readonly statusCode: number;
-  public readonly details?: Record<string, unknown>;
-  public readonly timestamp: string;
+const ApiErrorCodeToCategory: Record<ApiErrorCode, ErrorCategory> = {
+  [ApiErrorCode.BAD_REQUEST]: 'VALIDATION',
+  [ApiErrorCode.UNAUTHORIZED]: 'AUTHENTICATION',
+  [ApiErrorCode.FORBIDDEN]: 'AUTHORIZATION',
+  [ApiErrorCode.NOT_FOUND]: 'NOT_FOUND',
+  [ApiErrorCode.METHOD_NOT_ALLOWED]: 'VALIDATION',
+  [ApiErrorCode.CONFLICT]: 'CONFLICT',
+  [ApiErrorCode.UNPROCESSABLE_ENTITY]: 'VALIDATION',
+  [ApiErrorCode.TOO_MANY_REQUESTS]: 'RATE_LIMIT',
 
-  constructor(code: ApiErrorCode, message?: string, details?: Record<string, unknown>) {
-    super(message || ErrorCodeToMessage[code]);
-    this.code = code;
-    this.statusCode = ErrorCodeToHttpStatus[code];
-    this.details = details;
-    this.timestamp = new Date().toISOString();
+  [ApiErrorCode.INTERNAL_ERROR]: 'INTERNAL',
+  [ApiErrorCode.NOT_IMPLEMENTED]: 'INTERNAL',
+  [ApiErrorCode.SERVICE_UNAVAILABLE]: 'UNAVAILABLE',
+  [ApiErrorCode.GATEWAY_TIMEOUT]: 'TIMEOUT',
+
+  [ApiErrorCode.VALIDATION_ERROR]: 'VALIDATION',
+  [ApiErrorCode.RESOURCE_NOT_FOUND]: 'NOT_FOUND',
+  [ApiErrorCode.RESOURCE_CONFLICT]: 'CONFLICT',
+  [ApiErrorCode.INSUFFICIENT_FUNDS]: 'VALIDATION',
+  [ApiErrorCode.INVALID_SIGNATURE]: 'VALIDATION',
+  [ApiErrorCode.EXPIRED]: 'VALIDATION',
+  [ApiErrorCode.RATE_LIMITED]: 'RATE_LIMIT',
+
+  [ApiErrorCode.ORACLE_NOT_FOUND]: 'NOT_FOUND',
+  [ApiErrorCode.ORACLE_OFFLINE]: 'UNAVAILABLE',
+  [ApiErrorCode.PRICE_STALE]: 'EXTERNAL',
+  [ApiErrorCode.PRICE_DEVIATION]: 'EXTERNAL',
+  [ApiErrorCode.ASSERTION_FAILED]: 'INTERNAL',
+  [ApiErrorCode.DISPUTE_FAILED]: 'INTERNAL',
+};
+
+export class ApiError extends AppError {
+  declare readonly code: ApiErrorCode;
+  declare readonly statusCode: number;
+  declare readonly details?: Record<string, unknown>;
+
+  constructor(
+    code: ApiErrorCode,
+    message?: string,
+    details?: Record<string, unknown>,
+    options?: { cause?: Error; requestId?: string },
+  ) {
+    super(message || ErrorCodeToMessage[code], {
+      category: ApiErrorCodeToCategory[code],
+      statusCode: ErrorCodeToHttpStatus[code],
+      code: code,
+      details: details,
+      cause: options?.cause,
+      requestId: options?.requestId,
+    });
     this.name = 'ApiError';
-
-    // 保持堆栈跟踪
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, ApiError);
-    }
   }
 
-  toJSON() {
+  static fromCode(
+    code: ApiErrorCode,
+    message?: string,
+    details?: Record<string, unknown>,
+  ): ApiError {
+    return new ApiError(code, message, details);
+  }
+
+  toJSON(): Record<string, unknown> {
     return {
+      success: false,
       error: {
         code: this.code,
         message: this.message,
+        category: this.category,
         statusCode: this.statusCode,
         details: this.details,
         timestamp: this.timestamp,
@@ -195,8 +243,6 @@ export interface ApiErrorResponse {
     timestamp: string;
   };
 }
-
-import type { PaginationMeta } from '@/types/common/pagination';
 
 export interface ApiSuccessResponse<T> {
   data: T;

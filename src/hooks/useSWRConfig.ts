@@ -64,7 +64,7 @@ export function createSWRConfig<T>(
   return {
     ...SWR_DEFAULT_CONFIG,
     ...options,
-  } as Parameters<typeof useSWR<T>>[2];
+  };
 }
 
 export function createSWRInfiniteConfig(

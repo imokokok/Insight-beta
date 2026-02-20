@@ -30,5 +30,8 @@ export const errors = {
   failedToFetchPriceStats: '无法计算价格统计数据',
   failedToInsertPriceHistory: '无法保存价格历史记录',
   failedToRefreshMaterializedView: '无法刷新物化视图',
-  noPriceDataFound: '指定条件下暂无价格数据'
+  noPriceDataFound: '指定条件下暂无价格数据',
+  componentLoadFailed: '组件加载失败',
+  tryRefresh: '该组件出现错误，请尝试刷新',
+  retry: '重试',
 };

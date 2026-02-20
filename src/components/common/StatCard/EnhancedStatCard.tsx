@@ -7,7 +7,7 @@
  * - 交互功能
  */
 
-import React, { memo, useState, useMemo } from 'react';
+import { memo, useState, useMemo, Fragment } from 'react';
 
 import { motion } from 'framer-motion';
 import {
@@ -232,7 +232,11 @@ const colorConfig: Record<
 // Loading State
 // ============================================================================
 
-export const StatCardSkeleton = memo(function StatCardSkeleton({ size = 'md' }: { size?: StatCardSize }) {
+export const StatCardSkeleton = memo(function StatCardSkeleton({
+  size = 'md',
+}: {
+  size?: StatCardSize;
+}) {
   const heightClass = {
     sm: 'h-24',
     md: 'h-32',
@@ -349,20 +353,20 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-            {tooltip && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="h-3.5 w-3.5 cursor-help text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="max-w-xs text-xs">{tooltip}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+              {tooltip && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-3.5 w-3.5 cursor-help text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs text-xs">{tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
             {actions && actions.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -372,7 +376,7 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   {actions.map((action, index) => (
-                    <React.Fragment key={index}>
+                    <Fragment key={index}>
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
@@ -384,7 +388,7 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
                         {action.label}
                       </DropdownMenuItem>
                       {index < actions.length - 1 && <DropdownMenuSeparator />}
-                    </React.Fragment>
+                    </Fragment>
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>

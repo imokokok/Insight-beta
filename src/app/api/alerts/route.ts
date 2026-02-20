@@ -1,5 +1,4 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
 import type {
   AlertSource,
@@ -11,6 +10,8 @@ import { getSeverityFromDeviation } from '@/features/alerts/utils/alertScoring';
 import { normalizeSeverity, normalizeStatus } from '@/features/alerts/utils/normalize';
 import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
 import { priceDeviationAnalytics } from '@/features/oracle/services/priceDeviationAnalytics';
+import { error, ok } from '@/lib/api/apiResponse';
+import { AppError } from '@/lib/errors';
 import { logger } from '@/shared/logger';
 
 async function fetchPriceAnomalies(): Promise<UnifiedAlert[]> {
@@ -143,21 +144,20 @@ export async function GET(request: NextRequest) {
 
     const summary = calculateSummary(allAlerts);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        alerts: allAlerts,
-        summary,
-      },
+    return ok({
+      alerts: allAlerts,
+      summary,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    logger.error('Failed to fetch alerts', { error });
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch alerts',
-        data: {
+  } catch (err) {
+    logger.error('Failed to fetch alerts', { error: err });
+
+    return error(
+      new AppError('Failed to fetch alerts', {
+        category: 'INTERNAL',
+        statusCode: 500,
+        code: 'INTERNAL_ERROR',
+        details: {
           alerts: [],
           summary: {
             total: 0,
@@ -173,10 +173,9 @@ export async function GET(request: NextRequest) {
               security: 0,
             },
           },
+          timestamp: new Date().toISOString(),
         },
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
+      }),
     );
   }
 }

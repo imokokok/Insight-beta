@@ -1,5 +1,4 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
 import {
   getReliabilityScores,
@@ -12,7 +11,9 @@ import {
   type ReliabilityMetrics,
   type ProtocolRanking,
 } from '@/features/oracle/services/reliabilityScorer';
+import { error, ok } from '@/lib/api/apiResponse';
 import { hasDatabase } from '@/lib/database/db';
+import { AppError, ValidationError, NotFoundError } from '@/lib/errors';
 import { logger } from '@/shared/logger';
 import { ORACLE_PROTOCOLS } from '@/types/oracle/protocol';
 import type { TimePeriod } from '@/types/oracle/reliability';
@@ -111,10 +112,7 @@ export async function GET(request: NextRequest) {
       searchParams.get('useMock') === 'true' || process.env.NODE_ENV === 'development';
 
     if (!['7d', '30d', '90d'].includes(period)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid period. Must be one of: 7d, 30d, 90d' },
-        { status: 400 },
-      );
+      return error(new ValidationError('Invalid period. Must be one of: 7d, 30d, 90d'));
     }
 
     const isMock = !hasDatabase() || useMock;
@@ -131,8 +129,7 @@ export async function GET(request: NextRequest) {
         isMock,
       });
 
-      return NextResponse.json({
-        success: true,
+      return ok({
         protocol,
         period: `${trendDays}d`,
         data: trendData,
@@ -146,14 +143,10 @@ export async function GET(request: NextRequest) {
         const protocolRanking = mockRankings.find((r) => r.protocol === protocol);
 
         if (!protocolRanking) {
-          return NextResponse.json(
-            { success: false, error: `Protocol not found: ${protocol}` },
-            { status: 404 },
-          );
+          return error(new NotFoundError('Protocol', protocol));
         }
 
-        return NextResponse.json({
-          success: true,
+        return ok({
           period,
           protocol,
           data: [protocolRanking.metrics],
@@ -162,8 +155,7 @@ export async function GET(request: NextRequest) {
       }
 
       const scores = await getReliabilityScores(period, protocol);
-      return NextResponse.json({
-        success: true,
+      return ok({
         period,
         protocol,
         data: scores,
@@ -182,29 +174,28 @@ export async function GET(request: NextRequest) {
       rankingsCount: rankings.length,
     });
 
-    return NextResponse.json({
-      success: true,
+    return ok({
       period,
       rankings,
       scores,
       lastUpdated: new Date().toISOString(),
       isMock,
     });
-  } catch (error) {
+  } catch (err) {
     const requestTime = performance.now() - requestStartTime;
 
     logger.error('Reliability API error', {
-      error,
+      error: err,
       performance: { totalRequestTimeMs: Math.round(requestTime) },
     });
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch reliability scores',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 },
+    return error(
+      new AppError('Failed to fetch reliability scores', {
+        category: 'INTERNAL',
+        statusCode: 500,
+        code: 'INTERNAL_ERROR',
+        details: { message: err instanceof Error ? err.message : 'Unknown error' },
+      }),
     );
   }
 }

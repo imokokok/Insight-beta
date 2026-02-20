@@ -14,20 +14,37 @@
 export {
   AppError,
   ValidationError,
+  AuthenticationError,
+  AuthorizationError,
   NotFoundError,
+  ConflictError,
+  RateLimitError,
+  ExternalServiceError,
+  TimeoutError,
+  ServiceUnavailableError,
+  DatabaseError,
+  OracleError,
   isAppError,
   toAppError,
   getHttpStatusCode,
   createErrorResponse,
 } from './AppError';
 
+export type { ErrorCategory } from './AppError';
+
 // ============================================================================
 // 从 apiErrors 导出
 // ============================================================================
 
-export { ApiError, ApiErrorCode, ErrorCodeToHttpStatus, ErrorCodeToMessage } from './apiErrors';
+export {
+  ApiError,
+  ApiErrorCode,
+  ErrorCodeToHttpStatus,
+  ErrorCodeToMessage,
+  apiErrors,
+} from './apiErrors';
 
-export type { ApiErrorResponse, ApiResponse } from './apiErrors';
+export type { ApiErrorResponse, ApiResponse, RequestOptions } from './apiErrors';
 
 // ============================================================================
 // 从 walletErrors 导出

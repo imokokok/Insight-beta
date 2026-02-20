@@ -1,11 +1,12 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
 import {
   collectAllPrices,
   SUPPORTED_PROTOCOLS,
 } from '@/features/oracle/services/priceHistoryCollector';
+import { error, ok } from '@/lib/api/apiResponse';
 import { hasDatabase } from '@/lib/database/db';
+import { AppError } from '@/lib/errors';
 import { logger } from '@/shared/logger';
 
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -18,12 +19,16 @@ function verifyCronRequest(request: NextRequest): boolean {
     if (authHeader !== expectedAuth) {
       return false;
     }
+    return true;
   }
 
   const isVercelCron = request.headers.get('x-vercel-cron') === 'true';
-  const isLocalDev = process.env.NODE_ENV === 'development';
 
-  return isVercelCron || isLocalDev;
+  if (isVercelCron) {
+    return true;
+  }
+
+  return false;
 }
 
 export async function GET(request: NextRequest) {
@@ -35,14 +40,23 @@ export async function GET(request: NextRequest) {
         hasAuthHeader: !!request.headers.get('authorization'),
         isVercelCron: request.headers.get('x-vercel-cron'),
       });
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      return error(
+        new AppError('Unauthorized', {
+          category: 'AUTHENTICATION',
+          statusCode: 401,
+          code: 'UNAUTHORIZED',
+        }),
+      );
     }
 
     if (!hasDatabase()) {
       logger.warn('Database not available for price collection cron');
-      return NextResponse.json(
-        { success: false, error: 'Database not available' },
-        { status: 503 },
+      return error(
+        new AppError('Database not available', {
+          category: 'UNAVAILABLE',
+          statusCode: 503,
+          code: 'SERVICE_UNAVAILABLE',
+        }),
       );
     }
 
@@ -62,8 +76,7 @@ export async function GET(request: NextRequest) {
       durationMs: duration,
     });
 
-    return NextResponse.json({
-      success: true,
+    return ok({
       timestamp: new Date().toISOString(),
       duration: duration,
       summary: {
@@ -73,23 +86,25 @@ export async function GET(request: NextRequest) {
       },
       results: result.results,
     });
-  } catch (error) {
+  } catch (err) {
     const duration = Date.now() - startTime;
 
     logger.error('Price collection cron failed', {
-      error: error instanceof Error ? error.message : String(error),
+      error: err instanceof Error ? err.message : String(err),
       durationMs: duration,
     });
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Price collection failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-        duration: duration,
-      },
-      { status: 500 },
+    return error(
+      new AppError('Price collection failed', {
+        category: 'INTERNAL',
+        statusCode: 500,
+        code: 'INTERNAL_ERROR',
+        details: {
+          message: err instanceof Error ? err.message : 'Unknown error',
+          timestamp: new Date().toISOString(),
+          duration,
+        },
+      }),
     );
   }
 }
