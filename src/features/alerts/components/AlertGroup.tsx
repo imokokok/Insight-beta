@@ -58,14 +58,10 @@ export function AlertGroup({
         </div>
         <div className="flex items-center gap-2">
           {criticalCount > 0 && (
-            <Badge className="bg-red-500 text-xs">
-              {criticalCount} Critical
-            </Badge>
+            <Badge className="bg-red-500 text-xs">{criticalCount} Critical</Badge>
           )}
           {highCount > 0 && criticalCount === 0 && (
-            <Badge className="bg-orange-500 text-xs">
-              {highCount} High
-            </Badge>
+            <Badge className="bg-orange-500 text-xs">{highCount} High</Badge>
           )}
           {activeCount > 0 && (
             <Badge variant="outline" className="text-xs">
@@ -74,7 +70,7 @@ export function AlertGroup({
           )}
         </div>
       </button>
-      
+
       {isExpanded && (
         <div className="border-t px-3 py-2">
           <div className="space-y-3">

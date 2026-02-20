@@ -27,16 +27,28 @@ interface ArbitrageOpportunity {
   warnings: string[];
 }
 
-const SUPPORTED_CHAINS = ['ethereum', 'bsc', 'polygon', 'avalanche', 'arbitrum', 'optimism', 'base'];
+const SUPPORTED_CHAINS = [
+  'ethereum',
+  'bsc',
+  'polygon',
+  'avalanche',
+  'arbitrum',
+  'optimism',
+  'base',
+];
 const SUPPORTED_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 
-function generateMockArbitrageOpportunities(symbol?: string, minProfit?: number, limit: number = 10): ArbitrageOpportunity[] {
+function generateMockArbitrageOpportunities(
+  symbol?: string,
+  minProfit?: number,
+  limit: number = 10,
+): ArbitrageOpportunity[] {
   const symbols = symbol ? [symbol.toUpperCase()] : SUPPORTED_SYMBOLS;
   const opportunities: ArbitrageOpportunity[] = [];
 
   for (const sym of symbols) {
     const basePrice = sym === 'BTC' ? 95000 : sym === 'ETH' ? 3200 : sym === 'SOL' ? 180 : 50;
-    
+
     for (let i = 0; i < 3; i++) {
       const buyChainIdx = Math.floor(Math.random() * SUPPORTED_CHAINS.length);
       let sellChainIdx = Math.floor(Math.random() * SUPPORTED_CHAINS.length);
@@ -48,14 +60,14 @@ function generateMockArbitrageOpportunities(symbol?: string, minProfit?: number,
       const buyPrice = basePrice * (1 - priceVariation);
       const sellPrice = basePrice * (1 + priceVariation);
       const priceDiffPercent = ((sellPrice - buyPrice) / buyPrice) * 100;
-      
+
       if (minProfit && priceDiffPercent < minProfit) continue;
 
       const estimatedProfit = (sellPrice - buyPrice) * 0.1;
       const gasCostEstimate = Math.random() * 5 + 1;
       const netProfit = estimatedProfit - gasCostEstimate;
-      
-      const riskLevel: 'low' | 'medium' | 'high' = 
+
+      const riskLevel: 'low' | 'medium' | 'high' =
         priceDiffPercent > 1 ? 'high' : priceDiffPercent > 0.3 ? 'medium' : 'low';
 
       opportunities.push({
@@ -79,7 +91,7 @@ function generateMockArbitrageOpportunities(symbol?: string, minProfit?: number,
   }
 
   return opportunities
-    .filter(o => o.isActionable)
+    .filter((o) => o.isActionable)
     .sort((a, b) => b.netProfit - a.netProfit)
     .slice(0, limit);
 }
@@ -100,10 +112,11 @@ async function handleGet(request: Request) {
 
     const summary = {
       total: opportunities.length,
-      actionable: opportunities.filter(o => o.isActionable).length,
-      avgProfitPercent: opportunities.length > 0
-        ? opportunities.reduce((sum, o) => sum + o.priceDiffPercent, 0) / opportunities.length
-        : 0,
+      actionable: opportunities.filter((o) => o.isActionable).length,
+      avgProfitPercent:
+        opportunities.length > 0
+          ? opportunities.reduce((sum, o) => sum + o.priceDiffPercent, 0) / opportunities.length
+          : 0,
       totalEstimatedProfit: opportunities.reduce((sum, o) => sum + o.netProfit, 0),
     };
 
@@ -120,7 +133,10 @@ async function handleGet(request: Request) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return apiError(`Invalid query parameters: ${error.errors.map(e => e.message).join(', ')}`, 400);
+      return apiError(
+        `Invalid query parameters: ${error.errors.map((e) => e.message).join(', ')}`,
+        400,
+      );
     }
     throw error;
   }

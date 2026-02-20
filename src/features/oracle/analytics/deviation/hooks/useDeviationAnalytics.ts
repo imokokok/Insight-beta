@@ -36,42 +36,44 @@ export function useDeviationAnalytics() {
     report: DeviationReport;
   }>({ key: 'deviation_dashboard', ttl: 5 * 60 * 1000 });
 
-  const fetchReport = useCallback(
-    async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const fetchReport = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const cached = getCachedData();
-        if (cached && !lastUpdated) {
-          setReport(cached.report);
-          setLoading(false);
-          return;
-        }
-
-        const protocolParam = protocolFilterState.filterParams.protocols
-          ? `&protocols=${protocolFilterState.filterParams.protocols}`
-          : '';
-        const response = await fetchApiData<{ data: DeviationReport }>(
-          `/api/oracle/analytics/deviation?type=report&windowHours=${timeRangeState.windowHours}${protocolParam}`,
-        );
-        setReport(response.data);
-        setLastUpdated(new Date());
-
-        setCachedData({
-          report: response.data,
-        });
-      } catch (err: unknown) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to fetch deviation report';
-        setError(errorMessage);
-        logger.error('Failed to fetch deviation report', { error: err });
-      } finally {
+      const cached = getCachedData();
+      if (cached && !lastUpdated) {
+        setReport(cached.report);
         setLoading(false);
+        return;
       }
-    },
-    [getCachedData, setCachedData, lastUpdated, timeRangeState.windowHours, protocolFilterState.filterParams.protocols],
-  );
+
+      const protocolParam = protocolFilterState.filterParams.protocols
+        ? `&protocols=${protocolFilterState.filterParams.protocols}`
+        : '';
+      const response = await fetchApiData<{ data: DeviationReport }>(
+        `/api/oracle/analytics/deviation?type=report&windowHours=${timeRangeState.windowHours}${protocolParam}`,
+      );
+      setReport(response.data);
+      setLastUpdated(new Date());
+
+      setCachedData({
+        report: response.data,
+      });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch deviation report';
+      setError(errorMessage);
+      logger.error('Failed to fetch deviation report', { error: err });
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    getCachedData,
+    setCachedData,
+    lastUpdated,
+    timeRangeState.windowHours,
+    protocolFilterState.filterParams.protocols,
+  ]);
 
   const {
     isEnabled: autoRefreshEnabled,
@@ -87,26 +89,29 @@ export function useDeviationAnalytics() {
     pauseWhenHidden: true,
   });
 
-  const fetchSymbolTrend = useCallback(async (symbol: string) => {
-    try {
-      abortControllerRef.current?.abort();
-      abortControllerRef.current = new AbortController();
+  const fetchSymbolTrend = useCallback(
+    async (symbol: string) => {
+      try {
+        abortControllerRef.current?.abort();
+        abortControllerRef.current = new AbortController();
 
-      const protocolParam = protocolFilterState.filterParams.protocols
-        ? `&protocols=${protocolFilterState.filterParams.protocols}`
-        : '';
-      const response = await fetchApiData<{ data: { dataPoints: PriceDeviationPoint[] } }>(
-        `/api/oracle/analytics/deviation?type=trend&symbol=${symbol}&windowHours=${timeRangeState.windowHours}${protocolParam}`,
-        { signal: abortControllerRef.current.signal },
-      );
-      setSymbolData(response.data.dataPoints || []);
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        return;
+        const protocolParam = protocolFilterState.filterParams.protocols
+          ? `&protocols=${protocolFilterState.filterParams.protocols}`
+          : '';
+        const response = await fetchApiData<{ data: { dataPoints: PriceDeviationPoint[] } }>(
+          `/api/oracle/analytics/deviation?type=trend&symbol=${symbol}&windowHours=${timeRangeState.windowHours}${protocolParam}`,
+          { signal: abortControllerRef.current.signal },
+        );
+        setSymbolData(response.data.dataPoints || []);
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
+        logger.error('Failed to fetch symbol trend', { error: err, symbol });
       }
-      logger.error('Failed to fetch symbol trend', { error: err, symbol });
-    }
-  }, [timeRangeState.windowHours, protocolFilterState.filterParams.protocols]);
+    },
+    [timeRangeState.windowHours, protocolFilterState.filterParams.protocols],
+  );
 
   usePageOptimizations({
     pageName: t('analytics:deviation.pageName'),

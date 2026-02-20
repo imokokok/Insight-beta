@@ -50,12 +50,8 @@ export function TelegramConfig({ config, onChange, errors }: TelegramConfigProps
           placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
           className={errors?.botToken ? 'border-destructive' : ''}
         />
-        {errors?.botToken && (
-          <p className="text-xs text-destructive">{errors.botToken}</p>
-        )}
-        <p className="text-xs text-muted-foreground">
-          {t('alerts.channels.botTokenHint')}
-        </p>
+        {errors?.botToken && <p className="text-destructive text-xs">{errors.botToken}</p>}
+        <p className="text-xs text-muted-foreground">{t('alerts.channels.botTokenHint')}</p>
       </div>
 
       <div className="grid gap-2">
@@ -69,12 +65,8 @@ export function TelegramConfig({ config, onChange, errors }: TelegramConfigProps
           placeholder="-1001234567890"
           className={errors?.chatId ? 'border-destructive' : ''}
         />
-        {errors?.chatId && (
-          <p className="text-xs text-destructive">{errors.chatId}</p>
-        )}
-        <p className="text-xs text-muted-foreground">
-          {t('alerts.channels.chatIdHint')}
-        </p>
+        {errors?.chatId && <p className="text-destructive text-xs">{errors.chatId}</p>}
+        <p className="text-xs text-muted-foreground">{t('alerts.channels.chatIdHint')}</p>
       </div>
     </div>
   );

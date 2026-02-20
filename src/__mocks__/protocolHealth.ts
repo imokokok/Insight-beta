@@ -46,12 +46,7 @@ export const PROTOCOL_HEALTH_MOCK: Record<string, ProtocolHealthData> = {
 /**
  * 协议列表
  */
-export const PROTOCOL_LIST = [
-  'Chainlink',
-  'Pyth Network',
-  'RedStone',
-  'UMA',
-];
+export const PROTOCOL_LIST = ['Chainlink', 'Pyth Network', 'RedStone', 'UMA'];
 
 /**
  * 获取协议健康数据

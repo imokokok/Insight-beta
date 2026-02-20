@@ -25,9 +25,17 @@ interface BridgeStatusCardProps {
   isLoading?: boolean;
 }
 
-const STATUS_CONFIG: Record<string, { icon: typeof CheckCircle; color: string; bg: string; label: string }> = {
+const STATUS_CONFIG: Record<
+  string,
+  { icon: typeof CheckCircle; color: string; bg: string; label: string }
+> = {
   healthy: { icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-500/10', label: '正常' },
-  degraded: { icon: AlertTriangle, color: 'text-yellow-600', bg: 'bg-yellow-500/10', label: '降级' },
+  degraded: {
+    icon: AlertTriangle,
+    color: 'text-yellow-600',
+    bg: 'bg-yellow-500/10',
+    label: '降级',
+  },
   offline: { icon: XCircle, color: 'text-red-600', bg: 'bg-red-500/10', label: '离线' },
 };
 
@@ -53,10 +61,10 @@ export const BridgeStatusCard = memo(function BridgeStatusCard({
       <Card>
         <CardHeader>
           <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-72 mt-1" />
+          <Skeleton className="mt-1 h-4 w-72" />
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-24 w-full" />
             ))}
@@ -95,9 +103,7 @@ export const BridgeStatusCard = memo(function BridgeStatusCard({
               <Network className="h-5 w-5" />
               跨链桥状态
             </CardTitle>
-            <CardDescription>
-              监控 {bridges.length} 个主流跨链桥
-            </CardDescription>
+            <CardDescription>监控 {bridges.length} 个主流跨链桥</CardDescription>
           </div>
           {summary && (
             <div className="flex items-center gap-2">
@@ -116,7 +122,7 @@ export const BridgeStatusCard = memo(function BridgeStatusCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
           {bridges.map((bridge) => {
             const config = STATUS_CONFIG[bridge.status];
             if (!config) return null;
@@ -132,8 +138,8 @@ export const BridgeStatusCard = memo(function BridgeStatusCard({
                   bridge.status === 'degraded' && 'border-yellow-500/30',
                 )}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-sm">{bridge.displayName}</span>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium">{bridge.displayName}</span>
                   <StatusIcon className={cn('h-4 w-4', config.color)} />
                 </div>
                 <div className="space-y-1 text-xs text-muted-foreground">
@@ -142,11 +148,13 @@ export const BridgeStatusCard = memo(function BridgeStatusCard({
                       <Clock className="h-3 w-3" />
                       延迟
                     </span>
-                    <span className={cn(
-                      'font-mono',
-                      bridge.latencyMs > 5000 && 'text-yellow-600',
-                      bridge.latencyMs > 10000 && 'text-red-600',
-                    )}>
+                    <span
+                      className={cn(
+                        'font-mono',
+                        bridge.latencyMs > 5000 && 'text-yellow-600',
+                        bridge.latencyMs > 10000 && 'text-red-600',
+                      )}
+                    >
                       {formatLatency(bridge.latencyMs)}
                     </span>
                   </div>
@@ -166,7 +174,7 @@ export const BridgeStatusCard = memo(function BridgeStatusCard({
                   </div>
                 </div>
                 {bridge.alerts.length > 0 && (
-                  <div className="mt-2 text-xs text-yellow-600 flex items-center gap-1">
+                  <div className="mt-2 flex items-center gap-1 text-xs text-yellow-600">
                     <AlertTriangle className="h-3 w-3" />
                     {bridge.alerts[0]}
                   </div>
@@ -176,13 +184,16 @@ export const BridgeStatusCard = memo(function BridgeStatusCard({
           })}
         </div>
         {summary && (
-          <div className="mt-4 pt-4 border-t flex items-center justify-between text-xs text-muted-foreground">
+          <div className="mt-4 flex items-center justify-between border-t pt-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-4">
               <span>平均延迟: {formatLatency(summary.avgLatencyMs)}</span>
               <span>24h 总交易量: {formatVolume(summary.totalVolume24h)}</span>
             </div>
             <span>
-              更新于: {bridges[0]?.lastUpdated ? new Date(bridges[0].lastUpdated).toLocaleTimeString() : '-'}
+              更新于:{' '}
+              {bridges[0]?.lastUpdated
+                ? new Date(bridges[0].lastUpdated).toLocaleTimeString()
+                : '-'}
             </span>
           </div>
         )}

@@ -52,9 +52,7 @@ export function ErrorBanner({
   isRetrying = false,
 }: ErrorBannerProps) {
   return (
-    <div
-      className={cn('rounded-lg border border-red-200 bg-red-50 p-4', className)}
-    >
+    <div className={cn('rounded-lg border border-red-200 bg-red-50 p-4', className)}>
       <div className="flex items-start gap-3">
         <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
         <div className="min-w-0 flex-1">

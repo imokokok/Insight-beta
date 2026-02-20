@@ -43,11 +43,13 @@ export const dashboard = {
   },
   emptyStates: {
     dashboardReady: 'Dashboard Ready',
-    dashboardReadyDesc: 'Data is being synchronized. The dashboard will display all key metrics and real-time data shortly.',
+    dashboardReadyDesc:
+      'Data is being synchronized. The dashboard will display all key metrics and real-time data shortly.',
     syncingData: 'Syncing data...',
     failedToLoadData: 'Failed to Load Data',
     failedToLoadDataDesc: 'Something went wrong while loading the data. Please try again.',
     connectionLost: 'Connection Lost',
-    connectionLostDesc: 'Unable to connect to the server. Please check your internet connection and try again.',
+    connectionLostDesc:
+      'Unable to connect to the server. Please check your internet connection and try again.',
   },
 };

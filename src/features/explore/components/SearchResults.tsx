@@ -2,14 +2,7 @@
 
 import { useMemo } from 'react';
 
-import {
-  Database,
-  Link2,
-  Wallet,
-  Layers,
-  ArrowRight,
-  type LucideIcon,
-} from 'lucide-react';
+import { Database, Link2, Wallet, Layers, ArrowRight, type LucideIcon } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
 
@@ -73,7 +66,7 @@ function highlightText(text: string, query: string) {
       parts.push(text.substring(lastIndex, index));
     }
     parts.push(
-      <mark key={index} className="bg-yellow-200 dark:bg-yellow-800/50 px-0.5 rounded">
+      <mark key={index} className="rounded bg-yellow-200 px-0.5 dark:bg-yellow-800/50">
         {text.substring(index, index + query.length)}
       </mark>,
     );
@@ -127,7 +120,7 @@ export function SearchResults({
 
         return (
           <div key={type} className="mb-2">
-            <div className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="flex items-center gap-2 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <Icon className={cn('h-3.5 w-3.5', config.color)} />
               <span>{config.label}</span>
               <span className="ml-auto rounded-full bg-muted px-2 py-0.5">
@@ -143,10 +136,8 @@ export function SearchResults({
                 <div
                   key={result.id}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors',
-                    isSelected
-                      ? 'bg-primary/10 text-primary'
-                      : 'hover:bg-muted/50',
+                    'flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors',
+                    isSelected ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50',
                   )}
                   onClick={() => onSelect(result)}
                   onMouseEnter={() => onHover(currentIndex)}
@@ -162,11 +153,11 @@ export function SearchResults({
                     <Icon className={cn('h-4 w-4', config.color)} />
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-foreground truncate">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium text-foreground">
                       {highlightText(result.title, query)}
                     </div>
-                    <div className="text-sm text-muted-foreground truncate">
+                    <div className="truncate text-sm text-muted-foreground">
                       {highlightText(result.subtitle, query)}
                     </div>
                   </div>

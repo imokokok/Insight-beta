@@ -27,7 +27,8 @@ export const protocol = {
   },
   emptyStates: {
     exploreProtocols: 'Explore Oracle Protocols',
-    exploreProtocolsDesc: 'View real-time data and performance metrics from Chainlink, Pyth, Band, and other major oracle protocols.',
+    exploreProtocolsDesc:
+      'View real-time data and performance metrics from Chainlink, Pyth, Band, and other major oracle protocols.',
     noDataAvailable: 'No Data Available',
     noDataDesc: 'There is no data to display at the moment.',
     dataUnavailable: '{{pair}} Data Unavailable',

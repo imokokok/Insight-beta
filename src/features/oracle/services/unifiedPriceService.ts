@@ -524,9 +524,25 @@ export class UnifiedPriceService {
 
     try {
       const columns = [
-        'feed_id', 'protocol', 'chain', 'symbol', 'base_asset', 'quote_asset',
-        'price', 'price_raw', 'decimals', 'timestamp', 'block_number', 'confidence',
-        'sources', 'is_stale', 'staleness_seconds', 'tx_hash', 'log_index', 'volume_24h', 'change_24h'
+        'feed_id',
+        'protocol',
+        'chain',
+        'symbol',
+        'base_asset',
+        'quote_asset',
+        'price',
+        'price_raw',
+        'decimals',
+        'timestamp',
+        'block_number',
+        'confidence',
+        'sources',
+        'is_stale',
+        'staleness_seconds',
+        'tx_hash',
+        'log_index',
+        'volume_24h',
+        'change_24h',
       ];
 
       const valueGroups: string[] = [];

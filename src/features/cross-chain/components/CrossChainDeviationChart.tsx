@@ -76,7 +76,7 @@ export const CrossChainDeviationChart = memo(function CrossChainDeviationChart({
       <Card>
         <CardHeader>
           <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-72 mt-1" />
+          <Skeleton className="mt-1 h-4 w-72" />
         </CardHeader>
         <CardContent>
           <Skeleton style={{ height }} className="w-full" />
@@ -96,7 +96,10 @@ export const CrossChainDeviationChart = memo(function CrossChainDeviationChart({
           <CardDescription>{t('crossChain.chart.noData')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div style={{ height }} className="flex items-center justify-center text-muted-foreground">
+          <div
+            style={{ height }}
+            className="flex items-center justify-center text-muted-foreground"
+          >
             {t('crossChain.chart.waitingForData')}
           </div>
         </CardContent>
@@ -113,9 +116,7 @@ export const CrossChainDeviationChart = memo(function CrossChainDeviationChart({
               <TrendingUp className="h-5 w-5" />
               {t('crossChain.chart.deviationTrend.title', { symbol: data.symbol })}
             </CardTitle>
-            <CardDescription>
-              {t('crossChain.chart.deviationTrend.description')}
-            </CardDescription>
+            <CardDescription>{t('crossChain.chart.deviationTrend.description')}</CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {anomalyCount > 0 && (
@@ -147,11 +148,7 @@ export const CrossChainDeviationChart = memo(function CrossChainDeviationChart({
                   return '';
                 }}
               />
-              <YAxis
-                tick={{ fontSize: 11 }}
-                unit="%"
-                domain={[0, 'auto']}
-              />
+              <YAxis tick={{ fontSize: 11 }} unit="%" domain={[0, 'auto']} />
               <Tooltip
                 contentStyle={{
                   borderRadius: '8px',

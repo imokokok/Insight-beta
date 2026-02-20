@@ -53,7 +53,10 @@ function AnomalyDetailModal({ anomaly, onClose, t }: AnomalyDetailModalProps) {
   const deviationColor = getDeviationColor(anomaly.maxDeviationPercent * 100);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={onClose}
+    >
       <div
         className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-lg bg-white shadow-xl"
         onClick={(e) => e.stopPropagation()}
@@ -71,7 +74,7 @@ function AnomalyDetailModal({ anomaly, onClose, t }: AnomalyDetailModalProps) {
           </Button>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="space-y-4 p-4">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-lg bg-gray-50 p-3">
               <p className="text-xs text-muted-foreground">{t('common.maxDeviation')}</p>
@@ -95,12 +98,16 @@ function AnomalyDetailModal({ anomaly, onClose, t }: AnomalyDetailModalProps) {
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="rounded-lg border p-3">
-              <p className="mb-2 text-xs font-medium text-muted-foreground">{t('common.priceSpread')}</p>
+              <p className="mb-2 text-xs font-medium text-muted-foreground">
+                {t('common.priceSpread')}
+              </p>
               <p className="text-lg font-bold">${priceSpread.toFixed(4)}</p>
               <p className="text-xs text-muted-foreground">({priceSpreadPercent.toFixed(2)}%)</p>
             </div>
             <div className="rounded-lg border p-3">
-              <p className="mb-2 text-xs font-medium text-muted-foreground">{t('common.protocols')}</p>
+              <p className="mb-2 text-xs font-medium text-muted-foreground">
+                {t('common.protocols')}
+              </p>
               <p className="text-lg font-bold">{anomaly.protocols.length}</p>
               <div className="mt-1 flex flex-wrap gap-1">
                 {anomaly.protocols.slice(0, 3).map((p) => (
@@ -146,7 +153,7 @@ function AnomalyDetailModal({ anomaly, onClose, t }: AnomalyDetailModalProps) {
                     key={protocol}
                     className={cn(
                       'rounded-lg p-2 text-sm transition-colors',
-                      isOutlier ? 'bg-red-50 border border-red-200' : 'bg-gray-50'
+                      isOutlier ? 'border border-red-200 bg-red-50' : 'bg-gray-50',
                     )}
                   >
                     <div className="flex items-center justify-between">
@@ -155,7 +162,10 @@ function AnomalyDetailModal({ anomaly, onClose, t }: AnomalyDetailModalProps) {
                           {protocol}
                         </span>
                         {isOutlier && (
-                          <Badge variant="outline" className="border-red-500 text-red-500 text-[10px]">
+                          <Badge
+                            variant="outline"
+                            className="border-red-500 text-[10px] text-red-500"
+                          >
                             {t('common.outlier')}
                           </Badge>
                         )}
@@ -165,16 +175,20 @@ function AnomalyDetailModal({ anomaly, onClose, t }: AnomalyDetailModalProps) {
                         <span
                           className={cn(
                             'text-xs font-medium',
-                            priceDiff > 0 ? 'text-green-600' : 'text-red-600'
+                            priceDiff > 0 ? 'text-green-600' : 'text-red-600',
                           )}
                         >
-                          {priceDiff > 0 ? '+' : ''}{priceDiff.toFixed(2)}%
+                          {priceDiff > 0 ? '+' : ''}
+                          {priceDiff.toFixed(2)}%
                         </span>
                       </div>
                     </div>
                     <div className="mt-1 h-1.5 w-full rounded-full bg-gray-200">
                       <div
-                        className={cn('h-full rounded-full', isOutlier ? 'bg-red-400' : 'bg-blue-400')}
+                        className={cn(
+                          'h-full rounded-full',
+                          isOutlier ? 'bg-red-400' : 'bg-blue-400',
+                        )}
                         style={{ width: `${Math.max(5, barWidth)}%` }}
                       />
                     </div>
@@ -316,11 +330,15 @@ export function AnomalyList({ anomalies, isLoading, onSelect }: AnomalyListProps
                   <div className="mt-3 space-y-3">
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                       <div className="rounded bg-white p-2">
-                        <p className="text-[10px] text-muted-foreground">{t('common.averagePrice')}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {t('common.averagePrice')}
+                        </p>
                         <p className="text-sm font-semibold">${anomaly.avgPrice.toFixed(4)}</p>
                       </div>
                       <div className="rounded bg-white p-2">
-                        <p className="text-[10px] text-muted-foreground">{t('common.medianPrice')}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {t('common.medianPrice')}
+                        </p>
                         <p className="text-sm font-semibold">${anomaly.medianPrice.toFixed(4)}</p>
                       </div>
                       <div className="rounded bg-white p-2">
@@ -328,7 +346,9 @@ export function AnomalyList({ anomalies, isLoading, onSelect }: AnomalyListProps
                         <p className="text-sm font-semibold">{anomaly.protocols.length}</p>
                       </div>
                       <div className="rounded bg-white p-2">
-                        <p className="text-[10px] text-muted-foreground">{t('common.maxDeviation')}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {t('common.maxDeviation')}
+                        </p>
                         <p className="text-sm font-semibold" style={{ color: deviationColor }}>
                           {(anomaly.maxDeviationPercent * 100).toFixed(2)}%
                         </p>
@@ -347,13 +367,16 @@ export function AnomalyList({ anomalies, isLoading, onSelect }: AnomalyListProps
                           >
                             <div className="flex items-center gap-2">
                               <span className="font-medium capitalize">{protocol}</span>
-                              <Badge variant="outline" className="border-red-400 text-red-500 text-[10px]">
+                              <Badge
+                                variant="outline"
+                                className="border-red-400 text-[10px] text-red-500"
+                              >
                                 {t('common.outlier')}
                               </Badge>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="font-mono">${(price ?? 0).toFixed(4)}</span>
-                              <span className="text-red-600 font-medium">
+                              <span className="font-medium text-red-600">
                                 +{(deviation * 100).toFixed(2)}%
                               </span>
                             </div>

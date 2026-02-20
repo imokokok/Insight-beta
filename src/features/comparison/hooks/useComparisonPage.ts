@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef, } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 
 import { useToast } from '@/components/ui/toast';
 import { WS_CONFIG } from '@/config/constants';
@@ -15,7 +15,7 @@ import {
   exportCostToCSV,
   exportAllToJSON,
 } from '@/shared/utils/export';
-import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES, } from '@/types/oracle';
+import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
 import type {
   ComparisonFilter,
   ComparisonConfig,

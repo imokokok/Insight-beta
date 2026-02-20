@@ -115,7 +115,7 @@ export function ProtocolChainFilter({
               {protocol.toUpperCase()}
               <button
                 onClick={() => handleRemoveProtocol(protocol)}
-                className="ml-1 hover:text-destructive"
+                className="hover:text-destructive ml-1"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -126,7 +126,7 @@ export function ProtocolChainFilter({
               {chain.charAt(0).toUpperCase() + chain.slice(1)}
               <button
                 onClick={() => handleRemoveChain(chain)}
-                className="ml-1 hover:text-destructive"
+                className="hover:text-destructive ml-1"
               >
                 <X className="h-3 w-3" />
               </button>

@@ -256,12 +256,7 @@ export const DashboardPageHeader = memo(function DashboardPageHeader({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           {showMobileMenu && onMobileMenuClick && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={onMobileMenuClick}
-            >
+            <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMobileMenuClick}>
               <Menu className="h-5 w-5" />
             </Button>
           )}
@@ -305,7 +300,7 @@ export function DynamicPageHeader({ className, actions }: DynamicPageHeaderProps
         'sticky top-0 z-20 mb-6 flex items-center justify-between gap-3',
         'border-b border-border/50 bg-background/80 backdrop-blur-sm',
         'px-1 py-4',
-        className
+        className,
       )}
     >
       <div className="flex items-center gap-3">
@@ -320,11 +315,7 @@ export function DynamicPageHeader({ className, actions }: DynamicPageHeaderProps
         </motion.h1>
       </div>
 
-      {actions && (
-        <div className="flex items-center gap-3">
-          {actions}
-        </div>
-      )}
+      {actions && <div className="flex items-center gap-3">{actions}</div>}
     </motion.header>
   );
 }

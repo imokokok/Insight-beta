@@ -38,7 +38,7 @@ interface ResponseTimeStatsData {
 
 function formatDuration(ms: number): string {
   if (!ms || ms === 0) return '--';
-  
+
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
@@ -58,7 +58,7 @@ function formatDuration(ms: number): string {
 
 function formatDurationShort(ms: number): string {
   if (!ms || ms === 0) return '--';
-  
+
   const minutes = Math.floor(ms / 60000);
   const hours = Math.floor(minutes / 60);
 
@@ -84,11 +84,12 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
       setLoading(true);
       setError(null);
       const response = await fetchApiData<{ data: ResponseTimeStatsData }>(
-        `/api/alerts/response-time?days=${days}`
+        `/api/alerts/response-time?days=${days}`,
       );
       setData(response.data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch response time stats';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to fetch response time stats';
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -113,11 +114,27 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
     if (!data?.metrics) return [];
     const { avgResponseTimeBySeverity } = data.metrics;
     return [
-      { label: t('alerts.responseTime.critical'), value: avgResponseTimeBySeverity.critical / 60000, color: CHART_COLORS.semantic.error.DEFAULT },
-      { label: t('alerts.responseTime.high'), value: avgResponseTimeBySeverity.high / 60000, color: '#f97316' },
-      { label: t('alerts.responseTime.medium'), value: avgResponseTimeBySeverity.medium / 60000, color: CHART_COLORS.semantic.warning.DEFAULT },
-      { label: t('alerts.responseTime.low'), value: avgResponseTimeBySeverity.low / 60000, color: CHART_COLORS.semantic.success.DEFAULT },
-    ].filter(item => item.value > 0);
+      {
+        label: t('alerts.responseTime.critical'),
+        value: avgResponseTimeBySeverity.critical / 60000,
+        color: CHART_COLORS.semantic.error.DEFAULT,
+      },
+      {
+        label: t('alerts.responseTime.high'),
+        value: avgResponseTimeBySeverity.high / 60000,
+        color: '#f97316',
+      },
+      {
+        label: t('alerts.responseTime.medium'),
+        value: avgResponseTimeBySeverity.medium / 60000,
+        color: CHART_COLORS.semantic.warning.DEFAULT,
+      },
+      {
+        label: t('alerts.responseTime.low'),
+        value: avgResponseTimeBySeverity.low / 60000,
+        color: CHART_COLORS.semantic.success.DEFAULT,
+      },
+    ].filter((item) => item.value > 0);
   }, [data?.metrics, t]);
 
   const labelFormatter = (label: string | number) => {
@@ -133,7 +150,7 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
       <Card className={cn('border-red-200 bg-red-50', className)}>
         <CardContent className="flex h-32 items-center justify-center">
           <div className="text-center text-red-600">
-            <AlertCircle className="mx-auto h-8 w-8 mb-2" />
+            <AlertCircle className="mx-auto mb-2 h-8 w-8" />
             <p className="text-sm">{error}</p>
             <Button variant="outline" size="sm" onClick={fetchData} className="mt-2">
               <RefreshCw className="mr-2 h-4 w-4" />
@@ -153,9 +170,7 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
             <Timer className="h-5 w-5 text-primary" />
             {t('alerts.responseTime.title')}
           </h2>
-          <p className="text-sm text-muted-foreground">
-            {t('alerts.responseTime.description')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('alerts.responseTime.description')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={days} onValueChange={setDays}>
@@ -179,8 +194,8 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
           {[1, 2, 3, 4].map((i) => (
             <Card key={i}>
               <CardContent className="p-4">
-                <Skeleton className="h-4 w-24 mb-2" />
-                <Skeleton className="h-8 w-32 mb-2" />
+                <Skeleton className="mb-2 h-4 w-24" />
+                <Skeleton className="mb-2 h-8 w-32" />
                 <Skeleton className="h-3 w-20" />
               </CardContent>
             </Card>
@@ -210,7 +225,13 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
             icon={<CheckCircle className="h-5 w-5" />}
             color="green"
             subtitle={t('alerts.responseTime.ackRateDesc')}
-            status={(data?.metrics.acknowledgementRate || 0) >= 0.8 ? 'healthy' : (data?.metrics.acknowledgementRate || 0) >= 0.5 ? 'warning' : 'critical'}
+            status={
+              (data?.metrics.acknowledgementRate || 0) >= 0.8
+                ? 'healthy'
+                : (data?.metrics.acknowledgementRate || 0) >= 0.5
+                  ? 'warning'
+                  : 'critical'
+            }
           />
           <StatCard
             title={t('alerts.responseTime.resolutionRate')}
@@ -218,7 +239,13 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
             icon={<TrendingUp className="h-5 w-5" />}
             color="amber"
             subtitle={t('alerts.responseTime.resolutionRateDesc')}
-            status={(data?.metrics.resolutionRate || 0) >= 0.7 ? 'healthy' : (data?.metrics.resolutionRate || 0) >= 0.4 ? 'warning' : 'critical'}
+            status={
+              (data?.metrics.resolutionRate || 0) >= 0.7
+                ? 'healthy'
+                : (data?.metrics.resolutionRate || 0) >= 0.4
+                  ? 'warning'
+                  : 'critical'
+            }
           />
         </div>
       )}
@@ -235,8 +262,18 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
               data={trendChartData}
               height={280}
               lines={[
-                { dataKey: 'mttr', name: t('alerts.responseTime.mttr'), color: CHART_COLORS.primary.DEFAULT, strokeWidth: 2 },
-                { dataKey: 'mtta', name: t('alerts.responseTime.mtta'), color: '#10b981', strokeWidth: 2 },
+                {
+                  dataKey: 'mttr',
+                  name: t('alerts.responseTime.mttr'),
+                  color: CHART_COLORS.primary.DEFAULT,
+                  strokeWidth: 2,
+                },
+                {
+                  dataKey: 'mtta',
+                  name: t('alerts.responseTime.mtta'),
+                  color: '#10b981',
+                  strokeWidth: 2,
+                },
               ]}
               showDots
               valueFormatter={valueFormatter}
@@ -263,7 +300,11 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
               data={severityChartData}
               height={280}
               bars={[
-                { dataKey: 'value', name: t('alerts.responseTime.avgTime'), color: CHART_COLORS.primary.DEFAULT },
+                {
+                  dataKey: 'value',
+                  name: t('alerts.responseTime.avgTime'),
+                  color: CHART_COLORS.primary.DEFAULT,
+                },
               ]}
               valueFormatter={valueFormatter}
               showLegend={false}
@@ -286,30 +327,48 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
               <AlertCircle className="h-5 w-5 text-primary" />
               {t('alerts.responseTime.severityBreakdown')}
             </CardTitle>
-            <CardDescription>
-              {t('alerts.responseTime.severityBreakdownDesc')}
-            </CardDescription>
+            <CardDescription>{t('alerts.responseTime.severityBreakdownDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {Object.entries(data.metrics.avgResponseTimeBySeverity).map(([severity, time]) => {
-                const defaultConfig = { color: 'text-gray-600', bgColor: 'bg-gray-500', label: severity };
+                const defaultConfig = {
+                  color: 'text-gray-600',
+                  bgColor: 'bg-gray-500',
+                  label: severity,
+                };
                 const config: Record<string, { color: string; bgColor: string; label: string }> = {
-                  critical: { color: 'text-red-600', bgColor: 'bg-red-500', label: t('alerts.responseTime.critical') },
-                  high: { color: 'text-orange-600', bgColor: 'bg-orange-500', label: t('alerts.responseTime.high') },
-                  medium: { color: 'text-yellow-600', bgColor: 'bg-yellow-500', label: t('alerts.responseTime.medium') },
-                  low: { color: 'text-green-600', bgColor: 'bg-green-500', label: t('alerts.responseTime.low') },
+                  critical: {
+                    color: 'text-red-600',
+                    bgColor: 'bg-red-500',
+                    label: t('alerts.responseTime.critical'),
+                  },
+                  high: {
+                    color: 'text-orange-600',
+                    bgColor: 'bg-orange-500',
+                    label: t('alerts.responseTime.high'),
+                  },
+                  medium: {
+                    color: 'text-yellow-600',
+                    bgColor: 'bg-yellow-500',
+                    label: t('alerts.responseTime.medium'),
+                  },
+                  low: {
+                    color: 'text-green-600',
+                    bgColor: 'bg-green-500',
+                    label: t('alerts.responseTime.low'),
+                  },
                 };
                 const c = config[severity] ?? defaultConfig;
                 return (
                   <div key={severity} className="rounded-lg border p-4">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="mb-2 flex items-center gap-2">
                       <Badge className={c.bgColor}>{c.label}</Badge>
                     </div>
                     <div className={cn('text-2xl font-bold', c.color)}>
                       {formatDurationShort(time)}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {t('alerts.responseTime.avgResponseTime')}
                     </p>
                   </div>

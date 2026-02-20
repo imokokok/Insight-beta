@@ -26,5 +26,5 @@ export const wallet = {
   setupRequired: '需要配置',
   walletConnectSetupGuide: '在 .env.local 文件中添加 NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID',
   newToWallets: '不了解钱包？',
-  learnMore: '了解更多'
+  learnMore: '了解更多',
 };

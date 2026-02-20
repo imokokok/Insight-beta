@@ -38,7 +38,7 @@ export function TrendDetails({ selectedTrend, symbolData }: TrendDetailsProps) {
     const maxDev = Math.max(...deviations);
     const minDev = Math.min(...deviations);
     const stdDev = Math.sqrt(
-      deviations.reduce((sum, d) => sum + Math.pow(d - avgDev, 2), 0) / deviations.length
+      deviations.reduce((sum, d) => sum + Math.pow(d - avgDev, 2), 0) / deviations.length,
     );
 
     const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
@@ -80,9 +80,7 @@ export function TrendDetails({ selectedTrend, symbolData }: TrendDetailsProps) {
       <Card>
         <CardContent className="py-12 text-center">
           <TrendingUp className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-          <p className="text-muted-foreground">
-            {t('common.selectSymbol')}
-          </p>
+          <p className="text-muted-foreground">{t('common.selectSymbol')}</p>
         </CardContent>
       </Card>
     );
@@ -98,9 +96,7 @@ export function TrendDetails({ selectedTrend, symbolData }: TrendDetailsProps) {
             <Target className="h-5 w-5" />
             {selectedTrend.symbol} {t('analytics.deviation.trends.details')}
           </CardTitle>
-          <CardDescription>
-            {t('analytics.deviation.trends.analysisPeriod')}
-          </CardDescription>
+          <CardDescription>{t('analytics.deviation.trends.analysisPeriod')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -122,15 +118,11 @@ export function TrendDetails({ selectedTrend, symbolData }: TrendDetailsProps) {
             </div>
             <div className="rounded-lg bg-gray-50 p-3">
               <p className="text-xs text-muted-foreground">{t('common.avgDeviation')}</p>
-              <p className="text-lg font-bold">
-                {(selectedTrend.avgDeviation * 100).toFixed(2)}%
-              </p>
+              <p className="text-lg font-bold">{(selectedTrend.avgDeviation * 100).toFixed(2)}%</p>
             </div>
             <div className="rounded-lg bg-gray-50 p-3">
               <p className="text-xs text-muted-foreground">{t('common.maxDeviation')}</p>
-              <p className="text-lg font-bold">
-                {(selectedTrend.maxDeviation * 100).toFixed(2)}%
-              </p>
+              <p className="text-lg font-bold">{(selectedTrend.maxDeviation * 100).toFixed(2)}%</p>
             </div>
           </div>
 
@@ -179,9 +171,7 @@ export function TrendDetails({ selectedTrend, symbolData }: TrendDetailsProps) {
                   <BarChart2 className="h-3 w-3" />
                   {t('common.stdDeviation')}
                 </div>
-                <p className="text-lg font-semibold">
-                  {(enhancedStats.stdDev * 100).toFixed(3)}%
-                </p>
+                <p className="text-lg font-semibold">{(enhancedStats.stdDev * 100).toFixed(3)}%</p>
               </div>
             </div>
 
@@ -197,7 +187,7 @@ export function TrendDetails({ selectedTrend, symbolData }: TrendDetailsProps) {
                       {(enhancedStats.minDev * 100).toFixed(2)}%
                     </p>
                   </div>
-                  <div className="h-2 flex-1 mx-3 rounded bg-gradient-to-r from-green-200 via-yellow-200 to-red-200" />
+                  <div className="mx-3 h-2 flex-1 rounded bg-gradient-to-r from-green-200 via-yellow-200 to-red-200" />
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground">{t('common.max')}</p>
                     <p className="font-semibold text-red-600">
@@ -216,7 +206,7 @@ export function TrendDetails({ selectedTrend, symbolData }: TrendDetailsProps) {
                     <p className="text-xs text-muted-foreground">{t('common.low')}</p>
                     <p className="font-semibold">${enhancedStats.minPrice.toFixed(4)}</p>
                   </div>
-                  <div className="h-2 flex-1 mx-3 rounded bg-gradient-to-r from-blue-200 to-purple-200" />
+                  <div className="mx-3 h-2 flex-1 rounded bg-gradient-to-r from-blue-200 to-purple-200" />
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground">{t('common.high')}</p>
                     <p className="font-semibold">${enhancedStats.maxPrice.toFixed(4)}</p>
@@ -245,7 +235,9 @@ export function TrendDetails({ selectedTrend, symbolData }: TrendDetailsProps) {
               <div className="flex items-start gap-2">
                 <Info className="mt-0.5 h-4 w-4 text-amber-600" />
                 <div className="text-xs text-amber-800">
-                  <p className="font-medium">{t('common.volatility')}: {(selectedTrend.volatility * 100).toFixed(2)}%</p>
+                  <p className="font-medium">
+                    {t('common.volatility')}: {(selectedTrend.volatility * 100).toFixed(2)}%
+                  </p>
                   <p className="mt-1 text-amber-700">
                     {selectedTrend.volatility > 0.02
                       ? t('analytics.deviation.trends.highVolatilityWarning')

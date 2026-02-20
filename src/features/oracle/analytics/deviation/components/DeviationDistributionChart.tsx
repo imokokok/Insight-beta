@@ -38,7 +38,10 @@ interface ChartDataItem {
   rank: number;
 }
 
-function getDeviationLevel(deviation: number, t: (key: string) => string): { level: string; color: string } {
+function getDeviationLevel(
+  deviation: number,
+  t: (key: string) => string,
+): { level: string; color: string } {
   const absDeviation = Math.abs(deviation);
   if (absDeviation >= 5) return { level: t('common.critical'), color: '#dc2626' };
   if (absDeviation >= 2) return { level: t('common.high'), color: '#ea580c' };
@@ -141,15 +144,15 @@ function CustomTooltip({ active, payload, t, isMobile, onClose }: CustomTooltipP
 export function DeviationDistributionChart({ trends }: DeviationDistributionChartProps) {
   const { t } = useI18n();
   const isMobile = useIsMobile();
-  const [brushRange, setBrushRange] = useState<{ startIndex: number; endIndex: number } | null>(null);
+  const [brushRange, setBrushRange] = useState<{ startIndex: number; endIndex: number } | null>(
+    null,
+  );
   const [showBrush, setShowBrush] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const data = useMemo<ChartDataItem[]>(() => {
-    const sorted = trends
-      .slice(0, 20)
-      .sort((a, b) => b.avgDeviation - a.avgDeviation);
-    
+    const sorted = trends.slice(0, 20).sort((a, b) => b.avgDeviation - a.avgDeviation);
+
     return sorted.map((item, index) => ({
       symbol: item.symbol,
       deviation: item.avgDeviation * 100,
@@ -202,19 +205,36 @@ export function DeviationDistributionChart({ trends }: DeviationDistributionChar
               <BarChart3 className="h-5 w-5" />
               {t('analytics.deviation.chart.deviationDistribution')}
             </CardTitle>
-            <CardDescription>{t('analytics.deviation.chart.deviationDistributionDesc')}</CardDescription>
+            <CardDescription>
+              {t('analytics.deviation.chart.deviationDistributionDesc')}
+            </CardDescription>
           </div>
           <div className="flex items-center gap-1">
             {!showBrush ? (
-              <Button variant="outline" size="sm" onClick={handleZoomIn} className="h-10 min-w-11 px-3 sm:h-8 sm:min-w-0 sm:px-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleZoomIn}
+                className="h-10 min-w-11 px-3 sm:h-8 sm:min-w-0 sm:px-2"
+              >
                 <ZoomIn className="h-4 w-4" />
               </Button>
             ) : (
               <>
-                <Button variant="outline" size="sm" onClick={handleZoomOut} className="h-10 min-w-11 px-3 sm:h-8 sm:min-w-0 sm:px-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleZoomOut}
+                  className="h-10 min-w-11 px-3 sm:h-8 sm:min-w-0 sm:px-2"
+                >
                   <ZoomOut className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleReset} className="h-10 px-3 text-xs sm:h-8 sm:px-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReset}
+                  className="h-10 px-3 text-xs sm:h-8 sm:px-2"
+                >
                   {t('common.reset')}
                 </Button>
               </>
@@ -236,7 +256,7 @@ export function DeviationDistributionChart({ trends }: DeviationDistributionChar
                 interval={isMobile ? 1 : 0}
               />
               <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} unit="%" width={isMobile ? 30 : 40} />
-              <Tooltip 
+              <Tooltip
                 content={
                   isMobile ? (
                     <CustomTooltip t={t} isMobile={isMobile} onClose={handleCloseTooltip} />
@@ -246,13 +266,25 @@ export function DeviationDistributionChart({ trends }: DeviationDistributionChar
                 }
                 trigger={isMobile ? 'click' : 'hover'}
               />
-              <ReferenceLine y={2} stroke="#ea580c" strokeDasharray="5 5" label={{ value: '2%', position: 'right', fontSize: 10 }} />
-              <ReferenceLine y={5} stroke="#dc2626" strokeDasharray="5 5" label={{ value: '5%', position: 'right', fontSize: 10 }} />
+              <ReferenceLine
+                y={2}
+                stroke="#ea580c"
+                strokeDasharray="5 5"
+                label={{ value: '2%', position: 'right', fontSize: 10 }}
+              />
+              <ReferenceLine
+                y={5}
+                stroke="#dc2626"
+                strokeDasharray="5 5"
+                label={{ value: '5%', position: 'right', fontSize: 10 }}
+              />
               <Bar dataKey="deviation" fill="#f97316" radius={[4, 4, 0, 0]} minPointSize={3}>
                 {data.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={entry.deviation > 5 ? '#dc2626' : entry.deviation > 2 ? '#ea580c' : '#f97316'}
+                    fill={
+                      entry.deviation > 5 ? '#dc2626' : entry.deviation > 2 ? '#ea580c' : '#f97316'
+                    }
                     className="cursor-pointer transition-opacity hover:opacity-80"
                     onClick={isMobile ? () => setActiveIndex(index) : undefined}
                   />
@@ -273,16 +305,17 @@ export function DeviationDistributionChart({ trends }: DeviationDistributionChar
         </div>
         {brushRange && (
           <div className="mt-2 text-center text-xs text-muted-foreground">
-            {t('common.showing')} {displayData.length} {t('common.of')} {data.length} {t('common.items')}
+            {t('common.showing')} {displayData.length} {t('common.of')} {data.length}{' '}
+            {t('common.items')}
           </div>
         )}
         {isMobile && mobileData && (
-          <CustomTooltip 
-            active={true} 
-            payload={[{ payload: mobileData }]} 
-            t={t} 
-            isMobile={isMobile} 
-            onClose={handleCloseTooltip} 
+          <CustomTooltip
+            active={true}
+            payload={[{ payload: mobileData }]}
+            t={t}
+            isMobile={isMobile}
+            onClose={handleCloseTooltip}
           />
         )}
       </CardContent>

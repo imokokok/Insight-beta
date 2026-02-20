@@ -80,7 +80,7 @@ export function AlertRulesList({
     if (result) {
       success(
         enabled ? t('alerts.rules.enabled') : t('alerts.rules.disabled'),
-        t('alerts.rules.toggleSuccess')
+        t('alerts.rules.toggleSuccess'),
       );
     } else {
       showError(t('common.error'), t('alerts.rules.toggleFailed'));
@@ -240,9 +240,7 @@ export function AlertRulesList({
                           checked={rule.enabled}
                           onCheckedChange={(checked) => handleToggle(rule.id, checked)}
                           disabled={togglingId === rule.id}
-                          className={cn(
-                            togglingId === rule.id && 'opacity-50'
-                          )}
+                          className={cn(togglingId === rule.id && 'opacity-50')}
                         />
                       </TableCell>
                       <TableCell className="text-right">

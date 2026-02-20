@@ -32,12 +32,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // 协议页面
-  const protocols = [
-    'chainlink',
-    'pyth',
-    'uma',
-    'redstone',
-  ];
+  const protocols = ['chainlink', 'pyth', 'uma', 'redstone'];
 
   const protocolPages = protocols.map((protocol) => ({
     url: `${baseUrl}/oracle/protocols/${protocol}`,

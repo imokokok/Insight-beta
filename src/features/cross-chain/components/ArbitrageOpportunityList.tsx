@@ -47,7 +47,7 @@ export const ArbitrageOpportunityList = memo(function ArbitrageOpportunityList({
       <Card>
         <CardHeader>
           <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-72 mt-1" />
+          <Skeleton className="mt-1 h-4 w-72" />
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -123,9 +123,9 @@ export const ArbitrageOpportunityList = memo(function ArbitrageOpportunityList({
                     {opportunity.symbol}
                   </Badge>
                   <div className="flex items-center gap-1 text-sm">
-                    <span className="capitalize font-medium">{opportunity.buyChain}</span>
+                    <span className="font-medium capitalize">{opportunity.buyChain}</span>
                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                    <span className="capitalize font-medium">{opportunity.sellChain}</span>
+                    <span className="font-medium capitalize">{opportunity.sellChain}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -178,7 +178,7 @@ export const ArbitrageOpportunityList = memo(function ArbitrageOpportunityList({
           <Button
             variant="ghost"
             size="sm"
-            className="w-full mt-3"
+            className="mt-3 w-full"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? (

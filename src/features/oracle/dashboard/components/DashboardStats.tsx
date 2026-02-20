@@ -34,13 +34,18 @@ const icons = {
   'Avg Latency': <Activity className="h-5 w-5" />,
   'Network Uptime': <Shield className="h-5 w-5" />,
   'Stale Feeds': <Clock className="h-5 w-5" />,
-  'Protocols': <Globe className="h-5 w-5" />,
+  Protocols: <Globe className="h-5 w-5" />,
   'Price Feeds': <BarChart3 className="h-5 w-5" />,
-  'TVS': <Shield className="h-5 w-5" />,
+  TVS: <Shield className="h-5 w-5" />,
   'Updates (24h)': <Layers className="h-5 w-5" />,
 };
 
-export function DashboardStats({ statCardsData, scaleCardsData, isRefreshing, stats }: DashboardStatsProps) {
+export function DashboardStats({
+  statCardsData,
+  scaleCardsData,
+  isRefreshing,
+  stats,
+}: DashboardStatsProps) {
   const { t } = useI18n();
 
   return (

@@ -18,20 +18,27 @@ interface ProtocolPriceComparisonProps {
 export function ProtocolPriceComparison({ dataPoint }: ProtocolPriceComparisonProps) {
   const { t } = useI18n();
 
-  const prices = useMemo(() =>
-    dataPoint
-      ? Object.entries(dataPoint.prices).map(([protocol, price]) => ({
-          protocol,
-          price,
-          deviation: Math.abs(price - dataPoint.avgPrice) / dataPoint.avgPrice,
-          isOutlier: dataPoint.outlierProtocols.includes(protocol),
-        }))
-      : [],
-    [dataPoint]
+  const prices = useMemo(
+    () =>
+      dataPoint
+        ? Object.entries(dataPoint.prices).map(([protocol, price]) => ({
+            protocol,
+            price,
+            deviation: Math.abs(price - dataPoint.avgPrice) / dataPoint.avgPrice,
+            isOutlier: dataPoint.outlierProtocols.includes(protocol),
+          }))
+        : [],
+    [dataPoint],
   );
 
-  const maxPrice = useMemo(() => (prices.length > 0 ? Math.max(...prices.map((p) => p.price)) : 0), [prices]);
-  const minPrice = useMemo(() => (prices.length > 0 ? Math.min(...prices.map((p) => p.price)) : 0), [prices]);
+  const maxPrice = useMemo(
+    () => (prices.length > 0 ? Math.max(...prices.map((p) => p.price)) : 0),
+    [prices],
+  );
+  const minPrice = useMemo(
+    () => (prices.length > 0 ? Math.min(...prices.map((p) => p.price)) : 0),
+    [prices],
+  );
 
   if (!dataPoint) {
     return (
@@ -45,9 +52,7 @@ export function ProtocolPriceComparison({ dataPoint }: ProtocolPriceComparisonPr
         </CardHeader>
         <CardContent className="py-12 text-center">
           <BarChart3 className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-          <p className="text-muted-foreground">
-            {t('analytics.priceComparison.emptyHint')}
-          </p>
+          <p className="text-muted-foreground">{t('analytics.priceComparison.emptyHint')}</p>
         </CardContent>
       </Card>
     );

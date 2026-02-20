@@ -49,14 +49,7 @@ describe('Translation Coverage', () => {
 
     it('should have all required namespaces', () => {
       const namespaces = Object.keys(enTranslations);
-      const requiredNamespaces = [
-        'app',
-        'common',
-        'errors',
-        'wallet',
-        'nav',
-        'oracle',
-      ];
+      const requiredNamespaces = ['app', 'common', 'errors', 'wallet', 'nav', 'oracle'];
 
       for (const ns of requiredNamespaces) {
         expect(namespaces).toContain(ns);

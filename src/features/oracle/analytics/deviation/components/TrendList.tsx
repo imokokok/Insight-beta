@@ -2,7 +2,15 @@
 
 import { useState, useMemo } from 'react';
 
-import { ChevronRight, ChevronDown, ChevronUp, BarChart3, AlertTriangle, Clock, DollarSign } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  BarChart3,
+  AlertTriangle,
+  Clock,
+  DollarSign,
+} from 'lucide-react';
 import {
   XAxis,
   YAxis,
@@ -57,26 +65,33 @@ function MiniChartTooltip({ active, payload }: MiniChartTooltipProps) {
   );
 }
 
-function TrendExpandableContent({ dataPoints, t }: { dataPoints: PriceDeviationPoint[]; t: (key: string) => string }) {
+function TrendExpandableContent({
+  dataPoints,
+  t,
+}: {
+  dataPoints: PriceDeviationPoint[];
+  t: (key: string) => string;
+}) {
   const isMobile = useIsMobile();
-  
-  const chartData = useMemo(() =>
-    dataPoints
-      .slice()
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-      .map((d) => ({
-        time: new Date(d.timestamp).toLocaleTimeString(),
-        fullTime: new Date(d.timestamp).toLocaleString(),
-        timestamp: d.timestamp,
-        deviation: d.maxDeviationPercent * 100,
-        avgPrice: d.avgPrice,
-        medianPrice: d.medianPrice,
-        outlierCount: d.outlierProtocols.length,
-        symbol: d.symbol,
-        prices: d.prices,
-        outlierProtocols: d.outlierProtocols,
-      })),
-    [dataPoints]
+
+  const chartData = useMemo(
+    () =>
+      dataPoints
+        .slice()
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+        .map((d) => ({
+          time: new Date(d.timestamp).toLocaleTimeString(),
+          fullTime: new Date(d.timestamp).toLocaleString(),
+          timestamp: d.timestamp,
+          deviation: d.maxDeviationPercent * 100,
+          avgPrice: d.avgPrice,
+          medianPrice: d.medianPrice,
+          outlierCount: d.outlierProtocols.length,
+          symbol: d.symbol,
+          prices: d.prices,
+          outlierProtocols: d.outlierProtocols,
+        })),
+    [dataPoints],
   );
 
   const stats = useMemo(() => {
@@ -106,15 +121,21 @@ function TrendExpandableContent({ dataPoints, t }: { dataPoints: PriceDeviationP
         </div>
         <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
           <p className="text-xs text-muted-foreground">{t('common.avgDeviation')}</p>
-          <p className="text-base font-semibold sm:text-lg">{((stats?.avgDev ?? 0) * 100).toFixed(2)}%</p>
+          <p className="text-base font-semibold sm:text-lg">
+            {((stats?.avgDev ?? 0) * 100).toFixed(2)}%
+          </p>
         </div>
         <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
           <p className="text-xs text-muted-foreground">{t('common.maxDeviation')}</p>
-          <p className="text-base font-semibold sm:text-lg">{((stats?.maxDev ?? 0) * 100).toFixed(2)}%</p>
+          <p className="text-base font-semibold sm:text-lg">
+            {((stats?.maxDev ?? 0) * 100).toFixed(2)}%
+          </p>
         </div>
         <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
           <p className="text-xs text-muted-foreground">{t('common.outliers')}</p>
-          <p className="text-base font-semibold text-red-500 sm:text-lg">{stats?.outlierCount ?? 0}</p>
+          <p className="text-base font-semibold text-red-500 sm:text-lg">
+            {stats?.outlierCount ?? 0}
+          </p>
         </div>
       </div>
 
@@ -128,7 +149,12 @@ function TrendExpandableContent({ dataPoints, t }: { dataPoints: PriceDeviationP
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis dataKey="time" tick={{ fontSize: isMobile ? 8 : 10 }} interval="preserveStartEnd" minTickGap={isMobile ? 20 : 30} />
+            <XAxis
+              dataKey="time"
+              tick={{ fontSize: isMobile ? 8 : 10 }}
+              interval="preserveStartEnd"
+              minTickGap={isMobile ? 20 : 30}
+            />
             <YAxis tick={{ fontSize: isMobile ? 8 : 10 }} unit="%" width={isMobile ? 28 : 35} />
             <Tooltip content={<MiniChartTooltip />} />
             <Area
@@ -145,7 +171,7 @@ function TrendExpandableContent({ dataPoints, t }: { dataPoints: PriceDeviationP
                   <Dot
                     cx={cx}
                     cy={cy}
-                    r={hasOutliers ? (isMobile ? 4 : 3) : (isMobile ? 3 : 2)}
+                    r={hasOutliers ? (isMobile ? 4 : 3) : isMobile ? 3 : 2}
                     fill={color}
                     stroke={hasOutliers ? '#fff' : 'none'}
                     strokeWidth={hasOutliers ? 1 : 0}
@@ -158,38 +184,38 @@ function TrendExpandableContent({ dataPoints, t }: { dataPoints: PriceDeviationP
       </div>
 
       <div className="max-h-40 space-y-1 overflow-auto">
-        {chartData.slice(-5).reverse().map((point) => (
-          <div
-            key={point.timestamp}
-            className={cn(
-              'flex items-center justify-between rounded p-2 text-xs',
-              point.outlierCount > 0 ? 'bg-red-50' : 'bg-gray-50'
-            )}
-          >
-            <div className="flex items-center gap-2">
-              <Clock className="h-3 w-3 text-muted-foreground" />
-              <span className="truncate">{point.fullTime}</span>
-              {point.outlierCount > 0 && (
-                <Badge variant="outline" className="border-red-500 text-red-500 text-[10px]">
-                  <AlertTriangle className="mr-1 h-2 w-2" />
-                  {point.outlierCount}
-                </Badge>
+        {chartData
+          .slice(-5)
+          .reverse()
+          .map((point) => (
+            <div
+              key={point.timestamp}
+              className={cn(
+                'flex items-center justify-between rounded p-2 text-xs',
+                point.outlierCount > 0 ? 'bg-red-50' : 'bg-gray-50',
               )}
+            >
+              <div className="flex items-center gap-2">
+                <Clock className="h-3 w-3 text-muted-foreground" />
+                <span className="truncate">{point.fullTime}</span>
+                {point.outlierCount > 0 && (
+                  <Badge variant="outline" className="border-red-500 text-[10px] text-red-500">
+                    <AlertTriangle className="mr-1 h-2 w-2" />
+                    {point.outlierCount}
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="hidden items-center gap-1 sm:flex">
+                  <DollarSign className="h-3 w-3 text-muted-foreground" />
+                  {point.avgPrice.toFixed(4)}
+                </span>
+                <span className="font-medium" style={{ color: getDeviationColor(point.deviation) }}>
+                  {point.deviation.toFixed(2)}%
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <span className="hidden items-center gap-1 sm:flex">
-                <DollarSign className="h-3 w-3 text-muted-foreground" />
-                {point.avgPrice.toFixed(4)}
-              </span>
-              <span
-                className="font-medium"
-                style={{ color: getDeviationColor(point.deviation) }}
-              >
-                {point.deviation.toFixed(2)}%
-              </span>
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );
@@ -227,7 +253,9 @@ export function TrendList({ trends, isLoading, onSelect, symbolDataMap }: TrendL
       <div className="py-12 text-center">
         <BarChart3 className="mx-auto mb-4 h-16 w-16 text-orange-500" />
         <h3 className="text-lg font-semibold">{t('analytics:deviation.trends.empty')}</h3>
-        <p className="mt-1 text-muted-foreground">{t('analytics:deviation.trends.emptyDescription')}</p>
+        <p className="mt-1 text-muted-foreground">
+          {t('analytics:deviation.trends.emptyDescription')}
+        </p>
       </div>
     );
   }
@@ -257,11 +285,22 @@ export function TrendList({ trends, isLoading, onSelect, symbolDataMap }: TrendL
                       strength={trend.trendStrength}
                     />
                   </div>
-                  <p className="line-clamp-2 text-sm text-muted-foreground">{trend.recommendation}</p>
+                  <p className="line-clamp-2 text-sm text-muted-foreground">
+                    {trend.recommendation}
+                  </p>
                   <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 sm:gap-4">
-                    <span>{t('analytics:deviation.trends.avgDeviation')}: {(trend.avgDeviation * 100).toFixed(2)}%</span>
-                    <span className="hidden sm:inline">{t('analytics:deviation.trends.max')}: {(trend.maxDeviation * 100).toFixed(2)}%</span>
-                    <span className="hidden sm:inline">{t('analytics:deviation.trends.volatility')}: {(trend.volatility * 100).toFixed(2)}%</span>
+                    <span>
+                      {t('analytics:deviation.trends.avgDeviation')}:{' '}
+                      {(trend.avgDeviation * 100).toFixed(2)}%
+                    </span>
+                    <span className="hidden sm:inline">
+                      {t('analytics:deviation.trends.max')}: {(trend.maxDeviation * 100).toFixed(2)}
+                      %
+                    </span>
+                    <span className="hidden sm:inline">
+                      {t('analytics:deviation.trends.volatility')}:{' '}
+                      {(trend.volatility * 100).toFixed(2)}%
+                    </span>
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-1.5 sm:gap-2">

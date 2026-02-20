@@ -112,7 +112,9 @@ export function UserMenu() {
           {/* Header */}
           <div className="mb-2 rounded-lg bg-muted/50 p-3">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">{t('wallet.balance')}</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                {t('wallet.balance')}
+              </span>
               <span className="font-mono text-xs font-bold text-foreground">
                 {formattedBalance} {symbol}
               </span>
@@ -131,7 +133,9 @@ export function UserMenu() {
 
           <div className="mb-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">{t('wallet.network')}</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                {t('wallet.network')}
+              </span>
               <span className="text-xs font-semibold text-foreground">
                 {currentChain ? currentChain.name : t('wallet.unknownNetwork')}
               </span>

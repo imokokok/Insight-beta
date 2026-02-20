@@ -62,7 +62,14 @@ interface CustomTooltipProps {
   onClose?: () => void;
 }
 
-function CustomTooltip({ active, payload, t, onDetailClick, isMobile, onClose }: CustomTooltipProps) {
+function CustomTooltip({
+  active,
+  payload,
+  t,
+  onDetailClick,
+  isMobile,
+  onClose,
+}: CustomTooltipProps) {
   if (!active || !payload || !payload.length) return null;
 
   const data = payload[0]?.payload;
@@ -178,7 +185,10 @@ function DetailModal({ detail, onClose, t }: DetailModalProps) {
   const deviationColor = getDeviationColor(data.deviation);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={onClose}
+    >
       <div
         className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg bg-white shadow-xl"
         onClick={(e) => e.stopPropagation()}
@@ -192,7 +202,10 @@ function DetailModal({ detail, onClose, t }: DetailModalProps) {
         <div className="p-4">
           <div className="mb-4 flex items-center justify-between">
             <span className="text-sm text-gray-500">{data.fullTime}</span>
-            <span className="rounded px-2 py-1 text-sm font-medium" style={{ backgroundColor: `${deviationColor}20`, color: deviationColor }}>
+            <span
+              className="rounded px-2 py-1 text-sm font-medium"
+              style={{ backgroundColor: `${deviationColor}20`, color: deviationColor }}
+            >
               {data.deviation.toFixed(2)}%
             </span>
           </div>
@@ -215,7 +228,10 @@ function DetailModal({ detail, onClose, t }: DetailModalProps) {
               </div>
               <div className="flex flex-wrap gap-1">
                 {data.outlierProtocols.map((protocol) => (
-                  <span key={protocol} className="rounded bg-red-100 px-2 py-0.5 text-xs text-red-700">
+                  <span
+                    key={protocol}
+                    className="rounded bg-red-100 px-2 py-0.5 text-xs text-red-700"
+                  >
                     {protocol}
                   </span>
                 ))}
@@ -224,7 +240,9 @@ function DetailModal({ detail, onClose, t }: DetailModalProps) {
           )}
 
           <div>
-            <div className="mb-2 text-sm font-medium text-gray-700">{t('common.protocolPrices')}</div>
+            <div className="mb-2 text-sm font-medium text-gray-700">
+              {t('common.protocolPrices')}
+            </div>
             <div className="max-h-40 space-y-1 overflow-auto">
               {Object.entries(data.prices).map(([protocol, price]) => {
                 const isOutlier = data.outlierProtocols.includes(protocol);
@@ -239,8 +257,11 @@ function DetailModal({ detail, onClose, t }: DetailModalProps) {
                     <span className={isOutlier ? 'font-medium text-red-600' : ''}>{protocol}</span>
                     <div className="flex items-center gap-2">
                       <span className="font-mono">${price.toFixed(6)}</span>
-                      <span className={`text-xs ${priceDiff > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {priceDiff > 0 ? '+' : ''}{priceDiff.toFixed(2)}%
+                      <span
+                        className={`text-xs ${priceDiff > 0 ? 'text-green-600' : 'text-red-600'}`}
+                      >
+                        {priceDiff > 0 ? '+' : ''}
+                        {priceDiff.toFixed(2)}%
                       </span>
                     </div>
                   </div>
@@ -260,24 +281,25 @@ export function DeviationTrendChart({ dataPoints }: DeviationTrendChartProps) {
   const [detailModal, setDetailModal] = useState<DataPointDetail | null>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  const data = useMemo<ChartDataItem[]>(() =>
-    dataPoints
-      .slice()
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-      .map((d) => ({
-        time: new Date(d.timestamp).toLocaleTimeString(),
-        fullTime: new Date(d.timestamp).toLocaleString(),
-        timestamp: d.timestamp,
-        symbol: d.symbol,
-        deviation: d.maxDeviationPercent * 100,
-        avgPrice: d.avgPrice,
-        medianPrice: d.medianPrice,
-        outlierCount: d.outlierProtocols.length,
-        protocols: d.protocols,
-        outlierProtocols: d.outlierProtocols,
-        prices: d.prices,
-      })),
-    [dataPoints]
+  const data = useMemo<ChartDataItem[]>(
+    () =>
+      dataPoints
+        .slice()
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+        .map((d) => ({
+          time: new Date(d.timestamp).toLocaleTimeString(),
+          fullTime: new Date(d.timestamp).toLocaleString(),
+          timestamp: d.timestamp,
+          symbol: d.symbol,
+          deviation: d.maxDeviationPercent * 100,
+          avgPrice: d.avgPrice,
+          medianPrice: d.medianPrice,
+          outlierCount: d.outlierProtocols.length,
+          protocols: d.protocols,
+          outlierProtocols: d.outlierProtocols,
+          prices: d.prices,
+        })),
+    [dataPoints],
   );
 
   const handleDetailClick = (data: ChartDataItem, x: number, y: number) => {
@@ -321,11 +343,20 @@ export function DeviationTrendChart({ dataPoints }: DeviationTrendChartProps) {
                   interval="preserveStartEnd"
                   minTickGap={isMobile ? 30 : 50}
                 />
-                <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} unit="%" width={isMobile ? 30 : 40} />
-                <Tooltip 
+                <YAxis
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
+                  unit="%"
+                  width={isMobile ? 30 : 40}
+                />
+                <Tooltip
                   content={
                     isMobile ? (
-                      <CustomTooltip t={t} onDetailClick={handleDetailClick} isMobile={isMobile} onClose={handleCloseTooltip} />
+                      <CustomTooltip
+                        t={t}
+                        onDetailClick={handleDetailClick}
+                        isMobile={isMobile}
+                        onClose={handleCloseTooltip}
+                      />
                     ) : (
                       <CustomTooltip t={t} onDetailClick={handleDetailClick} />
                     )
@@ -348,7 +379,7 @@ export function DeviationTrendChart({ dataPoints }: DeviationTrendChartProps) {
                       <Dot
                         cx={cx}
                         cy={cy}
-                        r={hasOutliers ? (isMobile ? 6 : 5) : (isMobile ? 4 : 3)}
+                        r={hasOutliers ? (isMobile ? 6 : 5) : isMobile ? 4 : 3}
                         fill={color}
                         stroke={hasOutliers ? '#fff' : 'none'}
                         strokeWidth={hasOutliers ? 2 : 0}
@@ -393,13 +424,13 @@ export function DeviationTrendChart({ dataPoints }: DeviationTrendChartProps) {
         </CardContent>
       </Card>
       {isMobile && mobileData && (
-        <CustomTooltip 
-          active={true} 
-          payload={[{ payload: mobileData }]} 
-          t={t} 
-          onDetailClick={handleDetailClick} 
-          isMobile={isMobile} 
-          onClose={handleCloseTooltip} 
+        <CustomTooltip
+          active={true}
+          payload={[{ payload: mobileData }]}
+          t={t}
+          onDetailClick={handleDetailClick}
+          isMobile={isMobile}
+          onClose={handleCloseTooltip}
         />
       )}
       <DetailModal detail={detailModal} onClose={handleCloseModal} t={t} />

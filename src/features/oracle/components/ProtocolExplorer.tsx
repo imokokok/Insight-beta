@@ -311,9 +311,7 @@ export function ProtocolExplorer({ className }: ProtocolExplorerProps) {
                                 : 'border-gray-300',
                             )}
                           >
-                            {filters.protocols.includes(protocol) && (
-                              <Check className="h-3 w-3" />
-                            )}
+                            {filters.protocols.includes(protocol) && <Check className="h-3 w-3" />}
                           </div>
                           {protocol}
                         </button>
@@ -365,14 +363,12 @@ export function ProtocolExplorer({ className }: ProtocolExplorerProps) {
                     <button
                       key={option.value}
                       type="button"
-                      onClick={() =>
-                        setFilters((prev) => ({ ...prev, change: option.value }))
-                      }
+                      onClick={() => setFilters((prev) => ({ ...prev, change: option.value }))}
                       className={cn(
                         'flex-1 rounded-md px-3 py-2 text-sm transition-colors',
                         filters.change === option.value
                           ? 'bg-primary text-white'
-                          : 'bg-white border hover:bg-gray-50',
+                          : 'border bg-white hover:bg-gray-50',
                       )}
                     >
                       {t(option.labelKey)}
@@ -388,9 +384,7 @@ export function ProtocolExplorer({ className }: ProtocolExplorerProps) {
                 <div className="relative">
                   <button
                     type="button"
-                    onClick={() =>
-                      setActiveDropdown(activeDropdown === 'health' ? null : 'health')
-                    }
+                    onClick={() => setActiveDropdown(activeDropdown === 'health' ? null : 'health')}
                     className="flex h-10 w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-sm"
                   >
                     <span>
@@ -417,9 +411,7 @@ export function ProtocolExplorer({ className }: ProtocolExplorerProps) {
                                 : 'border-gray-300',
                             )}
                           >
-                            {filters.health.includes(option.value) && (
-                              <Check className="h-3 w-3" />
-                            )}
+                            {filters.health.includes(option.value) && <Check className="h-3 w-3" />}
                           </div>
                           <HealthBadge health={option.value} t={t} labelKey={option.labelKey} />
                         </button>
@@ -515,7 +507,10 @@ function PriceFeedCard({
       <div className="mt-4">
         <div className="text-2xl font-bold text-gray-900">${feed.price.toLocaleString()}</div>
         <div
-          className={cn('flex items-center text-sm', isPositive ? 'text-green-600' : 'text-red-600')}
+          className={cn(
+            'flex items-center text-sm',
+            isPositive ? 'text-green-600' : 'text-red-600',
+          )}
         >
           <span>
             {isPositive ? '+' : ''}
@@ -576,9 +571,7 @@ function HealthBadge({
   };
 
   const { bg, text, dot } = config[health];
-  const label = labelKey
-    ? t(labelKey)
-    : t(`protocol.priceFeeds.health.${health}`);
+  const label = labelKey ? t(labelKey) : t(`protocol.priceFeeds.health.${health}`);
 
   return (
     <Badge variant="secondary" className={cn('gap-1 text-xs', bg, text)}>

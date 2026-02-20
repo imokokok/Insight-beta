@@ -26,5 +26,5 @@ export const wallet = {
   setupRequired: 'Setup Required',
   walletConnectSetupGuide: 'Add NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to your .env.local file',
   newToWallets: 'New to wallets?',
-  learnMore: 'Learn more'
+  learnMore: 'Learn more',
 };

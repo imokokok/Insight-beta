@@ -19,7 +19,15 @@ interface CorrelationMatrixResponse {
   };
 }
 
-const SUPPORTED_CHAINS = ['ethereum', 'bsc', 'polygon', 'avalanche', 'arbitrum', 'optimism', 'base'];
+const SUPPORTED_CHAINS = [
+  'ethereum',
+  'bsc',
+  'polygon',
+  'avalanche',
+  'arbitrum',
+  'optimism',
+  'base',
+];
 
 function generateCorrelationMatrix(symbol: string, timeRange: string): CorrelationMatrixResponse {
   const chains = SUPPORTED_CHAINS.slice(0, 5 + Math.floor(Math.random() * 3));
@@ -35,7 +43,7 @@ function generateCorrelationMatrix(symbol: string, timeRange: string): Correlati
         const baseCorr = 0.85 + Math.random() * 0.14;
         matrix[i]![j] = baseCorr;
         matrix[j]![i] = baseCorr;
-        
+
         const chain1 = chains[i];
         const chain2 = chains[j];
         if (chain1 && chain2) {

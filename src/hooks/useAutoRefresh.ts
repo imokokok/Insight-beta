@@ -17,7 +17,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { getRefreshStrategy, formatLastUpdated, type RefreshStrategyConfig } from '@/config/refreshStrategy';
+import {
+  getRefreshStrategy,
+  formatLastUpdated,
+  type RefreshStrategyConfig,
+} from '@/config/refreshStrategy';
 import { logger } from '@/shared/logger';
 
 // ============================================================================

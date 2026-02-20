@@ -19,15 +19,15 @@ interface CorrelationMatrixProps {
 function getCorrelationColor(correlation: number): string {
   if (correlation >= 0.98) return 'bg-green-600';
   if (correlation >= 0.95) return 'bg-green-500';
-  if (correlation >= 0.90) return 'bg-green-400';
+  if (correlation >= 0.9) return 'bg-green-400';
   if (correlation >= 0.85) return 'bg-yellow-400';
-  if (correlation >= 0.80) return 'bg-yellow-500';
-  if (correlation >= 0.70) return 'bg-orange-400';
+  if (correlation >= 0.8) return 'bg-yellow-500';
+  if (correlation >= 0.7) return 'bg-orange-400';
   return 'bg-red-400';
 }
 
 function getCorrelationTextColor(correlation: number): string {
-  if (correlation >= 0.90) return 'text-white';
+  if (correlation >= 0.9) return 'text-white';
   return 'text-gray-800';
 }
 
@@ -49,7 +49,7 @@ export const CorrelationMatrix = memo(function CorrelationMatrix({
       <Card>
         <CardHeader>
           <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-72 mt-1" />
+          <Skeleton className="mt-1 h-4 w-72" />
         </CardHeader>
         <CardContent>
           <Skeleton style={{ height }} className="w-full" />
@@ -69,7 +69,10 @@ export const CorrelationMatrix = memo(function CorrelationMatrix({
           <CardDescription>暂无相关性数据</CardDescription>
         </CardHeader>
         <CardContent>
-          <div style={{ height }} className="flex items-center justify-center text-muted-foreground">
+          <div
+            style={{ height }}
+            className="flex items-center justify-center text-muted-foreground"
+          >
             暂无数据
           </div>
         </CardContent>
@@ -94,7 +97,7 @@ export const CorrelationMatrix = memo(function CorrelationMatrix({
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <div 
+          <div
             className="inline-block"
             style={{ minWidth: `${(matrixSize + 1) * cellSize + 80}px` }}
           >
@@ -103,7 +106,7 @@ export const CorrelationMatrix = memo(function CorrelationMatrix({
               {data.chains.map((chain) => (
                 <div
                   key={`header-${chain}`}
-                  className="text-xs font-medium text-center capitalize"
+                  className="text-center text-xs font-medium capitalize"
                   style={{ width: cellSize, height: 24 }}
                 >
                   {chain.slice(0, 4)}
@@ -112,8 +115,8 @@ export const CorrelationMatrix = memo(function CorrelationMatrix({
             </div>
             {data.matrix.map((row, i) => (
               <div key={`row-${i}`} className="flex items-center">
-                <div 
-                  className="text-xs font-medium text-right pr-2 capitalize"
+                <div
+                  className="pr-2 text-right text-xs font-medium capitalize"
                   style={{ width: 80 }}
                 >
                   {data.chains[i]}
@@ -124,7 +127,7 @@ export const CorrelationMatrix = memo(function CorrelationMatrix({
                     <div
                       key={`cell-${i}-${j}`}
                       className={cn(
-                        'flex items-center justify-center text-xs font-mono rounded-sm',
+                        'flex items-center justify-center rounded-sm font-mono text-xs',
                         getCorrelationColor(correlation),
                         getCorrelationTextColor(correlation),
                         isDiagonal && 'ring-1 ring-white/30',
@@ -148,18 +151,18 @@ export const CorrelationMatrix = memo(function CorrelationMatrix({
           <div className="flex items-center gap-2">
             <span className="text-xs">低</span>
             <div className="flex gap-0.5">
-              <div className="w-4 h-4 rounded-sm bg-red-400" />
-              <div className="w-4 h-4 rounded-sm bg-orange-400" />
-              <div className="w-4 h-4 rounded-sm bg-yellow-500" />
-              <div className="w-4 h-4 rounded-sm bg-green-400" />
-              <div className="w-4 h-4 rounded-sm bg-green-600" />
+              <div className="h-4 w-4 rounded-sm bg-red-400" />
+              <div className="h-4 w-4 rounded-sm bg-orange-400" />
+              <div className="h-4 w-4 rounded-sm bg-yellow-500" />
+              <div className="h-4 w-4 rounded-sm bg-green-400" />
+              <div className="h-4 w-4 rounded-sm bg-green-600" />
             </div>
             <span className="text-xs">高</span>
           </div>
         </div>
         {data.correlations.length > 0 && (
-          <div className="mt-4 pt-4 border-t">
-            <h4 className="text-sm font-medium mb-2">相关性最低的链对</h4>
+          <div className="mt-4 border-t pt-4">
+            <h4 className="mb-2 text-sm font-medium">相关性最低的链对</h4>
             <div className="flex flex-wrap gap-2">
               {data.correlations
                 .sort((a, b) => a.correlation - b.correlation)
@@ -167,15 +170,17 @@ export const CorrelationMatrix = memo(function CorrelationMatrix({
                 .map((corr, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted text-xs"
+                    className="flex items-center gap-2 rounded-md bg-muted px-2 py-1 text-xs"
                   >
                     <span className="capitalize">{corr.chain1}</span>
                     <span className="text-muted-foreground">↔</span>
                     <span className="capitalize">{corr.chain2}</span>
-                    <span className={cn(
-                      'font-mono font-medium',
-                      corr.correlation < 0.85 ? 'text-yellow-600' : 'text-green-600'
-                    )}>
+                    <span
+                      className={cn(
+                        'font-mono font-medium',
+                        corr.correlation < 0.85 ? 'text-yellow-600' : 'text-green-600',
+                      )}
+                    >
                       {corr.correlation.toFixed(2)}
                     </span>
                   </div>

@@ -12,7 +12,7 @@ import { channelsStore } from '../store';
 
 function validateChannelConfig(
   type: NotificationChannelType,
-  config: NotificationChannelConfig
+  config: NotificationChannelConfig,
 ): { valid: boolean; error?: string } {
   switch (type) {
     case 'webhook':
@@ -51,19 +51,13 @@ function validateChannelConfig(
   return { valid: true };
 }
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const channel = channelsStore.find((c) => c.id === id);
 
     if (!channel) {
-      return NextResponse.json(
-        { ok: false, error: 'Channel not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ ok: false, error: 'Channel not found' }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -75,42 +69,30 @@ export async function GET(
     logger.error('Failed to fetch notification channel', { error });
     return NextResponse.json(
       { ok: false, error: 'Failed to fetch notification channel' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await request.json();
     const channelIndex = channelsStore.findIndex((c) => c.id === id);
 
     if (channelIndex === -1) {
-      return NextResponse.json(
-        { ok: false, error: 'Channel not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ ok: false, error: 'Channel not found' }, { status: 404 });
     }
 
     const existingChannel = channelsStore[channelIndex];
     if (!existingChannel) {
-      return NextResponse.json(
-        { ok: false, error: 'Channel not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ ok: false, error: 'Channel not found' }, { status: 404 });
     }
 
     if (body.config) {
       const configValidation = validateChannelConfig(existingChannel.type, body.config);
       if (!configValidation.valid) {
-        return NextResponse.json(
-          { ok: false, error: configValidation.error },
-          { status: 400 }
-        );
+        return NextResponse.json({ ok: false, error: configValidation.error }, { status: 400 });
       }
     }
 
@@ -139,24 +121,21 @@ export async function PATCH(
     logger.error('Failed to update notification channel', { error });
     return NextResponse.json(
       { ok: false, error: 'Failed to update notification channel' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
     const channelIndex = channelsStore.findIndex((c) => c.id === id);
 
     if (channelIndex === -1) {
-      return NextResponse.json(
-        { ok: false, error: 'Channel not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ ok: false, error: 'Channel not found' }, { status: 404 });
     }
 
     channelsStore.splice(channelIndex, 1);
@@ -170,7 +149,7 @@ export async function DELETE(
     logger.error('Failed to delete notification channel', { error });
     return NextResponse.json(
       { ok: false, error: 'Failed to delete notification channel' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

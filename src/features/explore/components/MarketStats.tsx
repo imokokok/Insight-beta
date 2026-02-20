@@ -148,7 +148,10 @@ export function MarketStats({
                   </span>
                   <span className="font-medium">{deviationDistribution.low}%</span>
                 </div>
-                <Progress value={deviationDistribution.low} className="h-2 bg-emerald-100 [&>div]:bg-emerald-500" />
+                <Progress
+                  value={deviationDistribution.low}
+                  className="h-2 bg-emerald-100 [&>div]:bg-emerald-500"
+                />
               </div>
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
@@ -158,7 +161,10 @@ export function MarketStats({
                   </span>
                   <span className="font-medium">{deviationDistribution.medium}%</span>
                 </div>
-                <Progress value={deviationDistribution.medium} className="h-2 bg-amber-100 [&>div]:bg-amber-500" />
+                <Progress
+                  value={deviationDistribution.medium}
+                  className="h-2 bg-amber-100 [&>div]:bg-amber-500"
+                />
               </div>
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
@@ -168,7 +174,10 @@ export function MarketStats({
                   </span>
                   <span className="font-medium">{deviationDistribution.high}%</span>
                 </div>
-                <Progress value={deviationDistribution.high} className="h-2 bg-red-100 [&>div]:bg-red-500" />
+                <Progress
+                  value={deviationDistribution.high}
+                  className="h-2 bg-red-100 [&>div]:bg-red-500"
+                />
               </div>
             </div>
           </CardContent>

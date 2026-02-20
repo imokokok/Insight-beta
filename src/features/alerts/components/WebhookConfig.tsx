@@ -50,12 +50,8 @@ export function WebhookConfig({ config, onChange, errors }: WebhookConfigProps) 
           placeholder="https://hooks.example.com/webhook/..."
           className={errors?.url ? 'border-destructive' : ''}
         />
-        {errors?.url && (
-          <p className="text-xs text-destructive">{errors.url}</p>
-        )}
-        <p className="text-xs text-muted-foreground">
-          {t('alerts.channels.webhookUrlHint')}
-        </p>
+        {errors?.url && <p className="text-destructive text-xs">{errors.url}</p>}
+        <p className="text-xs text-muted-foreground">{t('alerts.channels.webhookUrlHint')}</p>
       </div>
 
       <div className="grid gap-2">
@@ -67,9 +63,7 @@ export function WebhookConfig({ config, onChange, errors }: WebhookConfigProps) 
           onChange={(e) => handleChange('secret', e.target.value)}
           placeholder={t('alerts.channels.secretPlaceholder')}
         />
-        <p className="text-xs text-muted-foreground">
-          {t('alerts.channels.secretHint')}
-        </p>
+        <p className="text-xs text-muted-foreground">{t('alerts.channels.secretHint')}</p>
       </div>
     </div>
   );

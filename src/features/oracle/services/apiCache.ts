@@ -22,7 +22,7 @@ class APICacheService {
 
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       this.misses++;
       return null;
@@ -76,7 +76,10 @@ class APICacheService {
     }
 
     if (cleaned > 0) {
-      logger.info('API cache cleaned', { cleanedEntries: cleaned, remainingEntries: this.cache.size });
+      logger.info('API cache cleaned', {
+        cleanedEntries: cleaned,
+        remainingEntries: this.cache.size,
+      });
     }
 
     return cleaned;

@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 
-
 import { motion } from 'framer-motion';
 import { Heart, Clock, Database, Wallet, ChevronRight } from 'lucide-react';
 
@@ -70,16 +69,12 @@ export function QuickAccess({ className, maxItems = 5 }: QuickAccessProps) {
     return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
   };
 
-  const renderItem = (
-    item: FavoriteItem | HistoryItem,
-    onClick: () => void,
-    isHistory = false
-  ) => {
+  const renderItem = (item: FavoriteItem | HistoryItem, onClick: () => void, isHistory = false) => {
     const config = typeConfig[item.type];
     const Icon = config.icon;
     const title = isHistory
       ? (item as HistoryItem).title
-      : ((item as FavoriteItem).symbol || (item as FavoriteItem).address?.slice(0, 8) + '...');
+      : (item as FavoriteItem).symbol || (item as FavoriteItem).address?.slice(0, 8) + '...';
     const subtitle = isHistory
       ? formatTime((item as HistoryItem).visitedAt)
       : formatTime((item as FavoriteItem).addedAt);
@@ -90,60 +85,52 @@ export function QuickAccess({ className, maxItems = 5 }: QuickAccessProps) {
         whileHover={!isMobile ? { x: 4 } : undefined}
         whileTap={{ scale: 0.98 }}
         onClick={onClick}
-        className="w-full flex items-center justify-between p-2.5 md:p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/60 transition-colors group min-h-[44px]"
+        className="bg-secondary/30 hover:bg-secondary/60 group flex min-h-[44px] w-full items-center justify-between rounded-lg p-2.5 transition-colors md:p-2.5"
       >
         <div className="flex items-center gap-2 md:gap-2.5">
-          <div className={cn('p-1.5 rounded-md', config.bgColor)}>
+          <div className={cn('rounded-md p-1.5', config.bgColor)}>
             <Icon className={cn('h-3.5 w-3.5', config.color)} />
           </div>
           <div className="text-left">
-            <p className="text-sm font-medium text-foreground truncate max-w-[100px] md:max-w-[120px]">
+            <p className="max-w-[100px] truncate text-sm font-medium text-foreground md:max-w-[120px]">
               {title}
             </p>
             <p className="text-xs text-muted-foreground">{subtitle}</p>
           </div>
         </div>
-        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
       </motion.button>
     );
   };
 
   return (
     <CardEnhanced className={cn('p-3 md:p-4', className)}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-2 md:mb-3">
+          <div className="mb-2 flex items-center gap-2 md:mb-3">
             <Heart className="h-4 w-4 text-rose-500" />
             <h4 className="text-sm font-semibold text-foreground">收藏</h4>
           </div>
           {topFavorites.length > 0 ? (
             <div className="space-y-1 md:space-y-1.5">
-              {topFavorites.map((item) =>
-                renderItem(item, () => handleFavoriteClick(item), false)
-              )}
+              {topFavorites.map((item) => renderItem(item, () => handleFavoriteClick(item), false))}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground py-3 md:py-4 text-center">
-              暂无收藏
-            </div>
+            <div className="py-3 text-center text-sm text-muted-foreground md:py-4">暂无收藏</div>
           )}
         </div>
 
         <div>
-          <div className="flex items-center gap-2 mb-2 md:mb-3">
+          <div className="mb-2 flex items-center gap-2 md:mb-3">
             <Clock className="h-4 w-4 text-amber-500" />
             <h4 className="text-sm font-semibold text-foreground">最近访问</h4>
           </div>
           {recentHistory.length > 0 ? (
             <div className="space-y-1 md:space-y-1.5">
-              {recentHistory.map((item) =>
-                renderItem(item, () => handleHistoryClick(item), true)
-              )}
+              {recentHistory.map((item) => renderItem(item, () => handleHistoryClick(item), true))}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground py-3 md:py-4 text-center">
-              暂无历史
-            </div>
+            <div className="py-3 text-center text-sm text-muted-foreground md:py-4">暂无历史</div>
           )}
         </div>
       </div>

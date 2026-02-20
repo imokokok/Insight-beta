@@ -158,7 +158,7 @@ export function NotificationChannels({
     if (result) {
       success(
         enabled ? t('alerts.channels.enabled') : t('alerts.channels.disabled'),
-        t('alerts.channels.toggleSuccess')
+        t('alerts.channels.toggleSuccess'),
       );
     } else {
       showError(t('common.error'), t('alerts.channels.toggleFailed'));
@@ -280,11 +280,7 @@ export function NotificationChannels({
         );
       case 'email':
         return (
-          <EmailConfig
-            config={formData.config}
-            onChange={handleConfigChange}
-            errors={formErrors}
-          />
+          <EmailConfig config={formData.config} onChange={handleConfigChange} errors={formErrors} />
         );
       case 'telegram':
         return (
@@ -384,9 +380,7 @@ export function NotificationChannels({
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={channelTypeColors[channel.type]}>
-                            {channel.type}
-                          </Badge>
+                          <Badge className={channelTypeColors[channel.type]}>{channel.type}</Badge>
                         </TableCell>
                         <TableCell>
                           <div className="max-w-[200px] truncate text-sm text-muted-foreground">
@@ -428,12 +422,14 @@ export function NotificationChannels({
                                   'flex items-center gap-1 text-xs',
                                   testStatus === 'success' && 'text-green-500',
                                   testStatus === 'failed' && 'text-red-500',
-                                  testStatus === 'pending' && 'text-yellow-500'
+                                  testStatus === 'pending' && 'text-yellow-500',
                                 )}
                               >
                                 {testStatus === 'success' && <CheckCircle className="h-3 w-3" />}
                                 {testStatus === 'failed' && <XCircle className="h-3 w-3" />}
-                                {testStatus === 'pending' && <Loader2 className="h-3 w-3 animate-spin" />}
+                                {testStatus === 'pending' && (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                )}
                               </span>
                             )}
                           </div>
@@ -514,15 +510,11 @@ export function NotificationChannels({
                   <Input
                     id="channel-name"
                     value={formData.name}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, name: e.target.value }))
-                    }
+                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                     placeholder={t('alerts.channels.channelNamePlaceholder')}
                     className={formErrors.name ? 'border-destructive' : ''}
                   />
-                  {formErrors.name && (
-                    <p className="text-xs text-destructive">{formErrors.name}</p>
-                  )}
+                  {formErrors.name && <p className="text-destructive text-xs">{formErrors.name}</p>}
                 </div>
 
                 <div className="grid gap-2">
@@ -566,7 +558,9 @@ export function NotificationChannels({
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="channel-description">{t('alerts.channels.channelDescription')}</Label>
+                  <Label htmlFor="channel-description">
+                    {t('alerts.channels.channelDescription')}
+                  </Label>
                   <Input
                     id="channel-description"
                     value={formData.description}

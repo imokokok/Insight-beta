@@ -88,9 +88,7 @@ export function MarketHealthScore({ score, isLoading, size = 'md' }: MarketHealt
           <span className={cn('mt-1 font-bold', currentSize.score, color)}>{score}</span>
         </div>
       </div>
-      <h3 className={cn('mt-3 font-semibold text-foreground', currentSize.text)}>
-        {statusText}
-      </h3>
+      <h3 className={cn('mt-3 font-semibold text-foreground', currentSize.text)}>{statusText}</h3>
       <p className="mt-1 text-xs text-muted-foreground">{t('market.healthScore.title')}</p>
     </div>
   );

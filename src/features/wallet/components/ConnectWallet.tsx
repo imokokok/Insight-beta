@@ -70,9 +70,7 @@ function WalletSelectModal({
       <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-card shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h2 className="text-lg font-semibold text-foreground">
-            {t('wallet.selectWallet')}
-          </h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('wallet.selectWallet')}</h2>
           <button
             onClick={onClose}
             className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -106,9 +104,7 @@ function WalletSelectModal({
                 </div>
                 <div className="flex-1 text-left">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-foreground">
-                      {option.name}
-                    </span>
+                    <span className="font-semibold text-foreground">{option.name}</span>
                     {option.recommended && (
                       <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                         {t('wallet.recommended')}

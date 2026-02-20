@@ -67,7 +67,7 @@ export const LiquidityDistribution = memo(function LiquidityDistribution({
       <Card>
         <CardHeader>
           <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-72 mt-1" />
+          <Skeleton className="mt-1 h-4 w-72" />
         </CardHeader>
         <CardContent>
           <Skeleton style={{ height }} className="w-full" />
@@ -87,7 +87,10 @@ export const LiquidityDistribution = memo(function LiquidityDistribution({
           <CardDescription>暂无流动性数据</CardDescription>
         </CardHeader>
         <CardContent>
-          <div style={{ height }} className="flex items-center justify-center text-muted-foreground">
+          <div
+            style={{ height }}
+            className="flex items-center justify-center text-muted-foreground"
+          >
             暂无数据
           </div>
         </CardContent>
@@ -104,9 +107,7 @@ export const LiquidityDistribution = memo(function LiquidityDistribution({
               <Droplets className="h-5 w-5" />
               跨链流动性分布
             </CardTitle>
-            <CardDescription>
-              各链总流动性分析
-            </CardDescription>
+            <CardDescription>各链总流动性分析</CardDescription>
           </div>
           {data.summary && (
             <div className="flex items-center gap-2">
@@ -121,18 +122,18 @@ export const LiquidityDistribution = memo(function LiquidityDistribution({
         <div style={{ height }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={true} vertical={false} />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#e5e7eb"
+                horizontal={true}
+                vertical={false}
+              />
               <XAxis
                 type="number"
                 tick={{ fontSize: 11 }}
                 tickFormatter={(value) => formatLiquidity(value)}
               />
-              <YAxis
-                type="category"
-                dataKey="displayName"
-                tick={{ fontSize: 11 }}
-                width={80}
-              />
+              <YAxis type="category" dataKey="displayName" tick={{ fontSize: 11 }} width={80} />
               <Tooltip
                 contentStyle={{
                   borderRadius: '8px',
@@ -154,18 +155,15 @@ export const LiquidityDistribution = memo(function LiquidityDistribution({
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
           {chartData.slice(0, 4).map((item) => (
             <div
               key={item.chain}
-              className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted text-xs"
+              className="flex items-center gap-2 rounded-md bg-muted px-2 py-1 text-xs"
             >
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
               <span className="font-medium">{item.displayName}</span>
-              <span className="font-mono ml-auto">{formatLiquidity(item.liquidity)}</span>
+              <span className="ml-auto font-mono">{formatLiquidity(item.liquidity)}</span>
               {item.change24h >= 0 ? (
                 <TrendingUp className="h-3 w-3 text-green-600" />
               ) : (
@@ -175,18 +173,23 @@ export const LiquidityDistribution = memo(function LiquidityDistribution({
           ))}
         </div>
         {data.summary && (
-          <div className="mt-4 pt-4 border-t flex items-center justify-between text-xs text-muted-foreground">
+          <div className="mt-4 flex items-center justify-between border-t pt-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-4">
-              <span>最高流动性: <span className="capitalize font-medium">{data.summary.topChain}</span></span>
+              <span>
+                最高流动性: <span className="font-medium capitalize">{data.summary.topChain}</span>
+              </span>
               <span>平均流动性: {formatLiquidity(data.summary.avgLiquidity)}</span>
             </div>
             <span>
-              24h 变化: 
-              <span className={cn(
-                'ml-1 font-medium',
-                data.summary.liquidityChange24h >= 0 ? 'text-green-600' : 'text-red-600'
-              )}>
-                {data.summary.liquidityChange24h >= 0 ? '+' : ''}{data.summary.liquidityChange24h.toFixed(2)}%
+              24h 变化:
+              <span
+                className={cn(
+                  'ml-1 font-medium',
+                  data.summary.liquidityChange24h >= 0 ? 'text-green-600' : 'text-red-600',
+                )}
+              >
+                {data.summary.liquidityChange24h >= 0 ? '+' : ''}
+                {data.summary.liquidityChange24h.toFixed(2)}%
               </span>
             </span>
           </div>

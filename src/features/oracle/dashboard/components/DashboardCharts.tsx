@@ -9,7 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { formatNumber } from '@/shared/utils';
 
-import type { ChartDataPoint, ComparisonDataPoint, AreaChartConfig, LineChartConfig, BarChartConfig, DashboardStats } from '../types/dashboard';
+import type {
+  ChartDataPoint,
+  ComparisonDataPoint,
+  AreaChartConfig,
+  LineChartConfig,
+  BarChartConfig,
+  DashboardStats,
+} from '../types/dashboard';
 
 interface DashboardChartsProps {
   activeTab: string;
@@ -87,19 +94,33 @@ export function DashboardCharts({
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
-                  <span className="text-sm text-muted-foreground">{t('dashboard.metrics.activeProtocols')}</span>
-                  <span className="text-lg font-bold text-foreground">{stats?.totalProtocols ?? 8}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('dashboard.metrics.activeProtocols')}
+                  </span>
+                  <span className="text-lg font-bold text-foreground">
+                    {stats?.totalProtocols ?? 8}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
-                  <span className="text-sm text-muted-foreground">{t('dashboard.metrics.totalFeeds')}</span>
-                  <span className="text-lg font-bold text-foreground">{stats?.totalPriceFeeds ?? 156}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('dashboard.metrics.totalFeeds')}
+                  </span>
+                  <span className="text-lg font-bold text-foreground">
+                    {stats?.totalPriceFeeds ?? 156}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
-                  <span className="text-sm text-muted-foreground">{t('dashboard.metrics.avgUpdateTime')}</span>
-                  <span className="text-lg font-bold text-foreground">{stats?.avgLatency ?? 450}ms</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('dashboard.metrics.avgUpdateTime')}
+                  </span>
+                  <span className="text-lg font-bold text-foreground">
+                    {stats?.avgLatency ?? 450}ms
+                  </span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
-                  <span className="text-sm text-muted-foreground">{t('dashboard.metrics.healthScore')}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('dashboard.metrics.healthScore')}
+                  </span>
                   <span className="text-lg font-bold text-success">98.5%</span>
                 </div>
               </div>
@@ -187,9 +208,21 @@ export function DashboardCharts({
           <EnhancedBarChart
             data={comparisonData}
             bars={[
-              { dataKey: 'latency', name: t('dashboard.metrics.latencyMs'), color: CHART_COLORS.series[0] },
-              { dataKey: 'accuracy', name: t('dashboard.metrics.accuracyPercent'), color: CHART_COLORS.series[1] },
-              { dataKey: 'uptime', name: t('dashboard.metrics.uptimePercent'), color: CHART_COLORS.series[2] },
+              {
+                dataKey: 'latency',
+                name: t('dashboard.metrics.latencyMs'),
+                color: CHART_COLORS.series[0],
+              },
+              {
+                dataKey: 'accuracy',
+                name: t('dashboard.metrics.accuracyPercent'),
+                color: CHART_COLORS.series[1],
+              },
+              {
+                dataKey: 'uptime',
+                name: t('dashboard.metrics.uptimePercent'),
+                color: CHART_COLORS.series[2],
+              },
             ]}
             height={400}
             valueFormatter={(v) => formatNumber(v, 1)}

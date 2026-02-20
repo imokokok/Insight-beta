@@ -148,8 +148,6 @@ describe('Button', () => {
     });
   });
 
-
-
   describe('buttonVariants utility', () => {
     it('should generate correct classes for default variant', () => {
       const classes = buttonVariants({ variant: 'default', size: 'default' });

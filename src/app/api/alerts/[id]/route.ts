@@ -4,12 +4,12 @@ import { NextResponse } from 'next/server';
 import type { AlertStatus, UnifiedAlert } from '@/features/alerts/types';
 import { logger } from '@/shared/logger';
 
-const alertStore = new Map<string, { status: AlertStatus; note?: string; silencedUntil?: string }>();
+const alertStore = new Map<
+  string,
+  { status: AlertStatus; note?: string; silencedUntil?: string }
+>();
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await request.json();
@@ -27,7 +27,8 @@ export async function PATCH(
       );
     }
 
-    const newStatus: AlertStatus = action === 'acknowledge' ? 'investigating' : action === 'resolve' ? 'resolved' : 'active';
+    const newStatus: AlertStatus =
+      action === 'acknowledge' ? 'investigating' : action === 'resolve' ? 'resolved' : 'active';
 
     const updateData: { status: AlertStatus; note?: string; silencedUntil?: string } = {
       status: newStatus,
@@ -58,17 +59,11 @@ export async function PATCH(
     });
   } catch (error) {
     logger.error('Failed to update alert', { error });
-    return NextResponse.json(
-      { success: false, error: 'Failed to update alert' },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: 'Failed to update alert' }, { status: 500 });
   }
 }
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const storedData = alertStore.get(id);
@@ -88,10 +83,7 @@ export async function GET(
     });
   } catch (error) {
     logger.error('Failed to get alert', { error });
-    return NextResponse.json(
-      { success: false, error: 'Failed to get alert' },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: 'Failed to get alert' }, { status: 500 });
   }
 }
 

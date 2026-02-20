@@ -68,7 +68,8 @@ export const alerts = {
     trendChartDesc: 'View alert trends over time',
     heatmap: 'Alert Heatmap',
     heatmapDesc: 'Alert distribution by time and source',
-    heatmapTooltip: 'Each cell shows the number of alerts for a specific hour and source. Darker colors indicate more alerts.',
+    heatmapTooltip:
+      'Each cell shows the number of alerts for a specific hour and source. Darker colors indicate more alerts.',
     totalAlerts: 'Total Alerts',
     avgPerHour: 'Avg/Hour',
     peakHour: 'Peak Hour',
@@ -77,11 +78,14 @@ export const alerts = {
   actions: {
     title: 'Actions',
     acknowledge: 'Acknowledge',
-    acknowledgeDesc: 'Mark this alert as under investigation. This indicates that the alert has been reviewed and is being actively investigated.',
+    acknowledgeDesc:
+      'Mark this alert as under investigation. This indicates that the alert has been reviewed and is being actively investigated.',
     resolve: 'Resolve',
-    resolveDesc: 'Mark this alert as resolved. This indicates that the issue has been addressed and no longer requires attention.',
+    resolveDesc:
+      'Mark this alert as resolved. This indicates that the issue has been addressed and no longer requires attention.',
     silence: 'Silence',
-    silenceDesc: 'Temporarily silence this alert. The alert will remain active but notifications will be suppressed for the specified duration.',
+    silenceDesc:
+      'Temporarily silence this alert. The alert will remain active but notifications will be suppressed for the specified duration.',
     note: 'Note',
     notePlaceholder: 'Add a note about this action...',
     duration: 'Duration',

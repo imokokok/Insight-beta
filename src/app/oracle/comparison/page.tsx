@@ -75,7 +75,9 @@ export default function ComparisonPage() {
       <div className="container mx-auto space-y-4 p-3 sm:space-y-6 sm:p-6">
         <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('comparison.title')}</h1>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              {t('comparison.title')}
+            </h1>
             <p className="mt-1 text-sm text-muted-foreground sm:text-base">
               {t('comparison.description')}
             </p>

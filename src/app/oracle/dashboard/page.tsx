@@ -62,7 +62,6 @@ export default function OptimizedOracleDashboard() {
           />
 
           <div className="relative flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4">
-
             {isError && error && (
               <div className="mb-6">
                 <ErrorBanner

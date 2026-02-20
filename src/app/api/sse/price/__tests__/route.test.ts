@@ -34,9 +34,7 @@ describe('/api/sse/price', () => {
 
   describe('GET', () => {
     it('should return 400 for invalid symbols', async () => {
-      const request = new NextRequest(
-        new URL('http://localhost/api/sse/price?symbols=INVALID'),
-      );
+      const request = new NextRequest(new URL('http://localhost/api/sse/price?symbols=INVALID'));
 
       const response = await GET(request);
       const data = await response.json();
@@ -46,12 +44,8 @@ describe('/api/sse/price', () => {
     });
 
     it('should return 400 when too many symbols requested', async () => {
-      const symbols = Array(15)
-        .fill('ETH/USD')
-        .join(',');
-      const request = new NextRequest(
-        new URL(`http://localhost/api/sse/price?symbols=${symbols}`),
-      );
+      const symbols = Array(15).fill('ETH/USD').join(',');
+      const request = new NextRequest(new URL(`http://localhost/api/sse/price?symbols=${symbols}`));
 
       const response = await GET(request);
       const data = await response.json();
@@ -61,9 +55,7 @@ describe('/api/sse/price', () => {
     });
 
     it('should use default symbol when no symbols provided', async () => {
-      const request = new NextRequest(
-        new URL('http://localhost/api/sse/price'),
-      );
+      const request = new NextRequest(new URL('http://localhost/api/sse/price'));
 
       const response = await GET(request);
 
@@ -72,9 +64,7 @@ describe('/api/sse/price', () => {
     });
 
     it('should return correct headers for SSE', async () => {
-      const request = new NextRequest(
-        new URL('http://localhost/api/sse/price?symbols=ETH/USD'),
-      );
+      const request = new NextRequest(new URL('http://localhost/api/sse/price?symbols=ETH/USD'));
 
       const response = await GET(request);
 
@@ -84,14 +74,11 @@ describe('/api/sse/price', () => {
     });
 
     it('should return rate limit headers', async () => {
-      const request = new NextRequest(
-        new URL('http://localhost/api/sse/price?symbols=ETH/USD'),
-        {
-          headers: {
-            'x-forwarded-for': '192.168.1.1',
-          },
+      const request = new NextRequest(new URL('http://localhost/api/sse/price?symbols=ETH/USD'), {
+        headers: {
+          'x-forwarded-for': '192.168.1.1',
         },
-      );
+      });
 
       const response = await GET(request);
 

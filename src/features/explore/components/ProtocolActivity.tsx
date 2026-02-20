@@ -120,7 +120,7 @@ export function ProtocolActivity({ activities, isLoading, onItemClick }: Protoco
                     </Badge>
                   </div>
 
-                  <p className="text-sm text-muted-foreground line-clamp-1">
+                  <p className="line-clamp-1 text-sm text-muted-foreground">
                     {activity.description}
                   </p>
 

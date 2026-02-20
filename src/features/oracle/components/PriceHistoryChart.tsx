@@ -40,7 +40,7 @@ export interface PriceHistoryChartProps {
 }
 
 function isSingleAssetData(
-  data: SingleAssetDataPoint[] | MultiProtocolDataPoint[]
+  data: SingleAssetDataPoint[] | MultiProtocolDataPoint[],
 ): data is SingleAssetDataPoint[] {
   if (data.length === 0) return true;
   const firstItem = data[0];

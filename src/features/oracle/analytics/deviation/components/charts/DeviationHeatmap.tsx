@@ -47,7 +47,7 @@ export function DeviationHeatmap({ trends, anomalies = [], onCellClick }: Deviat
     const timeSlots = new Map<string, Map<string, number>>();
 
     const sortedAnomalies = [...anomalies].sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
 
     const uniqueTimes = [...new Set(sortedAnomalies.map((a) => a.timestamp))].slice(-12);
@@ -195,7 +195,10 @@ export function DeviationHeatmap({ trends, anomalies = [], onCellClick }: Deviat
               <span className="font-medium">{hoveredCell.symbol}</span>
               <span className="text-muted-foreground">{hoveredCell.time}</span>
             </div>
-            <div className="mt-1 text-lg font-bold" style={{ color: getDeviationColor(hoveredCell.deviation) }}>
+            <div
+              className="mt-1 text-lg font-bold"
+              style={{ color: getDeviationColor(hoveredCell.deviation) }}
+            >
               {(hoveredCell.deviation * 100).toFixed(2)}% {t('common.deviation')}
             </div>
           </div>

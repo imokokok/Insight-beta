@@ -67,8 +67,10 @@ function generateLiquidityData(): LiquidityResponse {
   });
 
   const totalLiquidity = chains.reduce((sum, c) => sum + c.totalLiquidity, 0);
-  const topChain = chains.reduce((max, c) => 
-    c.totalLiquidity > (max?.totalLiquidity ?? 0) ? c : max, chains[0]);
+  const topChain = chains.reduce(
+    (max, c) => (c.totalLiquidity > (max?.totalLiquidity ?? 0) ? c : max),
+    chains[0],
+  );
 
   return {
     chains,

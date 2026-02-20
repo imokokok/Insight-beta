@@ -95,7 +95,8 @@ export function TrendInsight({ insights, isLoading, onItemClick }: TrendInsightP
       </CardHeader>
       <CardContent className="space-y-3">
         {insights.map((insight) => {
-          const typeConfig = trendTypeConfig[insight.trendType] || trendTypeConfig.volatility_change;
+          const typeConfig =
+            trendTypeConfig[insight.trendType] || trendTypeConfig.volatility_change;
           const TypeIcon = typeConfig.icon;
           const isPositive = insight.changePercent > 0;
 
@@ -127,7 +128,7 @@ export function TrendInsight({ insights, isLoading, onItemClick }: TrendInsightP
                     <span className="font-semibold">{insight.symbol}</span>
                   </div>
 
-                  <p className="text-sm text-muted-foreground line-clamp-1">
+                  <p className="line-clamp-1 text-sm text-muted-foreground">
                     {insight.description}
                   </p>
 

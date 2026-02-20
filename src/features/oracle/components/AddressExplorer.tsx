@@ -79,12 +79,12 @@ type AddressType = 'contract' | 'eoa' | 'unknown' | 'checking';
 
 function formatTimeAgo(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000);
-  
+
   if (seconds < 60) return '刚刚';
   if (seconds < 3600) return `${Math.floor(seconds / 60)} 分钟前`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)} 小时前`;
   if (seconds < 604800) return `${Math.floor(seconds / 86400)} 天前`;
-  
+
   return new Date(timestamp).toLocaleDateString();
 }
 
@@ -95,14 +95,8 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
   const [error, setError] = useState('');
   const [inputAddressType, setInputAddressType] = useState<AddressType>('unknown');
   const [showHistory, setShowHistory] = useState(false);
-  
-  const { 
-    history, 
-    isLoaded, 
-    addToHistory, 
-    removeFromHistory, 
-    clearHistory,
-  } = useAddressHistory();
+
+  const { history, isLoaded, addToHistory, removeFromHistory, clearHistory } = useAddressHistory();
 
   const validateAddress = (value: string) => {
     if (!value) {
@@ -123,12 +117,13 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
     }
 
     setInputAddressType('checking');
-    
+
     try {
       const response = await fetch(`/api/address/${addr}/type`);
       if (response.ok) {
         const data = await response.json();
-        const type = data.type === 'contract' ? 'contract' : data.type === 'eoa' ? 'eoa' : 'unknown';
+        const type =
+          data.type === 'contract' ? 'contract' : data.type === 'eoa' ? 'eoa' : 'unknown';
         setInputAddressType(type);
       } else {
         setInputAddressType('unknown');
@@ -154,15 +149,16 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!ETH_ADDRESS_REGEX.test(address)) {
       setError(t('oracle.address.invalidAddress'));
       return;
     }
 
-    const typeForHistory = inputAddressType === 'checking' || inputAddressType === 'unknown' 
-      ? undefined 
-      : inputAddressType;
+    const typeForHistory =
+      inputAddressType === 'checking' || inputAddressType === 'unknown'
+        ? undefined
+        : inputAddressType;
     addToHistory(address, typeForHistory);
     router.push(`/oracle/address/${address}`);
   };
@@ -186,7 +182,13 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
     setShowHistory(false);
   };
 
-  const AddressTypeBadge = ({ type, size = 'sm' }: { type: AddressType; size?: 'sm' | 'default' }) => {
+  const AddressTypeBadge = ({
+    type,
+    size = 'sm',
+  }: {
+    type: AddressType;
+    size?: 'sm' | 'default';
+  }) => {
     if (type === 'unknown' || type === 'checking') return null;
 
     const config = {
@@ -217,20 +219,16 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
 
   return (
     <div className={className}>
-      <div className="text-center mb-10">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 mb-4">
-          <User className="w-8 h-8 text-white" />
+      <div className="mb-10 text-center">
+        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600">
+          <User className="h-8 w-8 text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {t('oracle.address.title')}
-        </h2>
-        <p className="text-gray-500">
-          {t('oracle.address.description')}
-        </p>
+        <h2 className="mb-2 text-2xl font-bold text-gray-900">{t('oracle.address.title')}</h2>
+        <p className="text-gray-500">{t('oracle.address.description')}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="max-w-lg mx-auto relative">
+        <div className="relative mx-auto max-w-lg">
           <EnhancedInput
             label={t('oracle.address.inputLabel')}
             placeholder="0x..."
@@ -244,7 +242,7 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
             helperText={t('oracle.address.helperText')}
             containerClassName="w-full"
           />
-          
+
           <AnimatePresence>
             {ETH_ADDRESS_REGEX.test(address) && inputAddressType !== 'unknown' && (
               <motion.div
@@ -254,7 +252,7 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
                 className="absolute -bottom-8 left-0"
               >
                 {inputAddressType === 'checking' ? (
-                  <span className="text-xs text-gray-400 flex items-center gap-1">
+                  <span className="flex items-center gap-1 text-xs text-gray-400">
                     <motion.span
                       animate={{ opacity: [0.5, 1, 0.5] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
@@ -274,19 +272,19 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
           <button
             type="submit"
             disabled={!ETH_ADDRESS_REGEX.test(address)}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-medium rounded-lg transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-white transition-all hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Search className="w-4 h-4" />
+            <Search className="h-4 w-4" />
             {t('oracle.address.search')}
           </button>
-          
+
           {history.length > 0 && (
             <button
               type="button"
               onClick={() => setShowHistory(!showHistory)}
-              className="inline-flex items-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg transition-all hover:bg-gray-200"
+              className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-3 font-medium text-gray-700 transition-all hover:bg-gray-200"
             >
-              <Clock className="w-4 h-4" />
+              <Clock className="h-4 w-4" />
               {t('oracle.address.history')}
             </button>
           )}
@@ -299,23 +297,23 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-8 max-w-lg mx-auto overflow-hidden"
+            className="mx-auto mt-8 max-w-lg overflow-hidden"
           >
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
+            <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <Clock className="h-4 w-4" />
                   {t('oracle.address.recentSearches')}
                 </h3>
                 <button
                   onClick={handleClearHistory}
-                  className="text-xs text-gray-400 hover:text-red-500 flex items-center gap-1 transition-colors"
+                  className="flex items-center gap-1 text-xs text-gray-400 transition-colors hover:text-red-500"
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className="h-3 w-3" />
                   {t('oracle.address.clearHistory')}
                 </button>
               </div>
-              
+
               <div className="space-y-2">
                 {history.map((item) => (
                   <motion.div
@@ -323,23 +321,23 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 10 }}
-                    className="group flex items-center justify-between p-2 bg-white rounded-lg border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer"
+                    className="group flex cursor-pointer items-center justify-between rounded-lg border border-gray-100 bg-white p-2 transition-all hover:border-primary/30 hover:shadow-sm"
                     onClick={() => handleHistoryClick(item)}
                   >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
                       <div className="flex-shrink-0">
                         {item.type === 'contract' ? (
-                          <FileCode className="w-4 h-4 text-blue-500" />
+                          <FileCode className="h-4 w-4 text-blue-500" />
                         ) : item.type === 'eoa' ? (
-                          <Wallet className="w-4 h-4 text-emerald-500" />
+                          <Wallet className="h-4 w-4 text-emerald-500" />
                         ) : (
-                          <User className="w-4 h-4 text-gray-400" />
+                          <User className="h-4 w-4 text-gray-400" />
                         )}
                       </div>
-                      
-                      <div className="flex-1 min-w-0">
+
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <code className="text-sm font-mono text-gray-700 truncate">
+                          <code className="truncate font-mono text-sm text-gray-700">
                             {item.address.slice(0, 10)}...{item.address.slice(-8)}
                           </code>
                           {item.type && item.type !== 'unknown' && (
@@ -347,23 +345,21 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
                           )}
                         </div>
                         {item.label && (
-                          <p className="text-xs text-gray-400 truncate">{item.label}</p>
+                          <p className="truncate text-xs text-gray-400">{item.label}</p>
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">
-                        {formatTimeAgo(item.timestamp)}
-                      </span>
+                      <span className="text-xs text-gray-400">{formatTimeAgo(item.timestamp)}</span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           removeFromHistory(item.address);
                         }}
-                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-100 rounded transition-all"
+                        className="rounded p-1 opacity-0 transition-all hover:bg-gray-100 group-hover:opacity-100"
                       >
-                        <X className="w-3 h-3 text-gray-400 hover:text-red-500" />
+                        <X className="h-3 w-3 text-gray-400 hover:text-red-500" />
                       </button>
                     </div>
                   </motion.div>
@@ -375,38 +371,38 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
       </AnimatePresence>
 
       <div className="mt-12">
-        <div className="text-center mb-4">
-          <p className="text-sm text-gray-400 mb-1">{t('oracle.address.popularAddresses')}</p>
+        <div className="mb-4 text-center">
+          <p className="mb-1 text-sm text-gray-400">{t('oracle.address.popularAddresses')}</p>
           <div className="flex items-center justify-center gap-1 text-xs text-primary">
-            <Sparkles className="w-3 h-3" />
+            <Sparkles className="h-3 w-3" />
             <span>{t('oracle.address.popularDesc')}</span>
           </div>
         </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-4xl mx-auto">
+
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {POPULAR_ADDRESSES.map((item) => (
             <motion.button
               key={item.address}
               onClick={() => handlePopularClick(item)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative text-left p-4 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all"
+              className="group relative rounded-xl border border-gray-100 bg-white p-4 text-left transition-all hover:border-primary/30 hover:shadow-md"
             >
               <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 flex items-center gap-2">
                     {item.type === 'contract' ? (
-                      <FileCode className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      <FileCode className="h-4 w-4 flex-shrink-0 text-blue-500" />
                     ) : (
-                      <Wallet className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      <Wallet className="h-4 w-4 flex-shrink-0 text-emerald-500" />
                     )}
-                    <span className="font-medium text-gray-900 truncate">{item.label}</span>
+                    <span className="truncate font-medium text-gray-900">{item.label}</span>
                   </div>
-                  
-                  <code className="block text-xs font-mono text-gray-500 mb-2 truncate">
+
+                  <code className="mb-2 block truncate font-mono text-xs text-gray-500">
                     {item.address.slice(0, 10)}...{item.address.slice(-8)}
                   </code>
-                  
+
                   <div className="flex items-center gap-2">
                     <AddressTypeBadge type={item.type} size="sm" />
                     {item.description && (
@@ -414,8 +410,8 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
                     )}
                   </div>
                 </div>
-                
-                <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors flex-shrink-0" />
+
+                <ExternalLink className="h-4 w-4 flex-shrink-0 text-gray-300 transition-colors group-hover:text-primary" />
               </div>
             </motion.button>
           ))}

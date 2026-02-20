@@ -4,7 +4,11 @@
  * 提供偏离阈值可配置功能，支持运行时动态调整
  */
 
-import type { DeviationConfig, DeviationThresholds, OutlierDetectionConfig } from '@/types/analytics/deviation';
+import type {
+  DeviationConfig,
+  DeviationThresholds,
+  OutlierDetectionConfig,
+} from '@/types/analytics/deviation';
 import { DEFAULT_DEVIATION_CONFIG } from '@/types/analytics/deviation';
 
 type ConfigChangeCallback = (config: DeviationConfig) => void;

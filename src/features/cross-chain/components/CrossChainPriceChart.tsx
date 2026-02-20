@@ -115,7 +115,7 @@ export const CrossChainPriceChart = memo(function CrossChainPriceChart({
       <Card>
         <CardHeader>
           <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-72 mt-1" />
+          <Skeleton className="mt-1 h-4 w-72" />
         </CardHeader>
         <CardContent>
           <Skeleton style={{ height }} className="w-full" />
@@ -135,7 +135,10 @@ export const CrossChainPriceChart = memo(function CrossChainPriceChart({
           <CardDescription>{t('crossChain.chart.noData')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div style={{ height }} className="flex items-center justify-center text-muted-foreground">
+          <div
+            style={{ height }}
+            className="flex items-center justify-center text-muted-foreground"
+          >
             {t('crossChain.chart.waitingForData')}
           </div>
         </CardContent>
@@ -157,7 +160,7 @@ export const CrossChainPriceChart = memo(function CrossChainPriceChart({
             </CardDescription>
           </div>
         </div>
-        <div className="flex flex-wrap gap-1 mt-2">
+        <div className="mt-2 flex flex-wrap gap-1">
           {Object.keys(CHAIN_COLORS)
             .filter((chain) => availableChains.includes(chain) || hiddenChains.has(chain))
             .map((chain) => (
@@ -169,12 +172,12 @@ export const CrossChainPriceChart = memo(function CrossChainPriceChart({
                 onClick={() => toggleChain(chain)}
               >
                 {hiddenChains.has(chain) ? (
-                  <EyeOff className="h-3 w-3 mr-1" />
+                  <EyeOff className="mr-1 h-3 w-3" />
                 ) : (
-                  <Eye className="h-3 w-3 mr-1" />
+                  <Eye className="mr-1 h-3 w-3" />
                 )}
                 <span
-                  className="w-2 h-2 rounded-full mr-1"
+                  className="mr-1 h-2 w-2 rounded-full"
                   style={{ backgroundColor: CHAIN_COLORS[chain] }}
                 />
                 {chain}
@@ -214,7 +217,10 @@ export const CrossChainPriceChart = memo(function CrossChainPriceChart({
                   if (nameStr === 'avgPrice' || nameStr === 'medianPrice') {
                     return [formatPrice(numValue), t(`crossChain.chart.${nameStr}`)];
                   }
-                  return [formatPrice(numValue), nameStr.charAt(0).toUpperCase() + nameStr.slice(1)];
+                  return [
+                    formatPrice(numValue),
+                    nameStr.charAt(0).toUpperCase() + nameStr.slice(1),
+                  ];
                 }}
                 labelFormatter={(label, payload) => {
                   if (payload && payload[0]) {
@@ -227,9 +233,7 @@ export const CrossChainPriceChart = memo(function CrossChainPriceChart({
               {showLegend && (
                 <Legend
                   wrapperStyle={{ fontSize: '12px' }}
-                  formatter={(value) => (
-                    <span className="capitalize">{String(value)}</span>
-                  )}
+                  formatter={(value) => <span className="capitalize">{String(value)}</span>}
                 />
               )}
               {visibleChains.map((chain) => (

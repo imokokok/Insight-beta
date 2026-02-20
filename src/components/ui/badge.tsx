@@ -26,7 +26,7 @@ const badgeVariants = cva(
         success: 'border-transparent bg-success/20 text-success-dark hover:bg-success/30',
         warning: 'border-transparent bg-warning/20 text-warning-dark hover:bg-warning/30',
         danger: 'border-transparent bg-error/20 text-error-dark hover:bg-error/30',
-        info: 'border-transparent bg-primary/20 text-primary-dark hover:bg-primary/30',
+        info: 'text-primary-dark border-transparent bg-primary/20 hover:bg-primary/30',
         // 特殊效果
         ghost: 'text-primary-dark border-transparent hover:bg-primary/10',
         pulse: 'text-primary-dark animate-pulse border-transparent bg-primary/10',

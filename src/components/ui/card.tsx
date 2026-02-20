@@ -31,10 +31,7 @@ const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HT
   ({ className, children, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn(
-        'text-lg font-semibold leading-none tracking-tight text-foreground',
-        className,
-      )}
+      className={cn('text-lg font-semibold leading-none tracking-tight text-foreground', className)}
       {...props}
     >
       {children}
@@ -80,7 +77,7 @@ const CardEnhanced = React.forwardRef<HTMLDivElement, CardEnhancedProps>(
           hover &&
             'hover:border-primary/30 hover:bg-card/80 hover:shadow-xl hover:shadow-primary/10',
           clickable && 'cursor-pointer active:scale-[0.98]',
-          gradient && 'bg-gradient-to-br from-card via-primary-5/10 to-blue-5/10',
+          gradient && 'via-primary-5/10 to-blue-5/10 bg-gradient-to-br from-card',
           glow && 'shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30',
           className,
         )}

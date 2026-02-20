@@ -17,7 +17,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { formatNumber } from '@/shared/utils';
 
-import type { AlertHistoryPoint, AlertHistoryStats, TimeRange, GroupBy } from '../hooks/useAlertHistory';
+import type {
+  AlertHistoryPoint,
+  AlertHistoryStats,
+  TimeRange,
+  GroupBy,
+} from '../hooks/useAlertHistory';
 
 interface AlertTrendChartProps {
   data: AlertHistoryPoint[];
@@ -79,14 +84,17 @@ function TrendIndicator({ trend, percent }: { trend: string; percent: number }) 
   }
 
   const isIncreasing = trend === 'increasing';
-  const color = isIncreasing ? CHART_COLORS.semantic.error.DEFAULT : CHART_COLORS.semantic.success.DEFAULT;
+  const color = isIncreasing
+    ? CHART_COLORS.semantic.error.DEFAULT
+    : CHART_COLORS.semantic.success.DEFAULT;
   const Icon = isIncreasing ? TrendingUp : TrendingDown;
 
   return (
     <div className="flex items-center gap-1" style={{ color }}>
       <Icon className="h-4 w-4" />
       <span className="text-sm font-medium">
-        {isIncreasing ? '+' : ''}{percent}%
+        {isIncreasing ? '+' : ''}
+        {percent}%
       </span>
     </div>
   );

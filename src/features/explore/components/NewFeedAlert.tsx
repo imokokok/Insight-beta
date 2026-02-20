@@ -75,7 +75,8 @@ export function NewFeedAlert({ feeds, isLoading, onItemClick }: NewFeedAlertProp
       </CardHeader>
       <CardContent className="space-y-3">
         {feeds.map((feed) => {
-          const protocolStyle = protocolColors[feed.protocol.toLowerCase()] || 'text-gray-500 bg-gray-500/10';
+          const protocolStyle =
+            protocolColors[feed.protocol.toLowerCase()] || 'text-gray-500 bg-gray-500/10';
 
           return (
             <button
@@ -105,9 +106,7 @@ export function NewFeedAlert({ feeds, isLoading, onItemClick }: NewFeedAlertProp
                     <span className="text-sm text-muted-foreground">{feed.chain}</span>
                   </div>
 
-                  <p className="text-sm text-muted-foreground line-clamp-1">
-                    {feed.description}
-                  </p>
+                  <p className="line-clamp-1 text-sm text-muted-foreground">{feed.description}</p>
 
                   <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">

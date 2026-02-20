@@ -8,6 +8,11 @@
 // 预言机协议类型定义 (从 protocol.ts 导入并重新导出)
 // ============================================================================
 
+import type {
+  AlertSeverity as AlertSeverityBase,
+  OracleAlertStatus as OracleAlertStatusBase,
+} from '@/types/common/status';
+
 import {
   ORACLE_PROTOCOLS as _ORACLE_PROTOCOLS,
   PROTOCOL_DISPLAY_NAMES as _PROTOCOL_DISPLAY_NAMES,
@@ -741,11 +746,6 @@ export type OpsMetrics = {
 // ============================================================================
 // 从 common/status 导入的类型别名
 // ============================================================================
-
-import type {
-  AlertSeverity as AlertSeverityBase,
-  OracleAlertStatus as OracleAlertStatusBase,
-} from '@/types/common/status';
 
 export type AlertSeverity = AlertSeverityBase;
 export type OracleAlertStatus = OracleAlertStatusBase;

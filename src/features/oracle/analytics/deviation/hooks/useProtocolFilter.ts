@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 
-import type { OracleProtocol} from '@/types/oracle/protocol';
+import type { OracleProtocol } from '@/types/oracle/protocol';
 import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/types/oracle/protocol';
 
 export interface ProtocolFilterState {

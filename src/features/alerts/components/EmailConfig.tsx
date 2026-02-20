@@ -47,12 +47,8 @@ export function EmailConfig({ config, onChange, errors }: EmailConfigProps) {
           placeholder="alerts@example.com"
           className={errors?.email ? 'border-destructive' : ''}
         />
-        {errors?.email && (
-          <p className="text-xs text-destructive">{errors.email}</p>
-        )}
-        <p className="text-xs text-muted-foreground">
-          {t('alerts.channels.emailHint')}
-        </p>
+        {errors?.email && <p className="text-destructive text-xs">{errors.email}</p>}
+        <p className="text-xs text-muted-foreground">{t('alerts.channels.emailHint')}</p>
       </div>
     </div>
   );

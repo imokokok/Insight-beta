@@ -57,11 +57,11 @@ const BRIDGES: Omit<BridgeStatus, 'latencyMs' | 'lastUpdated' | 'alerts'>[] = [
 ];
 
 function generateBridgeStatuses(): BridgeStatus[] {
-  return BRIDGES.map(bridge => {
+  return BRIDGES.map((bridge) => {
     const latencyVariation = Math.random() * 100;
     const isDegraded = Math.random() < 0.1;
     const isOffline = Math.random() < 0.02;
-    
+
     let status: 'healthy' | 'degraded' | 'offline' = 'healthy';
     let alerts: string[] = [];
     let latencyMs = 1000 + latencyVariation * 10;
@@ -91,9 +91,9 @@ async function handleGet() {
 
   const summary = {
     total: bridges.length,
-    healthy: bridges.filter(b => b.status === 'healthy').length,
-    degraded: bridges.filter(b => b.status === 'degraded').length,
-    offline: bridges.filter(b => b.status === 'offline').length,
+    healthy: bridges.filter((b) => b.status === 'healthy').length,
+    degraded: bridges.filter((b) => b.status === 'degraded').length,
+    offline: bridges.filter((b) => b.status === 'offline').length,
     avgLatencyMs: Math.round(bridges.reduce((sum, b) => sum + b.latencyMs, 0) / bridges.length),
     totalVolume24h: bridges.reduce((sum, b) => sum + b.volume24h, 0),
   };

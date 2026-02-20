@@ -81,7 +81,7 @@ export function MobileFilterSheet({
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   const handleBackdropClick = useCallback(
@@ -90,7 +90,7 @@ export function MobileFilterSheet({
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   const handleApply = useCallback(() => {
@@ -126,7 +126,7 @@ export function MobileFilterSheet({
 
           <motion.div
             ref={sheetRef}
-            className="absolute bottom-0 left-0 right-0 bg-background rounded-t-2xl shadow-xl max-h-[85vh] overflow-hidden"
+            className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-hidden rounded-t-2xl bg-background shadow-xl"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -136,16 +136,16 @@ export function MobileFilterSheet({
             dragElastic={{ top: 0, bottom: 0.5 }}
             onDragEnd={handleDragEnd}
           >
-            <div className="sticky top-0 bg-background z-10">
-              <div className="flex justify-center pt-3 pb-2">
-                <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
+            <div className="sticky top-0 z-10 bg-background">
+              <div className="flex justify-center pb-2 pt-3">
+                <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
               </div>
 
-              <div className="flex items-center justify-between px-4 pb-3 border-b border-border">
+              <div className="flex items-center justify-between border-b border-border px-4 pb-3">
                 <h3 className="text-lg font-semibold">{title}</h3>
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-full hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 transition-colors hover:bg-muted"
                   aria-label="关闭"
                 >
                   <X className="h-5 w-5" />
@@ -153,26 +153,24 @@ export function MobileFilterSheet({
               </div>
             </div>
 
-            <div className="overflow-y-auto overscroll-contain px-4 py-4 max-h-[calc(85vh-180px)]">
+            <div className="max-h-[calc(85vh-180px)] overflow-y-auto overscroll-contain px-4 py-4">
               {sortOptions.length > 0 && onSortChange && (
                 <div className="mb-6">
-                  <h4 className="text-sm font-medium text-muted-foreground mb-3">排序方式</h4>
+                  <h4 className="mb-3 text-sm font-medium text-muted-foreground">排序方式</h4>
                   <div className="space-y-2">
                     {sortOptions.map((option) => (
                       <button
                         key={option.value}
                         onClick={() => onSortChange(option.value as TrendingSortBy)}
                         className={cn(
-                          'w-full flex items-center justify-between p-3 rounded-lg transition-colors min-h-[44px]',
+                          'flex min-h-[44px] w-full items-center justify-between rounded-lg p-3 transition-colors',
                           sortValue === option.value
                             ? 'bg-primary/10 text-primary'
-                            : 'bg-muted/50 hover:bg-muted'
+                            : 'bg-muted/50 hover:bg-muted',
                         )}
                       >
                         <span className="font-medium">{option.label}</span>
-                        {sortValue === option.value && (
-                          <Check className="h-5 w-5 text-primary" />
-                        )}
+                        {sortValue === option.value && <Check className="h-5 w-5 text-primary" />}
                       </button>
                     ))}
                   </div>
@@ -182,20 +180,13 @@ export function MobileFilterSheet({
               {children}
             </div>
 
-            <div className="sticky bottom-0 bg-background border-t border-border p-4 flex gap-3">
-              <Button
-                variant="outline"
-                onClick={handleReset}
-                className="flex-1 min-h-[44px]"
-              >
-                <RotateCcw className="h-4 w-4 mr-2" />
+            <div className="sticky bottom-0 flex gap-3 border-t border-border bg-background p-4">
+              <Button variant="outline" onClick={handleReset} className="min-h-[44px] flex-1">
+                <RotateCcw className="mr-2 h-4 w-4" />
                 重置
               </Button>
-              <Button
-                onClick={handleApply}
-                className="flex-1 min-h-[44px]"
-              >
-                <Check className="h-4 w-4 mr-2" />
+              <Button onClick={handleApply} className="min-h-[44px] flex-1">
+                <Check className="mr-2 h-4 w-4" />
                 应用
               </Button>
             </div>

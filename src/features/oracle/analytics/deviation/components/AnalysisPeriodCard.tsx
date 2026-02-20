@@ -14,7 +14,7 @@ interface AnalysisPeriodCardProps {
 
 export function AnalysisPeriodCard({ report }: AnalysisPeriodCardProps) {
   const { t } = useI18n();
-  
+
   return (
     <Card>
       <CardHeader>
@@ -28,25 +28,39 @@ export function AnalysisPeriodCard({ report }: AnalysisPeriodCardProps) {
         {report ? (
           <>
             <div className="flex justify-between rounded-lg bg-gray-50 p-3">
-              <span className="text-muted-foreground">{t('analytics.analysisPeriod.generatedAt')}</span>
+              <span className="text-muted-foreground">
+                {t('analytics.analysisPeriod.generatedAt')}
+              </span>
               <span className="font-medium">{formatTime(report.generatedAt)}</span>
             </div>
             <div className="flex justify-between rounded-lg bg-gray-50 p-3">
-              <span className="text-muted-foreground">{t('analytics.analysisPeriod.periodStart')}</span>
+              <span className="text-muted-foreground">
+                {t('analytics.analysisPeriod.periodStart')}
+              </span>
               <span className="font-medium">{formatTime(report.period.start)}</span>
             </div>
             <div className="flex justify-between rounded-lg bg-gray-50 p-3">
-              <span className="text-muted-foreground">{t('analytics.analysisPeriod.periodEnd')}</span>
+              <span className="text-muted-foreground">
+                {t('analytics.analysisPeriod.periodEnd')}
+              </span>
               <span className="font-medium">{formatTime(report.period.end)}</span>
             </div>
             <div className="rounded-lg bg-orange-50 p-4">
-              <p className="text-sm font-medium text-orange-800">{t('analytics.analysisPeriod.analysisWindow')}</p>
-              <p className="text-2xl font-bold text-orange-600">{t('analytics.analysisPeriod.hours24')}</p>
-              <p className="text-xs text-orange-700">{t('analytics.analysisPeriod.rollingWindow')}</p>
+              <p className="text-sm font-medium text-orange-800">
+                {t('analytics.analysisPeriod.analysisWindow')}
+              </p>
+              <p className="text-2xl font-bold text-orange-600">
+                {t('analytics.analysisPeriod.hours24')}
+              </p>
+              <p className="text-xs text-orange-700">
+                {t('analytics.analysisPeriod.rollingWindow')}
+              </p>
             </div>
           </>
         ) : (
-          <div className="py-8 text-center text-gray-400">{t('analytics.analysisPeriod.loading')}</div>
+          <div className="py-8 text-center text-gray-400">
+            {t('analytics.analysisPeriod.loading')}
+          </div>
         )}
       </CardContent>
     </Card>

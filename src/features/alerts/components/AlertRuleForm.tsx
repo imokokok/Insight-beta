@@ -310,10 +310,7 @@ export function AlertRuleForm({ rule, onSubmit, onCancel }: AlertRuleFormProps) 
             {formData.symbols?.map((symbol) => (
               <Badge key={symbol} variant="secondary" className="gap-1">
                 {symbol}
-                <X
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => removeSymbol(symbol)}
-                />
+                <X className="h-3 w-3 cursor-pointer" onClick={() => removeSymbol(symbol)} />
               </Badge>
             ))}
           </div>
@@ -357,10 +354,7 @@ export function AlertRuleForm({ rule, onSubmit, onCancel }: AlertRuleFormProps) 
             {formData.recipients?.map((recipient) => (
               <Badge key={recipient} variant="secondary" className="gap-1">
                 {recipient}
-                <X
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => removeRecipient(recipient)}
-                />
+                <X className="h-3 w-3 cursor-pointer" onClick={() => removeRecipient(recipient)} />
               </Badge>
             ))}
           </div>

@@ -52,12 +52,7 @@ export function DataDiscovery() {
         <p className="text-red-600">
           {lang === 'zh' ? '加载数据发现失败' : 'Failed to load data discovery'}
         </p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => mutate()}
-          className="mt-4"
-        >
+        <Button variant="outline" size="sm" onClick={() => mutate()} className="mt-4">
           <RefreshCw className="mr-2 h-4 w-4" />
           {lang === 'zh' ? '重试' : 'Retry'}
         </Button>
@@ -76,16 +71,9 @@ export function DataDiscovery() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Compass className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold">
-            {lang === 'zh' ? '数据发现' : 'Data Discovery'}
-          </h2>
+          <h2 className="text-xl font-semibold">{lang === 'zh' ? '数据发现' : 'Data Discovery'}</h2>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => mutate()}
-          disabled={isLoading}
-        >
+        <Button variant="ghost" size="sm" onClick={() => mutate()} disabled={isLoading}>
           <RefreshCw className={cn('mr-2 h-4 w-4', isLoading && 'animate-spin')} />
           {lang === 'zh' ? '刷新' : 'Refresh'}
         </Button>

@@ -45,14 +45,24 @@ interface ActionDialogProps {
   isLoading: boolean;
 }
 
-function ActionDialog({ isOpen, action, selectedCount, onConfirm, onCancel, isLoading }: ActionDialogProps) {
+function ActionDialog({
+  isOpen,
+  action,
+  selectedCount,
+  onConfirm,
+  onCancel,
+  isLoading,
+}: ActionDialogProps) {
   const { t } = useI18n();
   const [note, setNote] = useState('');
   const [duration, setDuration] = useState(60);
 
   if (!isOpen) return null;
 
-  const actionConfig: Record<AlertAction, { title: string; description: string; icon: typeof CheckCircle; color: string }> = {
+  const actionConfig: Record<
+    AlertAction,
+    { title: string; description: string; icon: typeof CheckCircle; color: string }
+  > = {
     acknowledge: {
       title: t('alerts.batchActions.acknowledge'),
       description: t('alerts.batchActions.acknowledgeDesc'),
@@ -150,8 +160,8 @@ interface AlertBatchActionsProps {
   onBatchActionComplete?: (processed: number, failed: number) => void;
 }
 
-export function AlertBatchActions({ 
-  selectedAlerts, 
+export function AlertBatchActions({
+  selectedAlerts,
   onClearSelection,
   onBatchActionComplete,
 }: AlertBatchActionsProps) {
@@ -192,22 +202,22 @@ export function AlertBatchActions({
 
         if (result.data) {
           const { processed, failed } = result.data;
-          
+
           if (failed === 0) {
             success(
               t('alerts.batchActions.success'),
-              t('alerts.batchActions.successDesc', { count: processed })
+              t('alerts.batchActions.successDesc', { count: processed }),
             );
           } else {
             success(
               t('alerts.batchActions.partialSuccess'),
-              t('alerts.batchActions.partialSuccessDesc', { 
-                processed, 
-                failed 
-              })
+              t('alerts.batchActions.partialSuccessDesc', {
+                processed,
+                failed,
+              }),
             );
           }
-          
+
           onBatchActionComplete?.(processed, failed);
           onClearSelection();
         }
@@ -244,22 +254,27 @@ export function AlertBatchActions({
   const activeCount = selectedAlerts.filter((a) => a.status === 'active').length;
   const unresolvedCount = selectedAlerts.filter((a) => a.status !== 'resolved').length;
 
-  const actions: { action: AlertAction; icon: typeof CheckCircle; label: string; disabled: boolean }[] = [
-    { 
-      action: 'acknowledge', 
-      icon: CheckCircle, 
+  const actions: {
+    action: AlertAction;
+    icon: typeof CheckCircle;
+    label: string;
+    disabled: boolean;
+  }[] = [
+    {
+      action: 'acknowledge',
+      icon: CheckCircle,
       label: t('alerts.actions.acknowledge'),
       disabled: activeCount === 0,
     },
-    { 
-      action: 'resolve', 
-      icon: XCircle, 
+    {
+      action: 'resolve',
+      icon: XCircle,
       label: t('alerts.actions.resolve'),
       disabled: unresolvedCount === 0,
     },
-    { 
-      action: 'silence', 
-      icon: BellOff, 
+    {
+      action: 'silence',
+      icon: BellOff,
       label: t('alerts.actions.silence'),
       disabled: unresolvedCount === 0,
     },
@@ -279,7 +294,8 @@ export function AlertBatchActions({
                   {t('alerts.batchActions.selected', { count: selectedCount })}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {activeCount} {t('alerts.batchActions.active')} · {unresolvedCount} {t('alerts.batchActions.unresolved')}
+                  {activeCount} {t('alerts.batchActions.active')} · {unresolvedCount}{' '}
+                  {t('alerts.batchActions.unresolved')}
                 </p>
               </div>
             </div>
