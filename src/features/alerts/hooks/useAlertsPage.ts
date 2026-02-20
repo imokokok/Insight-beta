@@ -6,9 +6,9 @@ import { Activity, TrendingUp, Network, Shield } from 'lucide-react';
 
 import { useAlertRules, useNotificationChannels, useAlertHistory } from '../hooks';
 import { useAlertsData } from './useAlertsData';
+import { useAlertSelection } from './useAlertSelection';
 import { useAlertsExport } from './useAlertsExport';
 import { useAlertsFilter } from './useAlertsFilter';
-import { useAlertsSelection } from './useAlertsSelection';
 
 import type { TimeRange, GroupBy } from './useAlertHistory';
 import type { UnifiedAlert, AlertSeverity, AlertStatus, AlertSource } from '../types';
@@ -61,7 +61,7 @@ export function useAlertsPage() {
     alerts: alertsData.data?.alerts || [],
   });
 
-  const alertsSelection = useAlertsSelection({
+  const alertsSelection = useAlertSelection({
     alerts: alertsFilter.filteredAlerts,
   });
 
@@ -132,9 +132,9 @@ export function useAlertsPage() {
     selectedAlerts: alertsSelection.selectedAlerts,
     isAllSelected: alertsSelection.isAllSelected,
     isIndeterminate: alertsSelection.isIndeterminate,
-    toggleSelection: alertsSelection.handleSelect,
+    toggleSelection: alertsSelection.toggleSelection,
     deselectAll: alertsSelection.deselectAll,
-    toggleSelectAll: alertsSelection.handleSelectAll,
+    toggleSelectAll: alertsSelection.toggleSelectAll,
     isSelected: alertsSelection.isSelected,
     handleBatchActionComplete,
     handleExport: alertsExport.exportToJSON,
