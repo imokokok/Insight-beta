@@ -31,7 +31,7 @@ import {
 import { cn, formatNumber } from '@/shared/utils';
 import { PROTOCOL_DISPLAY_NAMES, type OracleProtocol } from '@/types/oracle';
 
-export interface ProtocolMetrics {
+export interface ChartProtocolMetrics {
   protocol: OracleProtocol;
   latency: number;
   accuracy: number;
@@ -40,7 +40,7 @@ export interface ProtocolMetrics {
 }
 
 interface CompareChartsProps {
-  metrics: ProtocolMetrics[];
+  metrics: ChartProtocolMetrics[];
   className?: string;
 }
 

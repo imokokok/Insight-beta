@@ -120,7 +120,10 @@ async function handleReportRequest(
       },
     });
     return error(
-      { code: 'report_generation_failed', message: err instanceof Error ? err.message : 'Failed to generate report' },
+      {
+        code: 'report_generation_failed',
+        message: err instanceof Error ? err.message : 'Failed to generate report',
+      },
       500,
     );
   }
@@ -163,6 +166,7 @@ async function handleTrendRequest(
         total: dataPoints.total,
         hasMore: page * limit < dataPoints.total,
       },
+      isMock: dataPoints.isMock,
     };
 
     const requestTime = performance.now() - requestStartTime;
@@ -184,6 +188,7 @@ async function handleTrendRequest(
         trendStrength: trend.trendStrength,
         dataPointsReturned: dataPoints.data.length,
         totalDataPoints: dataPoints.total,
+        isMock: dataPoints.isMock,
       },
     });
 
@@ -203,7 +208,13 @@ async function handleTrendRequest(
         windowHours: windowHoursParam,
       },
     });
-    return error({ code: 'trend_fetch_failed', message: err instanceof Error ? err.message : 'Failed to fetch trend' }, 500);
+    return error(
+      {
+        code: 'trend_fetch_failed',
+        message: err instanceof Error ? err.message : 'Failed to fetch trend',
+      },
+      500,
+    );
   }
 }
 
@@ -215,7 +226,7 @@ async function fetchDeviationHistoryPaginated(
   windowHours: number,
   page: number,
   limit: number,
-): Promise<{ data: PriceDeviationPoint[]; total: number }> {
+): Promise<{ data: PriceDeviationPoint[]; total: number; isMock: boolean }> {
   try {
     // 验证 windowHours 范围
     if (!Number.isFinite(windowHours) || windowHours <= 0 || windowHours > 8760) {
@@ -239,7 +250,7 @@ async function fetchDeviationHistoryPaginated(
     if (total === 0) {
       // 返回模拟数据
       const mockData = generateMockData(symbol, windowHours);
-      return { data: mockData, total: mockData.length };
+      return { data: mockData, total: mockData.length, isMock: true };
     }
 
     // 分页查询数据 - 使用参数化查询防止 SQL 注入
@@ -278,7 +289,7 @@ async function fetchDeviationHistoryPaginated(
       outlierProtocols: row.outlier_protocols || [],
     }));
 
-    return { data, total };
+    return { data, total, isMock: false };
   } catch (error) {
     logger.warn('Database query failed in fetchDeviationHistoryPaginated, returning mock data', {
       error,
@@ -286,7 +297,7 @@ async function fetchDeviationHistoryPaginated(
     });
     // 返回模拟数据
     const mockData = generateMockData(symbol, windowHours);
-    return { data: mockData, total: mockData.length };
+    return { data: mockData, total: mockData.length, isMock: true };
   }
 }
 
@@ -374,7 +385,13 @@ export async function GET(request: NextRequest): Promise<Response> {
     const type = searchParams.get('type');
 
     if (!type || (type !== 'report' && type !== 'trend')) {
-      return error({ code: 'invalid_type', message: 'Invalid or missing type parameter. Use "report" or "trend"' }, 400);
+      return error(
+        {
+          code: 'invalid_type',
+          message: 'Invalid or missing type parameter. Use "report" or "trend"',
+        },
+        400,
+      );
     }
 
     if (type === 'report') {
@@ -390,7 +407,10 @@ export async function GET(request: NextRequest): Promise<Response> {
       const symbol = searchParams.get('symbol');
 
       if (!symbol) {
-        return error({ code: 'missing_symbol', message: 'Missing required parameter: symbol' }, 400);
+        return error(
+          { code: 'missing_symbol', message: 'Missing required parameter: symbol' },
+          400,
+        );
       }
 
       const windowHours = searchParams.get('windowHours') || undefined;
@@ -403,6 +423,12 @@ export async function GET(request: NextRequest): Promise<Response> {
     return error({ code: 'invalid_request', message: 'Invalid request' }, 400);
   } catch (err) {
     logger.error('Deviation API error', { error: err });
-    return error({ code: 'internal_error', message: err instanceof Error ? err.message : 'Internal server error' }, 500);
+    return error(
+      {
+        code: 'internal_error',
+        message: err instanceof Error ? err.message : 'Internal server error',
+      },
+      500,
+    );
   }
 }
