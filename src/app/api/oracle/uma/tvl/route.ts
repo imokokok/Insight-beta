@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
 
 import { error, ok } from '@/lib/api/apiResponse';
-import { AppError } from '@/lib/errors';
 import { query, hasDatabase } from '@/lib/database/db';
+import { AppError } from '@/lib/errors';
 import { logger } from '@/shared/logger';
 
 interface TVLData {
@@ -52,12 +52,14 @@ async function fetchTVLFromDatabase(): Promise<TVLData | null> {
     }
 
     const record = result.rows[0];
+    if (!record) return null;
+
     return {
       totalStaked: Number(record.total_staked),
       totalBonded: Number(record.total_bonded),
       activeAssertions: record.active_assertions,
       activeDisputes: record.active_disputes,
-      lastUpdated: record.timestamp.toISOString(),
+      lastUpdated: record.timestamp?.toISOString() ?? new Date().toISOString(),
     };
   } catch (err) {
     logger.warn('Failed to fetch TVL from database, falling back to mock', { error: err });
@@ -71,7 +73,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const useMockParam = searchParams.get('useMock');
-    const useMock = useMockParam === 'true' || (useMockParam !== 'false' && process.env.NODE_ENV === 'development');
+    const useMock =
+      useMockParam === 'true' ||
+      (useMockParam !== 'false' && process.env.NODE_ENV === 'development');
 
     let tvlData: TVLData;
     let isMock: boolean;

@@ -92,5 +92,7 @@ export const oracle = {
     '90d': '90 Days',
     score: 'Score',
     protocol: 'Protocol',
+    dataRange: 'Data Range',
+    dataRangeLabel: 'Data Range: {{startDate}} to {{endDate}}',
   },
 };

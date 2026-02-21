@@ -11,6 +11,9 @@ import {
   Globe,
   LayoutDashboard,
   FileCode,
+  TrendingUp,
+  BarChart3,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
@@ -36,8 +39,16 @@ import {
   OracleScriptList,
   ValidatorHealthCard,
   BridgeTrendChart,
+  PriceTrendTab,
+  QualityAnalysisTab,
+  PriceComparisonTab,
 } from '@/features/oracle/band';
-import type { Bridge, DataSource, OracleScript, ValidatorHealthSummary } from '@/features/oracle/band';
+import type {
+  Bridge,
+  DataSource,
+  OracleScript,
+  ValidatorHealthSummary,
+} from '@/features/oracle/band';
 import { useI18n } from '@/i18n';
 import { fetchApiData, cn } from '@/shared/utils';
 
@@ -450,6 +461,18 @@ export default function BandProtocolPage() {
                 <Globe className="mr-1.5 h-4 w-4" />
                 Cosmos
               </TabsTrigger>
+              <TabsTrigger value="price-trend">
+                <TrendingUp className="mr-1.5 h-4 w-4" />
+                价格趋势
+              </TabsTrigger>
+              <TabsTrigger value="quality">
+                <BarChart3 className="mr-1.5 h-4 w-4" />
+                数据质量
+              </TabsTrigger>
+              <TabsTrigger value="comparison">
+                <ArrowLeftRight className="mr-1.5 h-4 w-4" />
+                价格对比
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview">
@@ -629,7 +652,7 @@ export default function BandProtocolPage() {
                             bridge={bridge}
                             onClick={(b) => setSelectedBridge(b)}
                             className={cn(
-                              selectedBridge?.bridgeId === bridge.bridgeId && 'border-primary'
+                              selectedBridge?.bridgeId === bridge.bridgeId && 'border-primary',
                             )}
                           />
                         ))}
@@ -663,7 +686,7 @@ export default function BandProtocolPage() {
             </TabsContent>
 
             <TabsContent value="oracle-scripts">
-              <OracleScriptList scripts={oracleScripts} loading={loading} />
+              <OracleScriptList scripts={oracleScripts ?? undefined} loading={loading} />
             </TabsContent>
 
             <TabsContent value="transfers">
@@ -706,15 +729,16 @@ export default function BandProtocolPage() {
                       </div>
                       <div className="rounded-lg bg-muted/30 p-4">
                         <span className="text-sm text-muted-foreground">区块哈希</span>
-                        <div className="mt-1 font-mono text-sm truncate">
-                          0x{Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}
+                        <div className="mt-1 truncate font-mono text-sm">
+                          0x
+                          {Array.from({ length: 64 }, () =>
+                            Math.floor(Math.random() * 16).toString(16),
+                          ).join('')}
                         </div>
                       </div>
                       <div className="rounded-lg bg-muted/30 p-4">
                         <span className="text-sm text-muted-foreground">时间戳</span>
-                        <div className="mt-1 text-sm">
-                          {new Date().toLocaleString()}
-                        </div>
+                        <div className="mt-1 text-sm">{new Date().toLocaleString()}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -755,6 +779,18 @@ export default function BandProtocolPage() {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            <TabsContent value="price-trend">
+              <PriceTrendTab />
+            </TabsContent>
+
+            <TabsContent value="quality">
+              <QualityAnalysisTab />
+            </TabsContent>
+
+            <TabsContent value="comparison">
+              <PriceComparisonTab />
             </TabsContent>
           </Tabs>
         </>

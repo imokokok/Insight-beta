@@ -18,6 +18,24 @@ import { logger } from '@/shared/logger';
 import { ORACLE_PROTOCOLS } from '@/types/oracle/protocol';
 import type { TimePeriod } from '@/types/oracle/reliability';
 
+function getPeriodDates(period: TimePeriod): { periodStart: Date; periodEnd: Date } {
+  const now = new Date();
+  const periodEnd = new Date(now);
+  const periodStart = new Date(now);
+
+  const daysMap: Record<TimePeriod, number> = {
+    '7d': 7,
+    '30d': 30,
+    '90d': 90,
+  };
+
+  periodStart.setDate(periodStart.getDate() - daysMap[period]);
+  periodStart.setHours(0, 0, 0, 0);
+  periodEnd.setHours(23, 59, 59, 999);
+
+  return { periodStart, periodEnd };
+}
+
 function generateMockRankings(_period: TimePeriod): ProtocolRanking[] {
   const baseMetrics: Record<string, Partial<ReliabilityMetrics>> = {
     chainlink: { deviationAvg: 0.02, latencyAvgMs: 45, successCount: 9980, totalCount: 10000 },
@@ -165,6 +183,7 @@ export async function GET(request: NextRequest) {
 
     const rankings = isMock ? generateMockRankings(period) : await getProtocolRankings(period);
     const scores = isMock ? [] : await getReliabilityScores(period);
+    const { periodStart, periodEnd } = getPeriodDates(period);
 
     const requestTime = performance.now() - requestStartTime;
     logger.info('Reliability scores API request completed', {
@@ -179,6 +198,8 @@ export async function GET(request: NextRequest) {
       rankings,
       scores,
       lastUpdated: new Date().toISOString(),
+      periodStart: periodStart.toISOString(),
+      periodEnd: periodEnd.toISOString(),
       isMock,
     });
   } catch (err) {

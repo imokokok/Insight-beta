@@ -354,9 +354,9 @@ describe('useCrossChain', () => {
 
       await waitFor(() => {
         const data = result.current.data;
-        expect(data?.alerts).toHaveLength(1);
-        expect(data?.summary?.total).toBe(1);
-        expect(data?.alerts?.[0]?.severity).toBe('warning');
+        expect(data?.data?.alerts).toHaveLength(1);
+        expect(data?.data?.summary?.total).toBe(1);
+        expect(data?.data?.alerts?.[0]?.severity).toBe('warning');
       });
     });
 
@@ -370,8 +370,8 @@ describe('useCrossChain', () => {
 
       await waitFor(() => {
         const data = result.current.data;
-        expect(data?.monitoredSymbols).toContain('ETH');
-        expect(data?.chainHealth?.[0]?.status).toBe('healthy');
+        expect(data?.data?.monitoredSymbols).toContain('ETH');
+        expect(data?.data?.chainHealth?.[0]?.status).toBe('healthy');
       });
     });
 
@@ -385,8 +385,8 @@ describe('useCrossChain', () => {
 
       await waitFor(() => {
         const data = result.current.data;
-        expect(data?.dataPoints).toHaveLength(1);
-        expect(data?.summary.mostVolatileChain).toBe('arbitrum');
+        expect(data?.data?.dataPoints).toHaveLength(1);
+        expect(data?.data?.summary?.mostVolatileChain).toBe('arbitrum');
       });
     });
   });

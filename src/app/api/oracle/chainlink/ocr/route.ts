@@ -2,6 +2,12 @@ import type { NextRequest } from 'next/server';
 
 import { ok, error } from '@/lib/api/apiResponse';
 
+interface NodeContribution {
+  nodeName: string;
+  contributionPercentage: number;
+  role: 'proposer' | 'observer';
+}
+
 interface OcrRound {
   roundId: string;
   participatingNodes: number;
@@ -9,6 +15,7 @@ interface OcrRound {
   answer: string;
   startedAt: string;
   updatedAt: string;
+  nodeContributions?: NodeContribution[];
 }
 
 interface OcrQueryParams {
@@ -26,6 +33,54 @@ function parseQueryParams(request: NextRequest): OcrQueryParams {
   };
 }
 
+function getNodeContributions(nodeCount: number): NodeContribution[] {
+  const nodeNames = [
+    'Chainlink Hub',
+    'LinkPool',
+    'Everyday Money',
+    'Northwest Performance',
+    'SimplyVC',
+    'Northwest',
+    'Whyrusleeping',
+    'StakeWithUs',
+    'Chainlayer',
+    'Incentivizer',
+    'HashQuark',
+    'RockX',
+    'Ankr',
+    'Staked',
+    'Blizz',
+    'Allnodes',
+    'StakingRewards',
+    'Genesis Volatility',
+    'P2P Validator',
+    'ChainAggregator',
+    'DexAG',
+    'Synthetix',
+    'ParaSwap',
+    'Roketo',
+    'DXdao',
+  ];
+
+  const contributions: NodeContribution[] = [];
+  const numContributors = Math.min(nodeCount, 19);
+  const baseContribution = 100 / numContributors;
+  const proposerIndex = Math.floor(Math.random() * numContributors);
+
+  for (let i = 0; i < numContributors; i++) {
+    const variation = (Math.random() - 0.5) * 10;
+    const nodeNamesLength = nodeNames.length;
+    contributions.push({
+      nodeName:
+        nodeNamesLength > 0 ? (nodeNames[i % nodeNamesLength] ?? 'Unknown Node') : 'Unknown Node',
+      contributionPercentage: Math.max(1, baseContribution + variation),
+      role: i === proposerIndex ? 'proposer' : 'observer',
+    });
+  }
+
+  return contributions.sort((a, b) => b.contributionPercentage - a.contributionPercentage);
+}
+
 function getMockRounds(limit: number): OcrRound[] {
   const now = Date.now();
   const rounds: OcrRound[] = [];
@@ -36,19 +91,23 @@ function getMockRounds(limit: number): OcrRound[] {
     const volatility = 0.001;
     const priceVariation = 1 + (Math.random() - 0.5) * volatility * 2;
     const price = basePrice * priceVariation;
-    
+
     const nodeCountDistribution = [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
-    const participatingNodes = nodeCountDistribution[Math.floor(Math.random() * nodeCountDistribution.length)];
-    
+    const participatingNodes =
+      nodeCountDistribution[Math.floor(Math.random() * nodeCountDistribution.length)] ?? 19;
+
     const roundInterval = i < 5 ? 180000 : 360000;
-    
+
     rounds.push({
       roundId: `0x${roundNum.toString(16)}`,
       participatingNodes,
       aggregationThreshold: '2/3',
       answer: price.toFixed(8),
       startedAt: new Date(now - i * roundInterval).toISOString(),
-      updatedAt: new Date(now - i * roundInterval + 5000 + Math.floor(Math.random() * 15000)).toISOString(),
+      updatedAt: new Date(
+        now - i * roundInterval + 5000 + Math.floor(Math.random() * 15000),
+      ).toISOString(),
+      nodeContributions: getNodeContributions(participatingNodes),
     });
   }
 

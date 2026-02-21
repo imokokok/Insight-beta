@@ -92,5 +92,7 @@ export const oracle = {
     '90d': '90天',
     score: '评分',
     protocol: '协议',
+    dataRange: '数据范围',
+    dataRangeLabel: '数据范围：{{startDate}} 至 {{endDate}}',
   },
 };

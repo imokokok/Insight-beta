@@ -9,7 +9,6 @@ import {
   AnomalyDetectionService,
   StatisticalDetector,
   TimeSeriesDetector,
-  MLDetector,
   BehaviorPatternDetector,
   type DetectionConfig,
   type TimeSeriesPoint,
@@ -341,11 +340,11 @@ describe('TimeSeriesDetector', () => {
   });
 });
 
-describe('MLDetector', () => {
-  let detector: MLDetector;
+describe('StatisticalDetector (Isolation Forest & Clustering)', () => {
+  let detector: StatisticalDetector;
 
   beforeEach(() => {
-    detector = new MLDetector();
+    detector = new StatisticalDetector();
   });
 
   describe('detectAnomaliesWithIsolationForest', () => {

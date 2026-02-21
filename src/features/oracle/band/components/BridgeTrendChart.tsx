@@ -2,14 +2,12 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 
-import { TrendingUp, Activity, Clock, RefreshCw, AlertTriangle } from 'lucide-react';
+import { TrendingUp, Activity, Clock } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn, formatTime } from '@/shared/utils';
+import { cn } from '@/shared/utils';
 
 import type { BridgeTrendData } from '../types';
 
@@ -28,14 +26,14 @@ const TIME_RANGE_CONFIG = {
 function generateMockTrendData(points: number): BridgeTrendData[] {
   const now = Date.now();
   const interval = (24 * 60 * 60 * 1000) / points;
-  
+
   return Array.from({ length: points }, (_, i) => {
     const timestamp = new Date(now - (points - i - 1) * interval);
     const baseTransfers = 50 + Math.random() * 100;
     const baseVolume = 10000 + Math.random() * 50000;
     const baseLatency = 2000 + Math.random() * 8000;
     const baseSuccess = 95 + Math.random() * 5;
-    
+
     return {
       timestamp: timestamp.toISOString(),
       transferCount: Math.floor(baseTransfers),
@@ -80,7 +78,7 @@ const TREND_METRICS: TrendMetric[] = [
     key: 'avgLatencyMs',
     label: '平均延迟',
     icon: <Clock className="h-4 w-4" />,
-    format: (v) => v < 1000 ? `${v}ms` : `${(v / 1000).toFixed(1)}s`,
+    format: (v) => (v < 1000 ? `${v}ms` : `${(v / 1000).toFixed(1)}s`),
     higherIsBetter: false,
     color: '#f97316',
   },
@@ -225,7 +223,11 @@ function SVGBridgeTrendChart({
   );
 }
 
-export function BridgeTrendChart({ bridgeId, bridgeName, className }: BridgeTrendChartProps) {
+export function BridgeTrendChart({
+  bridgeId: _bridgeId,
+  bridgeName,
+  className,
+}: BridgeTrendChartProps) {
   const [timeRange, setTimeRange] = useState<'1h' | '24h' | '7d'>('24h');
   const [activeMetric, setActiveMetric] = useState<string>('transferCount');
   const [chartDimensions, setChartDimensions] = useState({ width: 600, height: 280 });
@@ -238,7 +240,7 @@ export function BridgeTrendChart({ bridgeId, bridgeName, className }: BridgeTren
   }, [timeRange]);
 
   const currentMetric = useMemo(
-    () => TREND_METRICS.find((m) => m.key === activeMetric) || TREND_METRICS[0],
+    () => TREND_METRICS.find((m) => m.key === activeMetric) ?? TREND_METRICS[0]!,
     [activeMetric],
   );
 
@@ -306,12 +308,22 @@ export function BridgeTrendChart({ bridgeId, bridgeName, className }: BridgeTren
                 <span
                   className={cn(
                     'font-mono font-medium',
-                    (currentMetric.higherIsBetter ? stats.changePercent >= 0 : stats.changePercent <= 0)
+                    (
+                      currentMetric.higherIsBetter
+                        ? stats.changePercent >= 0
+                        : stats.changePercent <= 0
+                    )
                       ? 'text-emerald-500'
                       : 'text-red-500',
                   )}
                 >
-                  {(currentMetric.higherIsBetter ? stats.changePercent >= 0 : stats.changePercent <= 0) ? '+' : ''}
+                  {(
+                    currentMetric.higherIsBetter
+                      ? stats.changePercent >= 0
+                      : stats.changePercent <= 0
+                  )
+                    ? '+'
+                    : ''}
                   {stats.changePercent.toFixed(2)}%
                 </span>{' '}
                 期间变化
@@ -338,7 +350,11 @@ export function BridgeTrendChart({ bridgeId, bridgeName, className }: BridgeTren
         <Tabs value={activeMetric} onValueChange={setActiveMetric}>
           <TabsList className="grid w-full grid-cols-3">
             {TREND_METRICS.map((metric) => (
-              <TabsTrigger key={metric.key} value={metric.key} className="flex items-center gap-1.5">
+              <TabsTrigger
+                key={metric.key}
+                value={metric.key}
+                className="flex items-center gap-1.5"
+              >
                 {metric.icon}
                 <span className="hidden sm:inline">{metric.label}</span>
               </TabsTrigger>

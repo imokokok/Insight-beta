@@ -73,6 +73,11 @@ export const alerts = {
     avgPerHour: '平均/小时',
     peakHour: '高峰时段',
     trend: '趋势',
+    periodRange: '数据范围',
+    comparedTo: '较上一时段',
+    noAlertsInPeriod: '该时段无告警',
+    viewAlerts: '查看告警',
+    alertsInInterval: '该时段有 {count} 条告警',
   },
   actions: {
     title: '操作',

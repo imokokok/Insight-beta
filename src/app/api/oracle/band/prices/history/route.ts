@@ -98,13 +98,9 @@ function generateAggregationStatus(_symbol: string): AggregationStatus {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const symbol = searchParams.get('symbol');
+    const symbols = searchParams.get('symbols');
     const chain = searchParams.get('chain') ?? 'cosmos';
     const timeRange = (searchParams.get('timeRange') as '1h' | '24h' | '7d') ?? '24h';
-
-    if (!symbol) {
-      return error({ code: 'MISSING_SYMBOL', message: 'Symbol parameter is required' }, 400);
-    }
 
     const validTimeRanges = ['1h', '24h', '7d'];
     if (!validTimeRanges.includes(timeRange)) {
@@ -114,18 +110,39 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const priceHistory = generateMockPriceHistory(symbol, timeRange);
-    const aggregationStatus = generateAggregationStatus(symbol);
+    const symbolList = symbols
+      ? symbols.split(',').map((s) => s.trim().toUpperCase())
+      : ['BTC/USD'];
+    const validSymbols = Object.keys(SYMBOL_PRICES);
+    const filteredSymbols = symbolList.filter((s) => validSymbols.includes(s));
 
-    const response: PriceHistoryResponse = {
-      symbol,
-      chain,
+    if (filteredSymbols.length === 0) {
+      return error(
+        { code: 'INVALID_SYMBOL', message: `Valid symbols: ${validSymbols.join(', ')}` },
+        400,
+      );
+    }
+
+    const priceData: Record<string, PriceHistoryResponse> = {};
+
+    for (const symbol of filteredSymbols) {
+      const priceHistory = generateMockPriceHistory(symbol, timeRange);
+      const aggregationStatus = generateAggregationStatus(symbol);
+
+      priceData[symbol] = {
+        symbol,
+        chain,
+        timeRange,
+        priceHistory,
+        aggregationStatus,
+      };
+    }
+
+    return ok({
+      count: filteredSymbols.length,
+      data: priceData,
       timeRange,
-      priceHistory,
-      aggregationStatus,
-    };
-
-    return ok(response);
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to fetch price history';
     return error({ code: 'INTERNAL_ERROR', message }, 500);

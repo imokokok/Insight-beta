@@ -15,14 +15,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 import { EmptyDeviationState } from '@/components/common/EmptyState';
 import { Badge, StatusBadge } from '@/components/ui/badge';
@@ -460,7 +453,7 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
             onClick={() => setShowContributionAnalysis(!showContributionAnalysis)}
             className="flex w-full items-center justify-between p-3 text-left hover:bg-muted/50"
           >
-            <span className="text-sm font-medium flex items-center gap-2">
+            <span className="flex items-center gap-2 text-sm font-medium">
               <PieChartIcon className="h-4 w-4" />
               贡献度分析
             </span>
@@ -471,11 +464,9 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
             )}
           </button>
           {showContributionAnalysis && (
-            <div className="border-t p-4 space-y-6">
+            <div className="space-y-6 border-t p-4">
               <div className="mb-4 flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  选择 Publisher:
-                </span>
+                <span className="text-sm text-muted-foreground">选择 Publisher:</span>
                 <Select value={selectedPublisher} onValueChange={setSelectedPublisher}>
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="选择 Publisher" />
@@ -491,9 +482,9 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
               </div>
 
               {currentPublisher && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-3">
-                    <h4 className="text-sm font-medium flex items-center gap-2">
+                    <h4 className="flex items-center gap-2 text-sm font-medium">
                       <PieChartIcon className="h-4 w-4 text-amber-500" />
                       价格源分布
                     </h4>
@@ -501,11 +492,19 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
-                            data={currentPublisher.priceSourceDistribution}
+                            data={
+                              currentPublisher.priceSourceDistribution as {
+                                name: string;
+                                value: number;
+                                color: string;
+                              }[]
+                            }
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                            label={({ name, percent }) =>
+                              `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
+                            }
                             outerRadius={80}
                             fill="#8884d8"
                             dataKey="value"
@@ -522,7 +521,7 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
                   </div>
 
                   <div className="space-y-3">
-                    <h4 className="text-sm font-medium flex items-center gap-2">
+                    <h4 className="flex items-center gap-2 text-sm font-medium">
                       <Clock className="h-4 w-4 text-amber-500" />
                       活跃时间统计
                     </h4>
@@ -537,7 +536,9 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
                         <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
                           <span
                             className="absolute inset-y-0 left-0 rounded-full bg-amber-500 transition-all"
-                            style={{ width: `${currentPublisher.activeTimeStats.onlinePercentage}%` }}
+                            style={{
+                              width: `${currentPublisher.activeTimeStats.onlinePercentage}%`,
+                            }}
                           />
                         </div>
                       </div>

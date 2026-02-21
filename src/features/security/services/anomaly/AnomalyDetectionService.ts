@@ -7,7 +7,6 @@ import type { PriceHistoryRecord } from '@/features/oracle/services/unifiedPrice
 import { logger } from '@/shared/logger';
 
 import { BehaviorPatternDetector } from './BehaviorPatternDetector';
-import { MLDetector } from './MLDetector';
 import { StatisticalDetector } from './StatisticalDetector';
 import { TimeSeriesDetector } from './TimeSeriesDetector';
 import {
@@ -42,7 +41,6 @@ export const DEFAULT_DETECTION_CONFIG: DetectionConfig = {
 export class AnomalyDetectionService {
   private statisticalDetector: StatisticalDetector;
   private timeSeriesDetector: TimeSeriesDetector;
-  private mlDetector: MLDetector;
   private behaviorDetector: BehaviorPatternDetector;
   private recentDetections: Map<string, Date> = new Map();
   private anomalyHistory: Map<string, AnomalyDetection[]> = new Map();
@@ -55,7 +53,6 @@ export class AnomalyDetectionService {
   constructor(private config: DetectionConfig = DEFAULT_DETECTION_CONFIG) {
     this.statisticalDetector = new StatisticalDetector();
     this.timeSeriesDetector = new TimeSeriesDetector();
-    this.mlDetector = new MLDetector();
     this.behaviorDetector = new BehaviorPatternDetector();
   }
 
@@ -83,9 +80,9 @@ export class AnomalyDetectionService {
     const timeSeriesAnomalies = this.detectTimeSeriesAnomalies(symbol, prices);
     anomalies.push(...timeSeriesAnomalies);
 
-    // 3. 机器学习异常检测
-    const mlAnomalies = this.detectMLAnomalies(symbol, prices);
-    anomalies.push(...mlAnomalies);
+    // 3. 统计模式异常检测 (孤立森林)
+    const statisticalPatternAnomalies = this.detectStatisticalPatternAnomalies(symbol, prices);
+    anomalies.push(...statisticalPatternAnomalies);
 
     // 4. 行为模式异常检测
     const behaviorAnomalies = this.detectBehaviorAnomalies(symbol, prices);
@@ -228,13 +225,12 @@ export class AnomalyDetectionService {
   }
 
   /**
-   * 检测机器学习异常
+   * 检测统计异常 (孤立森林)
    */
-  private detectMLAnomalies(symbol: string, prices: number[]): AnomalyDetection[] {
+  private detectStatisticalPatternAnomalies(symbol: string, prices: number[]): AnomalyDetection[] {
     const anomalies: AnomalyDetection[] = [];
 
-    // 孤立森林检测
-    const isolationForestResults = this.mlDetector.detectAnomaliesWithIsolationForest(
+    const isolationForestResults = this.statisticalDetector.detectAnomaliesWithIsolationForest(
       prices,
       this.config.isolationForestContamination,
     );

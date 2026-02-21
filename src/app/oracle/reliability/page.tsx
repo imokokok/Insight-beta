@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { Shield, RefreshCw, TrendingUp } from 'lucide-react';
+import { Shield, RefreshCw, TrendingUp, Calendar } from 'lucide-react';
 
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { Button } from '@/components/ui/button';
@@ -29,13 +29,20 @@ export default function ReliabilityPage() {
   const [period, setPeriod] = useState<TimePeriod>('30d');
   const [selectedProtocol, setSelectedProtocol] = useState<string>('chainlink');
 
-  const { rankings, lastUpdated, isLoading, isError, refresh } = useReliabilityScores(period);
+  const { rankings, lastUpdated, periodStart, periodEnd, isLoading, isError, refresh } =
+    useReliabilityScores(period);
   const { trendData, isLoading: trendLoading } = useReliabilityTrend(selectedProtocol, 30);
 
   const breadcrumbItems = [
     { label: t('nav.oracle'), href: '/oracle' },
     { label: t('oracle.reliability.pageTitle') },
   ];
+
+  const formatDate = (dateStr: string | undefined) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString();
+  };
 
   return (
     <div className="container mx-auto space-y-6 p-4 sm:p-6">
@@ -75,6 +82,17 @@ export default function ReliabilityPage() {
               ))}
             </TabsList>
           </Tabs>
+          {periodStart && periodEnd && (
+            <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>
+                {t('oracle.reliability.dataRangeLabel', {
+                  startDate: formatDate(periodStart),
+                  endDate: formatDate(periodEnd),
+                })}
+              </span>
+            </div>
+          )}
         </CardContent>
       </Card>
 

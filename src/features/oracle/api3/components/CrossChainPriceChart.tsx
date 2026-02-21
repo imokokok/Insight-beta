@@ -29,15 +29,17 @@ export function CrossChainPriceChart({ data, chainColors, className }: CrossChai
   const { t } = useI18n();
 
   const chartData = useMemo(() => {
-    return data.priceHistory.map((item) => ({
-      ...item,
-      date: new Date(item.timestamp).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      }),
-    }));
+    return data.priceHistory.map((item) => {
+      return {
+        ...item,
+        date: new Date(item.timestamp).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        }),
+      };
+    });
   }, [data.priceHistory]);
 
   const formatPrice = (price: number) => {
@@ -51,7 +53,7 @@ export function CrossChainPriceChart({ data, chainColors, className }: CrossChai
     let max = -Infinity;
     data.chains.forEach((chain) => {
       chartData.forEach((point) => {
-        const price = Number(point[chain]);
+        const price = Number((point as Record<string, unknown>)[chain]);
         if (price < min) min = price;
         if (price > max) max = price;
       });
@@ -91,10 +93,7 @@ export function CrossChainPriceChart({ data, chainColors, className }: CrossChai
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
                 }}
-                formatter={(value, name) => [
-                  formatPrice(Number(value) || 0),
-                  name,
-                ]}
+                formatter={(value, name) => [formatPrice(Number(value) || 0), name]}
                 labelFormatter={(label) => `${t('common.time')}: ${label}`}
               />
               <Legend />
@@ -116,7 +115,10 @@ export function CrossChainPriceChart({ data, chainColors, className }: CrossChai
         <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           {data.chains.map((chain) => (
             <div key={chain} className="flex items-center gap-1.5">
-              <div className="h-3 w-3 rounded-full" style={{ backgroundColor: chainColors[chain] }} />
+              <div
+                className="h-3 w-3 rounded-full"
+                style={{ backgroundColor: chainColors[chain] }}
+              />
               <span className="capitalize">{chain}</span>
             </div>
           ))}

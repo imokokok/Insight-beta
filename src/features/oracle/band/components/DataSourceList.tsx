@@ -18,7 +18,6 @@ import { Badge, StatusBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { SkeletonList } from '@/components/ui/skeleton';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -27,6 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
 import { formatTime } from '@/shared/utils';
 
@@ -75,6 +75,7 @@ export function DataSourceList({
   const [internalLoading, setInternalLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'list' | 'comparison'>('list');
 
   const useExternalData = externalSources !== undefined;
 
@@ -189,8 +190,6 @@ export function DataSourceList({
       </Card>
     );
   }
-
-  const [viewMode, setViewMode] = useState<'list' | 'comparison'>('list');
 
   return (
     <Card className={className}>

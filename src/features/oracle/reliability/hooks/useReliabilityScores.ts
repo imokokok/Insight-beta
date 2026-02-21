@@ -26,6 +26,8 @@ export function useReliabilityScores(period: TimePeriod = '30d') {
     rankings: data?.rankings ?? [],
     scores: data?.scores ?? [],
     lastUpdated: data?.lastUpdated,
+    periodStart: data?.periodStart,
+    periodEnd: data?.periodEnd,
     isLoading,
     isError: !!error,
     error: error?.message,

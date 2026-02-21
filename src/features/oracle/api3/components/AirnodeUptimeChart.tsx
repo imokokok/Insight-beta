@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 
 import { TrendingUp } from 'lucide-react';
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -16,8 +15,8 @@ import {
 } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useI18n } from '@/i18n';
 import { useIsMobile } from '@/hooks';
+import { useI18n } from '@/i18n';
 
 import type { UptimeTrendPoint, TimePeriod } from '../types/api3';
 
@@ -34,7 +33,11 @@ interface ChartData {
   responseTimeMs: number;
 }
 
-export function AirnodeUptimeChart({ uptimeTrend, timePeriod, className }: AirnodeUptimeChartProps) {
+export function AirnodeUptimeChart({
+  uptimeTrend,
+  timePeriod,
+  className,
+}: AirnodeUptimeChartProps) {
   const { t } = useI18n();
   const isMobile = useIsMobile();
 
@@ -42,7 +45,7 @@ export function AirnodeUptimeChart({ uptimeTrend, timePeriod, className }: Airno
     return uptimeTrend.map((point) => {
       let timeLabel;
       const date = new Date(point.timestamp);
-      
+
       if (timePeriod === 'day') {
         timeLabel = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       } else if (timePeriod === 'week') {
@@ -50,7 +53,7 @@ export function AirnodeUptimeChart({ uptimeTrend, timePeriod, className }: Airno
       } else {
         timeLabel = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
       }
-      
+
       return {
         time: timeLabel,
         timestamp: point.timestamp,
@@ -64,7 +67,7 @@ export function AirnodeUptimeChart({ uptimeTrend, timePeriod, className }: Airno
     if (active && payload && payload.length) {
       return (
         <div className="rounded-lg border bg-white p-3 shadow-lg">
-          <p className="text-xs text-muted-foreground mb-2">
+          <p className="mb-2 text-xs text-muted-foreground">
             {new Date(payload[0].payload.timestamp).toLocaleString()}
           </p>
           <div className="space-y-1">
@@ -75,8 +78,8 @@ export function AirnodeUptimeChart({ uptimeTrend, timePeriod, className }: Airno
                   {entry.name === 'uptimePercentage' ? '在线率' : '响应时间'}
                 </span>
                 <span className="text-sm font-semibold">
-                  {entry.name === 'uptimePercentage' 
-                    ? `${entry.value.toFixed(2)}%` 
+                  {entry.name === 'uptimePercentage'
+                    ? `${entry.value.toFixed(2)}%`
                     : `${entry.value}ms`}
                 </span>
               </div>

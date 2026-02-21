@@ -5,7 +5,7 @@ import useSWR from 'swr';
 import { buildApiUrl } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
 
-import type { AlertSource, AlertSeverity } from '../types';
+import type { AlertSource, AlertSeverity, UnifiedAlert } from '../types';
 
 export type TimeRange = '1h' | '6h' | '24h' | '7d' | '30d';
 export type GroupBy = 'severity' | 'source' | 'none';
@@ -43,6 +43,10 @@ export interface AlertHistoryData {
   trend: AlertHistoryPoint[];
   heatmap: AlertHeatmapCell[];
   stats: AlertHistoryStats;
+  periodStart: string;
+  periodEnd: string;
+  previousStats?: AlertHistoryStats;
+  alertsInPeriod: UnifiedAlert[];
 }
 
 export interface AlertHistoryResponse {

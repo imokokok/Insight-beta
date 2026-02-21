@@ -1,6 +1,6 @@
 /**
  * Statistical Anomaly Detector
- * 统计异常检测器 (Z-Score, IQR)
+ * 统计异常检测器 (Z-Score, IQR, 孤立森林, 聚类)
  */
 
 import type { DetectionConfig } from './types';
@@ -77,5 +77,124 @@ export class StatisticalDetector {
     });
 
     return outliers;
+  }
+
+  /**
+   * 孤立森林检测 (统计方法)
+   * 使用随机分割来识别异常点
+   */
+  detectAnomaliesWithIsolationForest(
+    data: number[],
+    contamination: number = 0.1,
+  ): Array<{ index: number; score: number; isAnomaly: boolean }> {
+    const results: Array<{ index: number; score: number; isAnomaly: boolean }> = [];
+    const numTrees = 10;
+    const subSampleSize = Math.min(256, data.length);
+
+    data.forEach((value, index) => {
+      let totalPathLength = 0;
+
+      for (let tree = 0; tree < numTrees; tree++) {
+        totalPathLength += this.calculatePathLength(data, value, subSampleSize);
+      }
+
+      const avgPathLength = totalPathLength / numTrees;
+      const score = Math.pow(2, -avgPathLength / this.averagePathLength(subSampleSize));
+      const isAnomaly = score > 1 - contamination;
+
+      results.push({ index, score, isAnomaly });
+    });
+
+    return results;
+  }
+
+  /**
+   * 计算路径长度 (孤立森林辅助方法)
+   */
+  private calculatePathLength(data: number[], value: number, subSampleSize: number): number {
+    let pathLength = 0;
+    let currentData = data.slice(0, subSampleSize);
+
+    while (currentData.length > 1) {
+      const min = Math.min(...currentData);
+      const max = Math.max(...currentData);
+
+      if (min === max) break;
+
+      const splitValue = min + Math.random() * (max - min);
+
+      if (value < splitValue) {
+        currentData = currentData.filter((v) => v < splitValue);
+      } else {
+        currentData = currentData.filter((v) => v >= splitValue);
+      }
+
+      pathLength++;
+    }
+
+    return pathLength;
+  }
+
+  /**
+   * 计算平均路径长度 (孤立森林辅助方法)
+   */
+  private averagePathLength(n: number): number {
+    if (n <= 1) return 0;
+    return 2 * (Math.log(n - 1) + 0.5772156649) - (2 * (n - 1)) / n;
+  }
+
+  /**
+   * K-Means 聚类检测 (统计方法)
+   */
+  detectClusters(
+    data: number[],
+    k: number = 3,
+  ): Array<{ index: number; cluster: number; distance: number }> {
+    const centroids = this.initializeCentroids(data, k);
+    const assignments = new Array(data.length).fill(0);
+
+    for (let iteration = 0; iteration < 10; iteration++) {
+      data.forEach((value, index) => {
+        let minDistance = Infinity;
+        let closestCluster = 0;
+
+        centroids.forEach((centroid, clusterIndex) => {
+          const distance = Math.abs(value - centroid);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestCluster = clusterIndex;
+          }
+        });
+
+        assignments[index] = closestCluster;
+      });
+
+      for (let i = 0; i < k; i++) {
+        const clusterPoints = data.filter((_, index) => assignments[index] === i);
+        if (clusterPoints.length > 0) {
+          centroids[i] = clusterPoints.reduce((a, b) => a + b, 0) / clusterPoints.length;
+        }
+      }
+    }
+
+    return data.map((value, index) => {
+      const clusterIndex = assignments[index] ?? 0;
+      const centroid = centroids[clusterIndex] ?? 0;
+      return {
+        index,
+        cluster: clusterIndex,
+        distance: Math.abs(value - centroid),
+      };
+    });
+  }
+
+  /**
+   * 初始化质心 (K-Means 辅助方法)
+   */
+  private initializeCentroids(data: number[], k: number): number[] {
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const step = (max - min) / (k + 1);
+    return Array.from({ length: k }, (_, i) => min + step * (i + 1));
   }
 }

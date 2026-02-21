@@ -71,6 +71,10 @@ export const api3 = {
     change: '24小时变化',
     spotPrice: '现货价格',
     emaPriceLabel: 'EMA 价格',
+    custom: '自定义',
+    apply: '应用',
+    startDate: '开始日期',
+    endDate: '结束日期',
   },
   frequency: {
     title: '更新频率分析',

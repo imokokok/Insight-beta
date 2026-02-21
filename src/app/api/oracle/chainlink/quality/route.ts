@@ -38,16 +38,16 @@ interface FeedQualityData {
 }
 
 interface QualityQueryParams {
-  symbol?: string;
-  chain?: string;
-  lookbackHours?: number;
+  symbol: string;
+  chain: string;
+  lookbackHours: number;
 }
 
 function parseQueryParams(request: NextRequest): QualityQueryParams {
   const { searchParams } = new URL(request.url);
   return {
-    symbol: searchParams.get('symbol') ?? 'ETH/USD',
-    chain: searchParams.get('chain') ?? 'ethereum',
+    symbol: searchParams.get('symbol') || 'ETH/USD',
+    chain: searchParams.get('chain') || 'ethereum',
     lookbackHours: searchParams.get('lookbackHours')
       ? parseInt(searchParams.get('lookbackHours')!, 10)
       : 24,
@@ -79,8 +79,12 @@ function calculateVolatility(priceHistory: PricePoint[]): VolatilityMetrics {
 
   const returns: number[] = [];
   for (let i = 1; i < priceHistory.length; i++) {
-    const ret = (priceHistory[i].price - priceHistory[i - 1].price) / priceHistory[i - 1].price;
-    returns.push(ret);
+    const current = priceHistory[i];
+    const previous = priceHistory[i - 1];
+    if (current && previous && previous.price !== 0) {
+      const ret = (current.price - previous.price) / previous.price;
+      returns.push(ret);
+    }
   }
 
   const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
@@ -92,12 +96,13 @@ function calculateVolatility(priceHistory: PricePoint[]): VolatilityMetrics {
   const weeklyVolatility = dailyVolatility * Math.sqrt(7);
 
   let maxDrawdown = 0;
-  let peak = priceHistory[0].price;
+  const firstPrice = priceHistory[0];
+  let peak = firstPrice ? firstPrice.price : 0;
   for (const point of priceHistory) {
     if (point.price > peak) {
       peak = point.price;
     }
-    const drawdown = (peak - point.price) / peak;
+    const drawdown = peak > 0 ? (peak - point.price) / peak : 0;
     if (drawdown > maxDrawdown) {
       maxDrawdown = drawdown;
     }
@@ -126,7 +131,8 @@ function generateMultiProtocolComparison(basePrice: number): DeviationComparison
     return {
       protocol: p.name,
       price: parseFloat(price.toFixed(4)),
-      deviationFromChainlink: p.name === 'Chainlink' ? 0 : parseFloat((price - basePrice).toFixed(4)),
+      deviationFromChainlink:
+        p.name === 'Chainlink' ? 0 : parseFloat((price - basePrice).toFixed(4)),
       deviationPercentage: p.name === 'Chainlink' ? 0 : parseFloat((deviation * 100).toFixed(4)),
     };
   });
@@ -136,14 +142,18 @@ function detectAnomalies(priceHistory: PricePoint[]): Anomaly[] {
   const anomalies: Anomaly[] = [];
 
   for (let i = 2; i < priceHistory.length; i++) {
-    const prevPrice = priceHistory[i - 2].price;
-    const currPrice = priceHistory[i].price;
+    const prevPoint = priceHistory[i - 2];
+    const currPoint = priceHistory[i];
+    if (!prevPoint || !currPoint || prevPoint.price === 0) continue;
+
+    const prevPrice = prevPoint.price;
+    const currPrice = currPoint.price;
     const change = (currPrice - prevPrice) / prevPrice;
 
     if (Math.abs(change) > 0.005 && Math.random() > 0.9) {
       const type = change > 0 ? 'spike' : 'drop';
       anomalies.push({
-        timestamp: priceHistory[i].timestamp,
+        timestamp: currPoint.timestamp,
         type,
         magnitude: parseFloat((Math.abs(change) * 100).toFixed(3)),
         description: `${type === 'spike' ? '大幅上涨' : '大幅下跌'} ${Math.abs(change * 100).toFixed(2)}%`,
@@ -181,8 +191,9 @@ export async function GET(request: NextRequest) {
   try {
     const { symbol, chain, lookbackHours } = parseQueryParams(request);
 
-    const basePrice = basePrices[symbol] || 3500;
-    const priceHistory = generatePriceHistory(basePrice, lookbackHours);
+    const basePrice = symbol ? (basePrices[symbol] ?? 3500) : 3500;
+    const lookback = lookbackHours ?? 24;
+    const priceHistory = generatePriceHistory(basePrice, lookback);
     const volatility = calculateVolatility(priceHistory);
     const multiProtocolComparison = generateMultiProtocolComparison(basePrice);
     const recentAnomalies = detectAnomalies(priceHistory);

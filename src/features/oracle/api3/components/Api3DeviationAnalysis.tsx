@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Activity, RefreshCw } from 'lucide-react';
 
@@ -14,7 +14,12 @@ import { Api3DeviationTrendChart } from './Api3DeviationTrendChart';
 import { DeviationMetricsCard } from './DeviationMetricsCard';
 import { PriceComparisonChart } from './PriceComparisonChart';
 
-import type { Api3DeviationData, ComparisonDeviation, DeviationMetrics, ProtocolPricePoint } from '../types/api3';
+import type {
+  Api3DeviationData,
+  ComparisonDeviation,
+  DeviationMetrics,
+  ProtocolPricePoint,
+} from '../types/api3';
 
 interface Api3DeviationAnalysisProps {
   symbol?: string;
@@ -72,7 +77,8 @@ const calculateDeviationMetrics = (prices1: number[], prices2: number[]): Deviat
   const mean = deviations.reduce((sum, d) => sum + d, 0) / deviations.length;
   const max = Math.max(...deviations.map(Math.abs));
   const min = Math.min(...deviations.map(Math.abs));
-  const variance = deviations.reduce((sum, d) => sum + Math.pow(d - mean, 2), 0) / deviations.length;
+  const variance =
+    deviations.reduce((sum, d) => sum + Math.pow(d - mean, 2), 0) / deviations.length;
   const stdDev = Math.sqrt(variance);
 
   return { mean, max, min, stdDev };
@@ -100,11 +106,11 @@ export function Api3DeviationAnalysis({
     setIsLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      
+
       const pricePoints = generateMockPricePoints(timeRange);
-      const api3Prices = pricePoints.map(p => p.api3Price);
-      const chainlinkPrices = pricePoints.map(p => p.chainlinkPrice);
-      const pythPrices = pricePoints.map(p => p.pythPrice);
+      const api3Prices = pricePoints.map((p) => p.api3Price);
+      const chainlinkPrices = pricePoints.map((p) => p.chainlinkPrice);
+      const pythPrices = pricePoints.map((p) => p.pythPrice);
 
       const api3VsChainlink = calculateDeviationMetrics(api3Prices, chainlinkPrices);
       const api3VsPyth = calculateDeviationMetrics(api3Prices, pythPrices);

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Fuel, RefreshCw } from 'lucide-react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { SkeletonList } from '@/components/ui/skeleton';
@@ -15,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
@@ -72,7 +72,7 @@ const generateMockGasData = (timeRange: string): GasCostAnalysisData => {
     totalCostUsd: (1000000 + Math.random() * 10000000) * 20e-9 * 2500,
     transactionCount: Math.floor(100 + Math.random() * 500),
     avgGasPerTransaction: Math.floor(50000 + Math.random() * 100000),
-  });
+  }));
 
   const byChain: GasCostByChain[] = chains.map((chain) => {
     const chainDapis = byDapi.filter((d) => d.chain === chain);
@@ -147,21 +147,30 @@ export function GasCostAnalysis({
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
       const gasData = generateMockGasData(timeRange);
-      
+
       let filteredData = { ...gasData };
-      
+
       if (chain) {
-        filteredData.byDapi = gasData.byDapi.filter((d) => d.chain.toLowerCase() === chain.toLowerCase());
-        filteredData.byChain = gasData.byChain.filter((c) => c.chain.toLowerCase() === chain.toLowerCase());
+        filteredData.byDapi = gasData.byDapi.filter(
+          (d) => d.chain.toLowerCase() === chain.toLowerCase(),
+        );
+        filteredData.byChain = gasData.byChain.filter(
+          (c) => c.chain.toLowerCase() === chain.toLowerCase(),
+        );
       }
       if (dapiName) {
-        filteredData.byDapi = gasData.byDapi.filter((d) => d.dapiName.toLowerCase().includes(dapiName.toLowerCase()));
+        filteredData.byDapi = gasData.byDapi.filter((d) =>
+          d.dapiName.toLowerCase().includes(dapiName.toLowerCase()),
+        );
       }
 
       filteredData.totalGasUsed = filteredData.byDapi.reduce((sum, d) => sum + d.totalGasUsed, 0);
       filteredData.totalCostEth = filteredData.byDapi.reduce((sum, d) => sum + d.totalCostEth, 0);
       filteredData.totalCostUsd = filteredData.byDapi.reduce((sum, d) => sum + d.totalCostUsd, 0);
-      filteredData.totalTransactions = filteredData.byDapi.reduce((sum, d) => sum + d.transactionCount, 0);
+      filteredData.totalTransactions = filteredData.byDapi.reduce(
+        (sum, d) => sum + d.transactionCount,
+        0,
+      );
 
       setData(filteredData);
     } finally {
@@ -252,7 +261,9 @@ export function GasCostAnalysis({
               <span className="text-sm font-medium text-muted-foreground">ETH 成本</span>
               <span className="text-sm text-muted-foreground">Ξ</span>
             </div>
-            <div className="mt-2 text-2xl font-bold text-blue-600">{formatEth(data.totalCostEth)}</div>
+            <div className="mt-2 text-2xl font-bold text-blue-600">
+              {formatEth(data.totalCostEth)}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -261,7 +272,9 @@ export function GasCostAnalysis({
               <span className="text-sm font-medium text-muted-foreground">USD 成本</span>
               <span className="text-sm text-muted-foreground">$</span>
             </div>
-            <div className="mt-2 text-2xl font-bold text-green-600">{formatUsd(data.totalCostUsd)}</div>
+            <div className="mt-2 text-2xl font-bold text-green-600">
+              {formatUsd(data.totalCostUsd)}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -270,7 +283,9 @@ export function GasCostAnalysis({
               <span className="text-sm font-medium text-muted-foreground">交易数量</span>
               <span className="text-sm text-muted-foreground">Tx</span>
             </div>
-            <div className="mt-2 text-2xl font-bold text-purple-600">{data.totalTransactions.toLocaleString()}</div>
+            <div className="mt-2 text-2xl font-bold text-purple-600">
+              {data.totalTransactions.toLocaleString()}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -281,7 +296,9 @@ export function GasCostAnalysis({
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="text-lg">
-              {view === 'dapis' ? (t('api3.gas.byDapi') || '按 dAPI 统计') : (t('api3.gas.byChain') || '按链统计')}
+              {view === 'dapis'
+                ? t('api3.gas.byDapi') || '按 dAPI 统计'
+                : t('api3.gas.byChain') || '按链统计'}
             </CardTitle>
             <div className="flex rounded-lg border p-1">
               <button
@@ -310,45 +327,65 @@ export function GasCostAnalysis({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{view === 'dapis' ? (t('api3.gas.dapiName') || 'dAPI 名称') : (t('api3.gas.chain') || '链'}</TableHead>
+                  <TableHead>
+                    {view === 'dapis'
+                      ? t('api3.gas.dapiName') || 'dAPI 名称'
+                      : t('api3.gas.chain') || '链'}
+                  </TableHead>
                   {view === 'dapis' && <TableHead>{t('api3.gas.chain') || '链'}</TableHead>}
                   <TableHead>{t('api3.gas.gasUsed') || 'Gas 消耗'}</TableHead>
                   <TableHead>{t('api3.gas.costEth') || 'ETH 成本'}</TableHead>
                   <TableHead>{t('api3.gas.costUsd') || 'USD 成本'}</TableHead>
                   <TableHead>{t('api3.gas.transactions') || '交易数'}</TableHead>
                   {view === 'dapis' && <TableHead>{t('api3.gas.avgGas') || '平均 Gas'}</TableHead>}
-                  {view === 'chains' && <TableHead>{t('api3.gas.dapiCount') || 'dAPI 数量'}</TableHead>}
+                  {view === 'chains' && (
+                    <TableHead>{t('api3.gas.dapiCount') || 'dAPI 数量'}</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {view === 'dapis' ? (
-                  data.byDapi.map((dapi) => (
-                  <TableRow key={dapi.dapiName}>
-                    <TableCell className="font-semibold">{dapi.dapiName}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="capitalize">{dapi.chain}</Badge>
-                    </TableCell>
-                    <TableCell className="font-mono">{formatGas(dapi.totalGasUsed)}</TableCell>
-                    <TableCell className="font-mono">{formatEth(dapi.totalCostEth)}</TableCell>
-                    <TableCell className="font-mono">{formatUsd(dapi.totalCostUsd)}</TableCell>
-                    <TableCell className="font-mono">{dapi.transactionCount.toLocaleString()}</TableCell>
-                    <TableCell className="font-mono">{formatGas(dapi.avgGasPerTransaction)}</TableCell>
-                  </TableRow>
-                ))
-                ) : (
-                  data.byChain.map((chainItem) => (
-                  <TableRow key={chainItem.chain}>
-                    <TableCell className="font-semibold">
-                      <Badge variant="secondary" className="capitalize">{chainItem.chain}</Badge>
-                    </TableCell>
-                    <TableCell className="font-mono">{formatGas(chainItem.totalGasUsed)}</TableCell>
-                    <TableCell className="font-mono">{formatEth(chainItem.totalCostEth)}</TableCell>
-                    <TableCell className="font-mono">{formatUsd(chainItem.totalCostUsd)}</TableCell>
-                    <TableCell className="font-mono">{chainItem.transactionCount.toLocaleString()}</TableCell>
-                    <TableCell className="font-mono">{chainItem.dapiCount}</TableCell>
-                  </TableRow>
-                ))
-                )}
+                {view === 'dapis'
+                  ? data.byDapi.map((dapi) => (
+                      <TableRow key={dapi.dapiName}>
+                        <TableCell className="font-semibold">{dapi.dapiName}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="capitalize">
+                            {dapi.chain}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono">{formatGas(dapi.totalGasUsed)}</TableCell>
+                        <TableCell className="font-mono">{formatEth(dapi.totalCostEth)}</TableCell>
+                        <TableCell className="font-mono">{formatUsd(dapi.totalCostUsd)}</TableCell>
+                        <TableCell className="font-mono">
+                          {dapi.transactionCount.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="font-mono">
+                          {formatGas(dapi.avgGasPerTransaction)}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : data.byChain.map((chainItem) => (
+                      <TableRow key={chainItem.chain}>
+                        <TableCell className="font-semibold">
+                          <Badge variant="secondary" className="capitalize">
+                            {chainItem.chain}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono">
+                          {formatGas(chainItem.totalGasUsed)}
+                        </TableCell>
+                        <TableCell className="font-mono">
+                          {formatEth(chainItem.totalCostEth)}
+                        </TableCell>
+                        <TableCell className="font-mono">
+                          {formatUsd(chainItem.totalCostUsd)}
+                        </TableCell>
+                        <TableCell className="font-mono">
+                          {chainItem.transactionCount.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="font-mono">{chainItem.dapiCount}</TableCell>
+                      </TableRow>
+                    ))}
               </TableBody>
             </Table>
           </div>

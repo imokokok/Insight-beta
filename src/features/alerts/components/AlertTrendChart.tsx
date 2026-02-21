@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { formatNumber } from '@/shared/utils';
+import { formatNumber, cn } from '@/shared/utils';
 
 import type {
   AlertHistoryPoint,
@@ -33,6 +33,9 @@ interface AlertTrendChartProps {
   onGroupByChange: (groupBy: GroupBy) => void;
   loading?: boolean;
   className?: string;
+  periodStart?: string;
+  periodEnd?: string;
+  previousStats?: AlertHistoryStats;
 }
 
 const timeRangeOptions: { value: TimeRange; label: string }[] = [
@@ -73,6 +76,19 @@ function formatTimestamp(timestamp: string, timeRange: TimeRange): string {
   }
 }
 
+function formatDateTimeRange(start: string, end: string): string {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  const formatDate = (d: Date) =>
+    d.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+}
+
 function TrendIndicator({ trend, percent }: { trend: string; percent: number }) {
   if (trend === 'stable') {
     return (
@@ -100,6 +116,36 @@ function TrendIndicator({ trend, percent }: { trend: string; percent: number }) 
   );
 }
 
+function ComparisonIndicator({
+  current,
+  previous,
+  label,
+}: {
+  current: number;
+  previous?: number;
+  label: string;
+}) {
+  if (previous === undefined || previous === 0) {
+    return null;
+  }
+
+  const diff = current - previous;
+  const percentChange = Math.round((diff / previous) * 100);
+  const isIncrease = diff > 0;
+
+  return (
+    <div
+      className={cn(
+        'ml-2 text-xs',
+        isIncrease ? 'text-red-500' : diff < 0 ? 'text-green-500' : 'text-gray-500',
+      )}
+    >
+      {isIncrease ? '+' : ''}
+      {percentChange}% {label}
+    </div>
+  );
+}
+
 export function AlertTrendChart({
   data,
   stats,
@@ -109,6 +155,9 @@ export function AlertTrendChart({
   onGroupByChange,
   loading,
   className,
+  periodStart,
+  periodEnd,
+  previousStats,
 }: AlertTrendChartProps) {
   const { t } = useI18n();
 
@@ -207,6 +256,11 @@ export function AlertTrendChart({
               {t('alerts.analysis.trendChart')}
             </CardTitle>
             <CardDescription>{t('alerts.analysis.trendChartDesc')}</CardDescription>
+            {periodStart && periodEnd && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t('alerts.analysis.periodRange')}: {formatDateTimeRange(periodStart, periodEnd)}
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             <Select value={timeRange} onValueChange={(v) => onTimeRangeChange(v as TimeRange)}>
@@ -241,7 +295,14 @@ export function AlertTrendChart({
           <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="rounded-lg bg-gray-50 p-3">
               <p className="text-xs text-muted-foreground">{t('alerts.analysis.totalAlerts')}</p>
-              <p className="text-xl font-bold">{formatNumber(stats.totalAlerts, 0)}</p>
+              <div className="flex items-baseline">
+                <p className="text-xl font-bold">{formatNumber(stats.totalAlerts, 0)}</p>
+                <ComparisonIndicator
+                  current={stats.totalAlerts}
+                  previous={previousStats?.totalAlerts}
+                  label={t('alerts.analysis.comparedTo')}
+                />
+              </div>
             </div>
             <div className="rounded-lg bg-gray-50 p-3">
               <p className="text-xs text-muted-foreground">{t('alerts.analysis.avgPerHour')}</p>

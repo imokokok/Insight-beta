@@ -70,6 +70,8 @@ export interface ReliabilityApiResponse {
   rankings: ProtocolRanking[];
   scores: ReliabilityScore[];
   lastUpdated: string;
+  periodStart: string;
+  periodEnd: string;
 }
 
 export interface TrendDataPoint {

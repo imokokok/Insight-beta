@@ -71,6 +71,10 @@ export const api3 = {
     change: '24h Change',
     spotPrice: 'Spot Price',
     emaPriceLabel: 'EMA Price',
+    custom: 'Custom',
+    apply: 'Apply',
+    startDate: 'Start Date',
+    endDate: 'End Date',
   },
   frequency: {
     title: 'Update Frequency Analysis',

@@ -150,11 +150,11 @@ export function CrossChainHistory({ className }: CrossChainHistoryProps) {
         </CardContent>
       </Card>
 
-      <CrossChainHistoricalCard data={historyData} isLoading={historyLoading} />
+      <CrossChainHistoricalCard data={historyData?.data} isLoading={historyLoading} />
 
-      <CrossChainPriceChart data={historyData} isLoading={historyLoading} height={350} />
+      <CrossChainPriceChart data={historyData?.data} isLoading={historyLoading} height={350} />
 
-      <CrossChainDeviationChart data={historyData} isLoading={historyLoading} height={250} />
+      <CrossChainDeviationChart data={historyData?.data} isLoading={historyLoading} height={250} />
     </div>
   );
 }

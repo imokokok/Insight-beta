@@ -2,14 +2,12 @@
 
 import { useState, useEffect } from 'react';
 
-import { GitCompare, RefreshCw, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { GitCompare, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { EmptyDeviationState } from '@/components/common/EmptyState';
 import { Badge, StatusBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { SkeletonList } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -17,13 +15,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { SkeletonList } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
-import { cn, formatTime } from '@/shared/utils';
+import { cn } from '@/shared/utils';
 
 import { CrossChainMetrics } from './CrossChainMetrics';
 import { CrossChainPriceChart } from './CrossChainPriceChart';
 
-import type { CrossChainComparisonData, CrossChainDapiData } from '../types/api3';
+import type {
+  CrossChainComparisonData,
+  CrossChainDapiData,
+  CrossChainPricePoint,
+} from '../types/api3';
 
 interface CrossChainComparisonProps {
   dapiName?: string;
@@ -96,10 +99,17 @@ const generateMockData = (dapiName: string, chains: string[]): CrossChainCompari
   };
 };
 
-export function CrossChainComparison({ dapiName: initialDapiName, className }: CrossChainComparisonProps) {
-  const { t } = useI18n();
+export function CrossChainComparison({
+  dapiName: initialDapiName,
+  className,
+}: CrossChainComparisonProps) {
+  useI18n();
   const [dapiName, setDapiName] = useState<string>(initialDapiName || 'ETH/USD');
-  const [selectedChains, setSelectedChains] = useState<string[]>(['ethereum', 'polygon', 'arbitrum']);
+  const [selectedChains, setSelectedChains] = useState<string[]>([
+    'ethereum',
+    'polygon',
+    'arbitrum',
+  ]);
   const [data, setData] = useState<CrossChainComparisonData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
@@ -121,7 +131,7 @@ export function CrossChainComparison({ dapiName: initialDapiName, className }: C
 
   const toggleChain = (chain: string) => {
     setSelectedChains((prev) =>
-      prev.includes(chain) ? prev.filter((c) => c !== chain) : [...prev, chain]
+      prev.includes(chain) ? prev.filter((c) => c !== chain) : [...prev, chain],
     );
   };
 
@@ -219,12 +229,10 @@ export function CrossChainComparison({ dapiName: initialDapiName, className }: C
                 'rounded-md px-3 py-1.5 text-xs font-medium transition-all',
                 selectedChains.includes(chain)
                   ? 'text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-muted'
+                  : 'text-muted-foreground hover:bg-muted',
               )}
               style={
-                selectedChains.includes(chain)
-                  ? { backgroundColor: chainColors[chain] }
-                  : undefined
+                selectedChains.includes(chain) ? { backgroundColor: chainColors[chain] } : undefined
               }
             >
               {chain}
@@ -244,7 +252,11 @@ export function CrossChainComparison({ dapiName: initialDapiName, className }: C
                 onClick={() => setShowDetails(!showDetails)}
                 className="w-full"
               >
-                {showDetails ? <ChevronUp className="mr-1 h-4 w-4" /> : <ChevronDown className="mr-1 h-4 w-4" />}
+                {showDetails ? (
+                  <ChevronUp className="mr-1 h-4 w-4" />
+                ) : (
+                  <ChevronDown className="mr-1 h-4 w-4" />
+                )}
                 {showDetails ? '收起详细信息' : '查看详细信息'}
               </Button>
               {showDetails && (
@@ -255,7 +267,10 @@ export function CrossChainComparison({ dapiName: initialDapiName, className }: C
                         <th className="px-4 py-3 text-left font-medium">指标</th>
                         {data.chains.map((chain) => (
                           <th key={chain} className="px-4 py-3 text-center font-medium">
-                            <Badge style={{ backgroundColor: chainColors[chain] }} className="text-white">
+                            <Badge
+                              style={{ backgroundColor: chainColors[chain] }}
+                              className="text-white"
+                            >
                               {chain}
                             </Badge>
                           </th>
@@ -278,7 +293,10 @@ export function CrossChainComparison({ dapiName: initialDapiName, className }: C
                       <tr className="border-b">
                         <td className="px-4 py-3 text-muted-foreground">当前价格</td>
                         {data.dapiData.map((dapi) => (
-                          <td key={dapi.chain} className="px-4 py-3 text-center font-mono font-medium">
+                          <td
+                            key={dapi.chain}
+                            className="px-4 py-3 text-center font-mono font-medium"
+                          >
                             {formatPrice(dapi.lastPrice)}
                           </td>
                         ))}

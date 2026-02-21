@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
-import { LineChart, RefreshCw, Maximize2, Minimize2 } from 'lucide-react';
+import { Calendar, LineChart, RefreshCw, Maximize2, Minimize2 } from 'lucide-react';
 import {
   LineChart as RechartsLineChart,
   Line,
@@ -29,22 +29,36 @@ import type { Api3PriceData } from '../types/api3';
 interface Api3PriceChartProps {
   symbol: string;
   chain?: string;
-  timeRange?: '1h' | '24h' | '7d' | '30d';
+  timeRange?: '1h' | '4h' | '1d' | '1w' | '1m' | 'custom';
   className?: string;
 }
 
 const generateMockData = (timeRange: string): Api3PriceData[] => {
   const now = Date.now();
   const points =
-    timeRange === '1h' ? 60 : timeRange === '24h' ? 96 : timeRange === '7d' ? 168 : 720;
+    timeRange === '1h'
+      ? 60
+      : timeRange === '4h'
+        ? 96
+        : timeRange === '1d'
+          ? 144
+          : timeRange === '1w'
+            ? 168
+            : timeRange === '1m'
+              ? 180
+              : 720;
   const interval =
     timeRange === '1h'
       ? 60000
-      : timeRange === '24h'
-        ? 900000
-        : timeRange === '7d'
+      : timeRange === '4h'
+        ? 150000
+        : timeRange === '1d'
           ? 600000
-          : 3600000;
+          : timeRange === '1w'
+            ? 3600000
+            : timeRange === '1m'
+              ? 7200000
+              : 3600000;
 
   const basePrice = 2450;
   let currentPrice = basePrice;
@@ -65,24 +79,32 @@ const generateMockData = (timeRange: string): Api3PriceData[] => {
 
 const timeRangeOptions = [
   { value: '1h', label: '1H' },
-  { value: '24h', label: '24H' },
-  { value: '7d', label: '7D' },
-  { value: '30d', label: '30D' },
+  { value: '4h', label: '4H' },
+  { value: '1d', label: '1D' },
+  { value: '1w', label: '1W' },
+  { value: '1m', label: '1M' },
 ] as const;
 
 export function Api3PriceChart({
   symbol,
   chain,
-  timeRange: initialTimeRange = '24h',
+  timeRange: initialTimeRange = '1d',
   className,
 }: Api3PriceChartProps) {
   const { t } = useI18n();
-  const [timeRange, setTimeRange] = useState<'1h' | '24h' | '7d' | '30d'>(initialTimeRange);
+  const [timeRange, setTimeRange] = useState<'1h' | '4h' | '1d' | '1w' | '1m' | 'custom'>(
+    initialTimeRange,
+  );
   const [data, setData] = useState<Api3PriceData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [brushData, setBrushData] = useState<Api3PriceData[]>([]);
   const [showBrush, setShowBrush] = useState(true);
-  const [visibleDataRange, setVisibleDataRange] = useState<{ start: number; end: number }>({ start: 0, end: 1 });
+  const [, setVisibleDataRange] = useState<{ start: number; end: number }>({ start: 0, end: 1 });
+  const [customDateRange, setCustomDateRange] = useState<{ startDate: string; endDate: string }>({
+    startDate: '',
+    endDate: '',
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,15 +112,27 @@ export function Api3PriceChart({
       try {
         await new Promise((resolve) => setTimeout(resolve, 400));
         const newData = generateMockData(timeRange);
-        setData(newData);
-        setBrushData(newData);
+
+        if (timeRange === 'custom' && customDateRange.startDate && customDateRange.endDate) {
+          const startTime = new Date(customDateRange.startDate).getTime();
+          const endTime = new Date(customDateRange.endDate).getTime();
+          const filteredData = newData.filter((item) => {
+            const itemTime = new Date(item.timestamp).getTime();
+            return itemTime >= startTime && itemTime <= endTime;
+          });
+          setData(filteredData);
+          setBrushData(filteredData);
+        } else {
+          setData(newData);
+          setBrushData(newData);
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [symbol, chain, timeRange]);
+  }, [symbol, chain, timeRange, customDateRange]);
 
   const sampledData = useMemo(() => {
     if (data.length <= 200) return data;
@@ -112,7 +146,8 @@ export function Api3PriceChart({
       date: new Date(item.timestamp).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
-        hour: timeRange === '1h' || timeRange === '24h' ? 'numeric' : undefined,
+        hour:
+          timeRange === '1h' || timeRange === '4h' || timeRange === '1d' ? 'numeric' : undefined,
         minute: timeRange === '1h' ? 'numeric' : undefined,
       }),
     }));
@@ -157,7 +192,13 @@ export function Api3PriceChart({
     }, 400);
   };
 
-  const handleBrushChange = ({ startIndex, endIndex }: { startIndex: number; endIndex: number }) => {
+  const handleBrushChange = ({
+    startIndex,
+    endIndex,
+  }: {
+    startIndex: number;
+    endIndex: number;
+  }) => {
     if (!data || data.length === 0) return;
     const start = Math.max(0, startIndex ?? 0);
     const end = Math.min(data.length - 1, endIndex ?? data.length - 1);
@@ -169,6 +210,29 @@ export function Api3PriceChart({
     setBrushData(data);
     setVisibleDataRange({ start: 0, end: data.length - 1 });
   };
+
+  const handleTimeRangeChange = useCallback(
+    (range: '1h' | '4h' | '1d' | '1w' | '1m' | 'custom') => {
+      if (range === 'custom') {
+        setShowDatePicker(true);
+      } else {
+        setShowDatePicker(false);
+        setTimeRange(range);
+      }
+    },
+    [],
+  );
+
+  const handleCustomDateApply = useCallback(() => {
+    if (customDateRange.startDate && customDateRange.endDate) {
+      setTimeRange('custom');
+      setShowDatePicker(false);
+    }
+  }, [customDateRange]);
+
+  const handleCustomDateChange = useCallback((field: 'startDate' | 'endDate', value: string) => {
+    setCustomDateRange((prev) => ({ ...prev, [field]: value }));
+  }, []);
 
   if (isLoading) {
     return (
@@ -207,7 +271,7 @@ export function Api3PriceChart({
               {timeRangeOptions.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => setTimeRange(option.value)}
+                  onClick={() => handleTimeRangeChange(option.value)}
                   className={cn(
                     'rounded-md px-3 py-1 text-xs font-medium transition-colors',
                     timeRange === option.value
@@ -218,7 +282,42 @@ export function Api3PriceChart({
                   {option.label}
                 </button>
               ))}
+              <button
+                key="custom"
+                onClick={() => handleTimeRangeChange('custom')}
+                className={cn(
+                  'rounded-md px-3 py-1 text-xs font-medium transition-colors',
+                  timeRange === 'custom' ? 'text-primary-foreground bg-primary' : 'hover:bg-muted',
+                )}
+              >
+                {t('api3.price.custom')}
+              </button>
             </div>
+            {showDatePicker && (
+              <div className="flex items-center gap-2 rounded-lg border bg-background p-2">
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="date"
+                    value={customDateRange.startDate}
+                    onChange={(e) => handleCustomDateChange('startDate', e.target.value)}
+                    className="rounded border px-2 py-1 text-xs"
+                  />
+                </div>
+                <span className="text-xs text-muted-foreground">-</span>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="date"
+                    value={customDateRange.endDate}
+                    onChange={(e) => handleCustomDateChange('endDate', e.target.value)}
+                    className="rounded border px-2 py-1 text-xs"
+                  />
+                </div>
+                <Button size="sm" onClick={handleCustomDateApply} className="text-xs">
+                  {t('api3.price.apply')}
+                </Button>
+              </div>
+            )}
             <Button variant="outline" size="icon" onClick={handleRefresh}>
               <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
             </Button>
@@ -361,13 +460,15 @@ export function Api3PriceChart({
           {showBrush && (
             <div className="h-24">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={sampledData.map((item) => ({
-                  ...item,
-                  date: new Date(item.timestamp).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                  }),
-                }))}>
+                <AreaChart
+                  data={sampledData.map((item) => ({
+                    ...item,
+                    date: new Date(item.timestamp).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                    }),
+                  }))}
+                >
                   <defs>
                     <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -415,7 +516,11 @@ export function Api3PriceChart({
               onClick={() => setShowBrush(!showBrush)}
               className="text-xs"
             >
-              {showBrush ? <Minimize2 className="mr-1 h-3 w-3" /> : <Maximize2 className="mr-1 h-3 w-3" />}
+              {showBrush ? (
+                <Minimize2 className="mr-1 h-3 w-3" />
+              ) : (
+                <Maximize2 className="mr-1 h-3 w-3" />
+              )}
               {showBrush ? t('api3.price.hideBrush') : t('api3.price.showBrush')}
             </Button>
             {brushData.length < data.length && (

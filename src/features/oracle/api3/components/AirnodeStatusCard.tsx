@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 
-import { Activity, Clock, Server, Zap, Calendar, TrendingUp, AlertCircle } from 'lucide-react';
+import { Activity, Clock, Server, Zap, Calendar, TrendingUp } from 'lucide-react';
 
 import { Badge, StatusBadge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,9 +10,16 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 
-import type { Airnode, TimePeriod, AirnodeHistoryData, UptimeTrendPoint, OfflineEvent } from '../types/api3';
-import { AirnodeUptimeChart } from './AirnodeUptimeChart';
 import { AirnodeOfflineEvents } from './AirnodeOfflineEvents';
+import { AirnodeUptimeChart } from './AirnodeUptimeChart';
+
+import type {
+  Airnode,
+  TimePeriod,
+  AirnodeHistoryData,
+  UptimeTrendPoint,
+  OfflineEvent,
+} from '../types/api3';
 
 interface AirnodeStatusCardProps {
   airnode: Airnode;
@@ -67,9 +74,12 @@ export function AirnodeStatusCard({ airnode, historyData, className }: AirnodeSt
       const timestamp = new Date(now.getTime() - i * intervalMs);
       const baseUptime = 98.5;
       const variance = Math.random() * 3;
-      const uptime = Math.min(100, Math.max(90, baseUptime + (Math.random() > 0.5 ? variance : -variance)));
+      const uptime = Math.min(
+        100,
+        Math.max(90, baseUptime + (Math.random() > 0.5 ? variance : -variance)),
+      );
       const responseTime = 50 + Math.random() * 250;
-      
+
       points.push({
         timestamp: timestamp.toISOString(),
         uptimePercentage: uptime,
@@ -83,7 +93,7 @@ export function AirnodeStatusCard({ airnode, historyData, className }: AirnodeSt
         const eventStart = new Date(now.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000);
         const durationMs = Math.floor(Math.random() * 3600000) + 60000;
         const eventEnd = new Date(eventStart.getTime() + durationMs);
-        
+
         events.push({
           id: `offline-${i}`,
           startTime: eventStart.toISOString(),
@@ -97,7 +107,9 @@ export function AirnodeStatusCard({ airnode, historyData, className }: AirnodeSt
     return {
       timePeriod,
       uptimeTrend: points,
-      offlineEvents: events.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()),
+      offlineEvents: events.sort(
+        (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      ),
       totalUptimePercentage: 98.7,
       totalOfflineDurationMs: events.reduce((sum, e) => sum + e.durationMs, 0),
       offlineEventCount: events.length,
@@ -135,7 +147,9 @@ export function AirnodeStatusCard({ airnode, historyData, className }: AirnodeSt
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">{t('api3.airnode.address')}</p>
-                <p className="font-mono text-sm font-medium">{formatAddress(airnode.airnodeAddress)}</p>
+                <p className="font-mono text-sm font-medium">
+                  {formatAddress(airnode.airnodeAddress)}
+                </p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">{t('api3.airnode.chain')}</p>
@@ -152,7 +166,10 @@ export function AirnodeStatusCard({ airnode, historyData, className }: AirnodeSt
                   <p className="text-xs text-muted-foreground">{t('api3.airnode.responseTime')}</p>
                 </div>
                 <p
-                  className={cn('mt-1 text-lg font-bold', getResponseTimeColor(airnode.responseTimeMs))}
+                  className={cn(
+                    'mt-1 text-lg font-bold',
+                    getResponseTimeColor(airnode.responseTimeMs),
+                  )}
                 >
                   {airnode.responseTimeMs}ms
                 </p>
@@ -163,7 +180,9 @@ export function AirnodeStatusCard({ airnode, historyData, className }: AirnodeSt
                   <Activity className="h-3.5 w-3.5 text-muted-foreground" />
                   <p className="text-xs text-muted-foreground">{t('api3.airnode.uptime')}</p>
                 </div>
-                <p className={cn('mt-1 text-lg font-bold', getUptimeColor(airnode.uptimePercentage))}>
+                <p
+                  className={cn('mt-1 text-lg font-bold', getUptimeColor(airnode.uptimePercentage))}
+                >
                   {airnode.uptimePercentage.toFixed(2)}%
                 </p>
               </div>

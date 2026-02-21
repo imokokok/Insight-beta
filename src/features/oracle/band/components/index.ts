@@ -12,3 +12,6 @@ export { OracleScriptList } from './OracleScriptList';
 export { ValidatorHealthCard } from './ValidatorHealthCard';
 export { DataSourcePerformanceComparison } from './DataSourcePerformanceComparison';
 export { BridgeTrendChart } from './BridgeTrendChart';
+export { PriceTrendTab } from './PriceTrendTab';
+export { QualityAnalysisTab } from './QualityAnalysisTab';
+export { PriceComparisonTab } from './PriceComparisonTab';

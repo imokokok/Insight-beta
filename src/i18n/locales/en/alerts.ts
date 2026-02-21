@@ -74,6 +74,11 @@ export const alerts = {
     avgPerHour: 'Avg/Hour',
     peakHour: 'Peak Hour',
     trend: 'Trend',
+    periodRange: 'Data Range',
+    comparedTo: 'vs last period',
+    noAlertsInPeriod: 'No alerts in this period',
+    viewAlerts: 'View Alerts',
+    alertsInInterval: '{count} alerts in this interval',
   },
   actions: {
     title: 'Actions',

@@ -27,6 +27,7 @@ export interface ApiOk<T = unknown> {
     total?: number;
     page?: number;
     pageSize?: number;
+    [key: string]: unknown;
   };
 }
 

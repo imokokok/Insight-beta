@@ -194,86 +194,6 @@ export interface CorrelationResponse {
   };
 }
 
-export interface OrderBookLevel {
-  price: number;
-  amount: number;
-  total: number;
-}
-
-export interface OrderBookDepth {
-  symbol: string;
-  chain: string;
-  protocol: string;
-  bids: OrderBookLevel[];
-  asks: OrderBookLevel[];
-  midPrice: number;
-  spread: number;
-  spreadPercent: number;
-  timestamp: string;
-}
-
-export interface LiquidityDepth {
-  chain: string;
-  protocol: string;
-  symbol: string;
-  orderBook: OrderBookDepth;
-  depthMetrics: {
-    depth1Percent: number;
-    depth5Percent: number;
-    depth10Percent: number;
-    buyLiquidity: number;
-    sellLiquidity: number;
-    totalLiquidity: number;
-  };
-  timestamp: string;
-}
-
-export interface SlippageEstimate {
-  symbol: string;
-  chain: string;
-  protocol: string;
-  tradeSize: number;
-  tradeDirection: 'buy' | 'sell';
-  slippagePercent: number;
-  estimatedPrice: number;
-  impactCost: number;
-  timestamp: string;
-}
-
-export interface SlippageAnalysis {
-  chain: string;
-  symbol: string;
-  protocol: string;
-  slippageBySize: {
-    size: number;
-    slippagePercent: number;
-  }[];
-  optimalTradeSize: number;
-  maxRecommendedSize: number;
-  timestamp: string;
-}
-
-export interface LiquidityTrendDataPoint {
-  timestamp: string;
-  totalLiquidity: number;
-  liquidityByChain: Record<string, number>;
-  avgSlippage: number;
-  price: number;
-}
-
-export interface LiquidityTrend {
-  symbol: string;
-  chains: string[];
-  timeRange: string;
-  dataPoints: LiquidityTrendDataPoint[];
-  trendAnalysis: {
-    liquidityChangePercent: number;
-    volatility: number;
-    trendDirection: 'up' | 'down' | 'stable';
-    projectedLiquidity: number;
-  };
-}
-
 export interface ChainLiquidity {
   chain: string;
   displayName: string;
@@ -290,8 +210,6 @@ export interface ChainLiquidity {
   }[];
   avgSlippage: number;
   avgFee: number;
-  liquidityDepth?: LiquidityDepth;
-  slippageAnalysis?: SlippageAnalysis;
   timestamp: string;
 }
 
@@ -310,9 +228,10 @@ export interface LiquidityResponse {
   success: boolean;
   chains: ChainLiquidity[];
   summary: LiquiditySummary;
-  liquidityTrends?: LiquidityTrend;
-  depthData?: LiquidityDepth[];
   meta: {
     timestamp: string;
+    dataSource?: string;
+    isExample?: boolean;
+    disclaimer?: string;
   };
 }

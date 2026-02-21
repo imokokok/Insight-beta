@@ -88,3 +88,25 @@ export interface PublisherHistoryResponse {
     publisher: string;
   };
 }
+
+export interface PriceHistoryPoint {
+  timestamp: string | number;
+  symbol: string;
+  price: number;
+  confidence: number | null;
+  priceChange: number;
+  volatility: number | null;
+}
+
+export interface PriceHistoryResponse {
+  data: PriceHistoryPoint[];
+  metadata: {
+    symbol: string;
+    timeRange: string;
+    minPrice: number;
+    maxPrice: number;
+    avgPrice: number;
+    priceChange: number;
+    volatility: number;
+  };
+}

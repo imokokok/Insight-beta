@@ -18,6 +18,7 @@ import { Badge, StatusBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { SkeletonList } from '@/components/ui/skeleton';
 import {
   Table,
@@ -31,6 +32,7 @@ import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 
 import { BeaconSetComposition } from './BeaconSetComposition';
+import { DataProviderInfo } from './DataProviderInfo';
 
 import type { Dapi } from '../types/api3';
 
@@ -114,10 +116,10 @@ const mockDapis: Dapi[] = [
 ];
 
 const gasCostByDapi: Record<string, { costUsd: number; gasUsed: number }> = {
-  'ETH/USD': { costUsd: 45.20, gasUsed: 8500000 },
-  'BTC/USD': { costUsd: 32.80, gasUsed: 6200000 },
-  'LINK/USD': { costUsd: 12.50, gasUsed: 2800000 },
-  'USDC/USD': { costUsd: 8.90, gasUsed: 1500000 },
+  'ETH/USD': { costUsd: 45.2, gasUsed: 8500000 },
+  'BTC/USD': { costUsd: 32.8, gasUsed: 6200000 },
+  'LINK/USD': { costUsd: 12.5, gasUsed: 2800000 },
+  'USDC/USD': { costUsd: 8.9, gasUsed: 1500000 },
 };
 
 export function DapiList({ chain, symbol, className }: DapiListProps) {
@@ -126,6 +128,7 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [selectedProvider, setSelectedProvider] = useState<Dapi | null>(null);
 
   useEffect(() => {
     const fetchDapis = async () => {
@@ -334,10 +337,41 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                         </TableCell>
                         <TableCell>
                           {dapi.providerName ? (
-                            <div className="flex items-center gap-1.5">
-                              <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                              <span className="text-sm">{dapi.providerName}</span>
-                            </div>
+                            <Popover
+                              open={
+                                !!selectedProvider &&
+                                selectedProvider.dataFeedId === dapi.dataFeedId
+                              }
+                              onOpenChange={(open) => {
+                                if (!open) {
+                                  setSelectedProvider(null);
+                                }
+                              }}
+                            >
+                              <PopoverTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="flex cursor-pointer items-center gap-1.5 transition-colors hover:text-primary"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedProvider(dapi);
+                                  }}
+                                >
+                                  <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                  <span className="text-sm underline-offset-2 hover:underline">
+                                    {dapi.providerName}
+                                  </span>
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-80" align="start">
+                                <DataProviderInfo
+                                  providerName={dapi.providerName}
+                                  providerDescription={dapi.providerDescription}
+                                  providerWebsite={dapi.providerWebsite}
+                                  sourceType={dapi.sourceType}
+                                />
+                              </PopoverContent>
+                            </Popover>
                           ) : (
                             <span className="text-muted-foreground">-</span>
                           )}
@@ -351,10 +385,9 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                           {gasInfo ? (
                             <Badge
                               variant="outline"
-                              className="flex items-center gap-1 text-xs bg-amber-50 text-amber-700 border-amber-200"
+                              className="flex items-center gap-1 border-amber-200 bg-amber-50 text-xs text-amber-700"
                             >
-                              <Fuel className="h-3 w-3" />
-                              ${gasInfo.costUsd.toFixed(2)}
+                              <Fuel className="h-3 w-3" />${gasInfo.costUsd.toFixed(2)}
                             </Badge>
                           ) : (
                             <span className="text-muted-foreground">-</span>

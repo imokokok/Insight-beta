@@ -2,7 +2,19 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-import { RefreshCw, Server, TrendingUp, Database, Shield, LayoutDashboard, Fuel } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+import {
+  RefreshCw,
+  Server,
+  TrendingUp,
+  Database,
+  Shield,
+  LayoutDashboard,
+  Fuel,
+  GitCompare,
+  Bell,
+} from 'lucide-react';
 
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
@@ -21,6 +33,8 @@ import {
   SignatureVerifyPanel,
   Api3ExportButton,
   GasCostAnalysis,
+  CrossProtocolComparison,
+  AlertConfigPanel,
 } from '@/features/oracle/api3';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
@@ -29,6 +43,7 @@ import { cn } from '@/shared/utils/ui';
 
 interface AirnodesResponse {
   airnodes: Array<{
+    address: string;
     chain: string;
     online: boolean;
     lastHeartbeat: string | null;
@@ -94,6 +109,7 @@ interface OverviewStats {
 
 export default function Api3Page() {
   const { t } = useI18n();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
 
   const [overviewStats, setOverviewStats] = useState<OverviewStats | null>(null);
@@ -321,7 +337,7 @@ export default function Api3Page() {
       ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="overview" className="flex items-center gap-1.5">
             <LayoutDashboard className="h-4 w-4" />
             概览
@@ -342,9 +358,17 @@ export default function Api3Page() {
             <Fuel className="h-4 w-4" />
             Gas 成本
           </TabsTrigger>
+          <TabsTrigger value="comparison" className="flex items-center gap-1.5">
+            <GitCompare className="h-4 w-4" />
+            对比
+          </TabsTrigger>
           <TabsTrigger value="verify" className="flex items-center gap-1.5">
             <Shield className="h-4 w-4" />
             签名验证
+          </TabsTrigger>
+          <TabsTrigger value="alerts" className="flex items-center gap-1.5">
+            <Bell className="h-4 w-4" />
+            监控
           </TabsTrigger>
         </TabsList>
 
@@ -421,7 +445,11 @@ export default function Api3Page() {
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {airnodesData.airnodes.map((airnode, index) => (
-                    <Card key={index}>
+                    <Card
+                      key={index}
+                      className="cursor-pointer transition-shadow hover:shadow-lg"
+                      onClick={() => router.push(`/oracle/api3/airnode/${airnode.address}`)}
+                    >
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                           <CardTitle className="flex items-center gap-2 text-base">
@@ -506,8 +534,16 @@ export default function Api3Page() {
           <GasCostAnalysis />
         </TabsContent>
 
+        <TabsContent value="comparison" className="mt-6">
+          <CrossProtocolComparison />
+        </TabsContent>
+
         <TabsContent value="verify" className="mt-6">
           <SignatureVerifyPanel />
+        </TabsContent>
+
+        <TabsContent value="alerts" className="mt-6">
+          <AlertConfigPanel />
         </TabsContent>
       </Tabs>
     </div>

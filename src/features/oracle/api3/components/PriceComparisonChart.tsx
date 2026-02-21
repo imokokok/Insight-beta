@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { DollarSign } from 'lucide-react';
 import {
@@ -15,8 +15,8 @@ import {
 } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useI18n } from '@/i18n';
 import { useIsMobile } from '@/hooks';
+import { useI18n } from '@/i18n';
 
 import type { ProtocolPricePoint } from '../types/api3';
 
@@ -34,13 +34,20 @@ interface ChartData {
   Pyth: number;
 }
 
-export function PriceComparisonChart({ pricePoints, symbol = 'ETH', className }: PriceComparisonChartProps) {
+export function PriceComparisonChart({
+  pricePoints,
+  symbol = 'ETH',
+  className,
+}: PriceComparisonChartProps) {
   const { t } = useI18n();
   const isMobile = useIsMobile();
 
   const chartData = useMemo<ChartData[]>(() => {
     return pricePoints.map((point) => ({
-      time: new Date(point.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: new Date(point.timestamp).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
       timestamp: point.timestamp,
       API3: point.api3Price,
       Chainlink: point.chainlinkPrice,
@@ -56,7 +63,7 @@ export function PriceComparisonChart({ pricePoints, symbol = 'ETH', className }:
     if (active && payload && payload.length) {
       return (
         <div className="rounded-lg border bg-white p-3 shadow-lg">
-          <p className="text-xs text-muted-foreground mb-2">
+          <p className="mb-2 text-xs text-muted-foreground">
             {new Date(payload[0].payload.timestamp).toLocaleString()}
           </p>
           <div className="space-y-1">
@@ -82,7 +89,8 @@ export function PriceComparisonChart({ pricePoints, symbol = 'ETH', className }:
           {t('api3.deviation.priceComparisonTitle') || '价格对比图表'}
         </CardTitle>
         <CardDescription>
-          {t('api3.deviation.priceComparisonDescription') || `${symbol}/USD 在不同预言机的实时价格对比`}
+          {t('api3.deviation.priceComparisonDescription') ||
+            `${symbol}/USD 在不同预言机的实时价格对比`}
         </CardDescription>
       </CardHeader>
       <CardContent>

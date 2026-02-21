@@ -17,6 +17,7 @@ interface AirnodeQueryParams {
 }
 
 interface AirnodeStatus {
+  address: string;
   chain: SupportedChain;
   online: boolean;
   lastHeartbeat: string | null;
@@ -62,6 +63,7 @@ export async function GET(request: NextRequest) {
         const health = await client.checkAirnodeHealth(sampleAirnodeAddress);
 
         const airnodeStatus: AirnodeStatus = {
+          address: sampleAirnodeAddress,
           chain: targetChain,
           online: health.online,
           lastHeartbeat: health.lastHeartbeat?.toISOString() ?? null,

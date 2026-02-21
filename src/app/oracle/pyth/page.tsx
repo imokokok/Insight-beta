@@ -16,6 +16,7 @@ import {
   LayoutDashboard,
   BarChart3,
   Globe,
+  TrendingUp,
 } from 'lucide-react';
 
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
@@ -39,7 +40,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { PythExportButton, ConfidenceComparisonChart, CrossChainPriceComparison } from '@/features/oracle/pyth/components';
+import {
+  PythExportButton,
+  ConfidenceComparisonChart,
+  CrossChainPriceComparison,
+  PriceHistoryChart,
+} from '@/features/oracle/pyth/components';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
 import { cn } from '@/shared/utils/ui';
@@ -330,7 +336,7 @@ const mockPriceFeedDetails: PriceFeedDetail[] = [
     id: '13',
     name: 'Amazon.com',
     symbol: 'AMZN/USD',
-    latestPrice: 178.90,
+    latestPrice: 178.9,
     priceChange: 2.45,
     updateFrequency: 3.0,
     avgLatency: 168,
@@ -574,9 +580,9 @@ export default function PythPage() {
 
   const sortedPriceFeedDetails = useMemo(() => {
     let filtered = [...mockPriceFeedDetails];
-    
+
     if (selectedCategory !== 'All') {
-      filtered = filtered.filter(feed => feed.category === selectedCategory);
+      filtered = filtered.filter((feed) => feed.category === selectedCategory);
     }
 
     if (priceFeedSort) {
@@ -698,13 +704,6 @@ export default function PythPage() {
     if (ms < 200) return 'text-green-500';
     if (ms < 500) return 'text-yellow-500';
     return 'text-red-500';
-  };
-
-  const detectAnomalies = (priceChange: number, confidenceInterval: number) => {
-    return {
-      priceVolatility: Math.abs(priceChange) > 5,
-      highConfidenceInterval: confidenceInterval > 2,
-    };
   };
 
   const hasAnomaly = (feed: PriceFeedDetail) => {
@@ -842,7 +841,7 @@ export default function PythPage() {
       ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview" className="flex items-center gap-1.5">
             <LayoutDashboard className="h-4 w-4" />
             <span>概览</span>
@@ -854,6 +853,10 @@ export default function PythPage() {
           <TabsTrigger value="price-feeds" className="flex items-center gap-1.5">
             <Activity className="h-4 w-4" />
             <span>价格推送</span>
+          </TabsTrigger>
+          <TabsTrigger value="price-trend" className="flex items-center gap-1.5">
+            <TrendingUp className="h-4 w-4" />
+            <span>价格趋势</span>
           </TabsTrigger>
           <TabsTrigger value="cross-chain" className="flex items-center gap-1.5">
             <Globe className="h-4 w-4" />
@@ -1142,8 +1145,8 @@ export default function PythPage() {
               </CardTitle>
               <CardDescription>实时价格更新频率与延迟分析</CardDescription>
               <div className="mt-4">
-                <Tabs 
-                  value={selectedCategory} 
+                <Tabs
+                  value={selectedCategory}
                   onValueChange={(value) => setSelectedCategory(value as PriceFeedCategory | 'All')}
                   className="w-full"
                 >
@@ -1209,7 +1212,9 @@ export default function PythPage() {
                         <TableRow key={feed.id} className={cn(hasAnomaly(feed) && 'bg-red-50/50')}>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              {hasAnomaly(feed) && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                              {hasAnomaly(feed) && (
+                                <AlertTriangle className="h-4 w-4 text-red-500" />
+                              )}
                               <div className="flex flex-col">
                                 <span className="font-medium">{feed.name}</span>
                                 <span className="text-xs text-muted-foreground">{feed.symbol}</span>
@@ -1253,13 +1258,18 @@ export default function PythPage() {
                               <span
                                 className={cn(
                                   'font-medium',
-                                  feed.anomalies.highConfidenceInterval ? 'text-red-500' : 'text-muted-foreground',
+                                  feed.anomalies.highConfidenceInterval
+                                    ? 'text-red-500'
+                                    : 'text-muted-foreground',
                                 )}
                               >
                                 {feed.confidenceInterval.toFixed(2)}%
                               </span>
                               {feed.anomalies.highConfidenceInterval && (
-                                <Badge variant="destructive" className="h-4 px-1 text-[10px] mt-0.5">
+                                <Badge
+                                  variant="destructive"
+                                  className="mt-0.5 h-4 px-1 text-[10px]"
+                                >
                                   置信过高
                                 </Badge>
                               )}
@@ -1294,6 +1304,10 @@ export default function PythPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="price-trend" className="mt-6">
+          <PriceHistoryChart isLoading={loading} />
         </TabsContent>
 
         <TabsContent value="cross-chain" className="mt-6">

@@ -2,20 +2,11 @@
 
 import { useMemo } from 'react';
 
-import { BarChart3, Clock, Zap, DollarSign, Activity, ArrowUp, ArrowDown } from 'lucide-react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { BarChart3, Clock, Zap, DollarSign, Activity } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/shared/utils';
 
 import type { CrossChainComparisonData } from '../types/api3';
 
@@ -72,13 +63,17 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
     }));
   }, [data.dapiData]);
 
-  const getBestChain = (key: keyof typeof data.dapiData[0], higherIsBetter: boolean = false) => {
+  const getBestChain = (key: keyof (typeof data.dapiData)[0], higherIsBetter: boolean = false) => {
     return data.dapiData.reduce((best, current) => {
       const currentValue = current[key] as number;
       const bestValue = best[key] as number;
       return higherIsBetter
-        ? (currentValue > bestValue ? current : best)
-        : (currentValue < bestValue ? current : best);
+        ? currentValue > bestValue
+          ? current
+          : best
+        : currentValue < bestValue
+          ? current
+          : best;
     });
   };
 
@@ -119,7 +114,9 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
               <span>最快更新</span>
             </div>
             <div className="mt-2">
-              <p className="text-lg font-bold">{formatInterval(bestUpdateIntervalChain.avgUpdateIntervalMs)}</p>
+              <p className="text-lg font-bold">
+                {formatInterval(bestUpdateIntervalChain.avgUpdateIntervalMs)}
+              </p>
               <Badge
                 className="mt-1"
                 style={{ backgroundColor: chainColors[bestUpdateIntervalChain.chain] }}
@@ -200,15 +197,9 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
                     }}
                     formatter={(value) => [formatPrice(Number(value) || 0), '价格']}
                   />
-                  <Bar
-                    dataKey="price"
-                    radius={[4, 4, 0, 0]}
-                  >
+                  <Bar dataKey="price" radius={[4, 4, 0, 0]}>
                     {priceComparisonData.map((entry, index) => (
-                      <rect
-                        key={`cell-${index}`}
-                        fill={chainColors[entry.chain]}
-                      />
+                      <rect key={`cell-${index}`} fill={chainColors[entry.chain]} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -227,10 +218,7 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
                     tick={{ fontSize: 12 }}
                     className="text-muted-foreground"
                   />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    className="text-muted-foreground"
-                  />
+                  <YAxis tick={{ fontSize: 12 }} className="text-muted-foreground" />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
@@ -239,15 +227,9 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
                     }}
                     formatter={(value) => [`${Number(value).toFixed(1)}s`, '间隔']}
                   />
-                  <Bar
-                    dataKey="interval"
-                    radius={[4, 4, 0, 0]}
-                  >
+                  <Bar dataKey="interval" radius={[4, 4, 0, 0]}>
                     {updateIntervalData.map((entry, index) => (
-                      <rect
-                        key={`cell-${index}`}
-                        fill={chainColors[entry.chain]}
-                      />
+                      <rect key={`cell-${index}`} fill={chainColors[entry.chain]} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -266,10 +248,7 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
                     tick={{ fontSize: 12 }}
                     className="text-muted-foreground"
                   />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    className="text-muted-foreground"
-                  />
+                  <YAxis tick={{ fontSize: 12 }} className="text-muted-foreground" />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
@@ -278,15 +257,9 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
                     }}
                     formatter={(value) => [`${Number(value).toFixed(0)}ms`, '延迟']}
                   />
-                  <Bar
-                    dataKey="latency"
-                    radius={[4, 4, 0, 0]}
-                  >
+                  <Bar dataKey="latency" radius={[4, 4, 0, 0]}>
                     {latencyData.map((entry, index) => (
-                      <rect
-                        key={`cell-${index}`}
-                        fill={chainColors[entry.chain]}
-                      />
+                      <rect key={`cell-${index}`} fill={chainColors[entry.chain]} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -305,10 +278,7 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
                     tick={{ fontSize: 12 }}
                     className="text-muted-foreground"
                   />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    className="text-muted-foreground"
-                  />
+                  <YAxis tick={{ fontSize: 12 }} className="text-muted-foreground" />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
@@ -317,15 +287,9 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
                     }}
                     formatter={(value) => [`$${Number(value).toFixed(2)}`, '成本']}
                   />
-                  <Bar
-                    dataKey="cost"
-                    radius={[4, 4, 0, 0]}
-                  >
+                  <Bar dataKey="cost" radius={[4, 4, 0, 0]}>
                     {gasCostData.map((entry, index) => (
-                      <rect
-                        key={`cell-${index}`}
-                        fill={chainColors[entry.chain]}
-                      />
+                      <rect key={`cell-${index}`} fill={chainColors[entry.chain]} />
                     ))}
                   </Bar>
                 </BarChart>

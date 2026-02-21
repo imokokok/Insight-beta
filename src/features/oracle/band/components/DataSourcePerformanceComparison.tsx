@@ -4,9 +4,9 @@ import { useState, useMemo } from 'react';
 
 import { BarChart3, Activity, Clock, Zap } from 'lucide-react';
 
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 
 import type { DataSource } from '../types';
 
@@ -55,19 +55,13 @@ const getBarColor = (value: number, max: number, higherIsBetter: boolean): strin
   return 'bg-red-500';
 };
 
-function MetricBarChart({
-  sources,
-  metric,
-}: {
-  sources: DataSource[];
-  metric: MetricConfig;
-}) {
+function MetricBarChart({ sources, metric }: { sources: DataSource[]; metric: MetricConfig }) {
   const values = sources.map((s) => Number(s[metric.key]) || 0);
   const maxValue = Math.max(...values, 1);
 
   return (
     <div className="space-y-3">
-      {sources.map((source, index) => {
+      {sources.map((source, _index) => {
         const value = Number(source[metric.key]) || 0;
         const percentage = (value / maxValue) * 100;
         const barColor = getBarColor(value, maxValue, metric.higherIsBetter);
@@ -75,7 +69,7 @@ function MetricBarChart({
         return (
           <div key={source.sourceId} className="space-y-1">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium truncate max-w-[200px]">{source.name}</span>
+              <span className="max-w-[200px] truncate font-medium">{source.name}</span>
               <span className="font-mono text-muted-foreground">{metric.format(value)}</span>
             </div>
             <div className="relative h-4 w-full overflow-hidden rounded-full bg-muted">
@@ -98,7 +92,7 @@ export function DataSourcePerformanceComparison({
   const [activeMetric, setActiveMetric] = useState<string>('reliabilityScore');
 
   const currentMetric = useMemo(
-    () => METRIC_CONFIGS.find((m) => m.key === activeMetric) || METRIC_CONFIGS[0],
+    () => METRIC_CONFIGS.find((m) => m.key === activeMetric) ?? METRIC_CONFIGS[0]!,
     [activeMetric],
   );
 
@@ -141,7 +135,11 @@ export function DataSourcePerformanceComparison({
         <Tabs value={activeMetric} onValueChange={setActiveMetric}>
           <TabsList className="grid w-full grid-cols-3">
             {METRIC_CONFIGS.map((metric) => (
-              <TabsTrigger key={metric.key} value={metric.key} className="flex items-center gap-1.5">
+              <TabsTrigger
+                key={metric.key}
+                value={metric.key}
+                className="flex items-center gap-1.5"
+              >
                 {metric.icon}
                 <span className="hidden sm:inline">{metric.label}</span>
               </TabsTrigger>
@@ -150,9 +148,7 @@ export function DataSourcePerformanceComparison({
           {METRIC_CONFIGS.map((metric) => (
             <TabsContent key={metric.key} value={metric.key} className="pt-4">
               <div className="mb-2 flex items-center justify-between">
-                <Badge variant="secondary">
-                  排名 1: {sortedSources[0]?.name}
-                </Badge>
+                <Badge variant="secondary">排名 1: {sortedSources[0]?.name}</Badge>
                 <span className="text-sm text-muted-foreground">
                   {metric.higherIsBetter ? '越高越好' : '越低越好'}
                 </span>

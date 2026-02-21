@@ -14,6 +14,8 @@ import {
   LayoutDashboard,
   TrendingUp,
   BarChart3,
+  Fuel,
+  Heart,
 } from 'lucide-react';
 
 import { TrendIndicator, ProtocolHealthBadge } from '@/components/common';
@@ -30,6 +32,10 @@ import {
   ChainlinkExportButton,
   ChainlinkPriceHistory,
   FeedQualityAnalysis,
+  ChainlinkGasCostAnalysis,
+  HeartbeatMonitor,
+  DeviationTriggerStats,
+  CrossChainPriceComparison,
 } from '@/features/oracle/chainlink/components';
 import { FeedAggregation } from '@/features/oracle/chainlink/components/FeedAggregation';
 import { OcrRoundMonitor } from '@/features/oracle/chainlink/components/OcrRoundMonitor';
@@ -252,7 +258,7 @@ export default function ChainlinkPage() {
       ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-10">
           <TabsTrigger value="overview">
             <LayoutDashboard className="mr-1.5 h-4 w-4" />
             概览
@@ -276,6 +282,22 @@ export default function ChainlinkPage() {
           <TabsTrigger value="feeds">
             <Database className="mr-1.5 h-4 w-4" />
             喂价聚合
+          </TabsTrigger>
+          <TabsTrigger value="gas">
+            <Fuel className="mr-1.5 h-4 w-4" />
+            Gas成本
+          </TabsTrigger>
+          <TabsTrigger value="heartbeat">
+            <Heart className="mr-1.5 h-4 w-4" />
+            Heartbeat
+          </TabsTrigger>
+          <TabsTrigger value="deviation">
+            <Activity className="mr-1.5 h-4 w-4" />
+            偏差分析
+          </TabsTrigger>
+          <TabsTrigger value="cross-chain">
+            <Link2 className="mr-1.5 h-4 w-4" />
+            多链对比
           </TabsTrigger>
         </TabsList>
 
@@ -372,6 +394,22 @@ export default function ChainlinkPage() {
 
         <TabsContent value="feeds" className="mt-6">
           <FeedAggregation />
+        </TabsContent>
+
+        <TabsContent value="gas" className="mt-6">
+          <ChainlinkGasCostAnalysis />
+        </TabsContent>
+
+        <TabsContent value="heartbeat" className="mt-6">
+          <HeartbeatMonitor />
+        </TabsContent>
+
+        <TabsContent value="deviation" className="mt-6">
+          <DeviationTriggerStats />
+        </TabsContent>
+
+        <TabsContent value="cross-chain" className="mt-6">
+          <CrossChainPriceComparison />
         </TabsContent>
       </Tabs>
     </div>

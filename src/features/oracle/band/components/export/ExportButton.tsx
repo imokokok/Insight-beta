@@ -2,7 +2,12 @@
 
 import { useMemo } from 'react';
 
-import type { Bridge, DataSource, OracleScript, ValidatorHealthSummary } from '@/features/oracle/band';
+import type {
+  Bridge,
+  DataSource,
+  OracleScript,
+  ValidatorHealthSummary,
+} from '@/features/oracle/band';
 import {
   ExportButton,
   escapeCSV,
@@ -39,8 +44,8 @@ interface BandExportData {
       avgReliability: number;
     };
   } | null;
-  oracleScripts?: OracleScript[];
-  validatorSummary?: ValidatorHealthSummary;
+  oracleScripts?: OracleScript[] | null;
+  validatorSummary?: ValidatorHealthSummary | null;
   generatedAt: string;
 }
 

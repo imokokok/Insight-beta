@@ -6,3 +6,4 @@ export { ConfidenceIntervalChart } from './ConfidenceIntervalChart';
 export { PublisherHistoryChart } from './PublisherHistoryChart';
 export { ConfidenceComparisonChart } from './ConfidenceComparisonChart';
 export { CrossChainPriceComparison } from './CrossChainPriceComparison';
+export { PriceHistoryChart } from './PriceHistoryChart';

@@ -34,12 +34,6 @@ interface OracleScriptListProps {
   className?: string;
 }
 
-const getStatusBadgeVariant = (status: OracleScript['status']): 'success' | 'warning' | 'danger' => {
-  if (status === 'active') return 'success';
-  if (status === 'inactive') return 'warning';
-  return 'danger';
-};
-
 const mockOracleScripts: OracleScript[] = [
   {
     scriptId: '1',
@@ -220,9 +214,7 @@ export function OracleScriptList({
               <FileCode className="h-5 w-5" />
               Oracle Scripts
             </CardTitle>
-            <CardDescription>
-              Showing {scripts.length} Oracle Scripts
-            </CardDescription>
+            <CardDescription>Showing {scripts.length} Oracle Scripts</CardDescription>
           </div>
           <Button variant="ghost" size="sm" onClick={fetchScripts}>
             <RefreshCw className="h-4 w-4" />
@@ -274,7 +266,13 @@ export function OracleScriptList({
                       </TableCell>
                       <TableCell>
                         <StatusBadge
-                          status={script.status === 'active' ? 'active' : script.status === 'inactive' ? 'warning' : 'offline'}
+                          status={
+                            script.status === 'active'
+                              ? 'active'
+                              : script.status === 'inactive'
+                                ? 'warning'
+                                : 'offline'
+                          }
                           text={script.status}
                           size="sm"
                           pulse={script.status === 'active'}
@@ -286,13 +284,17 @@ export function OracleScriptList({
                         </span>
                       </TableCell>
                       <TableCell className="text-center">
-                        <span className="font-mono text-sm">
-                          {script.avgResponseTimeMs}ms
-                        </span>
+                        <span className="font-mono text-sm">{script.avgResponseTimeMs}ms</span>
                       </TableCell>
                       <TableCell className="text-center">
                         <Badge
-                          variant={script.successRate >= 99 ? 'success' : script.successRate >= 95 ? 'warning' : 'danger'}
+                          variant={
+                            script.successRate >= 99
+                              ? 'success'
+                              : script.successRate >= 95
+                                ? 'warning'
+                                : 'danger'
+                          }
                           size="sm"
                         >
                           {script.successRate.toFixed(1)}%
@@ -315,15 +317,15 @@ export function OracleScriptList({
                             </div>
                             <div className="rounded-lg bg-background p-3">
                               <p className="text-xs text-muted-foreground">Owner</p>
-                              <p className="font-mono text-sm truncate">{script.owner}</p>
+                              <p className="truncate font-mono text-sm">{script.owner}</p>
                             </div>
                             <div className="rounded-lg bg-background p-3">
                               <p className="text-xs text-muted-foreground">Code Hash</p>
-                              <p className="font-mono text-sm truncate">{script.codeHash}</p>
+                              <p className="truncate font-mono text-sm">{script.codeHash}</p>
                             </div>
                             <div className="rounded-lg bg-background p-3">
                               <p className="text-xs text-muted-foreground">Schema</p>
-                              <p className="font-mono text-sm truncate">{script.schema}</p>
+                              <p className="truncate font-mono text-sm">{script.schema}</p>
                             </div>
                           </div>
                         </TableCell>

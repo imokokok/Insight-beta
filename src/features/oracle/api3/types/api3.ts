@@ -227,3 +227,39 @@ export interface CrossChainComparisonData {
   timeRange: '1h' | '24h' | '7d' | '30d';
   generatedAt: string;
 }
+
+export type API3AlertType = 'price_deviation' | 'update_frequency' | 'airnode_offline';
+
+export interface API3AlertConfig {
+  id: string;
+  type: API3AlertType;
+  name: string;
+  enabled: boolean;
+  threshold: number;
+  targetDapi?: string;
+  targetAirnode?: string;
+  chain?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface API3AlertSummary {
+  total: number;
+  byType: {
+    price_deviation: number;
+    update_frequency: number;
+    airnode_offline: number;
+  };
+  enabled: number;
+  disabled: number;
+}
+
+export interface API3AlertsResponse {
+  success: boolean;
+  data?: {
+    alerts: API3AlertConfig[];
+    summary: API3AlertSummary;
+  };
+  error?: string;
+  timestamp: string;
+}

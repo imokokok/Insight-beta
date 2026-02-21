@@ -256,6 +256,10 @@ export interface AlertHistoryResult {
   trend: AlertHistoryPoint[];
   heatmap: AlertHeatmapCell[];
   stats: AlertHistoryStats;
+  periodStart: string;
+  periodEnd: string;
+  previousStats?: AlertHistoryStats;
+  alertsInPeriod: UnifiedAlert[];
 }
 
 export async function getAlertHistory(options: AlertHistoryOptions): Promise<AlertHistoryResult> {
@@ -276,6 +280,11 @@ export async function getAlertHistory(options: AlertHistoryOptions): Promise<Ale
     allAlerts = allAlerts.filter((a) => a.severity === severity);
   }
 
+  const now = Date.now();
+  const rangeMs = getTimeRangeMs(timeRange);
+  const periodStart = new Date(now - rangeMs).toISOString();
+  const periodEnd = new Date(now).toISOString();
+
   const trend = generateTrendData(allAlerts, timeRange, groupBy);
   const heatmap = generateHeatmapData(allAlerts, timeRange);
   const stats = calculateStats(allAlerts, timeRange);
@@ -284,5 +293,8 @@ export async function getAlertHistory(options: AlertHistoryOptions): Promise<Ale
     trend,
     heatmap,
     stats,
+    periodStart,
+    periodEnd,
+    alertsInPeriod: allAlerts,
   };
 }

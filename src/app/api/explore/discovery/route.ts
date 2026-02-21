@@ -1,5 +1,8 @@
 import { ok } from '@/lib/api/apiResponse';
 
+// 注意：以下为示例数据，用于演示数据发现功能的界面展示
+// 实际生产环境应接入真实的数据发现服务
+
 interface DiscoveryItem {
   id: string;
   type: 'new_feed' | 'price_spike' | 'protocol_update' | 'anomaly' | 'trending';
@@ -95,5 +98,11 @@ const mockDiscoveryItems: DiscoveryItem[] = [
 export async function GET() {
   return ok(mockDiscoveryItems, {
     total: mockDiscoveryItems.length,
+    meta: {
+      dataSource: 'manual',
+      isExample: true,
+      disclaimer: '此数据为示例数据，非自动发现',
+      timestamp: new Date().toISOString(),
+    },
   });
 }

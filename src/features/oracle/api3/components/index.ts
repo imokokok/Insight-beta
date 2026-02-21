@@ -18,3 +18,6 @@ export { GasCostTrendChart } from './GasCostTrendChart';
 export { CrossChainComparison } from './CrossChainComparison';
 export { CrossChainPriceChart } from './CrossChainPriceChart';
 export { CrossChainMetrics } from './CrossChainMetrics';
+export { CrossProtocolComparison } from './CrossProtocolComparison';
+export { AirnodeDetail } from './AirnodeDetail';
+export { AlertConfigPanel } from './AlertConfigPanel';

@@ -423,6 +423,9 @@ export default function AlertsCenterPage() {
             onTimeRangeChange={setHistoryTimeRange}
             onGroupByChange={setHistoryGroupBy}
             loading={historyLoading}
+            periodStart={historyData?.periodStart}
+            periodEnd={historyData?.periodEnd}
+            previousStats={historyData?.previousStats}
           />
           <AlertHeatmap data={historyData?.heatmap || []} loading={historyLoading} />
         </TabsContent>

@@ -3,8 +3,6 @@ import { z } from 'zod';
 import type {
   ChainLiquidity,
   LiquiditySummary,
-  LiquidityDepth,
-  LiquidityTrend,
   LiquidityResponse,
 } from '@/features/cross-chain/types';
 import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
@@ -13,7 +11,6 @@ import { apiSuccess, apiError } from '@/shared/utils';
 const LiquidityQuerySchema = z.object({
   symbol: z.string().optional(),
   chain: z.string().optional(),
-  limit: z.string().optional(),
 });
 
 const CHAIN_DATA: Record<string, { displayName: string; baseLiquidity: number }> = {
@@ -28,11 +25,7 @@ const CHAIN_DATA: Record<string, { displayName: string; baseLiquidity: number }>
 
 const TOP_TOKENS = ['BTC', 'ETH', 'USDC', 'USDT', 'WETH', 'SOL', 'LINK', 'AVAX'];
 
-function generateMockLiquidityData(
-  symbol?: string,
-  chain?: string,
-  limit: number = 10,
-): LiquidityResponse {
+function generateMockLiquidityData(symbol?: string, chain?: string): LiquidityResponse {
   let chainKeys = Object.keys(CHAIN_DATA);
   if (chain) {
     chainKeys = chainKeys.filter((c) => c === chain.toLowerCase());
@@ -74,74 +67,6 @@ function generateMockLiquidityData(
     };
   });
 
-  const depthData: LiquidityDepth[] = [];
-  for (const chainKey of chainKeys.slice(0, limit)) {
-    for (const token of tokens.slice(0, 2)) {
-      const basePrice =
-        token === 'BTC' ? 95000 : token === 'ETH' ? 3200 : token === 'SOL' ? 180 : 1;
-      const midPrice = basePrice * (0.95 + Math.random() * 0.1);
-
-      const bids: { price: number; amount: number; total: number }[] = [];
-      const asks: { price: number; amount: number; total: number }[] = [];
-
-      let bidTotal = 0;
-      let askTotal = 0;
-
-      for (let i = 0; i < 10; i++) {
-        const bidPrice = midPrice * (1 - (i + 1) * 0.001);
-        const bidAmount = Math.random() * 100 + 10;
-        bidTotal += bidAmount;
-        bids.push({
-          price: bidPrice,
-          amount: bidAmount,
-          total: bidTotal,
-        });
-
-        const askPrice = midPrice * (1 + (i + 1) * 0.001);
-        const askAmount = Math.random() * 100 + 10;
-        askTotal += askAmount;
-        asks.push({
-          price: askPrice,
-          amount: askAmount,
-          total: askTotal,
-        });
-      }
-
-      const spread = asks[0]!.price - bids[0]!.price;
-      const spreadPercent = (spread / midPrice) * 100;
-
-      depthData.push({
-        chain: chainKey,
-        protocol: ['Uniswap V3', 'SushiSwap', 'PancakeSwap', 'Trader Joe'][
-          Math.floor(Math.random() * 4)
-        ]!,
-        symbol: token,
-        orderBook: {
-          symbol: token,
-          chain: chainKey,
-          protocol: ['Uniswap V3', 'SushiSwap', 'PancakeSwap', 'Trader Joe'][
-            Math.floor(Math.random() * 4)
-          ]!,
-          bids,
-          asks,
-          midPrice,
-          spread,
-          spreadPercent,
-          timestamp,
-        },
-        depthMetrics: {
-          depth1Percent: bidTotal * 0.1,
-          depth5Percent: bidTotal * 0.5,
-          depth10Percent: bidTotal,
-          buyLiquidity: bidTotal,
-          sellLiquidity: askTotal,
-          totalLiquidity: bidTotal + askTotal,
-        },
-        timestamp,
-      });
-    }
-  }
-
   const totalLiquidity = chains.reduce((sum, c) => sum + c.totalLiquidity, 0);
   const topChainObj = chains.reduce(
     (max, c) => (c.totalLiquidity > (max?.totalLiquidity ?? 0) ? c : max),
@@ -172,42 +97,15 @@ function generateMockLiquidityData(
     mostLiquidChain: topChainObj?.chain ?? 'ethereum',
   };
 
-  const dataPoints: any[] = [];
-  for (let i = 30; i >= 0; i--) {
-    const pointTime = new Date(Date.now() - i * 3600000).toISOString();
-    const variation = 0.9 + Math.random() * 0.2;
-    dataPoints.push({
-      timestamp: pointTime,
-      totalLiquidity: totalLiquidity * variation,
-      liquidityByChain: Object.fromEntries(
-        chainKeys.map((ck) => [ck, CHAIN_DATA[ck]!.baseLiquidity * variation]),
-      ),
-      avgSlippage: Math.random() * 0.5,
-      price: tokens[0] === 'BTC' ? 95000 * variation : 3200 * variation,
-    });
-  }
-
-  const liquidityTrends: LiquidityTrend = {
-    symbol: tokens[0] ?? 'ETH',
-    chains: chainKeys,
-    timeRange: '30d',
-    dataPoints,
-    trendAnalysis: {
-      liquidityChangePercent: (Math.random() - 0.5) * 20,
-      volatility: Math.random() * 10,
-      trendDirection: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
-      projectedLiquidity: totalLiquidity * (0.95 + Math.random() * 0.1),
-    },
-  };
-
   return {
     success: true,
     chains,
     summary,
-    liquidityTrends,
-    depthData,
     meta: {
       timestamp,
+      dataSource: 'mock',
+      isExample: true,
+      disclaimer: '此数据为模拟数据，非实时流动性数据',
     },
   };
 }
@@ -218,12 +116,9 @@ async function handleGet(request: Request) {
     const query = LiquidityQuerySchema.parse({
       symbol: searchParams.get('symbol') || undefined,
       chain: searchParams.get('chain') || undefined,
-      limit: searchParams.get('limit') || undefined,
     });
 
-    const limit = query.limit ? parseInt(query.limit, 10) : 10;
-
-    const data = generateMockLiquidityData(query.symbol, query.chain, limit);
+    const data = generateMockLiquidityData(query.symbol, query.chain);
 
     return apiSuccess(data);
   } catch (error) {

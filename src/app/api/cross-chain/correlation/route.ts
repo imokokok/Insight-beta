@@ -16,6 +16,9 @@ interface CorrelationMatrixResponse {
     symbol: string;
     timeRange: string;
     timestamp: string;
+    dataSource: string;
+    isExample: boolean;
+    disclaimer: string;
   };
 }
 
@@ -66,6 +69,9 @@ function generateCorrelationMatrix(symbol: string, timeRange: string): Correlati
       symbol,
       timeRange,
       timestamp: new Date().toISOString(),
+      dataSource: 'historical',
+      isExample: true,
+      disclaimer: '此数据为示例数据，基于历史数据计算的相关性不代表未来关系',
     },
   };
 }
@@ -77,7 +83,15 @@ async function handleGet(request: Request) {
 
   const data = generateCorrelationMatrix(symbol, timeRange);
 
-  return apiSuccess(data);
+  return apiSuccess({
+    ...data,
+    meta: {
+      ...data.meta,
+      dataSource: 'historical',
+      isExample: true,
+      disclaimer: '此数据为示例数据，基于历史数据计算的相关性不代表未来关系',
+    },
+  });
 }
 
 export const GET = withMiddleware({
