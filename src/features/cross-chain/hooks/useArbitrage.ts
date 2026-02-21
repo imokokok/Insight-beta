@@ -12,6 +12,14 @@ import type {
   LiquidityResponse,
 } from '../types';
 
+export function useLiquidityAnalysis(symbol?: string, chain?: string) {
+  const params: Record<string, string> = {};
+  if (symbol) params.symbol = symbol;
+  if (chain) params.chain = chain;
+  const url = buildApiUrl('/api/cross-chain/liquidity', params);
+  return useSWR<LiquidityResponse>(url, (url: string) => fetchApiData<LiquidityResponse>(url));
+}
+
 export function useArbitrage(symbol?: string, minProfitPercent?: number) {
   const params: Record<string, string> = {};
   if (symbol) params.symbol = symbol;

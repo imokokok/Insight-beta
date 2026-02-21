@@ -11,3 +11,4 @@ export { BridgeStatusCard } from './BridgeStatusCard';
 export { CorrelationMatrix } from './CorrelationMatrix';
 export { LiquidityDistribution } from './LiquidityDistribution';
 export { RiskScore } from './RiskScore';
+export { LiquidityAnalysis } from './LiquidityAnalysis';

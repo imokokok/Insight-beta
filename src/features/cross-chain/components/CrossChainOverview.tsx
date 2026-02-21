@@ -10,16 +10,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import {
-  ArbitrageOpportunityList,
   BridgeStatusCard,
   LiquidityDistribution,
   RiskScore,
+  LiquidityAnalysis,
 } from '@/features/cross-chain/components';
 import {
   useCrossChainDashboard,
-  useArbitrage,
   useBridgeStatus,
   useLiquidity,
+  useLiquidityAnalysis,
 } from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
@@ -46,15 +46,15 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
     mutate: refreshDashboard,
   } = useCrossChainDashboard();
 
-  const {
-    data: arbitrageData,
-    isLoading: arbitrageLoading,
-    mutate: refreshArbitrage,
-  } = useArbitrage();
-
   const { data: bridgeData, isLoading: bridgeLoading, mutate: refreshBridges } = useBridgeStatus();
 
   const { data: liquidityData, isLoading: liquidityLoading } = useLiquidity();
+
+  const {
+    data: liquidityAnalysisData,
+    isLoading: liquidityAnalysisLoading,
+    mutate: refreshLiquidityAnalysis,
+  } = useLiquidityAnalysis();
 
   const dashboard = dashboardData as CrossChainDashboardData | undefined;
 
@@ -74,8 +74,8 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
 
   const handleRefreshAll = () => {
     refreshDashboard();
-    refreshArbitrage();
     refreshBridges();
+    refreshLiquidityAnalysis();
   };
 
   return (
@@ -229,11 +229,7 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
         </Card>
       </div>
 
-      <ArbitrageOpportunityList
-        opportunities={arbitrageData?.opportunities}
-        summary={arbitrageData?.summary}
-        isLoading={arbitrageLoading}
-      />
+      <LiquidityAnalysis data={liquidityAnalysisData} isLoading={liquidityAnalysisLoading} />
 
       <BridgeStatusCard
         bridges={bridgeData?.bridges}
