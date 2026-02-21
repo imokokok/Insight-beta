@@ -145,44 +145,6 @@ export interface CrossChainHistoricalResponse {
   timestamp: string;
 }
 
-export interface ArbitrageOpportunity {
-  id: string;
-  symbol: string;
-  buyChain: string;
-  sellChain: string;
-  buyPrice: number;
-  sellPrice: number;
-  priceDiffPercent: number;
-  estimatedProfit: number;
-  gasCostEstimate: number;
-  netProfit: number;
-  riskLevel: 'low' | 'medium' | 'high';
-  confidence: number;
-  timestamp: string;
-  isActionable: boolean;
-  warnings: string[];
-}
-
-export interface ArbitrageSummary {
-  total: number;
-  actionable: number;
-  avgProfitPercent: number;
-  totalEstimatedProfit: number;
-}
-
-export interface ArbitrageResponse {
-  success: boolean;
-  opportunities: ArbitrageOpportunity[];
-  summary: ArbitrageSummary;
-  meta: {
-    timestamp: string;
-    filters: {
-      symbol?: string;
-      minProfitPercent?: number;
-    };
-  };
-}
-
 export interface BridgeStatus {
   name: string;
   displayName: string;

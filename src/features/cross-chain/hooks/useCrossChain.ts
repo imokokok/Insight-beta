@@ -6,49 +6,33 @@ import { buildApiUrl } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
 
 import type {
-  CrossChainComparisonResult,
-  CrossChainDeviationAlertsResponse,
-  CrossChainDashboardResponse,
-  CrossChainHistoricalResponse,
+  BridgesResponse,
+  CorrelationResponse,
+  LiquidityResponse,
 } from '../types';
 
-export function useCrossChainComparison(symbol: string, chains?: string[]) {
-  const params: Record<string, string> = { symbol };
-  if (chains && chains.length > 0) {
-    params.chains = chains.join(',');
-  }
-  const url = buildApiUrl('/api/cross-chain/comparison', params);
-  return useSWR<CrossChainComparisonResult>(url, (url: string) =>
-    fetchApiData<CrossChainComparisonResult>(url),
-  );
+export function useLiquidityAnalysis(symbol?: string, chain?: string) {
+  const params: Record<string, string> = {};
+  if (symbol) params.symbol = symbol;
+  if (chain) params.chain = chain;
+  const url = buildApiUrl('/api/cross-chain/liquidity', params);
+  return useSWR<LiquidityResponse>(url, (url: string) => fetchApiData<LiquidityResponse>(url));
 }
 
-export function useCrossChainAlerts(_symbol?: string) {
-  const url = buildApiUrl('/api/cross-chain/alerts');
-  return useSWR<CrossChainDeviationAlertsResponse['data']>(url, (url: string) =>
-    fetchApiData<CrossChainDeviationAlertsResponse['data']>(url),
-  );
+export function useBridgeStatus() {
+  const url = buildApiUrl('/api/cross-chain/bridges');
+  return useSWR<BridgesResponse>(url, (url: string) => fetchApiData<BridgesResponse>(url));
 }
 
-export function useCrossChainDashboard() {
-  const url = buildApiUrl('/api/cross-chain/dashboard');
-  return useSWR<CrossChainDashboardResponse['data']>(url, (url: string) =>
-    fetchApiData<CrossChainDashboardResponse['data']>(url),
-  );
+export function useCorrelation(symbol?: string, timeRange?: string) {
+  const params: Record<string, string> = {};
+  if (symbol) params.symbol = symbol;
+  if (timeRange) params.timeRange = timeRange;
+  const url = buildApiUrl('/api/cross-chain/correlation', params);
+  return useSWR<CorrelationResponse>(url, (url: string) => fetchApiData<CorrelationResponse>(url));
 }
 
-export function useCrossChainHistory(
-  symbol: string,
-  startTime?: string,
-  endTime?: string,
-  interval?: string,
-) {
-  const params: Record<string, string> = { symbol };
-  if (startTime) params.startTime = startTime;
-  if (endTime) params.endTime = endTime;
-  if (interval) params.interval = interval;
-  const url = buildApiUrl('/api/cross-chain/history', params);
-  return useSWR<CrossChainHistoricalResponse['data']>(url, (url: string) =>
-    fetchApiData<CrossChainHistoricalResponse['data']>(url),
-  );
+export function useLiquidity() {
+  const url = buildApiUrl('/api/cross-chain/liquidity');
+  return useSWR<LiquidityResponse>(url, (url: string) => fetchApiData<LiquidityResponse>(url));
 }
