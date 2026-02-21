@@ -1,5 +1,6 @@
 import { alerts } from './alerts';
 import { analytics } from './analytics';
+import { api3 } from './api3';
 import { app } from './app';
 import { common } from './common';
 import { comparison } from './comparison';
@@ -18,6 +19,7 @@ import { wallet } from './wallet';
 export const enTranslations = {
   alerts,
   analytics,
+  api3,
   app,
   common,
   comparison,

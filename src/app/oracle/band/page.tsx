@@ -29,6 +29,9 @@ import {
   TransferHistory,
   CosmosChainSelector,
   BandExportButton,
+  AggregationValidationCard,
+  BandPriceChart,
+  DataFreshnessCard,
 } from '@/features/oracle/band';
 import type { Bridge, DataSource } from '@/features/oracle/band';
 import { useI18n } from '@/i18n';
@@ -58,6 +61,34 @@ interface SourcesResponse {
   };
 }
 
+interface IBCStatusData {
+  chainId: string;
+  network: 'mainnet' | 'testnet';
+  connections: {
+    total: number;
+    open: number;
+    init: number;
+    tryopen: number;
+  };
+  channels: {
+    total: number;
+    open: number;
+    closed: number;
+  };
+  summary: {
+    totalConnections: number;
+    activeConnections: number;
+    totalChannels: number;
+    activeChannels: number;
+    estimatedTransfers: number;
+  };
+  lastUpdated: number;
+}
+
+interface IBCResponse {
+  data: IBCStatusData;
+}
+
 interface OverviewStats {
   totalBridges: number;
   activeBridges: number;
@@ -83,6 +114,8 @@ export default function BandProtocolPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [bridgesData, setBridgesData] = useState<BridgesResponse | null>(null);
   const [sourcesData, setSourcesData] = useState<SourcesResponse | null>(null);
+  const [ibcData, setIbcData] = useState<IBCStatusData | null>(null);
+  const [ibcLoading, setIbcLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -91,6 +124,18 @@ export default function BandProtocolPage() {
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(30);
   const [timeUntilRefresh, setTimeUntilRefresh] = useState(0);
+
+  const fetchIBCData = useCallback(async () => {
+    try {
+      setIbcLoading(true);
+      const response = await fetchApiData<IBCResponse>('/api/oracle/band/ibc');
+      setIbcData(response.data);
+    } catch (err) {
+      console.error('Failed to fetch IBC data:', err);
+    } finally {
+      setIbcLoading(false);
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -115,6 +160,10 @@ export default function BandProtocolPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    fetchIBCData();
+  }, [fetchIBCData]);
 
   useEffect(() => {
     if (!autoRefreshEnabled) {
@@ -350,6 +399,16 @@ export default function BandProtocolPage() {
                   </CardContent>
                 </Card>
 
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <AggregationValidationCard symbol="ETH/USD" chain="ethereum" />
+                  <DataFreshnessCard symbol="ETH/USD" chain="ethereum" />
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <BandPriceChart symbol="ATOM/USD" chain="cosmos" timeRange="24h" />
+                  <BandPriceChart symbol="ETH/USD" chain="ethereum" timeRange="24h" />
+                </div>
+
                 <Card>
                   <CardHeader>
                     <CardTitle>支持的链连接情况</CardTitle>
@@ -473,12 +532,18 @@ export default function BandProtocolPage() {
             </TabsContent>
 
             <TabsContent value="sources">
-              <DataSourceList
-                sources={sourcesData?.sources}
-                loading={loading}
-                chain={undefined}
-                symbol={undefined}
-              />
+              <div className="space-y-6">
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <BandPriceChart symbol="ETH/USD" chain="ethereum" timeRange="24h" />
+                  <BandPriceChart symbol="BTC/USD" chain="ethereum" timeRange="24h" />
+                </div>
+                <DataSourceList
+                  sources={sourcesData?.sources}
+                  loading={loading}
+                  chain={undefined}
+                  symbol={undefined}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="transfers">
@@ -500,6 +565,7 @@ export default function BandProtocolPage() {
                       selectedChain={selectedCosmosChain}
                       onChainChange={setSelectedCosmosChain}
                       showDetails={true}
+                      showIBCStatus={true}
                       filterType="mainnet"
                     />
                   </CardContent>
@@ -518,11 +584,23 @@ export default function BandProtocolPage() {
                       </div>
                       <div className="rounded-lg bg-muted/30 p-4">
                         <span className="text-sm text-muted-foreground">IBC 连接数</span>
-                        <div className="mt-1 text-lg font-semibold">12</div>
+                        {ibcLoading ? (
+                          <Skeleton className="mt-1 h-7 w-16" />
+                        ) : (
+                          <div className="mt-1 text-lg font-semibold">
+                            {ibcData?.connections.total ?? 0}
+                          </div>
+                        )}
                       </div>
                       <div className="rounded-lg bg-muted/30 p-4">
-                        <span className="text-sm text-muted-foreground">数据请求</span>
-                        <div className="mt-1 text-lg font-semibold">1,234</div>
+                        <span className="text-sm text-muted-foreground">活跃通道</span>
+                        {ibcLoading ? (
+                          <Skeleton className="mt-1 h-7 w-16" />
+                        ) : (
+                          <div className="mt-1 text-lg font-semibold">
+                            {ibcData?.channels.open ?? 0}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>

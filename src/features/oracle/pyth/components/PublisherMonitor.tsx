@@ -2,13 +2,30 @@
 
 import { useState, useEffect, useMemo } from 'react';
 
-import { Activity, RefreshCw, Search, Shield, TrendingUp, Users } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  RefreshCw,
+  Search,
+  Shield,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 
 import { EmptyDeviationState } from '@/components/common/EmptyState';
 import { Badge, StatusBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { SkeletonList } from '@/components/ui/skeleton';
 import {
   Table,
@@ -21,7 +38,14 @@ import {
 import { useI18n } from '@/i18n';
 import { cn, formatTime, fetchApiData } from '@/shared/utils';
 
-import type { Publisher, PythPublisherResponse } from '../types/pyth';
+import { PublisherHistoryChart } from './PublisherHistoryChart';
+
+import type {
+  Publisher,
+  PublisherHistoryPoint,
+  PublisherHistoryResponse,
+  PythPublisherResponse,
+} from '../types/pyth';
 
 interface PublisherMonitorProps {
   className?: string;
@@ -70,11 +94,67 @@ const mockPublishers: Publisher[] = [
   },
 ];
 
+const mockPublisherHistory: PublisherHistoryPoint[] = [
+  {
+    timestamp: new Date(Date.now() - 86400000 * 6).toISOString(),
+    publisherName: 'Binance',
+    trustScore: 96,
+    avgTrustScore: 95,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 86400000 * 5).toISOString(),
+    publisherName: 'Binance',
+    trustScore: 97,
+    avgTrustScore: 95,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 86400000 * 4).toISOString(),
+    publisherName: 'Binance',
+    trustScore: 94,
+    avgTrustScore: 95,
+    isAnomaly: true,
+  },
+  {
+    timestamp: new Date(Date.now() - 86400000 * 3).toISOString(),
+    publisherName: 'Binance',
+    trustScore: 98,
+    avgTrustScore: 96,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 86400000 * 2).toISOString(),
+    publisherName: 'Binance',
+    trustScore: 97,
+    avgTrustScore: 96,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 86400000).toISOString(),
+    publisherName: 'Binance',
+    trustScore: 98,
+    avgTrustScore: 96,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date().toISOString(),
+    publisherName: 'Binance',
+    trustScore: 98,
+    avgTrustScore: 96,
+    isAnomaly: false,
+  },
+];
+
 export function PublisherMonitor({ className }: PublisherMonitorProps) {
   const { t } = useI18n();
   const [publishers, setPublishers] = useState<Publisher[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showChart, setShowChart] = useState(false);
+  const [selectedPublisher, setSelectedPublisher] = useState<string>('');
+  const [publisherHistory, setPublisherHistory] = useState<PublisherHistoryPoint[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
 
   useEffect(() => {
     const fetchPublishers = async () => {
@@ -82,8 +162,14 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
       try {
         const response = await fetchApiData<PythPublisherResponse>('/api/oracle/pyth/publishers');
         setPublishers(response.publishers);
+        if (response.publishers.length > 0 && response.publishers[0]) {
+          setSelectedPublisher(response.publishers[0].name);
+        }
       } catch {
         setPublishers(mockPublishers);
+        if (mockPublishers[0]) {
+          setSelectedPublisher(mockPublishers[0].name);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -91,6 +177,36 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
 
     fetchPublishers();
   }, []);
+
+  useEffect(() => {
+    if (!selectedPublisher) return;
+
+    const fetchPublisherHistory = async () => {
+      setIsHistoryLoading(true);
+      try {
+        const response = await fetchApiData<PublisherHistoryResponse>(
+          `/api/oracle/pyth/publisher-history?publisher=${encodeURIComponent(selectedPublisher)}`,
+        );
+        setPublisherHistory(response.data);
+      } catch {
+        setPublisherHistory(mockPublisherHistory);
+      } finally {
+        setIsHistoryLoading(false);
+      }
+    };
+
+    fetchPublisherHistory();
+  }, [selectedPublisher]);
+
+  const publisherAnomalyMap = useMemo(() => {
+    const map = new Map<string, boolean>();
+    publisherHistory.forEach((point) => {
+      if (point.isAnomaly) {
+        map.set(point.publisherName, true);
+      }
+    });
+    return map;
+  }, [publisherHistory]);
 
   const filteredPublishers = useMemo(() => {
     if (!searchQuery) return publishers;
@@ -223,6 +339,47 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
         </div>
 
         <div className="rounded-lg border">
+          <button
+            type="button"
+            onClick={() => setShowChart(!showChart)}
+            className="flex w-full items-center justify-between p-3 text-left hover:bg-muted/50"
+          >
+            <span className="text-sm font-medium">{t('pyth.publisher.historyChart')}</span>
+            {showChart ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+          {showChart && (
+            <div className="border-t p-4">
+              <div className="mb-4 flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {t('pyth.publisher.selectPublisher')}:
+                </span>
+                <Select value={selectedPublisher} onValueChange={setSelectedPublisher}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder={t('pyth.publisher.selectPublisher')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {publishers.map((publisher) => (
+                      <SelectItem key={publisher.name} value={publisher.name}>
+                        {publisher.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <PublisherHistoryChart
+                data={publisherHistory}
+                publisherName={selectedPublisher}
+                isLoading={isHistoryLoading}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -245,7 +402,12 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
                 filteredPublishers.map((publisher) => (
                   <TableRow key={publisher.name} className="group cursor-pointer hover:bg-muted/50">
                     <TableCell>
-                      <span className="font-semibold">{publisher.name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">{publisher.name}</span>
+                        {publisherAnomalyMap.get(publisher.name) && (
+                          <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

@@ -1,20 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import { TrendingUp, AlertTriangle, RefreshCw, CheckCircle, Clock } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-} from 'recharts';
 
-import { Badge, StatusBadge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useI18n } from '@/i18n';
@@ -40,17 +30,64 @@ export interface AggregationStatus {
 interface BandPriceChartProps {
   symbol: string;
   chain?: string;
-  timeRange?: '1h' | '6h' | '24h' | '7d' | '30d';
+  timeRange?: '1h' | '24h' | '7d';
   className?: string;
 }
 
+interface CachedPriceData {
+  data: PriceDataPoint[];
+  aggregationStatus: AggregationStatus | null;
+  timestamp: number;
+  symbol: string;
+  chain: string;
+  timeRange: string;
+}
+
 const TIME_RANGE_CONFIG = {
-  '1h': { label: '1H', interval: 60000, points: 60 },
-  '6h': { label: '6H', interval: 300000, points: 72 },
-  '24h': { label: '24H', interval: 900000, points: 96 },
-  '7d': { label: '7D', interval: 3600000, points: 168 },
-  '30d': { label: '30D', interval: 14400000, points: 180 },
+  '1h': { label: '1H', cacheTtl: 30000 },
+  '24h': { label: '24H', cacheTtl: 60000 },
+  '7d': { label: '7D', cacheTtl: 120000 },
 };
+
+const CACHE_KEY_PREFIX = 'band_price_cache_';
+const DEFAULT_CACHE_TTL = 60000;
+
+function getCacheKey(symbol: string, chain: string, timeRange: string): string {
+  return `${CACHE_KEY_PREFIX}${symbol}_${chain}_${timeRange}`;
+}
+
+function getFromCache(key: string): CachedPriceData | null {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+
+    const data: CachedPriceData = JSON.parse(cached);
+    const now = Date.now();
+    const config = TIME_RANGE_CONFIG[data.timeRange as keyof typeof TIME_RANGE_CONFIG];
+    const ttl = config?.cacheTtl ?? DEFAULT_CACHE_TTL;
+
+    if (now - data.timestamp > ttl) {
+      localStorage.removeItem(key);
+      return null;
+    }
+
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function setToCache(key: string, data: CachedPriceData): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // Storage full or unavailable
+  }
+}
 
 const getDeviationColor = (deviation: number): string => {
   const absDeviation = Math.abs(deviation);
@@ -60,56 +97,199 @@ const getDeviationColor = (deviation: number): string => {
   return '#22c55e';
 };
 
-const CustomTooltip = ({
-  active,
-  payload,
-  label,
-}: {
-  active?: boolean;
-  payload?: Array<{ payload: PriceDataPoint }>;
-  label?: string;
-}) => {
-  if (!active || !payload?.length) return null;
+interface SVGPriceChartProps {
+  data: PriceDataPoint[];
+  width: number;
+  height: number;
+  priceStats: {
+    currentPrice: number;
+    highPrice: number;
+    lowPrice: number;
+    priceChangePercent: number;
+  } | null;
+  onPointHover?: (point: PriceDataPoint | null) => void;
+}
 
-  const data = payload[0]?.payload as PriceDataPoint;
+function SVGPriceChart({ data, width, height, priceStats, onPointHover }: SVGPriceChartProps) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  if (data.length < 2 || !priceStats) return null;
+
+  const padding = { top: 20, right: 60, bottom: 30, left: 10 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+
+  const prices = data.map((d) => d.price);
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+  const priceRange = maxPrice - minPrice || 1;
+
+  const getX = (index: number) => padding.left + (index / (data.length - 1)) * chartWidth;
+  const getY = (price: number) =>
+    padding.top + chartHeight - ((price - minPrice) / priceRange) * chartHeight;
+
+  const pathData = data
+    .map((point, index) => {
+      const x = getX(index);
+      const y = getY(point.price);
+      return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
+    })
+    .join(' ');
+
+  const areaPath = `${pathData} L ${getX(data.length - 1)} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`;
+
+  const isPositive = priceStats.priceChangePercent >= 0;
+  const lineColor = isPositive ? '#22c55e' : '#ef4444';
+  const gradientStart = isPositive ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)';
+  const gradientEnd = isPositive ? 'rgba(34, 197, 94, 0)' : 'rgba(239, 68, 68, 0)';
+
+  const yTicks = 5;
+  const yTickValues = Array.from({ length: yTicks }, (_, i) => {
+    return minPrice + (priceRange * i) / (yTicks - 1);
+  });
+
+  const xTicks = Math.min(6, data.length);
+  const xTickIndices = Array.from({ length: xTicks }, (_, i) =>
+    Math.floor((i * (data.length - 1)) / (xTicks - 1)),
+  );
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current) return;
+
+    const rect = svgRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const relativeX = x - padding.left;
+
+    if (relativeX < 0 || relativeX > chartWidth) {
+      setHoveredIndex(null);
+      onPointHover?.(null);
+      return;
+    }
+
+    const index = Math.round((relativeX / chartWidth) * (data.length - 1));
+    const clampedIndex = Math.max(0, Math.min(data.length - 1, index));
+
+    setHoveredIndex(clampedIndex);
+    onPointHover?.(data[clampedIndex] ?? null);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredIndex(null);
+    onPointHover?.(null);
+  };
 
   return (
-    <div className="rounded-lg border bg-background p-3 shadow-lg">
-      <p className="mb-2 text-xs text-muted-foreground">{formatTime(label)}</p>
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-sm text-muted-foreground">Price</span>
-          <span className="font-mono font-semibold">${data.price.toFixed(4)}</span>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-sm text-muted-foreground">Sources</span>
-          <span className="font-mono">{data.sourceCount}</span>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-sm text-muted-foreground">Deviation</span>
-          <span
-            className="font-mono font-medium"
-            style={{ color: getDeviationColor(data.deviation) }}
-          >
-            {(data.deviation * 100).toFixed(2)}%
-          </span>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-sm text-muted-foreground">Status</span>
-          {data.isValid ? (
-            <Badge variant="success" size="sm">
-              Valid
-            </Badge>
-          ) : (
-            <Badge variant="warning" size="sm">
-              Anomaly
-            </Badge>
-          )}
-        </div>
-      </div>
-    </div>
+    <svg
+      ref={svgRef}
+      width={width}
+      height={height}
+      className="w-full"
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="xMidYMid meet"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <defs>
+        <linearGradient id="priceGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor={gradientStart} />
+          <stop offset="100%" stopColor={gradientEnd} />
+        </linearGradient>
+      </defs>
+
+      {yTickValues.map((value, i) => {
+        const y = getY(value);
+        return (
+          <g key={`y-tick-${i}`}>
+            <line
+              x1={padding.left}
+              y1={y}
+              x2={width - padding.right}
+              y2={y}
+              stroke="currentColor"
+              strokeDasharray="3 3"
+              className="text-muted/30"
+            />
+            <text
+              x={width - padding.right + 5}
+              y={y + 4}
+              fontSize="11"
+              className="fill-muted-foreground"
+            >
+              ${value.toFixed(2)}
+            </text>
+          </g>
+        );
+      })}
+
+      {xTickIndices.map((index) => {
+        const point = data[index];
+        if (!point) return null;
+        const x = getX(index);
+        const date = new Date(point.timestamp);
+        const label = date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+
+        return (
+          <g key={`x-tick-${index}`}>
+            <line
+              x1={x}
+              y1={padding.top + chartHeight}
+              x2={x}
+              y2={padding.top + chartHeight + 5}
+              stroke="currentColor"
+              className="text-muted/30"
+            />
+            <text
+              x={x}
+              y={height - 8}
+              fontSize="11"
+              textAnchor="middle"
+              className="fill-muted-foreground"
+            >
+              {label}
+            </text>
+          </g>
+        );
+      })}
+
+      <path d={areaPath} fill="url(#priceGradient)" />
+
+      <path
+        d={pathData}
+        fill="none"
+        stroke={lineColor}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {hoveredIndex !== null && data[hoveredIndex] && (
+        <g>
+          <line
+            x1={getX(hoveredIndex)}
+            y1={padding.top}
+            x2={getX(hoveredIndex)}
+            y2={padding.top + chartHeight}
+            stroke={lineColor}
+            strokeDasharray="3 3"
+            opacity={0.5}
+          />
+          <circle
+            cx={getX(hoveredIndex)}
+            cy={getY(data[hoveredIndex]!.price)}
+            r={5}
+            fill={lineColor}
+            stroke="white"
+            strokeWidth={2}
+          />
+        </g>
+      )}
+    </svg>
   );
-};
+}
 
 export function BandPriceChart({
   symbol,
@@ -122,11 +302,37 @@ export function BandPriceChart({
   const [aggregationStatus, setAggregationStatus] = useState<AggregationStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTimeRange, setSelectedTimeRange] = useState(timeRange);
+  const [selectedTimeRange, setSelectedTimeRange] = useState<'1h' | '24h' | '7d'>(timeRange);
+  const [hoveredPoint, setHoveredPoint] = useState<PriceDataPoint | null>(null);
+  const [chartDimensions, setChartDimensions] = useState({ width: 600, height: 280 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const { width } = containerRef.current.getBoundingClientRect();
+        setChartDimensions({ width: Math.max(300, width), height: 280 });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+
+    const cacheKey = getCacheKey(symbol, chain, selectedTimeRange);
+    const cached = getFromCache(cacheKey);
+
+    if (cached) {
+      setPriceData(cached.data);
+      setAggregationStatus(cached.aggregationStatus);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const params = new URLSearchParams({
@@ -135,13 +341,28 @@ export function BandPriceChart({
         timeRange: selectedTimeRange,
       });
 
-      const response = await fetch(`/api/band/prices?${params.toString()}`);
+      const response = await fetch(`/api/oracle/band/prices/history?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch price data');
       }
-      const data = await response.json();
-      setPriceData(data.priceHistory ?? []);
-      setAggregationStatus(data.aggregationStatus ?? null);
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const { priceHistory, aggregationStatus: status } = result.data;
+        setPriceData(priceHistory ?? []);
+        setAggregationStatus(status ?? null);
+
+        setToCache(cacheKey, {
+          data: priceHistory ?? [],
+          aggregationStatus: status ?? null,
+          timestamp: Date.now(),
+          symbol,
+          chain,
+          timeRange: selectedTimeRange,
+        });
+      } else {
+        setPriceData([]);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
       setPriceData([]);
@@ -153,14 +374,6 @@ export function BandPriceChart({
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const chartData = useMemo(() => {
-    return priceData.map((point) => ({
-      ...point,
-      time: new Date(point.timestamp).getTime(),
-      formattedTime: formatTime(point.timestamp),
-    }));
-  }, [priceData]);
 
   const priceStats = useMemo(() => {
     if (priceData.length === 0) return null;
@@ -227,7 +440,7 @@ export function BandPriceChart({
     );
   }
 
-  if (chartData.length === 0) {
+  if (priceData.length === 0) {
     return (
       <Card className={className}>
         <CardHeader>
@@ -276,8 +489,8 @@ export function BandPriceChart({
                 key={key}
                 variant={selectedTimeRange === key ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setSelectedTimeRange(key as typeof timeRange)}
-                className="h-8 px-2 text-xs"
+                onClick={() => setSelectedTimeRange(key as '1h' | '24h' | '7d')}
+                className="h-8 px-3 text-xs"
               >
                 {config.label}
               </Button>
@@ -322,50 +535,23 @@ export function BandPriceChart({
           </div>
         )}
 
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis
-                dataKey="time"
-                tick={{ fontSize: 11 }}
-                className="text-muted-foreground"
-                tickFormatter={(value) => {
-                  const date = new Date(value);
-                  return date.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  });
-                }}
-              />
-              <YAxis
-                tick={{ fontSize: 11 }}
-                className="text-muted-foreground"
-                domain={['auto', 'auto']}
-                tickFormatter={(value) => `$${value.toFixed(2)}`}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <ReferenceLine
-                y={priceStats?.currentPrice}
-                stroke="#6366f1"
-                strokeDasharray="5 5"
-                label={{
-                  value: 'Current',
-                  position: 'right',
-                  fontSize: 11,
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="price"
-                name="Price"
-                stroke="#6366f1"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, fill: '#6366f1' }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        {hoveredPoint && priceStats && (
+          <div className="rounded-lg border bg-muted/50 p-2 text-sm">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-muted-foreground">{formatTime(hoveredPoint.timestamp)}</span>
+              <span className="font-mono font-semibold">${hoveredPoint.price.toFixed(4)}</span>
+            </div>
+          </div>
+        )}
+
+        <div ref={containerRef} className="h-72 w-full">
+          <SVGPriceChart
+            data={priceData}
+            width={chartDimensions.width}
+            height={chartDimensions.height}
+            priceStats={priceStats}
+            onPointHover={setHoveredPoint}
+          />
         </div>
 
         {aggregationStatus && (

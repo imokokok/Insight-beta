@@ -1,23 +1,19 @@
 import type { NextRequest } from 'next/server';
 
+import type { Operator } from '@/features/oracle/chainlink/types/chainlink';
+import { calculateReliabilityScore } from '@/features/oracle/chainlink/utils/reliabilityScore';
 import { ok, error } from '@/lib/api/apiResponse';
-
-interface Operator {
-  name: string;
-  online: boolean;
-  responseTime: number;
-  supportedFeeds: string[];
-  lastHeartbeat: string | null;
-}
 
 interface OperatorsQueryParams {
   status?: 'online' | 'offline' | 'all';
+  chain?: string;
 }
 
 function parseQueryParams(request: NextRequest): OperatorsQueryParams {
   const { searchParams } = new URL(request.url);
   return {
     status: (searchParams.get('status') as OperatorsQueryParams['status']) ?? 'all',
+    chain: searchParams.get('chain') ?? undefined,
   };
 }
 
@@ -55,8 +51,9 @@ function getMockOperators(): Operator[] {
     const online = Math.random() > 0.15;
     const supportedCount = Math.floor(Math.random() * 5) + 3;
     const shuffledFeeds = [...feedTypes].sort(() => Math.random() - 0.5);
+    const uptimePercentage = online ? 85 + Math.random() * 15 : Math.random() * 30;
 
-    return {
+    const operator: Operator = {
       name,
       online,
       responseTime: online ? Math.floor(Math.random() * 200) + 50 : 0,
@@ -64,13 +61,18 @@ function getMockOperators(): Operator[] {
       lastHeartbeat: online
         ? new Date(Date.now() - Math.floor(Math.random() * 300000)).toISOString()
         : null,
+      uptimePercentage,
     };
+
+    operator.reliabilityScore = calculateReliabilityScore(operator);
+
+    return operator;
   });
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const { status } = parseQueryParams(request);
+    const { status, chain } = parseQueryParams(request);
 
     let operators = getMockOperators();
 
@@ -90,9 +92,23 @@ export async function GET(request: NextRequest) {
         online: onlineCount,
         offline: offlineCount,
         filter: status,
-        source: 'chainlink-network',
+        chain: chain ?? 'ethereum',
+        source: 'mock',
         lastUpdated: new Date().toISOString(),
-        note: 'Mock data - to be replaced with real Chainlink operator data',
+        note: 'Mock data - Operator data requires Chainlink official API integration',
+        dataAvailability: {
+          realDataAvailable: false,
+          reason:
+            'Chainlink node operator data is maintained by Chainlink Labs and ' +
+            'requires access to the Chainlink Network API or on-chain registry contracts. ' +
+            'Real operator status, response times, and supported feeds should be fetched ' +
+            "from Chainlink's official data sources or the Chainlink Operator Registry.",
+          alternativeSources: [
+            'Chainlink Official Website (chain.link)',
+            'Chainlink Network Status Page',
+            'Chainlink Operator Registry Smart Contract',
+          ],
+        },
       },
     });
   } catch (err) {

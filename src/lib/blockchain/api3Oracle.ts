@@ -9,7 +9,14 @@
  * - OEV (Oracle Extractable Value) 监控
  */
 
-import { type Address, parseAbi } from 'viem';
+import {
+  type Address,
+  parseAbi,
+  keccak256,
+  encodeAbiParameters,
+  parseAbiParameters,
+  recoverAddress,
+} from 'viem';
 
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/config/constants';
 import { ErrorHandler, normalizeError } from '@/lib/errors';
@@ -379,10 +386,14 @@ export class API3Client extends EvmOracleClient {
 
   /**
    * 验证签名数据
+   *
+   * API3 使用 ECDSA 签名，签名格式为 65 字节 (r: 32字节, s: 32字节, v: 1字节)
+   * 签名消息 = keccak256(abi.encode(timestamp, value, templateId))
    */
-  verifySignedData(signedData: API3SignedData): boolean {
+  async verifySignedData(signedData: API3SignedData): Promise<boolean> {
     try {
       if (signedData.value <= 0n) {
+        this.logger.warn('Signed data value must be positive');
         return false;
       }
 
@@ -390,10 +401,46 @@ export class API3Client extends EvmOracleClient {
       const timestamp = Number(signedData.timestamp);
       const maxAge = 3600;
 
+      if (timestamp <= 0) {
+        this.logger.warn('Invalid timestamp', { timestamp });
+        return false;
+      }
+
+      if (now < timestamp) {
+        this.logger.warn('Timestamp is in the future', {
+          timestamp,
+          now,
+        });
+        return false;
+      }
+
       if (now - timestamp > maxAge) {
         this.logger.warn('Signed data is too old', {
           timestamp,
           age: now - timestamp,
+          maxAge,
+        });
+        return false;
+      }
+
+      if (!this.isValidSignatureFormat(signedData.signature)) {
+        this.logger.warn('Invalid signature format', {
+          signatureLength: signedData.signature.length,
+        });
+        return false;
+      }
+
+      const recoveredAddress = await this.recoverSignerAddress(signedData);
+      if (!recoveredAddress) {
+        this.logger.warn('Failed to recover signer address from signature');
+        return false;
+      }
+
+      const isAuthorized = recoveredAddress.toLowerCase() === signedData.airnode.toLowerCase();
+      if (!isAuthorized) {
+        this.logger.warn('Signature signer is not authorized', {
+          recoveredAddress,
+          expectedAirnode: signedData.airnode,
         });
         return false;
       }
@@ -405,6 +452,155 @@ export class API3Client extends EvmOracleClient {
       });
       return false;
     }
+  }
+
+  /**
+   * 验证签名格式
+   * ECDSA 签名格式: 65 字节 = r(32) + s(32) + v(1)
+   * 十六进制字符串: 0x + 130 个字符
+   */
+  private isValidSignatureFormat(signature: `0x${string}`): boolean {
+    if (!signature.startsWith('0x')) {
+      return false;
+    }
+
+    const hexPart = signature.slice(2);
+    if (!/^[a-fA-F0-9]+$/.test(hexPart)) {
+      return false;
+    }
+
+    return hexPart.length === 130;
+  }
+
+  /**
+   * 从签名中恢复签名者地址
+   *
+   * API3 签名消息格式: keccak256(abi.encode(timestamp, value, templateId))
+   */
+  private async recoverSignerAddress(signedData: API3SignedData): Promise<Address | null> {
+    try {
+      const messageHash = this.constructMessageHash(signedData);
+
+      const recovered = await recoverAddress({
+        hash: messageHash,
+        signature: signedData.signature,
+      });
+
+      return recovered;
+    } catch (error) {
+      this.logger.error('Failed to recover address', {
+        error: normalizeError(error).message,
+      });
+      return null;
+    }
+  }
+
+  /**
+   * 构造签名消息哈希
+   *
+   * API3 的签名消息结构:
+   * keccak256(abi.encode(timestamp, value, templateId))
+   */
+  private constructMessageHash(signedData: API3SignedData): `0x${string}` {
+    const encoded = encodeAbiParameters(parseAbiParameters('uint256, int224, bytes32'), [
+      signedData.timestamp,
+      signedData.value,
+      signedData.templateId,
+    ]);
+
+    return keccak256(encoded);
+  }
+
+  /**
+   * 完整验证签名数据并返回详细结果
+   */
+  async verifySignedDataDetailed(
+    signedData: API3SignedData,
+    options: { maxAgeSeconds?: number; expectedValue?: bigint } = {},
+  ): Promise<{
+    isValid: boolean;
+    signer?: Address;
+    checks: {
+      valuePositive: boolean;
+      timestampValid: boolean;
+      notExpired: boolean;
+      signatureValid: boolean;
+      signerAuthorized: boolean;
+    };
+    errors: string[];
+  }> {
+    const errors: string[] = [];
+    const checks = {
+      valuePositive: false,
+      timestampValid: false,
+      notExpired: false,
+      signatureValid: false,
+      signerAuthorized: false,
+    };
+
+    const maxAge = options.maxAgeSeconds ?? 3600;
+    let recoveredSigner: Address | null = null;
+
+    if (signedData.value <= 0n) {
+      errors.push('Value must be positive');
+    } else {
+      checks.valuePositive = true;
+    }
+
+    if (options.expectedValue !== undefined && signedData.value !== options.expectedValue) {
+      errors.push(`Value mismatch: expected ${options.expectedValue}, got ${signedData.value}`);
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const timestamp = Number(signedData.timestamp);
+
+    if (timestamp <= 0) {
+      errors.push('Invalid timestamp');
+    } else if (now < timestamp) {
+      errors.push('Timestamp is in the future');
+    } else {
+      checks.timestampValid = true;
+    }
+
+    if (checks.timestampValid) {
+      const age = now - timestamp;
+      if (age > maxAge) {
+        errors.push(`Data expired: ${age}s old (max: ${maxAge}s)`);
+      } else {
+        checks.notExpired = true;
+      }
+    }
+
+    if (!this.isValidSignatureFormat(signedData.signature)) {
+      errors.push('Invalid signature format');
+    } else {
+      recoveredSigner = await this.recoverSignerAddress(signedData);
+      if (!recoveredSigner) {
+        errors.push('Failed to recover signer address');
+      } else {
+        checks.signatureValid = true;
+
+        if (recoveredSigner.toLowerCase() === signedData.airnode.toLowerCase()) {
+          checks.signerAuthorized = true;
+        } else {
+          errors.push(`Unauthorized signer: ${recoveredSigner}`);
+        }
+      }
+    }
+
+    const isValid =
+      checks.valuePositive &&
+      checks.timestampValid &&
+      checks.notExpired &&
+      checks.signatureValid &&
+      checks.signerAuthorized;
+
+    return {
+      isValid,
+      signer: recoveredSigner ?? undefined,
+      checks,
+      errors,
+    };
   }
 
   /**

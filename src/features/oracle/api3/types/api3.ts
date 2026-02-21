@@ -9,6 +9,13 @@ export interface Airnode {
   uptimePercentage: number;
 }
 
+export interface BeaconSetComponent {
+  beaconId: string;
+  beaconName: string;
+  weight: number;
+  lastPrice: number;
+}
+
 export interface Dapi {
   dapiName: string;
   dataFeedId: string;
@@ -19,6 +26,11 @@ export interface Dapi {
   status: 'active' | 'inactive';
   lastPrice: number;
   lastUpdatedAt: string;
+  providerName?: string;
+  providerDescription?: string;
+  providerWebsite?: string;
+  sourceType?: 'beacon' | 'beacon_set';
+  beaconSetComponents?: BeaconSetComponent[];
 }
 
 export interface OevEvent {
@@ -67,4 +79,28 @@ export interface Api3PriceData {
   timestamp: string;
   price: number;
   emaPrice: number;
+}
+
+export interface UpdateFrequencyStats {
+  dapiName: string;
+  chain: string;
+  avgUpdateIntervalMs: number;
+  minUpdateIntervalMs: number;
+  maxUpdateIntervalMs: number;
+  updateCount: number;
+  lastUpdateTime: string;
+  anomalyDetected: boolean;
+  anomalyReason?: string;
+}
+
+export interface UpdateIntervalPoint {
+  timestamp: string;
+  intervalMs: number;
+  isAnomaly: boolean;
+}
+
+export interface UpdateFrequencyResponse {
+  stats: UpdateFrequencyStats;
+  intervals: UpdateIntervalPoint[];
+  timeRange: string;
 }

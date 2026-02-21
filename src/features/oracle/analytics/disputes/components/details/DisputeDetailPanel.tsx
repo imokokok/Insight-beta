@@ -1,58 +1,75 @@
 'use client';
 
+import { useState } from 'react';
+
 import {
   X,
   ExternalLink,
   Clock,
   CheckCircle,
   AlertCircle,
-  Gavel,
   User,
   Coins,
-  Calendar,
   Link2,
   FileText,
   ArrowRight,
 } from 'lucide-react';
+import useSWR from 'swr';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
-import { cn, truncateAddress, formatTime, getExplorerUrl } from '@/shared/utils';
+import type {
+  UMAAssertionEvent,
+  UMADisputeEvent,
+  UMASettlementEvent,
+} from '@/lib/blockchain/umaOracle';
+import { cn, truncateAddress, getExplorerUrl } from '@/shared/utils';
 import type { Dispute } from '@/types/oracle/dispute';
+
+import { AssertionTimeline } from '../timeline';
+import { VoteRecordsCard, VoterStatsCard, VoteSummaryCard } from '../votes';
+
+interface VotesResponse {
+  votes: Array<{
+    id: string;
+    assertionId: string;
+    voter: string;
+    support: boolean;
+    weight: number;
+    txHash: string;
+    timestamp: string;
+    blockNumber: number;
+  }>;
+  voterStats: Array<{
+    address: string;
+    totalVotes: number;
+    correctVotes: number;
+    accuracy: number;
+    totalWeight: number;
+    avgWeight: number;
+    firstVoteAt: string;
+    lastVoteAt: string;
+  }>;
+  summary: {
+    totalVotes: number;
+    supportVotes: number;
+    againstVotes: number;
+    totalWeight: number;
+    avgWeight: number;
+    uniqueVoters: number;
+  };
+}
 
 interface DisputeDetailPanelProps {
   dispute: Dispute | null;
   isOpen: boolean;
   onClose: () => void;
-}
-
-function TimelineItem({
-  icon,
-  title,
-  timestamp,
-  isLast,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  timestamp: string;
-  isLast: boolean;
-}) {
-  return (
-    <div className="flex gap-3">
-      <div className="flex flex-col items-center">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-          {icon}
-        </div>
-        {!isLast && <div className="h-full w-0.5 bg-border" />}
-      </div>
-      <div className={cn('pb-4', isLast && 'pb-0')}>
-        <p className="text-sm font-medium">{title}</p>
-        <p className="text-xs text-muted-foreground">{formatTime(timestamp)}</p>
-      </div>
-    </div>
-  );
+  assertionEvent?: UMAAssertionEvent | null;
+  disputeEvent?: UMADisputeEvent | null;
+  settlementEvent?: UMASettlementEvent | null;
 }
 
 function DetailRow({
@@ -100,8 +117,25 @@ function AddressLink({
   );
 }
 
-export function DisputeDetailPanel({ dispute, isOpen, onClose }: DisputeDetailPanelProps) {
+export function DisputeDetailPanel({
+  dispute,
+  isOpen,
+  onClose,
+  assertionEvent,
+  disputeEvent,
+  settlementEvent,
+}: DisputeDetailPanelProps) {
   const { t } = useI18n();
+  const [activeDetailTab, setActiveDetailTab] = useState('details');
+
+  const { data: votesData, isLoading: votesLoading } = useSWR<VotesResponse>(
+    dispute ? `/api/oracle/uma/votes?assertionId=${dispute.assertionId}` : null,
+    async (url: string) => {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      return res.json();
+    },
+  );
 
   if (!dispute) return null;
 
@@ -143,7 +177,7 @@ export function DisputeDetailPanel({ dispute, isOpen, onClose }: DisputeDetailPa
           </Button>
         </div>
 
-        <div className="space-y-6 p-4">
+        <div className="space-y-4 p-4">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-4">
@@ -161,172 +195,183 @@ export function DisputeDetailPanel({ dispute, isOpen, onClose }: DisputeDetailPa
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <User className="h-4 w-4" />
-                {t('analytics:disputes.detail.participants')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="rounded-lg bg-muted/50 p-3">
-                <p className="mb-1 text-xs text-muted-foreground">
-                  {t('analytics:disputes.disputes.asserter')}
-                </p>
-                <AddressLink address={dispute.asserter} chain={dispute.chain} />
-              </div>
-              <div className="flex items-center justify-center">
-                <ArrowRight className="h-4 w-4 rotate-90 text-muted-foreground" />
-              </div>
-              <div className="rounded-lg bg-muted/50 p-3">
-                <p className="mb-1 text-xs text-muted-foreground">
-                  {t('analytics:disputes.disputes.disputer')}
-                </p>
-                <AddressLink address={dispute.disputer} chain={dispute.chain} />
-              </div>
-            </CardContent>
-          </Card>
+          <Tabs value={activeDetailTab} onValueChange={setActiveDetailTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">{t('analytics:disputes.detail.tabDetails')}</TabsTrigger>
+              <TabsTrigger value="votes">{t('analytics:disputes.detail.tabVotes')}</TabsTrigger>
+            </TabsList>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Coins className="h-4 w-4" />
-                {t('analytics:disputes.detail.bondDetails')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <DetailRow
-                  label={t('analytics:disputes.disputes.bond')}
-                  value={
-                    <span className="font-medium">
-                      {dispute.bond.toFixed(2)} {dispute.currency}
-                    </span>
-                  }
-                />
-                <DetailRow
-                  label={t('analytics:disputes.disputes.disputeBond')}
-                  value={
-                    <span className="font-medium">
-                      {dispute.disputeBond.toFixed(2)} {dispute.currency}
-                    </span>
-                  }
-                />
-              </div>
-            </CardContent>
-          </Card>
+            <TabsContent value="details" className="space-y-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <User className="h-4 w-4" />
+                    {t('analytics:disputes.detail.participants')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="rounded-lg bg-muted/50 p-3">
+                    <p className="mb-1 text-xs text-muted-foreground">
+                      {t('analytics:disputes.disputes.asserter')}
+                    </p>
+                    <AddressLink address={dispute.asserter} chain={dispute.chain} />
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <ArrowRight className="h-4 w-4 rotate-90 text-muted-foreground" />
+                  </div>
+                  <div className="rounded-lg bg-muted/50 p-3">
+                    <p className="mb-1 text-xs text-muted-foreground">
+                      {t('analytics:disputes.disputes.disputer')}
+                    </p>
+                    <AddressLink address={dispute.disputer} chain={dispute.chain} />
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Calendar className="h-4 w-4" />
-                {t('analytics:disputes.detail.timeline')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1">
-                <TimelineItem
-                  icon={<FileText className="h-4 w-4" />}
-                  title={t('analytics:disputes.disputes.proposedAt')}
-                  timestamp={dispute.proposedAt}
-                  isLast={false}
-                />
-                <TimelineItem
-                  icon={<Gavel className="h-4 w-4" />}
-                  title={t('analytics:disputes.disputes.disputedAt')}
-                  timestamp={dispute.disputedAt}
-                  isLast={!!dispute.settledAt}
-                />
-                {dispute.settledAt && (
-                  <TimelineItem
-                    icon={<CheckCircle className="h-4 w-4" />}
-                    title={t('analytics:disputes.disputes.settledAt')}
-                    timestamp={dispute.settledAt}
-                    isLast={true}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Coins className="h-4 w-4" />
+                    {t('analytics:disputes.detail.bondDetails')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <DetailRow
+                      label={t('analytics:disputes.disputes.bond')}
+                      value={
+                        <span className="font-medium">
+                          {dispute.bond.toFixed(2)} {dispute.currency}
+                        </span>
+                      }
+                    />
+                    <DetailRow
+                      label={t('analytics:disputes.disputes.disputeBond')}
+                      value={
+                        <span className="font-medium">
+                          {dispute.disputeBond.toFixed(2)} {dispute.currency}
+                        </span>
+                      }
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <AssertionTimeline
+                assertionEvent={assertionEvent}
+                disputeEvent={disputeEvent}
+                settlementEvent={settlementEvent}
+                chain={dispute.chain}
+              />
+
+              {dispute.status === 'resolved' && dispute.resolutionResult !== undefined && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <AlertCircle className="h-4 w-4" />
+                      {t('analytics:disputes.detail.resolution')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div
+                      className={cn(
+                        'flex items-center gap-2 rounded-lg p-4',
+                        dispute.resolutionResult ? 'bg-green-50' : 'bg-red-50',
+                      )}
+                    >
+                      {dispute.resolutionResult ? (
+                        <>
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <span className="font-medium text-green-700">
+                            {t('analytics:disputes.detail.disputeSucceeded')}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <X className="h-5 w-5 text-red-600" />
+                          <span className="font-medium text-red-700">
+                            {t('analytics:disputes.detail.disputeFailed')}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Link2 className="h-4 w-4" />
+                    {t('analytics:disputes.detail.transactionInfo')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="rounded-lg bg-muted/50 p-3">
+                    <p className="mb-1 text-xs text-muted-foreground">
+                      {t('analytics:disputes.detail.transactionHash')}
+                    </p>
+                    <AddressLink address={dispute.txHash} chain={dispute.chain} type="tx" />
+                  </div>
+                  <DetailRow
+                    label={t('analytics:disputes.detail.blockNumber')}
+                    value={
+                      <span className="font-mono">{dispute.blockNumber.toLocaleString()}</span>
+                    }
                   />
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  <DetailRow
+                    label={t('analytics:disputes.detail.assertionId')}
+                    value={<AddressLink address={dispute.assertionId} chain={dispute.chain} />}
+                  />
+                </CardContent>
+              </Card>
 
-          {dispute.status === 'resolved' && dispute.resolutionResult !== undefined && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <AlertCircle className="h-4 w-4" />
-                  {t('analytics:disputes.detail.resolution')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className={cn(
-                    'flex items-center gap-2 rounded-lg p-4',
-                    dispute.resolutionResult ? 'bg-green-50' : 'bg-red-50',
-                  )}
-                >
-                  {dispute.resolutionResult ? (
-                    <>
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <span className="font-medium text-green-700">
-                        {t('analytics:disputes.detail.disputeSucceeded')}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <X className="h-5 w-5 text-red-600" />
-                      <span className="font-medium text-red-700">
-                        {t('analytics:disputes.detail.disputeFailed')}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <FileText className="h-4 w-4" />
+                    {t('analytics:disputes.detail.protocolInfo')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline" className="uppercase">
+                      {dispute.protocol}
+                    </Badge>
+                    <Badge variant="secondary" className="uppercase">
+                      {dispute.chain}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Link2 className="h-4 w-4" />
-                {t('analytics:disputes.detail.transactionInfo')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="rounded-lg bg-muted/50 p-3">
-                <p className="mb-1 text-xs text-muted-foreground">
-                  {t('analytics:disputes.detail.transactionHash')}
-                </p>
-                <AddressLink address={dispute.txHash} chain={dispute.chain} type="tx" />
-              </div>
-              <DetailRow
-                label={t('analytics:disputes.detail.blockNumber')}
-                value={<span className="font-mono">{dispute.blockNumber.toLocaleString()}</span>}
+            <TabsContent value="votes" className="space-y-4">
+              <VoteSummaryCard
+                summary={
+                  votesData?.summary || {
+                    totalVotes: 0,
+                    supportVotes: 0,
+                    againstVotes: 0,
+                    totalWeight: 0,
+                    avgWeight: 0,
+                    uniqueVoters: 0,
+                  }
+                }
+                isLoading={votesLoading}
               />
-              <DetailRow
-                label={t('analytics:disputes.detail.assertionId')}
-                value={<AddressLink address={dispute.assertionId} chain={dispute.chain} />}
+              <VoteRecordsCard
+                votes={votesData?.votes || []}
+                isLoading={votesLoading}
+                chain={dispute.chain}
               />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <FileText className="h-4 w-4" />
-                {t('analytics:disputes.detail.protocolInfo')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <Badge variant="outline" className="uppercase">
-                  {dispute.protocol}
-                </Badge>
-                <Badge variant="secondary" className="uppercase">
-                  {dispute.chain}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+              <VoterStatsCard
+                voterStats={votesData?.voterStats || []}
+                isLoading={votesLoading}
+                chain={dispute.chain}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </>

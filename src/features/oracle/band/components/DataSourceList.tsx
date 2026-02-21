@@ -2,7 +2,15 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-import { Database, Clock, Zap, AlertTriangle, RefreshCw } from 'lucide-react';
+import {
+  Database,
+  Clock,
+  Zap,
+  AlertTriangle,
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 
 import { Badge, StatusBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,6 +26,8 @@ import {
 } from '@/components/ui/table';
 import { useI18n } from '@/i18n';
 import { formatTime } from '@/shared/utils';
+
+import { DataSourcePerformanceCard } from './DataSourcePerformanceCard';
 
 import type { DataSource } from '../types';
 
@@ -60,6 +70,7 @@ export function DataSourceList({
   const [internalDataSources, setInternalDataSources] = useState<DataSource[]>([]);
   const [internalLoading, setInternalLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const useExternalData = externalSources !== undefined;
 
@@ -100,6 +111,18 @@ export function DataSourceList({
     if (seconds < 60) return `${seconds}s`;
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
     return `${Math.floor(seconds / 3600)}h`;
+  };
+
+  const toggleRow = (sourceId: string) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(sourceId)) {
+        next.delete(sourceId);
+      } else {
+        next.add(sourceId);
+      }
+      return next;
+    });
   };
 
   if (isLoading) {
@@ -186,6 +209,7 @@ export function DataSourceList({
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-8" />
                 <TableHead>{t('band.dataSource.name')}</TableHead>
                 <TableHead>{t('band.dataSource.symbol')}</TableHead>
                 <TableHead>{t('band.dataSource.chain')}</TableHead>
@@ -202,46 +226,74 @@ export function DataSourceList({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {dataSources.map((source) => (
-                <TableRow key={source.sourceId} className="group">
-                  <TableCell className="font-medium">{source.name}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" size="sm">
-                      {source.symbol}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{CHAIN_DISPLAY_NAMES[source.chain] ?? source.chain}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" size="sm">
-                      {source.sourceType.toUpperCase()}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge
-                      status={source.status === 'active' ? 'active' : 'offline'}
-                      text={source.status}
-                      size="sm"
-                      pulse={source.status === 'active'}
-                    />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="font-mono text-sm">
-                      {formatUpdateInterval(source.updateIntervalSeconds)}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant={getReliabilityBadgeVariant(source.reliabilityScore)} size="sm">
-                      {source.reliabilityScore.toFixed(1)}%
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {formatTime(source.lastUpdateAt)}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {dataSources.map((source) => {
+                const isExpanded = expandedRows.has(source.sourceId);
+                return (
+                  <>
+                    <TableRow
+                      key={source.sourceId}
+                      className="group cursor-pointer hover:bg-muted/50"
+                      onClick={() => toggleRow(source.sourceId)}
+                    >
+                      <TableCell className="w-8">
+                        <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-muted">
+                          {isExpanded ? (
+                            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </button>
+                      </TableCell>
+                      <TableCell className="font-medium">{source.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" size="sm">
+                          {source.symbol}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{CHAIN_DISPLAY_NAMES[source.chain] ?? source.chain}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" size="sm">
+                          {source.sourceType.toUpperCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge
+                          status={source.status === 'active' ? 'active' : 'offline'}
+                          text={source.status}
+                          size="sm"
+                          pulse={source.status === 'active'}
+                        />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className="font-mono text-sm">
+                          {formatUpdateInterval(source.updateIntervalSeconds)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge
+                          variant={getReliabilityBadgeVariant(source.reliabilityScore)}
+                          size="sm"
+                        >
+                          {source.reliabilityScore.toFixed(1)}%
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {formatTime(source.lastUpdateAt)}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    {isExpanded && (
+                      <TableRow key={`${source.sourceId}-details`} className="bg-muted/30">
+                        <TableCell colSpan={9} className="p-4">
+                          <DataSourcePerformanceCard source={source} />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

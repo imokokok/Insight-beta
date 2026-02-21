@@ -20,6 +20,10 @@ export interface DataSource {
   updateIntervalSeconds: number;
   lastUpdateAt: string;
   reliabilityScore: number;
+  updateFrequency: number;
+  lastUpdateLatency: number;
+  historicalReliability: number[];
+  anomalyCount: number;
 }
 
 export interface Transfer {

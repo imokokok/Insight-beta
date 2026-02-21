@@ -1,6 +1,8 @@
 'use client';
 
-import { Globe, Users, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+import { Globe, Users, Clock, Link2, Radio } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import {
@@ -10,8 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
-import { cn } from '@/shared/utils';
+import { fetchApiData, cn } from '@/shared/utils';
 
 interface CosmosChain {
   chainId: string;
@@ -25,12 +28,41 @@ interface CosmosChain {
   features: string[];
 }
 
+interface IBCStatusData {
+  chainId: string;
+  network: 'mainnet' | 'testnet';
+  connections: {
+    total: number;
+    open: number;
+    init: number;
+    tryopen: number;
+  };
+  channels: {
+    total: number;
+    open: number;
+    closed: number;
+  };
+  summary: {
+    totalConnections: number;
+    activeConnections: number;
+    totalChannels: number;
+    activeChannels: number;
+    estimatedTransfers: number;
+  };
+  lastUpdated: number;
+}
+
+interface IBCResponse {
+  data: IBCStatusData;
+}
+
 interface CosmosChainSelectorProps {
   selectedChain: string;
   onChainChange: (chainId: string) => void;
   chains?: CosmosChain[];
   showDetails?: boolean;
   filterType?: 'mainnet' | 'testnet' | 'all';
+  showIBCStatus?: boolean;
   className?: string;
 }
 
@@ -137,9 +169,32 @@ export function CosmosChainSelector({
   chains = DEFAULT_CHAINS,
   showDetails = true,
   filterType = 'mainnet',
+  showIBCStatus = false,
   className,
 }: CosmosChainSelectorProps) {
   const { t } = useI18n();
+  const [ibcData, setIbcData] = useState<IBCStatusData | null>(null);
+  const [ibcLoading, setIbcLoading] = useState(false);
+  const [ibcError, setIbcError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!showIBCStatus) return;
+
+    const fetchIBCStatus = async () => {
+      try {
+        setIbcLoading(true);
+        setIbcError(null);
+        const response = await fetchApiData<IBCResponse>('/api/oracle/band/ibc');
+        setIbcData(response.data);
+      } catch (err) {
+        setIbcError(err instanceof Error ? err.message : 'Failed to fetch IBC status');
+      } finally {
+        setIbcLoading(false);
+      }
+    };
+
+    fetchIBCStatus();
+  }, [showIBCStatus]);
 
   const filteredChains = chains.filter((chain) => {
     if (filterType === 'all') return true;
@@ -226,6 +281,50 @@ export function CosmosChainSelector({
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {showIBCStatus && (
+        <div className="rounded-lg border bg-muted/30 p-3">
+          <div className="mb-2 flex items-center gap-2">
+            <Link2 className="h-4 w-4 text-blue-500" />
+            <span className="font-medium">IBC 连接状态</span>
+            {ibcData && (
+              <Badge variant="success" size="sm">
+                实时
+              </Badge>
+            )}
+          </div>
+
+          {ibcLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          ) : ibcError ? (
+            <div className="text-sm text-red-500">{ibcError}</div>
+          ) : ibcData ? (
+            <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Link2 className="h-3.5 w-3.5" />
+                <span>连接数: {ibcData.connections.total}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Radio className="h-3.5 w-3.5 text-green-500" />
+                <span>活跃: {ibcData.connections.open}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Link2 className="h-3.5 w-3.5" />
+                <span>通道数: {ibcData.channels.total}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Radio className="h-3.5 w-3.5 text-green-500" />
+                <span>活跃通道: {ibcData.channels.open}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground">暂无 IBC 数据</div>
+          )}
         </div>
       )}
     </div>

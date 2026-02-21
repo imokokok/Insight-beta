@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 
 import {
   BarChart3,
+  ChevronDown,
+  ChevronUp,
   Clock,
   Filter,
   RefreshCw,
@@ -36,7 +38,14 @@ import {
 import { useI18n } from '@/i18n';
 import { cn, formatTime, fetchApiData } from '@/shared/utils';
 
-import type { PriceUpdate, PythPriceUpdateResponse } from '../types/pyth';
+import { ConfidenceIntervalChart } from './ConfidenceIntervalChart';
+
+import type {
+  PriceUpdate,
+  PythPriceUpdateResponse,
+  ConfidenceHistoryPoint,
+  ConfidenceHistoryResponse,
+} from '../types/pyth';
 
 interface PriceUpdateStatsProps {
   className?: string;
@@ -93,12 +102,144 @@ const mockPriceUpdates: PriceUpdate[] = [
   },
 ];
 
+const mockConfidenceHistory: ConfidenceHistoryPoint[] = [
+  {
+    timestamp: new Date(Date.now() - 3600000 * 6).toISOString(),
+    symbol: 'BTC/USD',
+    confidence: 0.05,
+    avgConfidence: 0.04,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 5).toISOString(),
+    symbol: 'BTC/USD',
+    confidence: 0.06,
+    avgConfidence: 0.04,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 4).toISOString(),
+    symbol: 'BTC/USD',
+    confidence: 0.04,
+    avgConfidence: 0.04,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
+    symbol: 'BTC/USD',
+    confidence: 0.12,
+    avgConfidence: 0.04,
+    isAnomaly: true,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+    symbol: 'BTC/USD',
+    confidence: 0.05,
+    avgConfidence: 0.04,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    symbol: 'BTC/USD',
+    confidence: 0.04,
+    avgConfidence: 0.04,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 6).toISOString(),
+    symbol: 'ETH/USD',
+    confidence: 0.03,
+    avgConfidence: 0.035,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 5).toISOString(),
+    symbol: 'ETH/USD',
+    confidence: 0.04,
+    avgConfidence: 0.035,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 4).toISOString(),
+    symbol: 'ETH/USD',
+    confidence: 0.035,
+    avgConfidence: 0.035,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
+    symbol: 'ETH/USD',
+    confidence: 0.08,
+    avgConfidence: 0.035,
+    isAnomaly: true,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+    symbol: 'ETH/USD',
+    confidence: 0.032,
+    avgConfidence: 0.035,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    symbol: 'ETH/USD',
+    confidence: 0.034,
+    avgConfidence: 0.035,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 6).toISOString(),
+    symbol: 'SOL/USD',
+    confidence: 0.02,
+    avgConfidence: 0.025,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 5).toISOString(),
+    symbol: 'SOL/USD',
+    confidence: 0.025,
+    avgConfidence: 0.025,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 4).toISOString(),
+    symbol: 'SOL/USD',
+    confidence: 0.028,
+    avgConfidence: 0.025,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
+    symbol: 'SOL/USD',
+    confidence: 0.022,
+    avgConfidence: 0.025,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+    symbol: 'SOL/USD',
+    confidence: 0.024,
+    avgConfidence: 0.025,
+    isAnomaly: false,
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    symbol: 'SOL/USD',
+    confidence: 0.026,
+    avgConfidence: 0.025,
+    isAnomaly: false,
+  },
+];
+
 export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
   const { t } = useI18n();
   const [priceUpdates, setPriceUpdates] = useState<PriceUpdate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSymbol, setSelectedSymbol] = useState<string>('all');
+  const [confidenceHistory, setConfidenceHistory] = useState<ConfidenceHistoryPoint[]>([]);
+  const [isChartLoading, setIsChartLoading] = useState(false);
+  const [showChart, setShowChart] = useState(false);
 
   useEffect(() => {
     const fetchPriceUpdates = async () => {
@@ -115,6 +256,29 @@ export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
 
     fetchPriceUpdates();
   }, []);
+
+  useEffect(() => {
+    const fetchConfidenceHistory = async () => {
+      setIsChartLoading(true);
+      try {
+        const symbolParam = selectedSymbol !== 'all' ? `?symbol=${selectedSymbol}` : '';
+        const response = await fetchApiData<ConfidenceHistoryResponse>(
+          `/api/oracle/pyth/confidence-history${symbolParam}`,
+        );
+        setConfidenceHistory(response.data);
+      } catch {
+        const filteredMock =
+          selectedSymbol !== 'all'
+            ? mockConfidenceHistory.filter((p) => p.symbol === selectedSymbol)
+            : mockConfidenceHistory;
+        setConfidenceHistory(filteredMock);
+      } finally {
+        setIsChartLoading(false);
+      }
+    };
+
+    fetchConfidenceHistory();
+  }, [selectedSymbol]);
 
   const uniqueSymbols = useMemo(() => {
     const symbols = new Set(priceUpdates.map((u) => u.symbol));
@@ -259,6 +423,42 @@ export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
               {(stats.avgConfidenceRange * 100).toFixed(2)}%
             </p>
           </div>
+        </div>
+
+        <div className="rounded-lg border">
+          <button
+            type="button"
+            onClick={() => setShowChart(!showChart)}
+            className="flex w-full items-center justify-between p-3 text-left hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-purple-500" />
+              <span className="font-medium">
+                {selectedSymbol !== 'all'
+                  ? `${selectedSymbol} ${t('oracle.pyth.confidenceIntervalTitle')}`
+                  : t('oracle.pyth.confidenceIntervalTitle')}
+              </span>
+              {confidenceHistory.filter((p) => p.isAnomaly).length > 0 && (
+                <Badge variant="destructive" className="text-xs">
+                  {confidenceHistory.filter((p) => p.isAnomaly).length} {t('oracle.pyth.anomalies')}
+                </Badge>
+              )}
+            </div>
+            {showChart ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+          {showChart && (
+            <div className="border-t p-3">
+              <ConfidenceIntervalChart
+                data={confidenceHistory}
+                symbol={selectedSymbol !== 'all' ? selectedSymbol : 'All'}
+                isLoading={isChartLoading}
+              />
+            </div>
+          )}
         </div>
 
         <div className="rounded-lg border">

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { cn } from '@/shared/utils';
 
-interface ContentGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ContentGroupProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   gap?: 'sm' | 'md' | 'lg' | 'xl';
   divided?: boolean;
@@ -47,7 +47,7 @@ export function ContentGroup({
   );
 }
 
-interface ContentSectionProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
+export interface ContentSectionProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   children: React.ReactNode;
   title?: React.ReactNode;
   description?: React.ReactNode;
@@ -86,7 +86,7 @@ export function ContentSection({
   );
 }
 
-interface ContentGridProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ContentGridProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   columns?: 1 | 2 | 3 | 4 | 6;
   gap?: 'sm' | 'md' | 'lg';

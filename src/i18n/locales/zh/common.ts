@@ -56,6 +56,8 @@ export const common = {
   na: '无',
   realtime: '实时',
   manual: '手动',
+  online: '在线',
+  offline: '离线',
   connectionStatus: {
     connected: '已连接',
     disconnected: '已断开',

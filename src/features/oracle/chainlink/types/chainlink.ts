@@ -7,12 +7,22 @@ export interface OcrRound {
   updatedAt: string;
 }
 
+export interface ReliabilityScore {
+  overall: number;
+  uptime: number;
+  responseTime: number;
+  feedSupport: number;
+  trend: 'up' | 'down' | 'stable';
+}
+
 export interface Operator {
   name: string;
   online: boolean;
   responseTime: number;
   supportedFeeds: string[];
   lastHeartbeat: string | null;
+  reliabilityScore?: ReliabilityScore;
+  uptimePercentage?: number;
 }
 
 export interface ChainlinkFeed {

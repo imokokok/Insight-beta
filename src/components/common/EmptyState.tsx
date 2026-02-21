@@ -307,7 +307,6 @@ export function EmptySearchState({
   animated?: boolean;
   suggestions?: string[];
 }) {
-  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={searchTerm ? FilterX : Search}
@@ -715,22 +714,28 @@ export function EmptyEventsState({
 }
 
 export function EmptyFirstItemState({
+  icon,
+  title,
   description,
   onAdd,
+  actionLabel,
   className,
   animated = true,
 }: {
+  icon?: LucideIcon;
+  title?: string;
   itemName?: string;
   description?: string;
   onAdd?: () => void;
+  actionLabel?: string;
   className?: string;
   animated?: boolean;
 }) {
   const { t } = useI18n();
   return (
     <UnifiedEmptyState
-      icon={Plus}
-      title={t('common.createNew')}
+      icon={icon || Plus}
+      title={title || t('common.createNew')}
       description={description || t('protocol.emptyStates.noDataDesc')}
       variant="action"
       className={className}
@@ -738,7 +743,7 @@ export function EmptyFirstItemState({
       action={
         onAdd
           ? {
-              label: t('common.createNew'),
+              label: actionLabel || t('common.createNew'),
               onClick: onAdd,
             }
           : undefined
@@ -748,12 +753,14 @@ export function EmptyFirstItemState({
 }
 
 export function EmptyDataState({
+  icon,
   title,
   description,
   onRefresh,
   className,
   animated = true,
 }: {
+  icon?: LucideIcon;
   title?: string;
   description?: string;
   onRefresh?: () => void;
@@ -763,7 +770,7 @@ export function EmptyDataState({
   const { t } = useI18n();
   return (
     <UnifiedEmptyState
-      icon={Database}
+      icon={icon || Database}
       title={title || t('protocol.emptyStates.noDataAvailable')}
       description={description || t('protocol.emptyStates.noDataDesc')}
       variant="default"
@@ -862,7 +869,6 @@ export function EmptyAlertsListState({
   className?: string;
   animated?: boolean;
 }) {
-  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={isFiltered ? FilterX : ShieldCheck}

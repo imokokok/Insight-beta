@@ -1,6 +1,9 @@
 export { AirnodeStatusCard } from './AirnodeStatusCard';
+export { BeaconSetComposition } from './BeaconSetComposition';
 export { DapiList } from './DapiList';
+export { DataProviderInfo } from './DataProviderInfo';
 export { OevOverview } from './OevOverview';
 export { SignatureVerifyPanel } from './SignatureVerifyPanel';
 export { Api3PriceChart } from './Api3PriceChart';
+export { UpdateFrequencyChart } from './UpdateFrequencyChart';
 export { Api3ExportButton } from './export';

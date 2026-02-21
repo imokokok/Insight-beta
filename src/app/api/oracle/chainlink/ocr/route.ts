@@ -14,6 +14,7 @@ interface OcrRound {
 interface OcrQueryParams {
   limit?: number;
   feedId?: string;
+  chain?: string;
 }
 
 function parseQueryParams(request: NextRequest): OcrQueryParams {
@@ -21,6 +22,7 @@ function parseQueryParams(request: NextRequest): OcrQueryParams {
   return {
     limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : 20,
     feedId: searchParams.get('feedId') ?? undefined,
+    chain: searchParams.get('chain') ?? undefined,
   };
 }
 
@@ -45,7 +47,7 @@ function getMockRounds(limit: number): OcrRound[] {
 
 export async function GET(request: NextRequest) {
   try {
-    const { limit, feedId } = parseQueryParams(request);
+    const { limit, feedId, chain } = parseQueryParams(request);
 
     const rounds = getMockRounds(limit ?? 20);
     const latestRound = rounds[0]?.roundId ?? '0x0';
@@ -56,9 +58,18 @@ export async function GET(request: NextRequest) {
         total: rounds.length,
         latestRound,
         feedId: feedId ?? 'all',
-        source: 'chainlink-ocr',
+        chain: chain ?? 'ethereum',
+        source: 'mock',
         lastUpdated: new Date().toISOString(),
-        note: 'Mock data - to be replaced with real Chainlink OCR data',
+        note: 'Mock data - OCR round data requires Chainlink OCR contract integration',
+        dataAvailability: {
+          realDataAvailable: false,
+          reason:
+            'OCR round history requires direct contract queries to Chainlink OCR aggregators. ' +
+            'This data is not available through standard Chainlink Data Feeds interface. ' +
+            'Consider using the feeds API for current price data, or implement OCR-specific ' +
+            'contract queries for historical round data.',
+        },
       },
     });
   } catch (err) {

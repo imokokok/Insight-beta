@@ -21,8 +21,6 @@ interface SkeletonProps {
  * 统一的骨架屏颜色配置
  */
 const SKELETON_BASE_STYLES = 'bg-gray-200 dark:bg-gray-700';
-const SKELETON_SHIMMER_STYLES =
-  'bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700';
 const SKELETON_PULSE_STYLES = 'animate-pulse';
 
 /**

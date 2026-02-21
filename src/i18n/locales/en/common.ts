@@ -56,6 +56,8 @@ export const common = {
   na: 'N/A',
   realtime: 'Realtime',
   manual: 'Manual',
+  online: 'Online',
+  offline: 'Offline',
   connectionStatus: {
     connected: 'Connected',
     disconnected: 'Disconnected',

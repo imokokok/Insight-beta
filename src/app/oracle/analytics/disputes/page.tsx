@@ -12,6 +12,7 @@ import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
 import { DisputeContent } from '@/features/oracle/analytics/disputes';
 import { ExportButton } from '@/features/oracle/analytics/disputes/components/export';
 import { WelcomeGuide } from '@/features/oracle/analytics/disputes/components/onboarding';
+import { TVLOverviewCard } from '@/features/oracle/analytics/disputes/components/tvl';
 import { useDisputeAnalytics } from '@/features/oracle/analytics/disputes/hooks';
 import { useI18n } from '@/i18n';
 
@@ -177,6 +178,8 @@ export default function DisputeAnalyticsPage() {
           ))}
         </div>
       )}
+
+      <TVLOverviewCard />
 
       <DisputeContent
         report={report}

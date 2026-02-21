@@ -2,12 +2,31 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
-import { AlertTriangle, RefreshCw, Search, DollarSign, Activity } from 'lucide-react';
+import Link from 'next/link';
 
+import {
+  AlertTriangle,
+  RefreshCw,
+  Search,
+  DollarSign,
+  Activity,
+  Filter,
+  ExternalLink,
+} from 'lucide-react';
+
+import type { SortState } from '@/components/common/SortableTableHeader';
+import { SortableTableHeader } from '@/components/common/SortableTableHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { SkeletonList } from '@/components/ui/skeleton';
 import {
   Table,
@@ -21,11 +40,14 @@ import { useI18n } from '@/i18n';
 import { formatTime } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
 
-import type { ChainlinkFeed } from '../types';
+import type { ChainlinkFeed } from '../types/chainlink';
+import type { Route } from 'next';
 
 interface FeedAggregationProps {
   className?: string;
 }
+
+type StatusFilter = 'all' | 'active' | 'inactive';
 
 export function FeedAggregation({ className }: FeedAggregationProps) {
   const { t } = useI18n();
@@ -33,6 +55,24 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortState, setSortState] = useState<SortState | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+
+  const handleSort = useCallback((key: string) => {
+    setSortState((prev) => {
+      if (prev?.key === key) {
+        return prev.direction === 'asc' ? { key, direction: 'desc' } : null;
+      }
+      return { key, direction: 'asc' };
+    });
+  }, []);
+
+  const isFeedActive = useCallback((feed: ChainlinkFeed): boolean => {
+    const lastUpdateTime = new Date(feed.lastUpdate).getTime();
+    const heartbeatMs = feed.heartbeat * 1000;
+    const thresholdMs = heartbeatMs * 2;
+    return Date.now() - lastUpdateTime < thresholdMs;
+  }, []);
 
   const fetchFeeds = useCallback(async () => {
     setIsLoading(true);
@@ -53,16 +93,68 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
     fetchFeeds();
   }, [fetchFeeds]);
 
-  const filteredFeeds = useMemo(() => {
-    if (!searchQuery) return feeds;
-    const query = searchQuery.toLowerCase();
-    return feeds.filter(
-      (feed) =>
-        feed.symbol.toLowerCase().includes(query) ||
-        feed.pair.toLowerCase().includes(query) ||
-        feed.aggregatorAddress.toLowerCase().includes(query),
-    );
-  }, [feeds, searchQuery]);
+  const filteredAndSortedFeeds = useMemo(() => {
+    let result = feeds;
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (feed) =>
+          feed.symbol.toLowerCase().includes(query) ||
+          feed.pair.toLowerCase().includes(query) ||
+          feed.aggregatorAddress.toLowerCase().includes(query),
+      );
+    }
+
+    if (statusFilter !== 'all') {
+      result = result.filter((feed) => {
+        const isActive = isFeedActive(feed);
+        return statusFilter === 'active' ? isActive : !isActive;
+      });
+    }
+
+    if (sortState) {
+      const { key, direction } = sortState;
+      result = [...result].sort((a, b) => {
+        let aVal: number | string = 0;
+        let bVal: number | string = 0;
+
+        switch (key) {
+          case 'price':
+            aVal = parseFloat(a.latestPrice) / Math.pow(10, 18 - a.decimals);
+            bVal = parseFloat(b.latestPrice) / Math.pow(10, 18 - b.decimals);
+            break;
+          case 'heartbeat':
+            aVal = a.heartbeat;
+            bVal = b.heartbeat;
+            break;
+          case 'deviation':
+            aVal = parseFloat(a.deviationThreshold);
+            bVal = parseFloat(b.deviationThreshold);
+            break;
+          case 'lastUpdate':
+            aVal = new Date(a.lastUpdate).getTime();
+            bVal = new Date(b.lastUpdate).getTime();
+            break;
+          case 'pair':
+            aVal = a.pair;
+            bVal = b.pair;
+            break;
+          default:
+            return 0;
+        }
+
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          return direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        }
+        return direction === 'asc'
+          ? (aVal as number) - (bVal as number)
+          : (bVal as number) - (aVal as number);
+      });
+    }
+
+    return result;
+  }, [feeds, searchQuery, sortState, statusFilter, isFeedActive]);
 
   const formatPrice = (price: string, decimals: number) => {
     const num = parseFloat(price);
@@ -154,10 +246,24 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
             <DollarSign className="h-5 w-5 text-primary" />
             {t('chainlink.feeds.title')}
             <Badge variant="secondary" className="ml-2">
-              {filteredFeeds.length}
+              {filteredAndSortedFeeds.length}
             </Badge>
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value as StatusFilter)}
+            >
+              <SelectTrigger className="w-[130px]">
+                <Filter className="mr-2 h-4 w-4" />
+                <SelectValue placeholder={t('common.filter')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('common.all')}</SelectItem>
+                <SelectItem value="active">{t('common.active')}</SelectItem>
+                <SelectItem value="inactive">{t('common.inactive')}</SelectItem>
+              </SelectContent>
+            </Select>
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -178,67 +284,111 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('chainlink.feeds.pair')}</TableHead>
-                <TableHead>{t('chainlink.feeds.price')}</TableHead>
-                <TableHead className="text-center">
+                <SortableTableHeader sortKey="pair" currentSort={sortState} onSort={handleSort}>
+                  {t('chainlink.feeds.pair')}
+                </SortableTableHeader>
+                <SortableTableHeader
+                  sortKey="price"
+                  currentSort={sortState}
+                  onSort={handleSort}
+                  className="text-right"
+                >
+                  {t('chainlink.feeds.price')}
+                </SortableTableHeader>
+                <SortableTableHeader
+                  sortKey="heartbeat"
+                  currentSort={sortState}
+                  onSort={handleSort}
+                  className="text-center"
+                >
                   <div className="flex items-center justify-center gap-1">
                     <Activity className="h-3 w-3" />
                     {t('chainlink.feeds.heartbeat')}
                   </div>
-                </TableHead>
-                <TableHead className="text-center">{t('chainlink.feeds.deviation')}</TableHead>
+                </SortableTableHeader>
+                <SortableTableHeader
+                  sortKey="deviation"
+                  currentSort={sortState}
+                  onSort={handleSort}
+                  className="text-center"
+                >
+                  {t('chainlink.feeds.deviation')}
+                </SortableTableHeader>
                 <TableHead>{t('chainlink.feeds.aggregator')}</TableHead>
-                <TableHead>{t('chainlink.feeds.lastUpdate')}</TableHead>
+                <SortableTableHeader
+                  sortKey="lastUpdate"
+                  currentSort={sortState}
+                  onSort={handleSort}
+                >
+                  {t('chainlink.feeds.lastUpdate')}
+                </SortableTableHeader>
+                <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredFeeds.length === 0 ? (
+              {filteredAndSortedFeeds.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     <p className="text-muted-foreground">{t('common.noResults')}</p>
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredFeeds.map((feed) => (
-                  <TableRow
-                    key={feed.aggregatorAddress}
-                    className="group cursor-pointer hover:bg-muted/50"
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">{feed.pair}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {feed.symbol}
+                filteredAndSortedFeeds.map((feed) => {
+                  const feedHref = `/oracle/chainlink/feed/${feed.aggregatorAddress}` as Route;
+                  return (
+                    <TableRow
+                      key={feed.aggregatorAddress}
+                      className="group cursor-pointer hover:bg-muted/50"
+                    >
+                      <TableCell>
+                        <Link href={feedHref} className="flex items-center gap-2">
+                          <span className="font-semibold">{feed.pair}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {feed.symbol}
+                          </Badge>
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <Link href={feedHref}>
+                          <span className="font-mono font-medium">
+                            {formatPrice(feed.latestPrice, feed.decimals)}
+                          </span>
+                        </Link>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="secondary" size="sm">
+                          {formatHeartbeat(feed.heartbeat)}
                         </Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono font-medium">
-                        {formatPrice(feed.latestPrice, feed.decimals)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="secondary" size="sm">
-                        {formatHeartbeat(feed.heartbeat)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" size="sm">
-                        {feed.deviationThreshold}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {formatAddress(feed.aggregatorAddress)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {formatTime(feed.lastUpdate)}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline" size="sm">
+                          {feed.deviationThreshold}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          {formatAddress(feed.aggregatorAddress)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-muted-foreground">
+                          {formatTime(feed.lastUpdate)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Link href={feedHref}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

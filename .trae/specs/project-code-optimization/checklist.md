@@ -1,6 +1,0 @@
-- [x] Checkpoint 1: 运行代码质量检查 (lint + typecheck)
-- [x] Checkpoint 2: 运行 Prettier 格式化
-- [x] Checkpoint 3: 修复所有 lint 警告
-- [x] Checkpoint 4: 运行完整的单元测试
-- [x] Checkpoint 5: 验证开发服务器正常运行
-- [x] Checkpoint 6: 最终验证所有检查通过

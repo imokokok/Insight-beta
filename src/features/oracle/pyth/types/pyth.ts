@@ -39,3 +39,37 @@ export interface PythHermesResponse {
   services: HermesService[];
   total: number;
 }
+
+export interface ConfidenceHistoryPoint {
+  timestamp: string;
+  symbol: string;
+  confidence: number;
+  avgConfidence: number;
+  isAnomaly: boolean;
+}
+
+export interface ConfidenceHistoryResponse {
+  data: ConfidenceHistoryPoint[];
+  metadata: {
+    total: number;
+    anomalies: number;
+    symbol: string;
+  };
+}
+
+export interface PublisherHistoryPoint {
+  timestamp: string;
+  publisherName: string;
+  trustScore: number;
+  avgTrustScore: number;
+  isAnomaly: boolean;
+}
+
+export interface PublisherHistoryResponse {
+  data: PublisherHistoryPoint[];
+  metadata: {
+    total: number;
+    anomalies: number;
+    publisher: string;
+  };
+}
