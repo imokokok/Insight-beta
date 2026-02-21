@@ -18,6 +18,7 @@ import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
+import { formatLatency, getLatencyColor } from '@/features/cross-chain/utils/format';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 
@@ -50,17 +51,6 @@ const getStatusConfig = (status: Transfer['status']) => {
     failed: { status: 'offline' as const, label: 'Failed', icon: XCircle },
   };
   return configs[status] ?? configs.pending;
-};
-
-const getLatencyColor = (latencyMs: number): string => {
-  if (latencyMs <= 5000) return 'text-emerald-500';
-  if (latencyMs <= 15000) return 'text-amber-500';
-  return 'text-red-500';
-};
-
-const formatLatency = (ms: number): string => {
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
 };
 
 const truncateHash = (hash: string): string => {

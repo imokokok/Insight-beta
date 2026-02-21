@@ -2,18 +2,13 @@
 
 import { useMemo } from 'react';
 
+import { ExportButton, escapeCSV, escapeXML, type ExportConfig } from '@/components/common';
 import type {
   Bridge,
   DataSource,
   OracleScript,
   ValidatorHealthSummary,
 } from '@/features/oracle/band';
-import {
-  ExportButton,
-  escapeCSV,
-  escapeXML,
-  type ExportConfig,
-} from '@/features/oracle/components/shared';
 
 interface BandExportData {
   overviewStats: {

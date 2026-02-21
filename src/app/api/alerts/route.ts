@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 
+import { SUPPORTED_SYMBOLS } from '@/config/constants';
 import type {
   AlertSource,
   AlertStatus,
@@ -45,40 +46,46 @@ async function fetchPriceAnomalies(): Promise<UnifiedAlert[]> {
 
 async function fetchCrossChainAlerts(): Promise<UnifiedAlert[]> {
   try {
-    const symbols = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX'];
-    const allAlerts: UnifiedAlert[] = [];
+    const symbols = [...SUPPORTED_SYMBOLS.TICKERS];
 
-    for (const symbol of symbols) {
-      try {
+    const results = await Promise.allSettled(
+      symbols.map(async (symbol) => {
         const alerts = await crossChainAnalysisService.detectDeviationAlerts(symbol);
-        for (const alert of alerts) {
-          allAlerts.push({
-            id: `crosschain-${alert.id}`,
-            source: 'cross_chain' as AlertSource,
-            timestamp:
-              typeof alert.timestamp === 'string' ? alert.timestamp : alert.timestamp.toISOString(),
-            severity: normalizeSeverity(alert.severity),
-            status: normalizeStatus(alert.status),
-            title: `${alert.symbol} Cross-Chain Deviation`,
-            description: `Price deviation between ${alert.chainA} and ${alert.chainB}`,
-            symbol: alert.symbol,
-            chainA: alert.chainA,
-            chainB: alert.chainB,
-            deviation: alert.deviationPercent / 100,
-            priceA: alert.priceA,
-            priceB: alert.priceB,
-            avgPrice: alert.avgPrice,
-            reason: alert.reason,
-          });
-        }
-      } catch {
-        // Continue with other symbols if one fails
+        return alerts.map((alert) => ({
+          id: `crosschain-${alert.id}`,
+          source: 'cross_chain' as AlertSource,
+          timestamp:
+            typeof alert.timestamp === 'string' ? alert.timestamp : alert.timestamp.toISOString(),
+          severity: normalizeSeverity(alert.severity),
+          status: normalizeStatus(alert.status),
+          title: `${alert.symbol} Cross-Chain Deviation`,
+          description: `Price deviation between ${alert.chainA} and ${alert.chainB}`,
+          symbol: alert.symbol,
+          chainA: alert.chainA,
+          chainB: alert.chainB,
+          deviation: alert.deviationPercent / 100,
+          priceA: alert.priceA,
+          priceB: alert.priceB,
+          avgPrice: alert.avgPrice,
+          reason: alert.reason,
+        }));
+      }),
+    );
+
+    const allAlerts: UnifiedAlert[] = [];
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        allAlerts.push(...result.value);
+      } else {
+        logger.warn('Failed to fetch cross-chain alerts for a symbol', {
+          error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+        });
       }
     }
 
     return allAlerts;
-  } catch (error) {
-    logger.warn('Failed to fetch cross-chain alerts', { error });
+  } catch (err) {
+    logger.warn('Failed to fetch cross-chain alerts', { error: err });
     return [];
   }
 }

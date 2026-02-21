@@ -18,6 +18,12 @@ import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import type { TableRowData } from '@/features/comparison/components/VirtualTable';
+import {
+  formatPrice,
+  formatLatency,
+  getDeviationColor,
+  getLatencyColor,
+} from '@/features/cross-chain/utils/format';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
@@ -28,35 +34,10 @@ export interface RowDetailPanelProps {
   priceHistory?: number[];
 }
 
-const formatPrice = (price: number): string => {
-  if (price >= 1000) return `$${price.toLocaleString()}`;
-  if (price >= 1) return `$${price.toFixed(2)}`;
-  return `$${price.toFixed(4)}`;
-};
-
 const formatDeviation = (value: number): string => {
   const percentValue = Math.abs(value) * 100;
   if (percentValue < 0.01) return '<0.01%';
   return `${percentValue.toFixed(2)}%`;
-};
-
-const formatLatency = (ms: number): string => {
-  if (ms < 1000) return `${ms.toFixed(0)}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-};
-
-const getDeviationColor = (deviation: number): string => {
-  const abs = Math.abs(deviation);
-  if (abs > 0.02) return 'text-red-600';
-  if (abs > 0.01) return 'text-amber-600';
-  if (abs > 0.005) return 'text-yellow-600';
-  return 'text-emerald-600';
-};
-
-const getLatencyColor = (latency: number): string => {
-  if (latency > 5000) return 'text-red-600';
-  if (latency > 1000) return 'text-yellow-600';
-  return 'text-emerald-600';
 };
 
 const getStatusColor = (status: string): string => {

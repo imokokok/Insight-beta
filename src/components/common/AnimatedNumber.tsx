@@ -43,7 +43,7 @@ export function AnimatedNumber({
   const [, setPreviousValue] = useState(value);
   const [diff, setDiff] = useState<number | null>(null);
   const [isHighlighted, setIsHighlighted] = useState(false);
-  const animationRef = useRef<number | null>(null);
+  const animationRef: React.MutableRefObject<number | null> = useRef<number | null>(null);
 
   useEffect(() => {
     if (value !== displayValue) {

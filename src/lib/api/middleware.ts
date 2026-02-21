@@ -8,10 +8,13 @@
  * - 统一错误处理
  */
 
-import { NextResponse } from 'next/server';
+import type { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+import { RATE_LIMIT_CONFIG } from '@/config/constants';
+import { rateLimit as checkRateLimit } from '@/lib/security/rateLimit';
 import { logger } from '@/shared/logger';
+import { apiError } from '@/shared/utils/apiHandler';
 
 const SENSITIVE_PARAMS = ['api_key', 'token', 'secret', 'password', 'key', 'auth', 'credential'];
 
@@ -62,47 +65,9 @@ export interface MiddlewareConfig {
 }
 
 export interface RateLimitConfig {
-  /** 窗口时间（毫秒） */
   windowMs: number;
-  /** 窗口内最大请求数 */
   maxRequests: number;
-  /** 自定义 key 生成函数 */
   keyGenerator?: (request: NextRequest) => string;
-}
-
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-
-function getRateLimitKey(request: NextRequest, config: RateLimitConfig): string {
-  if (config.keyGenerator) {
-    return config.keyGenerator(request);
-  }
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
-  return `rate-limit:${ip}`;
-}
-
-function checkRateLimit(
-  request: NextRequest,
-  config: RateLimitConfig,
-): { allowed: boolean; remaining: number; resetIn: number } {
-  const key = getRateLimitKey(request, config);
-  const now = Date.now();
-  const record = rateLimitStore.get(key);
-
-  if (!record || now > record.resetTime) {
-    rateLimitStore.set(key, { count: 1, resetTime: now + config.windowMs });
-    return { allowed: true, remaining: config.maxRequests - 1, resetIn: config.windowMs };
-  }
-
-  if (record.count >= config.maxRequests) {
-    return { allowed: false, remaining: 0, resetIn: record.resetTime - now };
-  }
-
-  record.count++;
-  return {
-    allowed: true,
-    remaining: config.maxRequests - record.count,
-    resetIn: record.resetTime - now,
-  };
 }
 
 export type ApiHandler = (request: NextRequest) => Promise<NextResponse>;
@@ -160,43 +125,34 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
 
       try {
         if (options.validate?.allowedMethods && !options.validate.allowedMethods.includes(method)) {
-          return NextResponse.json(
-            { ok: false, error: `Method ${method} not allowed` },
-            { status: 405 },
-          );
+          return apiError('METHOD_NOT_ALLOWED', `Method ${method} not allowed`, 405);
         }
 
         let rateLimitRemaining = -1;
 
         if (options.rateLimit) {
-          const { allowed, remaining, resetIn } = checkRateLimit(request, options.rateLimit);
-          rateLimitRemaining = remaining;
-          if (!allowed) {
-            return NextResponse.json(
-              { ok: false, error: 'Rate limit exceeded', retryAfter: Math.ceil(resetIn / 1000) },
-              {
-                status: 429,
-                headers: {
-                  'X-RateLimit-Remaining': '0',
-                  'Retry-After': String(Math.ceil(resetIn / 1000)),
-                },
-              },
-            );
+          const result = await checkRateLimit(request, options.rateLimit);
+          rateLimitRemaining = result.remaining;
+          if (!result.allowed) {
+            const retryAfter = Math.ceil((result.resetTime - Date.now()) / 1000);
+            const response = apiError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded', 429, {
+              retryAfter,
+            });
+            response.headers.set('X-RateLimit-Remaining', '0');
+            response.headers.set('Retry-After', String(retryAfter));
+            return response;
           }
         }
 
         if (options.auth?.required) {
           const token = request.headers.get(options.auth.header || 'authorization');
           if (!token) {
-            return NextResponse.json(
-              { ok: false, error: 'Authentication required' },
-              { status: 401 },
-            );
+            return apiError('AUTHENTICATION_REQUIRED', 'Authentication required', 401);
           }
           if (options.auth.validateToken) {
             const valid = await options.auth.validateToken(token);
             if (!valid) {
-              return NextResponse.json({ ok: false, error: 'Invalid token' }, { status: 401 });
+              return apiError('INVALID_TOKEN', 'Invalid token', 401);
             }
           }
         }
@@ -204,10 +160,7 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
         if (options.validate?.custom) {
           const validation = await options.validate.custom(request);
           if (!validation.valid) {
-            return NextResponse.json(
-              { ok: false, error: validation.error || 'Validation failed' },
-              { status: 400 },
-            );
+            return apiError('VALIDATION_ERROR', validation.error || 'Validation failed', 400);
           }
         }
 
@@ -239,13 +192,11 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
           duration: Date.now() - startTime,
         });
 
-        return NextResponse.json(
-          {
-            ok: false,
-            error: error instanceof Error ? error.message : 'Internal server error',
-            requestId,
-          },
-          { status: 500 },
+        return apiError(
+          'INTERNAL_ERROR',
+          error instanceof Error ? error.message : 'Internal server error',
+          500,
+          { requestId },
         );
       }
     };
@@ -256,22 +207,22 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
  * 默认速率限制配置
  */
 export const DEFAULT_RATE_LIMIT: RateLimitConfig = {
-  windowMs: 60000,
-  maxRequests: 100,
+  windowMs: RATE_LIMIT_CONFIG.DEFAULT_WINDOW_MS,
+  maxRequests: RATE_LIMIT_CONFIG.DEFAULT_MAX_REQUESTS,
 };
 
 /**
  * 严格的速率限制配置
  */
 export const STRICT_RATE_LIMIT: RateLimitConfig = {
-  windowMs: 60000,
-  maxRequests: 10,
+  windowMs: RATE_LIMIT_CONFIG.DEFAULT_WINDOW_MS,
+  maxRequests: RATE_LIMIT_CONFIG.STRICT_MAX_REQUESTS,
 };
 
 /**
  * 宽松的速率限制配置
  */
 export const RELAXED_RATE_LIMIT: RateLimitConfig = {
-  windowMs: 60000,
-  maxRequests: 1000,
+  windowMs: RATE_LIMIT_CONFIG.DEFAULT_WINDOW_MS,
+  maxRequests: RATE_LIMIT_CONFIG.RELAXED_MAX_REQUESTS,
 };

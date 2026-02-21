@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 
 import { logger } from '@/shared/logger';
@@ -39,6 +39,11 @@ interface FavoritesProviderProps {
 export function FavoritesProvider({ children }: FavoritesProviderProps) {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  const favoritesRef = useRef(favorites);
+  useEffect(() => {
+    favoritesRef.current = favorites;
+  }, [favorites]);
 
   useEffect(() => {
     try {
@@ -90,12 +95,9 @@ export function FavoritesProvider({ children }: FavoritesProviderProps) {
     [saveFavorites],
   );
 
-  const isFavorite = useCallback(
-    (id: string) => {
-      return favorites.some((f) => f.id === id);
-    },
-    [favorites],
-  );
+  const isFavorite = useCallback((id: string) => {
+    return favoritesRef.current.some((f) => f.id === id);
+  }, []);
 
   const clearFavorites = useCallback(() => {
     saveFavorites([]);

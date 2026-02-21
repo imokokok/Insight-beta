@@ -1,5 +1,6 @@
 import useSWR from 'swr';
 
+import { fetcher } from '@/hooks';
 import type {
   TimePeriod,
   ReliabilityScore,
@@ -9,8 +10,6 @@ import type {
 } from '@/types/oracle/reliability';
 
 export type { ReliabilityScore, ProtocolRanking, ReliabilityApiResponse, TrendDataPoint };
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function useReliabilityScores(period: TimePeriod = '30d') {
   const { data, error, isLoading, mutate } = useSWR<ReliabilityApiResponse>(

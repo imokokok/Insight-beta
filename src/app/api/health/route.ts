@@ -1,5 +1,6 @@
 import { env, getEnvReport } from '@/config/env';
 import { error, handleApi, rateLimit, requireAdmin } from '@/lib/api/apiResponse';
+import { withCacheHeadersResponse, CACHE_PRESETS } from '@/lib/api/cache';
 import { hasDatabase, query } from '@/lib/database/db';
 
 /**
@@ -159,22 +160,27 @@ export async function GET(request: Request) {
     const probe = (url.searchParams.get('probe') ?? '').toLowerCase();
 
     switch (probe) {
-      case 'liveness':
-        return Response.json(await handleLivenessProbe());
+      case 'liveness': {
+        const result = Response.json(await handleLivenessProbe());
+        return withCacheHeadersResponse(result, CACHE_PRESETS.short);
+      }
       case 'readiness': {
         const result = await handleReadinessProbe();
         if (result instanceof Response) return result;
-        return Response.json(result);
+        const response = Response.json(result);
+        return withCacheHeadersResponse(response, CACHE_PRESETS.short);
       }
       case 'validation': {
         const result = await handleValidationProbe(request);
         if (result instanceof Response) return result;
-        return Response.json(result);
+        const response = Response.json(result);
+        return withCacheHeadersResponse(response, CACHE_PRESETS.short);
       }
       default: {
         const result = await handleDefaultHealthCheck(request);
         if (result instanceof Response) return result;
-        return Response.json(result);
+        const response = Response.json(result);
+        return withCacheHeadersResponse(response, CACHE_PRESETS.short);
       }
     }
   });

@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { ok, error } from '@/lib/api/apiResponse';
 import { BAND_CHAIN_REST_URLS } from '@/lib/blockchain/bandOracle';
+import { logger } from '@/shared/logger';
 
 interface IBCQueryParams {
   chainId?: string;
@@ -106,7 +107,11 @@ async function fetchIBCConnections(
       connections,
       pagination: { total: data.pagination?.total ?? String(connections.length) },
     };
-  } catch {
+  } catch (error) {
+    logger.warn('Failed to fetch IBC connections', {
+      restUrl,
+      error: error instanceof Error ? error.message : String(error),
+    });
     return { connections: [], pagination: { total: '0' } };
   }
 }
@@ -158,7 +163,11 @@ async function fetchIBCChannels(
       channels,
       pagination: { total: data.pagination?.total ?? String(channels.length) },
     };
-  } catch {
+  } catch (error) {
+    logger.warn('Failed to fetch IBC channels', {
+      restUrl,
+      error: error instanceof Error ? error.message : String(error),
+    });
     return { channels: [], pagination: { total: '0' } };
   }
 }
@@ -188,7 +197,11 @@ async function fetchChainInfo(restUrl: string): Promise<{ chainId: string; block
       chainId: data.block?.header?.chain_id ?? '',
       blockHeight: parseInt(data.block?.header?.height ?? '0', 10),
     };
-  } catch {
+  } catch (error) {
+    logger.warn('Failed to fetch chain info', {
+      restUrl,
+      error: error instanceof Error ? error.message : String(error),
+    });
     return { chainId: '', blockHeight: 0 };
   }
 }

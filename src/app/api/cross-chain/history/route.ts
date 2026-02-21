@@ -60,7 +60,11 @@ async function handleGet(request: NextRequest) {
 
   const validatedSymbol = validateSymbol(symbol);
   if (validatedSymbol === null) {
-    return apiError(`Invalid symbol. Valid symbols: ${VALID_SYMBOLS.join(', ')}`, 400);
+    return apiError(
+      'INVALID_SYMBOL',
+      `Invalid symbol. Valid symbols: ${VALID_SYMBOLS.join(', ')}`,
+      400,
+    );
   }
 
   const interval = validateInterval(intervalParam);

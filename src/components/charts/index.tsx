@@ -33,8 +33,7 @@ export {
   CHART_ANIMATIONS,
   CHART_TYPOGRAPHY,
   CHART_THRESHOLDS,
-  getStatusColor,
-  getHealthColor,
+  getStatusColorByValue,
   getSeriesColor,
   generateGradientId,
 } from './EnhancedChartComponents';

@@ -2,12 +2,7 @@
 
 import { useMemo } from 'react';
 
-import {
-  ExportButton,
-  escapeCSV,
-  escapeXML,
-  type ExportConfig,
-} from '@/features/oracle/components/shared';
+import { ExportButton, escapeCSV, escapeXML, type ExportConfig } from '@/components/common';
 
 interface PythExportData {
   overviewStats: {

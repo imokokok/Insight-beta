@@ -11,3 +11,9 @@ export { CorrelationMatrix } from './CorrelationMatrix';
 export { ChainStatusOverview } from './ChainStatusOverview';
 export { RiskScore } from './RiskScore';
 export { LiquidityAnalysis } from './LiquidityAnalysis';
+export { OracleCrossChainComparison } from './OracleCrossChainComparison';
+export type {
+  ChainPriceData,
+  CrossChainStats,
+  OracleCrossChainComparisonProps,
+} from './OracleCrossChainComparison';

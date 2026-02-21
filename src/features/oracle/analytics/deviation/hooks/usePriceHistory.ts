@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+import { fetcher } from '@/hooks';
 
 export interface PriceHistoryRecord {
   id: number;

@@ -4,6 +4,7 @@ import { ArrowRight, Clock, Activity, TrendingUp, AlertCircle } from 'lucide-rea
 
 import { StatusBadge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { formatLatency, getLatencyColor } from '@/features/cross-chain/utils/format';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 
@@ -43,20 +44,9 @@ const getSuccessRateColor = (rate: number): string => {
   return 'text-red-500';
 };
 
-const getLatencyColor = (latencyMs: number): string => {
-  if (latencyMs <= 5000) return 'text-emerald-500';
-  if (latencyMs <= 15000) return 'text-amber-500';
-  return 'text-red-500';
-};
-
 export function BridgeStatusCard({ bridge, onClick, className }: BridgeStatusCardProps) {
   const { t } = useI18n();
   const statusConfig = getStatusConfig(bridge.status);
-
-  const formatLatency = (ms: number): string => {
-    if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(1)}s`;
-  };
 
   const formatVolume = (volume: number): string => {
     if (volume >= 1_000_000) {

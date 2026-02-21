@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 
 import { GitCompare, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 
-import { EmptyDeviationState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui';
 import { Badge, StatusBadge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
-import { useI18n } from '@/i18n';
+import { CHAIN_COLORS, API3_SUPPORTED_CHAINS } from '@/config/chains';
+import { formatPrice, formatInterval, formatLatency } from '@/features/cross-chain/utils';
 import { cn } from '@/shared/utils';
 
 import { CrossChainMetrics } from './CrossChainMetrics';
@@ -27,16 +27,7 @@ interface CrossChainComparisonProps {
   className?: string;
 }
 
-const availableChains = ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base'] as const;
 const availableDapis = ['ETH/USD', 'BTC/USD', 'LINK/USD', 'USDC/USD', 'SOL/USD'];
-
-const chainColors: Record<string, string> = {
-  ethereum: '#627eea',
-  polygon: '#8247e5',
-  arbitrum: '#28a0f0',
-  optimism: '#ff0420',
-  base: '#0052ff',
-};
 
 const generateMockData = (dapiName: string, chains: string[]): CrossChainComparisonData => {
   const now = Date.now();
@@ -97,7 +88,6 @@ export function CrossChainComparison({
   dapiName: initialDapiName,
   className,
 }: CrossChainComparisonProps) {
-  useI18n();
   const [dapiName, setDapiName] = useState<string>(initialDapiName || 'ETH/USD');
   const [selectedChains, setSelectedChains] = useState<string[]>([
     'ethereum',
@@ -138,24 +128,6 @@ export function CrossChainComparison({
     }, 600);
   };
 
-  const formatPrice = (price: number) => {
-    if (price >= 1000) return `$${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-    if (price >= 1) return `$${price.toFixed(4)}`;
-    return `$${price.toFixed(6)}`;
-  };
-
-  const formatInterval = (ms: number) => {
-    const seconds = ms / 1000;
-    if (seconds < 60) return `${seconds.toFixed(1)}s`;
-    const minutes = seconds / 60;
-    return `${minutes.toFixed(1)}m`;
-  };
-
-  const formatLatency = (ms: number) => {
-    if (ms < 1000) return `${ms.toFixed(0)}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
-  };
-
   if (isLoading) {
     return (
       <Card className={className}>
@@ -176,7 +148,7 @@ export function CrossChainComparison({
     return (
       <Card className={className}>
         <CardContent className="pt-6">
-          <EmptyDeviationState onRefresh={handleRefresh} />
+          <div className="py-8 text-center text-muted-foreground">暂无数据</div>
         </CardContent>
       </Card>
     );
@@ -214,7 +186,7 @@ export function CrossChainComparison({
           </div>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          {availableChains.map((chain) => (
+          {API3_SUPPORTED_CHAINS.map((chain) => (
             <button
               key={chain}
               type="button"
@@ -226,7 +198,9 @@ export function CrossChainComparison({
                   : 'text-muted-foreground hover:bg-muted',
               )}
               style={
-                selectedChains.includes(chain) ? { backgroundColor: chainColors[chain] } : undefined
+                selectedChains.includes(chain)
+                  ? { backgroundColor: CHAIN_COLORS[chain] }
+                  : undefined
               }
             >
               {chain}
@@ -237,8 +211,8 @@ export function CrossChainComparison({
       <CardContent className="space-y-6">
         {data && (
           <>
-            <CrossChainPriceChart data={data} chainColors={chainColors} />
-            <CrossChainMetrics data={data} chainColors={chainColors} />
+            <CrossChainPriceChart data={data} chainColors={CHAIN_COLORS} />
+            <CrossChainMetrics data={data} chainColors={CHAIN_COLORS} />
             <div>
               <Button
                 variant="outline"
@@ -262,7 +236,9 @@ export function CrossChainComparison({
                         {data.chains.map((chain) => (
                           <th key={chain} className="px-4 py-3 text-center font-medium">
                             <Badge
-                              style={{ backgroundColor: chainColors[chain] }}
+                              style={{
+                                backgroundColor: CHAIN_COLORS[chain as keyof typeof CHAIN_COLORS],
+                              }}
                               className="text-white"
                             >
                               {chain}

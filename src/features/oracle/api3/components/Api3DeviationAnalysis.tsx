@@ -7,6 +7,7 @@ import { Activity, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
+import { TIME_RANGE_OPTIONS } from '@/config/constants';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
@@ -83,13 +84,6 @@ const calculateDeviationMetrics = (prices1: number[], prices2: number[]): Deviat
 
   return { mean, max, min, stdDev };
 };
-
-const timeRangeOptions = [
-  { value: '1h', label: '1H' },
-  { value: '24h', label: '24H' },
-  { value: '7d', label: '7D' },
-  { value: '30d', label: '30D' },
-] as const;
 
 export function Api3DeviationAnalysis({
   symbol = 'ETH',
@@ -176,7 +170,7 @@ export function Api3DeviationAnalysis({
             </div>
             <div className="flex items-center gap-2">
               <div className="flex rounded-lg border p-1">
-                {timeRangeOptions.map((option) => (
+                {TIME_RANGE_OPTIONS.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => setTimeRange(option.value)}

@@ -1,9 +1,11 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import {
+  getChannelById,
+  updateChannelTestStatus,
+} from '@/features/alerts/services/notificationChannelService';
 import { logger } from '@/shared/logger';
-
-import { channelsStore } from '../../store';
 
 const DEFAULT_TIMEOUT_MS = 10000;
 
@@ -249,16 +251,8 @@ async function simulateEmailTest(email: string): Promise<{ success: boolean; mes
 export async function POST(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const channelIndex = channelsStore.findIndex((c) => c.id === id);
+    const channel = await getChannelById(id);
 
-    if (channelIndex === -1) {
-      return NextResponse.json(
-        { ok: false, success: false, message: 'Channel not found' },
-        { status: 404 },
-      );
-    }
-
-    const channel = channelsStore[channelIndex];
     if (!channel) {
       return NextResponse.json(
         { ok: false, success: false, message: 'Channel not found' },
@@ -319,19 +313,11 @@ If you received this message, your notification channel is configured correctly.
         };
     }
 
-    channelsStore[channelIndex] = {
-      id: channel.id,
-      name: channel.name,
-      type: channel.type,
-      enabled: channel.enabled,
-      config: channel.config,
-      description: channel.description,
-      createdAt: channel.createdAt,
-      updatedAt: new Date().toISOString(),
-      lastUsedAt: channel.lastUsedAt,
-      testStatus: testResult.success ? 'success' : 'failed',
-      testMessage: testResult.message,
-    };
+    await updateChannelTestStatus(
+      id,
+      testResult.success ? 'success' : 'failed',
+      testResult.message,
+    );
 
     return NextResponse.json({
       ok: true,

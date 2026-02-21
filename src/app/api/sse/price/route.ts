@@ -11,62 +11,42 @@
 
 import type { NextRequest } from 'next/server';
 
+import { SSE_CONFIG, SUPPORTED_SYMBOLS, RATE_LIMIT_CONFIG } from '@/config/constants';
 import { realtimePriceService } from '@/features/oracle/services/realtime';
+import { rateLimit, getClientIp } from '@/lib/security/rateLimit';
 import { logger } from '@/shared/logger';
 
 export const dynamic = 'force-dynamic';
 
-const ALLOWED_SYMBOLS = ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD', 'SOL/USD'];
-
-const MAX_CONNECTIONS = 100;
-
-const IP_RATE_LIMIT_WINDOW_MS = 60000;
-const IP_RATE_LIMIT_MAX = 5;
-
-const ipConnectionStore = new Map<string, { count: number; resetTime: number }>();
-
-function checkIpRateLimit(ip: string): { allowed: boolean; remaining: number; resetIn: number } {
-  const now = Date.now();
-  const record = ipConnectionStore.get(ip);
-
-  if (!record || now > record.resetTime) {
-    ipConnectionStore.set(ip, { count: 1, resetTime: now + IP_RATE_LIMIT_WINDOW_MS });
-    return { allowed: true, remaining: IP_RATE_LIMIT_MAX - 1, resetIn: IP_RATE_LIMIT_WINDOW_MS };
-  }
-
-  if (record.count >= IP_RATE_LIMIT_MAX) {
-    return { allowed: false, remaining: 0, resetIn: record.resetTime - now };
-  }
-
-  record.count++;
-  return {
-    allowed: true,
-    remaining: IP_RATE_LIMIT_MAX - record.count,
-    resetIn: record.resetTime - now,
-  };
-}
-
-function getClientIp(request: NextRequest): string {
-  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-}
+const ALLOWED_SYMBOLS: string[] = [...SUPPORTED_SYMBOLS.PRICE_PAIRS];
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   const clientIp = getClientIp(request);
 
-  const rateLimitResult = checkIpRateLimit(clientIp);
+  const rateLimitResult = await rateLimit(request, {
+    windowMs: RATE_LIMIT_CONFIG.DEFAULT_WINDOW_MS,
+    maxRequests: RATE_LIMIT_CONFIG.SSE_MAX_REQUESTS,
+    keyGenerator: () => `sse-price:${clientIp}`,
+  });
+
   if (!rateLimitResult.allowed) {
+    const retryAfter = Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000);
     return new Response(
       JSON.stringify({
-        error: 'Rate limit exceeded',
-        retryAfter: Math.ceil(rateLimitResult.resetIn / 1000),
+        success: false,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: 'Rate limit exceeded',
+          details: { retryAfter },
+        },
       }),
       {
         status: 429,
         headers: {
           'Content-Type': 'application/json',
-          'Retry-After': String(Math.ceil(rateLimitResult.resetIn / 1000)),
+          'Retry-After': String(retryAfter),
         },
       },
     );
@@ -79,9 +59,11 @@ export async function GET(request: NextRequest) {
 
   if (symbolsParam) {
     const requestedSymbols = symbolsParam.split(',').map((s) => s.trim().toUpperCase());
-    if (requestedSymbols.length > 10) {
+    if (requestedSymbols.length > SSE_CONFIG.MAX_SYMBOLS_PER_REQUEST) {
       return new Response(
-        JSON.stringify({ error: 'Too many symbols requested. Maximum 10 allowed.' }),
+        JSON.stringify({
+          error: `Too many symbols requested. Maximum ${SSE_CONFIG.MAX_SYMBOLS_PER_REQUEST} allowed.`,
+        }),
         { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
@@ -97,7 +79,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (realtimePriceService.listenerCount('priceUpdate') >= MAX_CONNECTIONS) {
+  if (realtimePriceService.listenerCount('priceUpdate') >= SSE_CONFIG.MAX_CONNECTIONS) {
     return new Response(
       JSON.stringify({ error: 'Too many connections. Please try again later.' }),
       { status: 503, headers: { 'Content-Type': 'application/json' } },
@@ -141,7 +123,7 @@ export async function GET(request: NextRequest) {
             timestamp: Date.now(),
           };
           controller.enqueue(`data: ${JSON.stringify(heartbeatMsg)}\n\n`);
-        }, 30000);
+        }, SSE_CONFIG.HEARTBEAT_INTERVAL_MS);
 
         const abortHandler = () => {
           clearInterval(heartbeat);

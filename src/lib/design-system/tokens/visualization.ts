@@ -272,9 +272,13 @@ export const CHART_THRESHOLDS = {
 // ============================================================================
 
 /**
- * 根据值获取状态颜色
+ * 根据数值和阈值获取状态颜色（用于图表）
+ * @param value - 当前数值
+ * @param thresholds - 警告和临界阈值
+ * @param reverse - 是否反转逻辑（数值越低越严重）
+ * @returns 颜色字符串
  */
-export function getStatusColor(
+export function getStatusColorByValue(
   value: number,
   thresholds: { warning: number; critical: number },
   reverse = false,
@@ -291,9 +295,11 @@ export function getStatusColor(
 }
 
 /**
- * 根据健康度评分获取颜色
+ * 根据健康度评分获取颜色（用于图表）
+ * @param score - 健康度评分 (0-100)
+ * @returns 颜色字符串
  */
-export function getHealthColor(score: number): string {
+export function getHealthScoreColor(score: number): string {
   if (score >= CHART_THRESHOLDS.health.excellent) return CHART_COLORS.semantic.success.DEFAULT;
   if (score >= CHART_THRESHOLDS.health.good) return CHART_COLORS.semantic.success.light;
   if (score >= CHART_THRESHOLDS.health.fair) return CHART_COLORS.semantic.warning.DEFAULT;

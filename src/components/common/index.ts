@@ -11,8 +11,13 @@ export { DynamicLoading, createLoadingComponent, type LoadingType } from './Dyna
 export { ChartCard, ChartCardSkeleton } from './ChartCard';
 export { ChartFullscreen, ChartFullscreenButton } from './ChartFullscreen';
 export type { ChartFullscreenProps } from './ChartFullscreen';
-export { ExportButton } from './ExportButton';
-export type { ExportButtonProps } from './ExportButton';
+export { ExportButton, escapeCSV, escapeXML, downloadFile } from './ExportButton';
+export type {
+  ExportButtonProps,
+  ExportConfig,
+  ChartExportButtonProps,
+  DataExportButtonProps,
+} from './ExportButton';
 
 // ==================== 数据展示 ====================
 export { StatCard, StatCardSkeleton, StatCardGroup, DashboardStatsSection } from './StatCard';

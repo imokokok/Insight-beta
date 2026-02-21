@@ -103,7 +103,7 @@ export default function AlertsCenterPage() {
     toggleSelectAll,
     isSelected,
     handleBatchActionComplete,
-    handleExport,
+    exportToJSON,
   } = useAlertsPage();
 
   if (error && !loading && !data) {
@@ -127,7 +127,7 @@ export default function AlertsCenterPage() {
             <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
             {t('common.refresh')}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleExport} disabled={!data}>
+          <Button variant="outline" size="sm" onClick={exportToJSON} disabled={!data}>
             <Download className="mr-2 h-4 w-4" />
             {t('common.export')}
           </Button>

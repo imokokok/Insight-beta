@@ -8,20 +8,32 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * API 响应格式
+ * API 错误对象格式
  */
-export interface ApiResponse<T = unknown> {
-  ok: boolean;
-  data?: T;
-  error?: string;
+export interface ApiErrorObject {
+  code: string;
+  message: string;
+  details?: unknown;
 }
 
 /**
- * API 错误响应选项
+ * API 响应格式（新格式）
  */
-export interface ApiErrorOptions {
-  status?: number;
-  message?: string;
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: ApiErrorObject;
+  meta?: Record<string, unknown>;
+}
+
+/**
+ * 旧版 API 响应格式（向后兼容）
+ * @deprecated 使用 ApiResponse 代替
+ */
+export interface LegacyApiResponse<T = unknown> {
+  ok: boolean;
+  data?: T;
+  error?: string;
 }
 
 /**
@@ -40,7 +52,7 @@ export interface ApiErrorOptions {
 export function apiSuccess<T>(data: T, status: number = 200): NextResponse {
   return NextResponse.json(
     {
-      ok: true,
+      success: true,
       data,
     } satisfies ApiResponse<T>,
     { status },
@@ -50,21 +62,32 @@ export function apiSuccess<T>(data: T, status: number = 200): NextResponse {
 /**
  * 创建错误的 API 响应
  *
+ * @param code - 错误代码
  * @param message - 错误信息
  * @param status - HTTP 状态码，默认 500
+ * @param details - 额外错误详情
  * @returns NextResponse
  *
  * @example
  * ```typescript
- * return apiError('Chain parameter is required', 400);
- * return apiError('Internal server error', 500);
+ * return apiError('VALIDATION_ERROR', 'Chain parameter is required', 400);
+ * return apiError('INTERNAL_ERROR', 'Internal server error', 500);
  * ```
  */
-export function apiError(message: string, status: number = 500): NextResponse {
+export function apiError(
+  code: string,
+  message: string,
+  status: number = 500,
+  details?: unknown,
+): NextResponse {
   return NextResponse.json(
     {
-      ok: false,
-      error: message,
+      success: false,
+      error: {
+        code,
+        message,
+        ...(details !== undefined && { details }),
+      },
     } satisfies ApiResponse,
     { status },
   );

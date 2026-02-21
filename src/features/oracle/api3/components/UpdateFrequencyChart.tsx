@@ -19,6 +19,7 @@ import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
+import { TIME_RANGE_OPTIONS } from '@/config/constants';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
@@ -34,13 +35,6 @@ interface UpdateFrequencyChartProps {
   timeRange?: '1h' | '24h' | '7d' | '30d';
   className?: string;
 }
-
-const timeRangeOptions = [
-  { value: '1h', label: '1H' },
-  { value: '24h', label: '24H' },
-  { value: '7d', label: '7D' },
-  { value: '30d', label: '30D' },
-] as const;
 
 const generateMockData = (timeRange: string): UpdateFrequencyResponse => {
   const timeRangeMs: Record<string, number> = {
@@ -217,7 +211,7 @@ export function UpdateFrequencyChart({
           </div>
           <div className="flex items-center gap-2">
             <div className="flex rounded-lg border p-1">
-              {timeRangeOptions.map((option) => (
+              {TIME_RANGE_OPTIONS.map((option) => (
                 <button
                   key={option.value}
                   onClick={() => setTimeRange(option.value)}

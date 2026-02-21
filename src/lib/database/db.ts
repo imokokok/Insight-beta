@@ -1,5 +1,6 @@
 import pg from 'pg';
 
+import { DB_POOL_CONFIG } from '@/config/constants';
 import { env } from '@/config/env';
 import { logger } from '@/shared/logger';
 import type { Database } from '@/types/database/supabase';
@@ -41,10 +42,10 @@ export function hasDatabase(): boolean {
 
 const poolConfig: pg.PoolConfig = {
   connectionString: getDbUrl() || undefined,
-  max: 20,
-  min: 2,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
+  max: DB_POOL_CONFIG.MAX_CONNECTIONS,
+  min: DB_POOL_CONFIG.MIN_CONNECTIONS,
+  idleTimeoutMillis: DB_POOL_CONFIG.IDLE_TIMEOUT_MS,
+  connectionTimeoutMillis: DB_POOL_CONFIG.CONNECTION_TIMEOUT_MS,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
   statement_timeout: 30000,
   query_timeout: 30000,

@@ -1,11 +1,18 @@
 import type { NextRequest } from 'next/server';
 
+import { SUPPORTED_CHAINS } from '@/config/constants';
 import { ok, error } from '@/lib/api/apiResponse';
+import { createAlertRuleSchema } from '@/lib/api/validation/schemas';
+import {
+  parseAlertEvent,
+  parseAlertSeverity,
+  parseOracleProtocolArray,
+  parseSupportedChainArray,
+} from '@/lib/api/validation/typeGuards';
+import { parseAndValidate } from '@/lib/api/validation/validate';
 import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
-import type { SupportedChain } from '@/types/chains';
-import type { AlertRule, AlertEvent, AlertSeverity } from '@/types/oracle/alert';
-import type { OracleProtocol } from '@/types/oracle/protocol';
+import type { AlertRule } from '@/types/oracle/alert';
 
 interface AlertRuleRow {
   id: string;
@@ -29,15 +36,17 @@ interface AlertRuleRow {
   updated_at: Date;
 }
 
+const SUPPORTED_CHAIN_IDS = SUPPORTED_CHAINS.map((c) => c.id);
+
 function rowToAlertRule(row: AlertRuleRow): AlertRule {
   return {
     id: row.id,
     name: row.name,
     enabled: row.enabled,
-    event: row.event as AlertEvent,
-    severity: row.severity as AlertSeverity,
-    protocols: (row.protocols as OracleProtocol[]) ?? undefined,
-    chains: (row.chains as SupportedChain[]) ?? undefined,
+    event: parseAlertEvent(row.event),
+    severity: parseAlertSeverity(row.severity),
+    protocols: parseOracleProtocolArray(row.protocols),
+    chains: parseSupportedChainArray(row.chains, SUPPORTED_CHAIN_IDS),
     instances: row.instances ?? undefined,
     symbols: row.symbols ?? undefined,
     params: row.params ?? undefined,
@@ -69,16 +78,16 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const parsed = await parseAndValidate(request, createAlertRuleSchema);
+  if (!parsed.success) {
+    return parsed.response;
+  }
+
+  const data = parsed.data;
+  const enabled = data.enabled ?? true;
+  const severity = data.severity ?? 'warning';
+
   try {
-    const body = await request.json();
-
-    if (!body.name || !body.event) {
-      return error(
-        { code: 'VALIDATION_ERROR', message: 'Missing required fields: name, event' },
-        400,
-      );
-    }
-
     const id = generateId();
     const now = new Date();
 
@@ -90,22 +99,22 @@ export async function POST(request: NextRequest) {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
       [
         id,
-        body.name,
-        body.enabled ?? true,
-        body.event,
-        body.severity || 'warning',
-        body.protocols ?? null,
-        body.chains ?? null,
-        body.instances ?? null,
-        body.symbols ?? null,
-        body.params ? JSON.stringify(body.params) : null,
-        body.channels ?? null,
-        body.recipients ?? null,
-        body.cooldownMinutes ?? 5,
-        body.maxNotificationsPerHour ?? 10,
-        body.runbook ?? null,
-        body.owner ?? null,
-        body.silencedUntil ? new Date(body.silencedUntil) : null,
+        data.name,
+        enabled,
+        data.event,
+        severity,
+        data.protocols ?? null,
+        data.chains ?? null,
+        null,
+        data.symbols ?? null,
+        data.params ? JSON.stringify(data.params) : null,
+        data.channels ?? null,
+        data.recipients ?? null,
+        data.cooldownMinutes ?? 5,
+        data.maxNotificationsPerHour ?? 10,
+        data.runbook ?? null,
+        data.owner ?? null,
+        null,
         now,
         now,
       ],
@@ -113,21 +122,20 @@ export async function POST(request: NextRequest) {
 
     const newRule: AlertRule = {
       id,
-      name: body.name,
-      enabled: body.enabled ?? true,
-      event: body.event as AlertEvent,
-      severity: (body.severity as AlertSeverity) || 'warning',
-      protocols: body.protocols,
-      chains: body.chains,
-      instances: body.instances,
-      symbols: body.symbols,
-      params: body.params,
-      channels: body.channels || ['webhook'],
-      recipients: body.recipients || [],
-      cooldownMinutes: body.cooldownMinutes ?? 5,
-      maxNotificationsPerHour: body.maxNotificationsPerHour ?? 10,
-      runbook: body.runbook,
-      owner: body.owner,
+      name: data.name,
+      enabled,
+      event: data.event,
+      severity: parseAlertSeverity(severity),
+      protocols: parseOracleProtocolArray(data.protocols),
+      chains: parseSupportedChainArray(data.chains, SUPPORTED_CHAIN_IDS),
+      symbols: data.symbols,
+      params: data.params,
+      channels: data.channels as AlertRule['channels'],
+      recipients: data.recipients,
+      cooldownMinutes: data.cooldownMinutes ?? 5,
+      maxNotificationsPerHour: data.maxNotificationsPerHour ?? 10,
+      runbook: data.runbook,
+      owner: data.owner,
     };
 
     return ok({ rule: newRule, timestamp: new Date().toISOString() });

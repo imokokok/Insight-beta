@@ -4,9 +4,9 @@ import { useMemo } from 'react';
 
 import useSWR from 'swr';
 
-import type { ChainlinkFeed } from '../types/chainlink';
+import { fetcher } from '@/hooks';
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+import type { ChainlinkFeed } from '../types/chainlink';
 
 export type DeviationStatus = 'normal' | 'warning' | 'critical';
 

@@ -1,3 +1,13 @@
+import {
+  getAllChannels as dbGetAllChannels,
+  getChannelById as dbGetChannelById,
+  createChannel as dbCreateChannel,
+  updateChannel as dbUpdateChannel,
+  deleteChannel as dbDeleteChannel,
+  updateChannelTestStatus as dbUpdateChannelTestStatus,
+  updateChannelLastUsed as dbUpdateChannelLastUsed,
+  generateChannelId,
+} from '@/features/alerts/services/notificationChannelService';
 import type { NotificationChannel } from '@/types/oracle/alert';
 
 export const mockChannels: NotificationChannel[] = [
@@ -47,8 +57,12 @@ export const mockChannels: NotificationChannel[] = [
   },
 ];
 
-export let channelsStore: NotificationChannel[] = [...mockChannels];
+export { generateChannelId };
 
-export function generateChannelId(): string {
-  return `channel-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-}
+export const getAllChannels = dbGetAllChannels;
+export const getChannelById = dbGetChannelById;
+export const createChannel = dbCreateChannel;
+export const updateChannel = dbUpdateChannel;
+export const deleteChannel = dbDeleteChannel;
+export const updateChannelTestStatus = dbUpdateChannelTestStatus;
+export const updateChannelLastUsed = dbUpdateChannelLastUsed;

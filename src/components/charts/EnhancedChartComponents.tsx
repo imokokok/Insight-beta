@@ -46,8 +46,7 @@ import {
   CHART_ANIMATIONS,
   CHART_TYPOGRAPHY,
   CHART_THRESHOLDS,
-  getStatusColor,
-  getHealthColor,
+  getStatusColorByValue,
   getSeriesColor,
   generateGradientId,
 } from '@/lib/design-system/tokens/visualization';
@@ -606,7 +605,7 @@ export const EnhancedGaugeChart = memo(function EnhancedGaugeChart({
   ariaLabel,
 }: EnhancedGaugeChartProps & { ariaLabel?: string }) {
   const percentage = Math.min((value / max) * 100, 100);
-  const color = getStatusColor(percentage, thresholds);
+  const color = getStatusColorByValue(percentage, thresholds);
 
   const data = useMemo(
     () => [{ name: 'Value', value: percentage, fill: color }],
@@ -797,8 +796,7 @@ export {
   CHART_ANIMATIONS,
   CHART_TYPOGRAPHY,
   CHART_THRESHOLDS,
-  getStatusColor,
-  getHealthColor,
+  getStatusColorByValue,
   getSeriesColor,
   generateGradientId,
 };

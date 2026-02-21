@@ -1,16 +1,17 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 
 import { Activity, TrendingUp, Network, Shield } from 'lucide-react';
 
-import { useAlertRules, useNotificationChannels, useAlertHistory } from '../hooks';
+import { useAlertHistory } from '../hooks';
+import { useAlertsActions } from './useAlertsActions';
 import { useAlertsData } from './useAlertsData';
 import { useAlertSelection } from './useAlertSelection';
 import { useAlertsExport } from './useAlertsExport';
 import { useAlertsFilter } from './useAlertsFilter';
+import { useAlertsState } from './useAlertsState';
 
-import type { TimeRange, GroupBy } from './useAlertHistory';
 import type { UnifiedAlert, AlertSeverity, AlertStatus, AlertSource } from '../types';
 import type { AlertTriangle } from 'lucide-react';
 
@@ -25,36 +26,16 @@ export const sourceIcons: Record<AlertSource | 'all', typeof AlertTriangle> = {
 };
 
 export function useAlertsPage() {
-  const [selectedAlert, setSelectedAlert] = useState<UnifiedAlert | null>(null);
-  const [historyTimeRange, setHistoryTimeRange] = useState<TimeRange>('24h');
-  const [historyGroupBy, setHistoryGroupBy] = useState<GroupBy>('none');
-
+  const alertsState = useAlertsState();
   const alertsData = useAlertsData();
 
-  const {
-    rules,
-    loading: rulesLoading,
-    fetchRules,
-    createRule,
-    updateRule,
-    deleteRule,
-    toggleRule,
-  } = useAlertRules();
-
-  const {
-    channels,
-    loading: channelsLoading,
-    fetchChannels,
-    createChannel,
-    updateChannel,
-    deleteChannel,
-    toggleChannel,
-    testChannel,
-  } = useNotificationChannels();
+  const alertsActions = useAlertsActions({
+    onDataRefresh: () => alertsData.fetchData(false),
+  });
 
   const { data: historyData, isLoading: historyLoading } = useAlertHistory({
-    timeRange: historyTimeRange,
-    groupBy: historyGroupBy,
+    timeRange: alertsState.historyTimeRange,
+    groupBy: alertsState.historyGroupBy,
   });
 
   const alertsFilter = useAlertsFilter({
@@ -70,22 +51,16 @@ export function useAlertsPage() {
     filteredAlerts: alertsFilter.filteredAlerts,
   });
 
-  const handleBatchActionComplete = useCallback(
-    (_processed: number, _failed: number) => {
-      alertsData.fetchData(false);
-    },
-    [alertsData],
-  );
-
   useEffect(() => {
-    fetchRules();
-  }, [fetchRules]);
+    alertsActions.fetchChannels();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     loading: alertsData.loading,
     data: alertsData.data,
-    selectedAlert,
-    setSelectedAlert,
+    selectedAlert: alertsState.selectedAlert,
+    setSelectedAlert: alertsState.setSelectedAlert,
     activeTab: alertsFilter.activeTab,
     setActiveTab: alertsFilter.setActiveTab,
     searchQuery: alertsFilter.searchQuery,
@@ -100,24 +75,24 @@ export function useAlertsPage() {
     setSortMode: alertsFilter.setSortMode,
     groupMode: alertsFilter.groupMode,
     setGroupMode: alertsFilter.setGroupMode,
-    historyTimeRange,
-    setHistoryTimeRange,
-    historyGroupBy,
-    setHistoryGroupBy,
-    rules,
-    rulesLoading,
-    createRule,
-    updateRule,
-    deleteRule,
-    toggleRule,
-    channels,
-    channelsLoading,
-    fetchChannels,
-    createChannel,
-    updateChannel,
-    deleteChannel,
-    toggleChannel,
-    testChannel,
+    historyTimeRange: alertsState.historyTimeRange,
+    setHistoryTimeRange: alertsState.setHistoryTimeRange,
+    historyGroupBy: alertsState.historyGroupBy,
+    setHistoryGroupBy: alertsState.setHistoryGroupBy,
+    rules: alertsActions.rules,
+    rulesLoading: alertsActions.rulesLoading,
+    createRule: alertsActions.createRule,
+    updateRule: alertsActions.updateRule,
+    deleteRule: alertsActions.deleteRule,
+    toggleRule: alertsActions.toggleRule,
+    channels: alertsActions.channels,
+    channelsLoading: alertsActions.channelsLoading,
+    fetchChannels: alertsActions.fetchChannels,
+    createChannel: alertsActions.createChannel,
+    updateChannel: alertsActions.updateChannel,
+    deleteChannel: alertsActions.deleteChannel,
+    toggleChannel: alertsActions.toggleChannel,
+    testChannel: alertsActions.testChannel,
     historyData,
     historyLoading,
     autoRefreshEnabled: alertsData.autoRefreshEnabled,
@@ -136,8 +111,7 @@ export function useAlertsPage() {
     deselectAll: alertsSelection.deselectAll,
     toggleSelectAll: alertsSelection.toggleSelectAll,
     isSelected: alertsSelection.isSelected,
-    handleBatchActionComplete,
-    handleExport: alertsExport.exportToJSON,
+    handleBatchActionComplete: alertsActions.handleBatchActionComplete,
     exportToCSV: alertsExport.exportToCSV,
     exportToJSON: alertsExport.exportToJSON,
   };

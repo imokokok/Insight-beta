@@ -13,6 +13,7 @@ import {
   Search,
 } from 'lucide-react';
 
+import { gasCostByDapi, mockDapis } from '@/__mocks__/data/dapis';
 import { EmptyDeviationState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui';
 import { Badge, StatusBadge } from '@/components/ui';
@@ -34,86 +35,6 @@ interface DapiListProps {
   symbol?: string;
   className?: string;
 }
-
-const mockDapis: Dapi[] = [
-  {
-    dapiName: 'ETH/USD',
-    dataFeedId: '0x1234567890abcdef1234567890abcdef12345678',
-    airnodeAddress: '0xabcd1234abcd1234abcd1234abcd1234abcd1234',
-    chain: 'ethereum',
-    symbol: 'ETH',
-    decimals: 8,
-    status: 'active',
-    lastPrice: 2456.78,
-    lastUpdatedAt: new Date().toISOString(),
-    providerName: 'Coinbase',
-    providerDescription: 'Leading cryptocurrency exchange providing real-time market data',
-    providerWebsite: 'https://www.coinbase.com',
-    sourceType: 'beacon',
-  },
-  {
-    dapiName: 'BTC/USD',
-    dataFeedId: '0x2345678901abcdef2345678901abcdef23456789',
-    airnodeAddress: '0xbcde2345bcde2345bcde2345bcde2345bcde2345',
-    chain: 'ethereum',
-    symbol: 'BTC',
-    decimals: 8,
-    status: 'active',
-    lastPrice: 43250.5,
-    lastUpdatedAt: new Date().toISOString(),
-    providerName: 'Binance',
-    providerDescription: "World's largest cryptocurrency exchange by trading volume",
-    providerWebsite: 'https://www.binance.com',
-    sourceType: 'beacon_set',
-    beaconSetComponents: [
-      { beaconId: '0xbtc1', beaconName: 'BTC/USD (Coinbase)', weight: 0.35, lastPrice: 43255.0 },
-      { beaconId: '0xbtc2', beaconName: 'BTC/USD (Binance)', weight: 0.3, lastPrice: 43248.5 },
-      { beaconId: '0xbtc3', beaconName: 'BTC/USD (Kraken)', weight: 0.2, lastPrice: 43252.0 },
-      { beaconId: '0xbtc4', beaconName: 'BTC/USD (Bitstamp)', weight: 0.15, lastPrice: 43246.0 },
-    ],
-  },
-  {
-    dapiName: 'LINK/USD',
-    dataFeedId: '0x3456789012abcdef3456789012abcdef34567890',
-    airnodeAddress: '0xcdef3456cdef3456cdef3456cdef3456cdef3456',
-    chain: 'polygon',
-    symbol: 'LINK',
-    decimals: 8,
-    status: 'active',
-    lastPrice: 14.25,
-    lastUpdatedAt: new Date(Date.now() - 60000).toISOString(),
-    providerName: 'Chainlink Labs',
-    providerDescription: 'Decentralized oracle network providing tamper-proof data',
-    providerWebsite: 'https://chain.link',
-    sourceType: 'beacon',
-  },
-  {
-    dapiName: 'USDC/USD',
-    dataFeedId: '0x4567890123abcdef4567890123abcdef45678901',
-    airnodeAddress: '0xdef04567def04567def04567def04567def04567',
-    chain: 'arbitrum',
-    symbol: 'USDC',
-    decimals: 6,
-    status: 'inactive',
-    lastPrice: 0.9998,
-    lastUpdatedAt: new Date(Date.now() - 3600000).toISOString(),
-    providerName: 'Circle',
-    providerDescription: 'Financial technology company and issuer of USDC stablecoin',
-    providerWebsite: 'https://www.circle.com',
-    sourceType: 'beacon_set',
-    beaconSetComponents: [
-      { beaconId: '0xusdc1', beaconName: 'USDC/USD (Coinbase)', weight: 0.5, lastPrice: 0.9999 },
-      { beaconId: '0xusdc2', beaconName: 'USDC/USD (Kraken)', weight: 0.5, lastPrice: 0.9997 },
-    ],
-  },
-];
-
-const gasCostByDapi: Record<string, { costUsd: number; gasUsed: number }> = {
-  'ETH/USD': { costUsd: 45.2, gasUsed: 8500000 },
-  'BTC/USD': { costUsd: 32.8, gasUsed: 6200000 },
-  'LINK/USD': { costUsd: 12.5, gasUsed: 2800000 },
-  'USDC/USD': { costUsd: 8.9, gasUsed: 1500000 },
-};
 
 export function DapiList({ chain, symbol, className }: DapiListProps) {
   const { t } = useI18n();
@@ -155,12 +76,12 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
     );
   }, [dapis, searchQuery]);
 
-  const formatAddress = (address: string) => {
+  const formatAddress = (address: string): string => {
     if (address.length <= 12) return address;
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number): string => {
     if (price >= 1000) return `$${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
     if (price >= 1) return `$${price.toFixed(4)}`;
     return `$${price.toFixed(6)}`;
@@ -238,7 +159,7 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                 className="w-full pl-8 sm:w-64"
               />
             </div>
-            <Button variant="outline" size="icon" onClick={handleRefresh}>
+            <Button variant="outline" size="icon" onClick={handleRefresh} aria-label="刷新数据">
               <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
             </Button>
           </div>

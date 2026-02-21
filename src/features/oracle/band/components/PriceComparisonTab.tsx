@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Progress } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
+import { formatPrice, getDeviationColor } from '@/features/cross-chain/utils/format';
 import { useI18n } from '@/i18n';
 import { fetchApiData, cn } from '@/shared/utils';
 
@@ -69,28 +70,11 @@ export function PriceComparisonTab() {
     fetchComparisonData();
   }, [fetchComparisonData]);
 
-  const getDeviationColor = (deviation: number) => {
-    const absDev = Math.abs(deviation);
-    if (absDev < 0.5) return 'text-green-600';
-    if (absDev < 1.0) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
   const getDeviationBadge = (deviation: number) => {
     const absDev = Math.abs(deviation);
     if (absDev < 0.5) return 'success';
     if (absDev < 1.0) return 'warning';
     return 'destructive';
-  };
-
-  const formatPrice = (price: number) => {
-    if (price >= 1000) {
-      return price.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-    }
-    return price.toFixed(4);
   };
 
   return (

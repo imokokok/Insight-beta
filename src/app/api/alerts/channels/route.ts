@@ -1,16 +1,14 @@
 import type { NextRequest } from 'next/server';
 
 import { ok, error } from '@/lib/api/apiResponse';
-import type {
-  NotificationChannel,
-  NotificationChannelType,
-  NotificationChannelConfig,
-} from '@/types/oracle/alert';
+import { createNotificationChannelSchema } from '@/lib/api/validation/schemas';
+import { parseAndValidate } from '@/lib/api/validation/validate';
+import type { NotificationChannelConfig } from '@/types/oracle/alert';
 
-import { channelsStore, generateChannelId } from './store';
+import { mockChannels, createChannel, generateChannelId } from './store';
 
 function validateChannelConfig(
-  type: NotificationChannelType,
+  type: string,
   config: NotificationChannelConfig,
 ): { valid: boolean; error?: string } {
   switch (type) {
@@ -52,50 +50,40 @@ function validateChannelConfig(
 
 export async function GET() {
   return ok({
-    channels: channelsStore,
-    total: channelsStore.length,
+    channels: mockChannels,
+    total: mockChannels.length,
     timestamp: new Date().toISOString(),
   });
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-
-  if (!body.name || !body.type) {
-    return error({ code: 'VALIDATION_ERROR', message: 'Missing required fields: name, type' }, 400);
+  const parsed = await parseAndValidate(request, createNotificationChannelSchema);
+  if (!parsed.success) {
+    return parsed.response;
   }
 
-  const validTypes: NotificationChannelType[] = ['webhook', 'email', 'telegram', 'slack'];
-  if (!validTypes.includes(body.type)) {
-    return error(
-      {
-        code: 'VALIDATION_ERROR',
-        message: `Invalid channel type. Must be one of: ${validTypes.join(', ')}`,
-      },
-      400,
-    );
-  }
+  const data = parsed.data;
 
-  const configValidation = validateChannelConfig(body.type, body.config || {});
+  const configValidation = validateChannelConfig(data.type, data.config);
   if (!configValidation.valid) {
     return error({ code: 'VALIDATION_ERROR', message: configValidation.error }, 400);
   }
 
   const now = new Date().toISOString();
-  const newChannel: NotificationChannel = {
+  const newChannel = {
     id: generateChannelId(),
-    name: body.name,
-    type: body.type,
-    enabled: body.enabled ?? true,
-    config: body.config || {},
-    description: body.description,
+    name: data.name,
+    type: data.type,
+    enabled: data.enabled,
+    config: data.config,
+    description: data.description,
     createdAt: now,
     updatedAt: now,
     lastUsedAt: null,
     testStatus: null,
   };
 
-  channelsStore.push(newChannel);
+  await createChannel(newChannel);
 
   return ok({ channel: newChannel, timestamp: new Date().toISOString() });
 }

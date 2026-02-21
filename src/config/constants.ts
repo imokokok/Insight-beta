@@ -5,6 +5,49 @@
  */
 
 // ============================================================================
+// 支持的交易符号
+// ============================================================================
+
+export const SUPPORTED_SYMBOLS = {
+  PRICE_PAIRS: ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD', 'SOL/USD'] as const,
+  TICKERS: ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX'] as const,
+} as const;
+
+export type SupportedPricePair = (typeof SUPPORTED_SYMBOLS.PRICE_PAIRS)[number];
+export type SupportedTicker = (typeof SUPPORTED_SYMBOLS.TICKERS)[number];
+
+// ============================================================================
+// SSE 连接配置
+// ============================================================================
+
+export const SSE_CONFIG = {
+  MAX_CONNECTIONS: 100,
+  HEARTBEAT_INTERVAL_MS: 30000,
+  MAX_SYMBOLS_PER_REQUEST: 10,
+} as const;
+
+// ============================================================================
+// 速率限制配置
+// ============================================================================
+
+export const RATE_LIMIT_CONFIG = {
+  DEFAULT_WINDOW_MS: 60000,
+  DEFAULT_MAX_REQUESTS: 100,
+  STRICT_MAX_REQUESTS: 10,
+  RELAXED_MAX_REQUESTS: 1000,
+  SSE_MAX_REQUESTS: 5,
+} as const;
+
+// ============================================================================
+// 分页配置
+// ============================================================================
+
+export const PAGINATION_CONFIG = {
+  DEFAULT_PAGE_SIZE: 20,
+  MAX_PAGE_SIZE: 100,
+} as const;
+
+// ============================================================================
 // WebSocket 配置
 // ============================================================================
 
@@ -75,6 +118,13 @@ export const DEFAULT_STALENESS_THRESHOLDS = Object.freeze({
 // ============================================================================
 // 数据库配置
 // ============================================================================
+
+export const DB_POOL_CONFIG = {
+  MAX_CONNECTIONS: parseInt(process.env.DB_POOL_MAX ?? '20', 10),
+  MIN_CONNECTIONS: parseInt(process.env.DB_POOL_MIN ?? '2', 10),
+  IDLE_TIMEOUT_MS: parseInt(process.env.DB_IDLE_TIMEOUT ?? '30000', 10),
+  CONNECTION_TIMEOUT_MS: parseInt(process.env.DB_CONNECTION_TIMEOUT ?? '10000', 10),
+} as const;
 
 export const DATABASE_CONFIG = {
   /** 默认连接池大小 */
@@ -223,3 +273,12 @@ export const ALERT_THRESHOLDS = Object.freeze({
 
 export type AlertSeverityThreshold = typeof ALERT_THRESHOLDS.severity;
 export type AlertCrossChainThreshold = typeof ALERT_THRESHOLDS.crossChain;
+
+export const TIME_RANGE_OPTIONS = [
+  { value: '1h', label: '1H' },
+  { value: '24h', label: '24H' },
+  { value: '7d', label: '7D' },
+  { value: '30d', label: '30D' },
+] as const;
+
+export type TimeRange = (typeof TIME_RANGE_OPTIONS)[number]['value'];

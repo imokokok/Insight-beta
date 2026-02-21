@@ -124,6 +124,7 @@ async function handleGet(request: Request) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return apiError(
+        'VALIDATION_ERROR',
         `Invalid query parameters: ${error.errors.map((e) => e.message).join(', ')}`,
         400,
       );

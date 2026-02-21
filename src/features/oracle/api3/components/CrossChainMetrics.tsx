@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { formatPrice, formatInterval, formatLatency } from '@/features/cross-chain/utils/format';
 
 import type { CrossChainComparisonData } from '../types/api3';
 
@@ -17,24 +18,6 @@ interface CrossChainMetricsProps {
 }
 
 export function CrossChainMetrics({ data, chainColors, className }: CrossChainMetricsProps) {
-  const formatPrice = (price: number) => {
-    if (price >= 1000) return `$${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-    if (price >= 1) return `$${price.toFixed(4)}`;
-    return `$${price.toFixed(6)}`;
-  };
-
-  const formatInterval = (ms: number) => {
-    const seconds = ms / 1000;
-    if (seconds < 60) return `${seconds.toFixed(1)}s`;
-    const minutes = seconds / 60;
-    return `${minutes.toFixed(1)}m`;
-  };
-
-  const formatLatency = (ms: number) => {
-    if (ms < 1000) return `${ms.toFixed(0)}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
-  };
-
   const priceComparisonData = useMemo(() => {
     return data.dapiData.map((dapi) => ({
       chain: dapi.chain,

@@ -9,17 +9,12 @@ import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
+import { TIME_RANGE_OPTIONS } from '@/config/constants';
 import { useI18n } from '@/i18n';
 import { fetchApiData, formatTime } from '@/shared/utils';
 import { cn } from '@/shared/utils';
 
 import type { DeviationStats } from '../types/chainlink';
-
-const timeRangeOptions = [
-  { value: '24h', label: '24H' },
-  { value: '7d', label: '7D' },
-  { value: '30d', label: '30D' },
-] as const;
 
 interface StatCardProps {
   title: string;
@@ -74,6 +69,8 @@ export function DeviationTriggerStats() {
   const [stats, setStats] = useState<DeviationStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const filteredTimeRangeOptions = TIME_RANGE_OPTIONS.filter((opt) => opt.value !== '1h');
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -157,7 +154,7 @@ export function DeviationTriggerStats() {
             </div>
             <div className="flex items-center gap-2">
               <div className="flex rounded-lg border p-1">
-                {timeRangeOptions.map((option) => (
+                {filteredTimeRangeOptions.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => setTimeRange(option.value)}
@@ -209,7 +206,7 @@ export function DeviationTriggerStats() {
             </div>
             <div className="flex items-center gap-2">
               <div className="flex rounded-lg border p-1">
-                {timeRangeOptions.map((option) => (
+                {filteredTimeRangeOptions.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => setTimeRange(option.value)}

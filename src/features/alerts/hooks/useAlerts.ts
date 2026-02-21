@@ -2,6 +2,7 @@
 
 import useSWR from 'swr';
 
+import { defaultSwrConfig } from '@/shared/config/swr';
 import { buildApiUrl } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
 
@@ -27,14 +28,15 @@ export function useAlerts(options: UseAlertsOptions = {}) {
   const url = buildApiUrl('/api/alerts', Object.keys(params).length > 0 ? params : undefined);
 
   return useSWR<AlertsResponse>(url, (url: string) => fetchApiData<AlertsResponse>(url), {
+    ...defaultSwrConfig,
     refreshInterval: 30000,
-    revalidateOnFocus: true,
   });
 }
 
 export function useAlertsSummary() {
   const url = buildApiUrl('/api/alerts/summary');
   return useSWR<AlertsResponse>(url, (url: string) => fetchApiData<AlertsResponse>(url), {
+    ...defaultSwrConfig,
     refreshInterval: 60000,
   });
 }

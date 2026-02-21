@@ -50,12 +50,16 @@ async function handleGet(request: NextRequest) {
 
   const validatedSymbol = validateSymbol(symbol);
   if (validatedSymbol === null) {
-    return apiError(`Invalid symbol. Valid symbols: ${VALID_SYMBOLS.join(', ')}`, 400);
+    return apiError(
+      'INVALID_SYMBOL',
+      `Invalid symbol. Valid symbols: ${VALID_SYMBOLS.join(', ')}`,
+      400,
+    );
   }
 
   const chains = chainsParam !== null ? validateChains(chainsParam) : null;
   if (chainsParam !== null && chains === null) {
-    return apiError('Invalid chains parameter', 400);
+    return apiError('INVALID_CHAINS', 'Invalid chains parameter', 400);
   }
 
   const comparison = await crossChainAnalysisService.comparePrices(

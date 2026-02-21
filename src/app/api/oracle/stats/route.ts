@@ -1,7 +1,8 @@
 import { ok } from '@/lib/api/apiResponse';
+import { withCacheHeaders, CACHE_PRESETS } from '@/lib/api/cache';
 
 export async function GET() {
-  return ok({
+  const response = ok({
     totalProtocols: 12,
     totalPriceFeeds: 342,
     activeAlerts: 3,
@@ -11,4 +12,5 @@ export async function GET() {
     networkUptime: 99.9,
     staleFeeds: 2,
   });
+  return withCacheHeaders(response, CACHE_PRESETS.long);
 }

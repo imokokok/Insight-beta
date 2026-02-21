@@ -20,6 +20,7 @@ import {
 import { EnhancedInput } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { formatTimeAgo } from '@/shared/utils/format/date';
 
 import { useAddressHistory, type AddressHistoryItem } from '../hooks/useAddressHistory';
 
@@ -76,17 +77,6 @@ interface AddressExplorerProps {
 }
 
 type AddressType = 'contract' | 'eoa' | 'unknown' | 'checking';
-
-function formatTimeAgo(timestamp: number): string {
-  const seconds = Math.floor((Date.now() - timestamp) / 1000);
-
-  if (seconds < 60) return '刚刚';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)} 分钟前`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)} 小时前`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)} 天前`;
-
-  return new Date(timestamp).toLocaleDateString();
-}
 
 export function AddressExplorer({ className }: AddressExplorerProps) {
   const router = useRouter();
@@ -351,7 +341,9 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">{formatTimeAgo(item.timestamp)}</span>
+                      <span className="text-xs text-gray-400">
+                        {formatTimeAgo(new Date(item.timestamp), 'zh')}
+                      </span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

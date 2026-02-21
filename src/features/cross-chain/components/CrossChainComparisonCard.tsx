@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
+import { getChainColorTailwind, getChainDisplayName, type ChainId } from '@/config/chains';
 import { useI18n } from '@/i18n';
 import { cn, formatPrice, formatChangePercent, formatConfidence } from '@/shared/utils';
 
@@ -29,25 +30,6 @@ interface CrossChainComparisonCardProps {
   onRefresh?: () => void;
   selectedChains?: string[];
   onChainSelect?: (chain: string) => void;
-}
-
-const chainColors: Record<string, { bg: string; border: string; text: string }> = {
-  ethereum: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-500' },
-  polygon: { bg: 'bg-primary/10', border: 'border-primary/30', text: 'text-primary' },
-  bsc: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-500' },
-  avalanche: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-500' },
-  arbitrum: { bg: 'bg-blue-600/10', border: 'border-blue-600/30', text: 'text-blue-600' },
-  optimism: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-500' },
-  base: { bg: 'bg-blue-400/10', border: 'border-blue-400/30', text: 'text-blue-400' },
-  solana: {
-    bg: 'bg-gradient-to-r from-primary-500/10 to-amber-500/10',
-    border: 'border-primary/30',
-    text: 'text-primary/40',
-  },
-};
-
-function formatChainName(chain: string): string {
-  return chain.charAt(0).toUpperCase() + chain.slice(1);
 }
 
 export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
@@ -183,7 +165,7 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
                 {t('crossChain.stats.reliableSource')}
               </p>
               <p className="font-semibold">
-                {formatChainName(data.recommendations.mostReliableChain)}
+                {getChainDisplayName(data.recommendations.mostReliableChain as ChainId)}
               </p>
             </div>
           </div>
@@ -202,7 +184,7 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
               .map((priceData) => {
                 const deviation = data.deviations.find((d) => d.chain === priceData.chain);
                 const isOutlier = deviation?.isOutlier ?? false;
-                const chainColor = chainColors[priceData.chain] ?? chainColors.ethereum;
+                const chainColor = getChainColorTailwind(priceData.chain as ChainId);
                 const isMinPrice = priceData.chain === data.statistics.minChain;
                 const isMaxPrice = priceData.chain === data.statistics.maxChain;
                 const deviationPercent = deviation?.deviationFromAvgPercent ?? 0;
@@ -224,7 +206,7 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
                           {isMaxPrice && <TrendingUp className="h-4 w-4 text-emerald-600" />}
                           {isMinPrice && <TrendingDown className="h-4 w-4 text-red-600" />}
                           <span className={cn('w-28 font-medium', chainColor?.text)}>
-                            {formatChainName(priceData.chain)}
+                            {getChainDisplayName(priceData.chain as ChainId)}
                           </span>
                         </div>
 
@@ -273,7 +255,7 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
                     <TooltipContent side="right" className="max-w-xs p-3">
                       <div className="space-y-2">
                         <div className="font-semibold">
-                          {formatChainName(priceData.chain)} - {priceData.protocol}
+                          {getChainDisplayName(priceData.chain as ChainId)} - {priceData.protocol}
                         </div>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                           <span className="text-muted-foreground">
@@ -323,7 +305,7 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
                 <p className="mt-1 text-xs text-muted-foreground">{data.recommendations.reason}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {t('crossChain.recommendation.reliable', {
-                    chain: formatChainName(data.recommendations.mostReliableChain),
+                    chain: getChainDisplayName(data.recommendations.mostReliableChain as ChainId),
                   })}
                 </p>
               </div>

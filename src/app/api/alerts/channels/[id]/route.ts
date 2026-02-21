@@ -1,14 +1,13 @@
 import type { NextRequest } from 'next/server';
 
+import {
+  getChannelById,
+  updateChannel,
+  deleteChannel,
+} from '@/features/alerts/services/notificationChannelService';
 import { error, ok } from '@/lib/api/apiResponse';
 import { logger } from '@/shared/logger';
-import type {
-  NotificationChannel,
-  NotificationChannelType,
-  NotificationChannelConfig,
-} from '@/types/oracle/alert';
-
-import { channelsStore } from '../store';
+import type { NotificationChannelType, NotificationChannelConfig } from '@/types/oracle/alert';
 
 function validateChannelConfig(
   type: NotificationChannelType,
@@ -54,7 +53,7 @@ function validateChannelConfig(
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const channel = channelsStore.find((c) => c.id === id);
+    const channel = await getChannelById(id);
 
     if (!channel) {
       return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);
@@ -71,13 +70,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   try {
     const { id } = await params;
     const body = await request.json();
-    const channelIndex = channelsStore.findIndex((c) => c.id === id);
+    const existingChannel = await getChannelById(id);
 
-    if (channelIndex === -1) {
-      return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);
-    }
-
-    const existingChannel = channelsStore[channelIndex];
     if (!existingChannel) {
       return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);
     }
@@ -89,21 +83,17 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       }
     }
 
-    const updatedChannel: NotificationChannel = {
-      id: existingChannel.id,
-      name: body.name ?? existingChannel.name,
-      type: existingChannel.type,
-      enabled: body.enabled ?? existingChannel.enabled,
-      config: body.config ?? existingChannel.config,
-      description: body.description ?? existingChannel.description,
-      createdAt: existingChannel.createdAt,
-      updatedAt: new Date().toISOString(),
-      lastUsedAt: existingChannel.lastUsedAt,
-      testStatus: existingChannel.testStatus,
-      testMessage: existingChannel.testMessage,
-    };
+    const updatedChannel = await updateChannel({
+      id,
+      name: body.name,
+      enabled: body.enabled,
+      config: body.config,
+      description: body.description,
+    });
 
-    channelsStore[channelIndex] = updatedChannel;
+    if (!updatedChannel) {
+      return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);
+    }
 
     return ok({ channel: updatedChannel, timestamp: new Date().toISOString() });
   } catch (err) {
@@ -118,13 +108,11 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const channelIndex = channelsStore.findIndex((c) => c.id === id);
+    const deleted = await deleteChannel(id);
 
-    if (channelIndex === -1) {
+    if (!deleted) {
       return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);
     }
-
-    channelsStore.splice(channelIndex, 1);
 
     return ok({ message: 'Channel deleted successfully', timestamp: new Date().toISOString() });
   } catch (err) {

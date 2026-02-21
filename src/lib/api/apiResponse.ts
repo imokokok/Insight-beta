@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { AppError, isAppError } from '@/lib/errors';
 import { rateLimit as rateLimitCheck } from '@/lib/security/rateLimit';
 import { requireAuth } from '@/shared/auth';
+import { logger } from '@/shared/logger';
 
 export interface ApiErrorInput {
   code: string;
@@ -89,7 +90,11 @@ export async function handleApi(
     const isProduction = process.env.NODE_ENV === 'production';
     const message = err instanceof Error ? err.message : 'Internal server error';
 
-    console.error('[API Error]', isProduction ? 'Internal error' : message, err);
+    logger.error('API Error', {
+      message: isProduction ? 'Internal error' : message,
+      stack: err instanceof Error ? err.stack : undefined,
+      details: err,
+    });
 
     return error(
       {

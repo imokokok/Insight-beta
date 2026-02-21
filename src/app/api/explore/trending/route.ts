@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 
 import { ok } from '@/lib/api/apiResponse';
+import { withCacheHeaders, CACHE_PRESETS } from '@/lib/api/cache';
 
 interface TrendingPair {
   id: string;
@@ -148,7 +149,8 @@ export async function GET(request: NextRequest) {
 
   const sortedPairs = sortPairs(mockTrendingPairs, normalizedSortBy);
 
-  return ok(sortedPairs, {
+  const response = ok(sortedPairs, {
     total: sortedPairs.length,
   });
+  return withCacheHeaders(response, CACHE_PRESETS.medium);
 }

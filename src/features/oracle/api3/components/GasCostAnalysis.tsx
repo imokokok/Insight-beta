@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
+import { TIME_RANGE_OPTIONS } from '@/config/constants';
+import { formatGas, formatEth, formatUsd } from '@/features/cross-chain/utils/format';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
@@ -95,32 +97,6 @@ const generateMockGasData = (timeRange: string): GasCostAnalysisData => {
     totalTransactions,
     generatedAt: new Date().toISOString(),
   };
-};
-
-const timeRangeOptions = [
-  { value: '1h', label: '1H' },
-  { value: '24h', label: '24H' },
-  { value: '7d', label: '7D' },
-  { value: '30d', label: '30D' },
-] as const;
-
-const formatGas = (gas: number) => {
-  if (gas >= 1000000000) return `${(gas / 1000000000).toFixed(2)}B`;
-  if (gas >= 1000000) return `${(gas / 1000000).toFixed(2)}M`;
-  if (gas >= 1000) return `${(gas / 1000).toFixed(0)}K`;
-  return gas.toFixed(0);
-};
-
-const formatEth = (eth: number) => {
-  if (eth >= 1) return `${eth.toFixed(4)} ETH`;
-  if (eth >= 0.001) return `${(eth * 1000).toFixed(2)} mETH`;
-  return `${(eth * 1000000).toFixed(0)} gwei`;
-};
-
-const formatUsd = (usd: number) => {
-  if (usd >= 1000000) return `$${(usd / 1000000).toFixed(2)}M`;
-  if (usd >= 1000) return `$${(usd / 1000).toFixed(2)}K`;
-  return `$${usd.toFixed(2)}`;
 };
 
 export function GasCostAnalysis({
@@ -215,7 +191,7 @@ export function GasCostAnalysis({
             </div>
             <div className="flex items-center gap-2">
               <div className="flex rounded-lg border p-1">
-                {timeRangeOptions.map((option) => (
+                {TIME_RANGE_OPTIONS.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => setTimeRange(option.value)}
