@@ -8,7 +8,6 @@ import {
   Users,
   Activity,
   Server,
-  Clock,
   Shield,
   CheckCircle,
   XCircle,
@@ -19,12 +18,12 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
+import { StatsBar, FeatureTags, Gauge } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { ProtocolHealthBadge } from '@/components/common/ProtocolHealthBadge';
 import type { SortState } from '@/components/common/SortableTableHeader';
 import { SortableTableHeader } from '@/components/common/SortableTableHeader';
-import { TrendIndicator } from '@/components/common/TrendIndicator';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
@@ -762,75 +761,31 @@ export default function PythPage() {
       )}
 
       {loading && !overviewStats ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="mt-2 h-8 w-16" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <div className="h-16 animate-pulse rounded-xl bg-muted" />
       ) : overviewStats ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">总 Publisher 数</span>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-2xl font-bold">{overviewStats.totalPublishers}</span>
-                <TrendIndicator trend="up" value={2.1} />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">活跃 Publisher</span>
-                <div className="h-2 w-2 rounded-full bg-green-500" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-2xl font-bold text-green-600">
-                  {overviewStats.activePublishers}
-                </span>
-                <TrendIndicator trend="up" value={1.5} />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">活跃价格源</span>
-                <Activity className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-2xl font-bold text-yellow-600">
-                  {overviewStats.activePriceFeeds}
-                </span>
-                <TrendIndicator trend="up" value={4.3} />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">平均延迟</span>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <span
-                  className={cn('text-2xl font-bold', getLatencyColor(overviewStats.avgLatency))}
-                >
-                  {formatLatency(overviewStats.avgLatency)}
-                </span>
-                <TrendIndicator trend="down" value={12.3} />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <StatsBar
+          items={[
+            { label: '总 Publisher', value: overviewStats.totalPublishers, trend: 'up' as const },
+            {
+              label: '活跃 Publisher',
+              value: overviewStats.activePublishers,
+              trend: 'up' as const,
+              status: 'healthy' as const,
+            },
+            { label: '活跃价格源', value: overviewStats.activePriceFeeds, trend: 'up' as const },
+            {
+              label: '平均延迟',
+              value: formatLatency(overviewStats.avgLatency),
+              trend: 'down' as const,
+              status:
+                overviewStats.avgLatency < 200
+                  ? ('healthy' as const)
+                  : overviewStats.avgLatency < 500
+                    ? ('warning' as const)
+                    : ('critical' as const),
+            },
+          ]}
+        />
       ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -876,41 +831,25 @@ export default function PythPage() {
                 Pyth Network 是一个专注于高频金融数据的第一方预言机网络，通过 Publisher
                 直接在链上推送价格数据，实现低延迟、高精度的价格更新。
               </p>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Zap className="h-8 w-8 text-yellow-500" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">高频更新</p>
-                        <p className="font-semibold">亚秒级价格推送</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Users className="h-8 w-8 text-blue-500" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Publisher 网络</p>
-                        <p className="font-semibold">第一方数据源</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Shield className="h-8 w-8 text-green-500" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">数据完整性</p>
-                        <p className="font-semibold">可验证的价格证明</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              <FeatureTags
+                features={[
+                  {
+                    icon: <Zap className="h-5 w-5" />,
+                    title: '高频更新',
+                    description: '亚秒级价格推送',
+                  },
+                  {
+                    icon: <Users className="h-5 w-5" />,
+                    title: 'Publisher 网络',
+                    description: '第一方数据源',
+                  },
+                  {
+                    icon: <Shield className="h-5 w-5" />,
+                    title: '数据完整性',
+                    description: '可验证的价格证明',
+                  },
+                ]}
+              />
             </CardContent>
           </Card>
 
@@ -930,31 +869,24 @@ export default function PythPage() {
                     <Skeleton className="h-4 w-3/4" />
                   </div>
                 ) : publisherStats ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">活跃率</span>
-                      <span className="font-semibold">
-                        {publisherStats.total > 0
-                          ? ((publisherStats.active / publisherStats.total) * 100).toFixed(1)
-                          : 0}
-                        %
-                      </span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-muted">
-                      <div
-                        className="h-2 rounded-full bg-green-500"
-                        style={{
-                          width: `${
-                            publisherStats.total > 0
-                              ? (publisherStats.active / publisherStats.total) * 100
-                              : 0
-                          }%`,
-                        }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-green-600">活跃: {publisherStats.active}</span>
-                      <span className="text-red-600">离线: {publisherStats.inactive}</span>
+                  <div className="flex items-center justify-center gap-8">
+                    <Gauge
+                      value={
+                        publisherStats.total > 0
+                          ? Math.round((publisherStats.active / publisherStats.total) * 100)
+                          : 0
+                      }
+                      label="活跃率"
+                      subLabel={`${publisherStats.active} / ${publisherStats.total}`}
+                      size="md"
+                    />
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">活跃 Publisher</p>
+                      <p className="text-2xl font-bold text-green-600">{publisherStats.active}</p>
+                      <p className="text-sm text-muted-foreground">离线 Publisher</p>
+                      <p className="text-xl font-semibold text-red-600">
+                        {publisherStats.inactive}
+                      </p>
                     </div>
                   </div>
                 ) : (

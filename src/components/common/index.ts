@@ -56,6 +56,19 @@ export {
   type TrendIndicatorProps,
 } from './TrendIndicator';
 
+// ==================== 新显示组件 ====================
+export { StatsBar, type StatsBarProps, type StatsBarItem, type ProgressSegment } from './StatsBar';
+export { FeatureTags, type FeatureTagsProps, type FeatureTag } from './FeatureTags';
+export { Gauge, type GaugeProps } from './Gauge';
+export { GaugeGroup, type GaugeGroupProps } from './GaugeGroup';
+export {
+  CompactList,
+  DualColumnList,
+  type CompactListProps,
+  type CompactListItem,
+  type DualColumnListProps,
+} from './CompactList';
+
 // ==================== 页面布局 ====================
 export {
   PageHeader,

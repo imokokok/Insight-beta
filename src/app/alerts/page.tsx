@@ -3,11 +3,11 @@
 import { forwardRef } from 'react';
 import type { ComponentPropsWithoutRef } from 'react';
 
-import { AlertTriangle, RefreshCw, Download } from 'lucide-react';
+import { RefreshCw, Download } from 'lucide-react';
 import { Search, Filter } from 'lucide-react';
 import { Virtuoso } from 'react-virtuoso';
 
-import { StatCard } from '@/components/common';
+import { StatsBar } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { EmptyAlertsListState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui';
@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Input } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
-import { AlertListSkeleton, StatCardSkeleton } from '@/components/ui';
+import { AlertListSkeleton } from '@/components/ui';
 import {
   AlertCard,
   AlertDetailPanel,
@@ -143,53 +143,54 @@ export default function AlertsCenterPage() {
       </div>
 
       {loading && !data ? (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-          <StatCardSkeleton />
-          <StatCardSkeleton />
-          <StatCardSkeleton />
-          <StatCardSkeleton />
-          <StatCardSkeleton />
-          <StatCardSkeleton />
-        </div>
+        <div className="h-20 animate-pulse rounded-xl bg-muted" />
       ) : (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-          <StatCard
-            title={t('alerts.stats.total')}
-            value={data?.summary.total || 0}
-            icon={<AlertTriangle className="h-5 w-5" />}
-            color="blue"
-          />
-          <StatCard
-            title={t('alerts.stats.critical')}
-            value={data?.summary.critical || 0}
-            icon={<AlertTriangle className="h-5 w-5" />}
-            color="red"
-          />
-          <StatCard
-            title={t('alerts.stats.high')}
-            value={data?.summary.high || 0}
-            icon={<AlertTriangle className="h-5 w-5" />}
-            color="amber"
-          />
-          <StatCard
-            title={t('alerts.stats.active')}
-            value={data?.summary.active || 0}
-            icon={<sourceIcons.all className="h-5 w-5" />}
-            color="red"
-          />
-          <StatCard
-            title={t('alerts.stats.priceAnomaly')}
-            value={data?.summary.bySource.price_anomaly || 0}
-            icon={<sourceIcons.price_anomaly className="h-5 w-5" />}
-            color="purple"
-          />
-          <StatCard
-            title={t('alerts.stats.crossChain')}
-            value={data?.summary.bySource.cross_chain || 0}
-            icon={<sourceIcons.cross_chain className="h-5 w-5" />}
-            color="cyan"
-          />
-        </div>
+        <StatsBar
+          title={t('alerts.stats.title') || '告警统计'}
+          items={[
+            {
+              label: t('alerts.stats.total'),
+              value: data?.summary.total || 0,
+              status: 'neutral' as const,
+            },
+            {
+              label: t('alerts.stats.critical'),
+              value: data?.summary.critical || 0,
+              status: 'critical' as const,
+            },
+            {
+              label: t('alerts.stats.high'),
+              value: data?.summary.high || 0,
+              status: 'warning' as const,
+            },
+            {
+              label: t('alerts.stats.active'),
+              value: data?.summary.active || 0,
+              status: 'critical' as const,
+            },
+            {
+              label: t('alerts.stats.priceAnomaly'),
+              value: data?.summary.bySource.price_anomaly || 0,
+              status: 'neutral' as const,
+            },
+            {
+              label: t('alerts.stats.crossChain'),
+              value: data?.summary.bySource.cross_chain || 0,
+              status: 'neutral' as const,
+            },
+          ]}
+          showProgress
+          progressData={[
+            {
+              label: t('alerts.stats.critical'),
+              value: data?.summary.critical || 0,
+              color: '#ef4444',
+            },
+            { label: t('alerts.stats.high'), value: data?.summary.high || 0, color: '#f59e0b' },
+            { label: t('alerts.stats.medium'), value: data?.summary.medium || 0, color: '#3b82f6' },
+            { label: t('alerts.stats.low'), value: data?.summary.low || 0, color: '#22c55e' },
+          ]}
+        />
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

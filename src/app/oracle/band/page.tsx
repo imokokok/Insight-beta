@@ -16,10 +16,10 @@ import {
   ArrowLeftRight,
 } from 'lucide-react';
 
+import { StatsBar } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { ProtocolHealthBadge } from '@/components/common/ProtocolHealthBadge';
-import { TrendIndicator } from '@/components/common/TrendIndicator';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
@@ -367,434 +367,379 @@ export default function BandProtocolPage() {
         />
       )}
 
-      {loading && !bridgesData && !sourcesData ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="mt-2 h-8 w-16" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {loading && !overviewStats ? (
+        <div className="h-16 animate-pulse rounded-xl bg-muted" />
+      ) : overviewStats ? (
+        <StatsBar
+          items={[
+            {
+              label: '活跃数据桥',
+              value: overviewStats.activeBridges,
+              trend: 'up' as const,
+              status: 'healthy' as const,
+            },
+            {
+              label: '总传输量',
+              value: overviewStats.totalTransfers.toLocaleString(),
+              trend: 'up' as const,
+            },
+            { label: '数据源数量', value: overviewStats.totalSources, trend: 'neutral' as const },
+          ]}
+        />
+      ) : null}
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="overview">
+            <LayoutDashboard className="mr-1.5 h-4 w-4" />
+            概览
+          </TabsTrigger>
+          <TabsTrigger value="bridges">
+            <GitBranch className="mr-1.5 h-4 w-4" />
+            数据桥
+          </TabsTrigger>
+          <TabsTrigger value="sources">
+            <Database className="mr-1.5 h-4 w-4" />
+            数据源
+          </TabsTrigger>
+          <TabsTrigger value="oracle-scripts">
+            <FileCode className="mr-1.5 h-4 w-4" />
+            Oracle Scripts
+          </TabsTrigger>
+          <TabsTrigger value="transfers">
+            <Activity className="mr-1.5 h-4 w-4" />
+            传输历史
+          </TabsTrigger>
+          <TabsTrigger value="cosmos">
+            <Globe className="mr-1.5 h-4 w-4" />
+            Cosmos
+          </TabsTrigger>
+          <TabsTrigger value="price-trend">
+            <TrendingUp className="mr-1.5 h-4 w-4" />
+            价格趋势
+          </TabsTrigger>
+          <TabsTrigger value="quality">
+            <BarChart3 className="mr-1.5 h-4 w-4" />
+            数据质量
+          </TabsTrigger>
+          <TabsTrigger value="comparison">
+            <ArrowLeftRight className="mr-1.5 h-4 w-4" />
+            价格对比
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview">
+          <div className="space-y-6">
             <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">总数据桥数</span>
-                  <GitBranch className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="text-2xl font-bold">{overviewStats.totalBridges}</div>
-                  <TrendIndicator trend="up" value={1.8} />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">活跃数据桥数</span>
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
-                </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="text-2xl font-bold text-green-600">
-                    {overviewStats.activeBridges}
+              <CardHeader>
+                <CardTitle>协议状态摘要</CardTitle>
+                <CardDescription>Band Protocol 整体运行状态</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="rounded-lg bg-muted/30 p-4">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-green-500" />
+                      <span className="font-medium">系统状态</span>
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Badge variant="success">正常运行</Badge>
+                    </div>
                   </div>
-                  <TrendIndicator trend="up" value={2.3} />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">总传输量</span>
-                  <Activity className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="text-2xl font-bold">
-                    {overviewStats.totalTransfers.toLocaleString()}
+                  <div className="rounded-lg bg-muted/30 p-4">
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-blue-500" />
+                      <span className="font-medium">平均延迟</span>
+                    </div>
+                    <div className="mt-2 text-lg font-semibold">
+                      {bridgesData?.summary.avgLatency ?? 0}ms
+                    </div>
                   </div>
-                  <TrendIndicator trend="up" value={12.5} />
+                  <div className="rounded-lg bg-muted/30 p-4">
+                    <div className="flex items-center gap-2">
+                      <Database className="h-5 w-5 text-purple-500" />
+                      <span className="font-medium">数据可靠性</span>
+                    </div>
+                    <div className="mt-2 text-lg font-semibold">
+                      {sourcesData?.summary.avgReliability.toFixed(1) ?? 0}%
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <AggregationValidationCard symbol="ETH/USD" chain="ethereum" />
+              <DataFreshnessCard symbol="ETH/USD" chain="ethereum" />
+            </div>
+
+            <ValidatorHealthCard />
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <BandPriceChart symbol="ATOM/USD" chain="cosmos" timeRange="24h" />
+              <BandPriceChart symbol="ETH/USD" chain="ethereum" timeRange="24h" />
+            </div>
+
             <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">数据源数量</span>
-                  <Database className="h-4 w-4 text-muted-foreground" />
+              <CardHeader>
+                <CardTitle>支持的链连接情况</CardTitle>
+                <CardDescription>各区块链网络的数据桥连接状态</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {getChainConnectivity().map(({ chain, isActive }) => (
+                    <Badge
+                      key={chain}
+                      variant="secondary"
+                      className={`capitalize ${isActive ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}
+                    >
+                      {chain}
+                      {isActive && <span className="ml-1 text-xs">●</span>}
+                    </Badge>
+                  ))}
                 </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="text-2xl font-bold">{overviewStats.totalSources}</div>
-                  <TrendIndicator trend="neutral" />
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <GitBranch className="h-5 w-5" />
+                    最近数据桥
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {bridgesData?.bridges.slice(0, 3).map((bridge) => (
+                    <BridgeStatusCard key={bridge.bridgeId} bridge={bridge} className="mb-3" />
+                  ))}
+                  {bridgesData?.bridges.length === 0 && (
+                    <div className="py-8 text-center text-muted-foreground">暂无数据桥信息</div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Database className="h-5 w-5" />
+                    数据源分布
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">EVM 链数据源</span>
+                      <span className="font-semibold">{sourcesData?.summary.evmCount ?? 0}</span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-muted">
+                      <div
+                        className="h-2 rounded-full bg-blue-500"
+                        style={{
+                          width: `${
+                            sourcesData
+                              ? (sourcesData.summary.evmCount /
+                                  (sourcesData.summary.evmCount +
+                                    sourcesData.summary.cosmosCount)) *
+                                100
+                              : 0
+                          }%`,
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Cosmos 链数据源</span>
+                      <span className="font-semibold">{sourcesData?.summary.cosmosCount ?? 0}</span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-muted">
+                      <div
+                        className="h-2 rounded-full bg-purple-500"
+                        style={{
+                          width: `${
+                            sourcesData
+                              ? (sourcesData.summary.cosmosCount /
+                                  (sourcesData.summary.evmCount +
+                                    sourcesData.summary.cosmosCount)) *
+                                100
+                              : 0
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="bridges">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>数据桥列表</CardTitle>
+                <CardDescription>
+                  显示 {bridgesData?.bridges.length ?? 0} 个数据桥
+                  {selectedBridge && (
+                    <span className="ml-2 text-xs text-muted-foreground">(点击数据桥查看趋势)</span>
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {bridgesData?.bridges.length === 0 ? (
+                  <div className="py-12 text-center text-muted-foreground">
+                    <GitBranch className="mx-auto h-12 w-12 opacity-50" />
+                    <p className="mt-2">暂无数据桥信息</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {bridgesData?.bridges.map((bridge) => (
+                      <BridgeStatusCard
+                        key={bridge.bridgeId}
+                        bridge={bridge}
+                        onClick={(b) => setSelectedBridge(b)}
+                        className={cn(
+                          selectedBridge?.bridgeId === bridge.bridgeId && 'border-primary',
+                        )}
+                      />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {selectedBridge && (
+              <BridgeTrendChart
+                bridgeId={selectedBridge.bridgeId}
+                bridgeName={`${CHAIN_DISPLAY_NAMES[selectedBridge.sourceChain] ?? selectedBridge.sourceChain} → ${CHAIN_DISPLAY_NAMES[selectedBridge.destinationChain] ?? selectedBridge.destinationChain}`}
+              />
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="sources">
+          <div className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <BandPriceChart symbol="ETH/USD" chain="ethereum" timeRange="24h" />
+              <BandPriceChart symbol="BTC/USD" chain="ethereum" timeRange="24h" />
+            </div>
+            <DataSourceList
+              sources={sourcesData?.sources}
+              loading={loading}
+              chain={undefined}
+              symbol={undefined}
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="oracle-scripts">
+          <OracleScriptList scripts={oracleScripts ?? undefined} loading={loading} />
+        </TabsContent>
+
+        <TabsContent value="transfers">
+          <TransferHistory limit={20} />
+        </TabsContent>
+
+        <TabsContent value="cosmos">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  Cosmos 链选择器
+                </CardTitle>
+                <CardDescription>选择 Cosmos 生态链查看详细数据</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CosmosChainSelector
+                  selectedChain={selectedCosmosChain}
+                  onChainChange={setSelectedCosmosChain}
+                  showDetails={true}
+                  showIBCStatus={true}
+                  filterType="mainnet"
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Band Chain 区块信息</CardTitle>
+                <CardDescription>最新区块状态</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="rounded-lg bg-muted/30 p-4">
+                    <span className="text-sm text-muted-foreground">区块高度</span>
+                    <div className="mt-1 font-mono text-lg">
+                      {Math.floor(Math.random() * 10000000).toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 p-4">
+                    <span className="text-sm text-muted-foreground">区块哈希</span>
+                    <div className="mt-1 truncate font-mono text-sm">
+                      0x
+                      {Array.from({ length: 64 }, () =>
+                        Math.floor(Math.random() * 16).toString(16),
+                      ).join('')}
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 p-4">
+                    <span className="text-sm text-muted-foreground">时间戳</span>
+                    <div className="mt-1 text-sm">{new Date().toLocaleString()}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Cosmos 生态数据</CardTitle>
+                <CardDescription>当前选中链的数据传输状态</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="rounded-lg bg-muted/30 p-4">
+                    <span className="text-sm text-muted-foreground">选中链 ID</span>
+                    <div className="mt-1 font-mono text-lg">{selectedCosmosChain}</div>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 p-4">
+                    <span className="text-sm text-muted-foreground">IBC 连接数</span>
+                    {ibcLoading ? (
+                      <Skeleton className="mt-1 h-7 w-16" />
+                    ) : (
+                      <div className="mt-1 text-lg font-semibold">
+                        {ibcData?.connections.total ?? 0}
+                      </div>
+                    )}
+                  </div>
+                  <div className="rounded-lg bg-muted/30 p-4">
+                    <span className="text-sm text-muted-foreground">活跃通道</span>
+                    {ibcLoading ? (
+                      <Skeleton className="mt-1 h-7 w-16" />
+                    ) : (
+                      <div className="mt-1 text-lg font-semibold">
+                        {ibcData?.channels.open ?? 0}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="overview">
-                <LayoutDashboard className="mr-1.5 h-4 w-4" />
-                概览
-              </TabsTrigger>
-              <TabsTrigger value="bridges">
-                <GitBranch className="mr-1.5 h-4 w-4" />
-                数据桥
-              </TabsTrigger>
-              <TabsTrigger value="sources">
-                <Database className="mr-1.5 h-4 w-4" />
-                数据源
-              </TabsTrigger>
-              <TabsTrigger value="oracle-scripts">
-                <FileCode className="mr-1.5 h-4 w-4" />
-                Oracle Scripts
-              </TabsTrigger>
-              <TabsTrigger value="transfers">
-                <Activity className="mr-1.5 h-4 w-4" />
-                传输历史
-              </TabsTrigger>
-              <TabsTrigger value="cosmos">
-                <Globe className="mr-1.5 h-4 w-4" />
-                Cosmos
-              </TabsTrigger>
-              <TabsTrigger value="price-trend">
-                <TrendingUp className="mr-1.5 h-4 w-4" />
-                价格趋势
-              </TabsTrigger>
-              <TabsTrigger value="quality">
-                <BarChart3 className="mr-1.5 h-4 w-4" />
-                数据质量
-              </TabsTrigger>
-              <TabsTrigger value="comparison">
-                <ArrowLeftRight className="mr-1.5 h-4 w-4" />
-                价格对比
-              </TabsTrigger>
-            </TabsList>
+        <TabsContent value="price-trend">
+          <PriceTrendTab />
+        </TabsContent>
 
-            <TabsContent value="overview">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>协议状态摘要</CardTitle>
-                    <CardDescription>Band Protocol 整体运行状态</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      <div className="rounded-lg bg-muted/30 p-4">
-                        <div className="flex items-center gap-2">
-                          <Shield className="h-5 w-5 text-green-500" />
-                          <span className="font-medium">系统状态</span>
-                        </div>
-                        <div className="mt-2 flex items-center gap-2">
-                          <Badge variant="success">正常运行</Badge>
-                        </div>
-                      </div>
-                      <div className="rounded-lg bg-muted/30 p-4">
-                        <div className="flex items-center gap-2">
-                          <Activity className="h-5 w-5 text-blue-500" />
-                          <span className="font-medium">平均延迟</span>
-                        </div>
-                        <div className="mt-2 text-lg font-semibold">
-                          {bridgesData?.summary.avgLatency ?? 0}ms
-                        </div>
-                      </div>
-                      <div className="rounded-lg bg-muted/30 p-4">
-                        <div className="flex items-center gap-2">
-                          <Database className="h-5 w-5 text-purple-500" />
-                          <span className="font-medium">数据可靠性</span>
-                        </div>
-                        <div className="mt-2 text-lg font-semibold">
-                          {sourcesData?.summary.avgReliability.toFixed(1) ?? 0}%
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+        <TabsContent value="quality">
+          <QualityAnalysisTab />
+        </TabsContent>
 
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <AggregationValidationCard symbol="ETH/USD" chain="ethereum" />
-                  <DataFreshnessCard symbol="ETH/USD" chain="ethereum" />
-                </div>
-
-                <ValidatorHealthCard />
-
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <BandPriceChart symbol="ATOM/USD" chain="cosmos" timeRange="24h" />
-                  <BandPriceChart symbol="ETH/USD" chain="ethereum" timeRange="24h" />
-                </div>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>支持的链连接情况</CardTitle>
-                    <CardDescription>各区块链网络的数据桥连接状态</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {getChainConnectivity().map(({ chain, isActive }) => (
-                        <Badge
-                          key={chain}
-                          variant="secondary"
-                          className={`capitalize ${isActive ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}
-                        >
-                          {chain}
-                          {isActive && <span className="ml-1 text-xs">●</span>}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <GitBranch className="h-5 w-5" />
-                        最近数据桥
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {bridgesData?.bridges.slice(0, 3).map((bridge) => (
-                        <BridgeStatusCard key={bridge.bridgeId} bridge={bridge} className="mb-3" />
-                      ))}
-                      {bridgesData?.bridges.length === 0 && (
-                        <div className="py-8 text-center text-muted-foreground">暂无数据桥信息</div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Database className="h-5 w-5" />
-                        数据源分布
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">EVM 链数据源</span>
-                          <span className="font-semibold">
-                            {sourcesData?.summary.evmCount ?? 0}
-                          </span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-muted">
-                          <div
-                            className="h-2 rounded-full bg-blue-500"
-                            style={{
-                              width: `${
-                                sourcesData
-                                  ? (sourcesData.summary.evmCount /
-                                      (sourcesData.summary.evmCount +
-                                        sourcesData.summary.cosmosCount)) *
-                                    100
-                                  : 0
-                              }%`,
-                            }}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Cosmos 链数据源</span>
-                          <span className="font-semibold">
-                            {sourcesData?.summary.cosmosCount ?? 0}
-                          </span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-muted">
-                          <div
-                            className="h-2 rounded-full bg-purple-500"
-                            style={{
-                              width: `${
-                                sourcesData
-                                  ? (sourcesData.summary.cosmosCount /
-                                      (sourcesData.summary.evmCount +
-                                        sourcesData.summary.cosmosCount)) *
-                                    100
-                                  : 0
-                              }%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="bridges">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>数据桥列表</CardTitle>
-                    <CardDescription>
-                      显示 {bridgesData?.bridges.length ?? 0} 个数据桥
-                      {selectedBridge && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          (点击数据桥查看趋势)
-                        </span>
-                      )}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {bridgesData?.bridges.length === 0 ? (
-                      <div className="py-12 text-center text-muted-foreground">
-                        <GitBranch className="mx-auto h-12 w-12 opacity-50" />
-                        <p className="mt-2">暂无数据桥信息</p>
-                      </div>
-                    ) : (
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {bridgesData?.bridges.map((bridge) => (
-                          <BridgeStatusCard
-                            key={bridge.bridgeId}
-                            bridge={bridge}
-                            onClick={(b) => setSelectedBridge(b)}
-                            className={cn(
-                              selectedBridge?.bridgeId === bridge.bridgeId && 'border-primary',
-                            )}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {selectedBridge && (
-                  <BridgeTrendChart
-                    bridgeId={selectedBridge.bridgeId}
-                    bridgeName={`${CHAIN_DISPLAY_NAMES[selectedBridge.sourceChain] ?? selectedBridge.sourceChain} → ${CHAIN_DISPLAY_NAMES[selectedBridge.destinationChain] ?? selectedBridge.destinationChain}`}
-                  />
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="sources">
-              <div className="space-y-6">
-                <div className="grid gap-6 lg:grid-cols-2">
-                  <BandPriceChart symbol="ETH/USD" chain="ethereum" timeRange="24h" />
-                  <BandPriceChart symbol="BTC/USD" chain="ethereum" timeRange="24h" />
-                </div>
-                <DataSourceList
-                  sources={sourcesData?.sources}
-                  loading={loading}
-                  chain={undefined}
-                  symbol={undefined}
-                />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="oracle-scripts">
-              <OracleScriptList scripts={oracleScripts ?? undefined} loading={loading} />
-            </TabsContent>
-
-            <TabsContent value="transfers">
-              <TransferHistory limit={20} />
-            </TabsContent>
-
-            <TabsContent value="cosmos">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Globe className="h-5 w-5" />
-                      Cosmos 链选择器
-                    </CardTitle>
-                    <CardDescription>选择 Cosmos 生态链查看详细数据</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <CosmosChainSelector
-                      selectedChain={selectedCosmosChain}
-                      onChainChange={setSelectedCosmosChain}
-                      showDetails={true}
-                      showIBCStatus={true}
-                      filterType="mainnet"
-                    />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Band Chain 区块信息</CardTitle>
-                    <CardDescription>最新区块状态</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      <div className="rounded-lg bg-muted/30 p-4">
-                        <span className="text-sm text-muted-foreground">区块高度</span>
-                        <div className="mt-1 font-mono text-lg">
-                          {Math.floor(Math.random() * 10000000).toLocaleString()}
-                        </div>
-                      </div>
-                      <div className="rounded-lg bg-muted/30 p-4">
-                        <span className="text-sm text-muted-foreground">区块哈希</span>
-                        <div className="mt-1 truncate font-mono text-sm">
-                          0x
-                          {Array.from({ length: 64 }, () =>
-                            Math.floor(Math.random() * 16).toString(16),
-                          ).join('')}
-                        </div>
-                      </div>
-                      <div className="rounded-lg bg-muted/30 p-4">
-                        <span className="text-sm text-muted-foreground">时间戳</span>
-                        <div className="mt-1 text-sm">{new Date().toLocaleString()}</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Cosmos 生态数据</CardTitle>
-                    <CardDescription>当前选中链的数据传输状态</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      <div className="rounded-lg bg-muted/30 p-4">
-                        <span className="text-sm text-muted-foreground">选中链 ID</span>
-                        <div className="mt-1 font-mono text-lg">{selectedCosmosChain}</div>
-                      </div>
-                      <div className="rounded-lg bg-muted/30 p-4">
-                        <span className="text-sm text-muted-foreground">IBC 连接数</span>
-                        {ibcLoading ? (
-                          <Skeleton className="mt-1 h-7 w-16" />
-                        ) : (
-                          <div className="mt-1 text-lg font-semibold">
-                            {ibcData?.connections.total ?? 0}
-                          </div>
-                        )}
-                      </div>
-                      <div className="rounded-lg bg-muted/30 p-4">
-                        <span className="text-sm text-muted-foreground">活跃通道</span>
-                        {ibcLoading ? (
-                          <Skeleton className="mt-1 h-7 w-16" />
-                        ) : (
-                          <div className="mt-1 text-lg font-semibold">
-                            {ibcData?.channels.open ?? 0}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="price-trend">
-              <PriceTrendTab />
-            </TabsContent>
-
-            <TabsContent value="quality">
-              <QualityAnalysisTab />
-            </TabsContent>
-
-            <TabsContent value="comparison">
-              <PriceComparisonTab />
-            </TabsContent>
-          </Tabs>
-        </>
-      )}
+        <TabsContent value="comparison">
+          <PriceComparisonTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

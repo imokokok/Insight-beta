@@ -5,8 +5,6 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   RefreshCw,
   Database,
-  Server,
-  Clock,
   Activity,
   Shield,
   Link2,
@@ -18,7 +16,7 @@ import {
   Heart,
 } from 'lucide-react';
 
-import { TrendIndicator, ProtocolHealthBadge } from '@/components/common';
+import { StatsBar, ProtocolHealthBadge } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { Badge } from '@/components/ui';
@@ -26,7 +24,6 @@ import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { RefreshIndicator } from '@/components/ui';
-import { Skeleton } from '@/components/ui';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import {
   ChainlinkExportButton,
@@ -190,71 +187,31 @@ export default function ChainlinkPage() {
       )}
 
       {loading && !overviewStats ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="mt-2 h-8 w-16" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <div className="h-16 animate-pulse rounded-xl bg-muted" />
       ) : overviewStats ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">总喂价数</span>
-                <Database className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-2xl font-bold">{overviewStats.totalFeeds}</span>
-                <TrendIndicator trend="up" value={3.2} />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">活跃节点数</span>
-                <Server className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-2xl font-bold text-green-600">
-                  {overviewStats.activeNodes}
-                </span>
-                <TrendIndicator trend="up" value={5.1} />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">OCR 轮次</span>
-                <Activity className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-2xl font-bold">{overviewStats.ocrRounds}</span>
-                <TrendIndicator trend="neutral" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">平均延迟</span>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-2xl font-bold text-blue-600">
-                  {overviewStats.avgLatency}ms
-                </span>
-                <TrendIndicator trend="down" value={8.5} />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <StatsBar
+          items={[
+            { label: '总喂价数', value: overviewStats.totalFeeds, trend: 'up' as const },
+            {
+              label: '活跃节点数',
+              value: overviewStats.activeNodes,
+              trend: 'up' as const,
+              status: 'healthy' as const,
+            },
+            { label: 'OCR 轮次', value: overviewStats.ocrRounds, trend: 'neutral' as const },
+            {
+              label: '平均延迟',
+              value: `${overviewStats.avgLatency}ms`,
+              trend: 'down' as const,
+              status:
+                overviewStats.avgLatency < 200
+                  ? ('healthy' as const)
+                  : overviewStats.avgLatency < 500
+                    ? ('warning' as const)
+                    : ('critical' as const),
+            },
+          ]}
+        />
       ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
