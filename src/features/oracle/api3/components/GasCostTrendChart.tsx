@@ -18,10 +18,10 @@ import {
   Bar,
 } from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useI18n } from '@/i18n';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
+import { useI18n } from '@/i18n';
 
 import type { GasCostTrendPoint } from '../types/api3';
 
@@ -46,7 +46,10 @@ export function GasCostTrendChart({ trend, className }: GasCostTrendChartProps) 
 
   const chartData = useMemo<ChartData[]>(() => {
     return trend.map((point) => ({
-      time: new Date(point.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: new Date(point.timestamp).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
       timestamp: point.timestamp,
       gasUsed: point.gasUsed,
       costUsd: point.costUsd,
@@ -54,26 +57,41 @@ export function GasCostTrendChart({ trend, className }: GasCostTrendChartProps) 
     }));
   }, [trend]);
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{
+      value: number;
+      name: string;
+      color: string;
+      payload: { timestamp: string };
+    }>;
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div className="rounded-lg border bg-white p-3 shadow-lg">
-          <p className="text-xs text-muted-foreground mb-2">
-            {new Date(payload[0].payload.timestamp).toLocaleString()}
+          <p className="mb-2 text-xs text-muted-foreground">
+            {new Date(payload[0]!.payload.timestamp).toLocaleString()}
           </p>
           <div className="space-y-1">
-            {payload.map((entry: any, index: number) => (
+            {payload.map((entry, index: number) => (
               <div key={index} className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
                 <span className="text-xs text-muted-foreground">
-                  {entry.name === 'gasUsed' ? 'Gas Used' : entry.name === 'costUsd' ? 'Cost (USD)' : 'Transactions'}
+                  {entry.name === 'gasUsed'
+                    ? 'Gas Used'
+                    : entry.name === 'costUsd'
+                      ? 'Cost (USD)'
+                      : 'Transactions'}
                 </span>
                 <span className="text-sm font-semibold">
                   {entry.name === 'gasUsed'
                     ? entry.value.toLocaleString()
                     : entry.name === 'costUsd'
-                    ? `$${entry.value.toFixed(4)}`
-                    : entry.value}
+                      ? `$${entry.value.toFixed(4)}`
+                      : entry.value}
                 </span>
               </div>
             ))}
@@ -166,15 +184,21 @@ export function GasCostTrendChart({ trend, className }: GasCostTrendChartProps) 
               {t('api3.gas.trendDescription') || 'Gas 消耗和成本的时间序列分析'}
             </CardDescription>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Tabs value={metricType} onValueChange={(v) => setMetricType(v as any)}>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Tabs
+              value={metricType}
+              onValueChange={(v) => setMetricType(v as 'gas' | 'cost' | 'transactions')}
+            >
               <TabsList>
                 <TabsTrigger value="cost">成本</TabsTrigger>
                 <TabsTrigger value="gas">Gas</TabsTrigger>
                 <TabsTrigger value="transactions">交易</TabsTrigger>
               </TabsList>
             </Tabs>
-            <Tabs value={chartType} onValueChange={(v) => setChartType(v as any)}>
+            <Tabs
+              value={chartType}
+              onValueChange={(v) => setChartType(v as 'line' | 'area' | 'bar')}
+            >
               <TabsList>
                 <TabsTrigger value="line">折线</TabsTrigger>
                 <TabsTrigger value="area">面积</TabsTrigger>
@@ -210,7 +234,11 @@ export function GasCostTrendChart({ trend, className }: GasCostTrendChartProps) 
                 width={isMobile ? 40 : 50}
                 tickFormatter={(value) => {
                   if (metricType === 'gas') {
-                    return value >= 1000000 ? `${(value / 1000000).toFixed(1)}M` : value >= 1000 ? `${(value / 1000).toFixed(0)}K` : value;
+                    return value >= 1000000
+                      ? `${(value / 1000000).toFixed(1)}M`
+                      : value >= 1000
+                        ? `${(value / 1000).toFixed(0)}K`
+                        : value;
                   }
                   return value;
                 }}
@@ -223,7 +251,13 @@ export function GasCostTrendChart({ trend, className }: GasCostTrendChartProps) 
                 name={getName()}
                 stroke={getColor()}
                 strokeWidth={2}
-                fill={chartType === 'area' ? 'url(#gasGradient)' : chartType === 'bar' ? getColor() : 'none'}
+                fill={
+                  chartType === 'area'
+                    ? 'url(#gasGradient)'
+                    : chartType === 'bar'
+                      ? getColor()
+                      : 'none'
+                }
                 dot={chartType === 'line' ? false : undefined}
                 activeDot={{ r: 5 }}
               />

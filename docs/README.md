@@ -73,10 +73,19 @@ docs/
 
 Insight 是一个专业的**预言机数据分析平台**，专为 DeFi 协议和数据提供商设计。它提供来自多个协议的预言机数据的全面实时聚合、分析和监控。
 
+### 支持的预言机协议
+
+- Chainlink
+- Pyth
+- API3
+- Band Protocol
+- UMA
+
 ### 核心功能
 
-- 多协议预言机数据聚合（Chainlink、Pyth、RedStone、UMA 等）
+- 多协议预言机数据聚合（Chainlink、Pyth、API3、Band、UMA）
 - 实时价格监控和偏差分析
+- 预言机可靠性评分系统
 - 智能告警系统
 - 跨链数据分析和比较
 - 数据探索和搜索
@@ -84,10 +93,10 @@ Insight 是一个专业的**预言机数据分析平台**，专为 DeFi 协议�
 
 ### 技术栈
 
-- **框架**: Next.js 16 + React 19
-- **语言**: TypeScript 5.7
-- **样式**: Tailwind CSS 3.4
-- **数据库**: PostgreSQL + Supabase
+- **框架**: Next.js 16.1.6 + React 19.0.0
+- **语言**: TypeScript 5.7.3
+- **样式**: Tailwind CSS 3.4.17
+- **数据库**: PostgreSQL 16+ + Supabase
 - **区块链**: viem
 
 ---

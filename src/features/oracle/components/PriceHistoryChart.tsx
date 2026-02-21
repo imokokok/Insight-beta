@@ -15,7 +15,7 @@ import {
   YAxis,
 } from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { cn, formatPrice } from '@/shared/utils';
 
 export interface SingleAssetDataPoint {

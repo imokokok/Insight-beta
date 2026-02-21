@@ -23,18 +23,21 @@ import {
   getProtocolsByCategory as _getProtocolsByCategory,
 } from './oracle/protocol';
 
+import type { SupportedChain as _SupportedChain } from './chains';
 import type {
   OracleProtocol as _OracleProtocol,
   OracleProtocolInfo as _OracleProtocolInfo,
   OracleFeature as _OracleFeature,
 } from './oracle/protocol';
 
-// 本地类型别名
+export type { SupportedChain } from './chains';
+
+type SupportedChain = _SupportedChain;
+
 export type OracleProtocol = _OracleProtocol;
 export type OracleProtocolInfo = _OracleProtocolInfo;
 export type OracleFeature = _OracleFeature;
 
-// 本地常量别名
 export const ORACLE_PROTOCOLS = _ORACLE_PROTOCOLS;
 export const PROTOCOL_DISPLAY_NAMES = _PROTOCOL_DISPLAY_NAMES;
 export const PROTOCOL_DESCRIPTIONS = _PROTOCOL_DESCRIPTIONS;
@@ -43,38 +46,8 @@ export const PRICE_FEED_PROTOCOLS = _PRICE_FEED_PROTOCOLS;
 export const OPTIMISTIC_PROTOCOLS = _OPTIMISTIC_PROTOCOLS;
 export const getProtocolsByCategory = _getProtocolsByCategory;
 
-// ============================================================================
-// 通用链类型定义
-// ============================================================================
-
-export type SupportedChain =
-  | 'ethereum'
-  | 'polygon'
-  | 'arbitrum'
-  | 'optimism'
-  | 'base'
-  | 'avalanche'
-  | 'bsc'
-  | 'fantom'
-  | 'celo'
-  | 'gnosis'
-  | 'linea'
-  | 'scroll'
-  | 'mantle'
-  | 'mode'
-  | 'blast'
-  | 'solana'
-  | 'near'
-  | 'aptos'
-  | 'sui'
-  | 'polygonAmoy'
-  | 'sepolia'
-  | 'goerli'
-  | 'mumbai'
-  | 'local';
-
 export type ChainInfo = {
-  id: SupportedChain;
+  id: _SupportedChain;
   name: string;
   nativeCurrency: string;
   chainId: number;

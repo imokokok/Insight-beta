@@ -45,7 +45,8 @@ graph TB
         RPC[区块链 RPC<br/>Alchemy/Infura]
         Chainlink[Chainlink]
         Pyth[Pyth]
-        RedStone[RedStone]
+        API3[API3]
+        BandProtocol[Band Protocol]
         UMA[UMA]
         Notifications[通知服务<br/>Slack/Telegram/Webhook]
     end
@@ -85,7 +86,8 @@ graph TB
     OracleSync --> RPC
     OracleSync --> Chainlink
     OracleSync --> Pyth
-    OracleSync --> RedStone
+    OracleSync --> API3
+    OracleSync --> BandProtocol
     OracleSync --> UMA
 
     Alert --> Notifications
@@ -131,14 +133,14 @@ graph TB
 ### 6. 外部服务
 
 - **区块链 RPC**: Alchemy、Infura 等 RPC 提供商
-- **预言机协议**: Chainlink、Pyth、RedStone、UMA
+- **预言机协议**: Chainlink、Pyth、API3、Band Protocol、UMA
 - **通知服务**: Slack、Telegram、Webhook
 
 ## 主要功能模块
 
 ### 预言机数据聚合
 
-- 支持 Chainlink、Pyth、RedStone、UMA 等协议
+- 支持 Chainlink、Pyth、API3、Band Protocol、UMA 等协议
 - 实时数据同步与历史数据存储
 - 多协议数据统一格式化
 
@@ -158,7 +160,7 @@ graph TB
 
 - 多链价格比较
 - 相关性分析
-- 套利机会识别
+- 价格一致性监控
 
 ### 数据探索
 
@@ -166,16 +168,28 @@ graph TB
 - 热门价格源
 - 协议和地址探索
 
+### 预言机可靠性评分
+
+- 多维度预言机可靠性评估
+- 历史数据准确性分析
+- 响应时间和延迟监控
+
+### 异常检测和安全监控
+
+- 实时异常行为检测
+- 价格操纵预警
+- 安全事件追踪和报告
+
 ## 技术选型理由
 
-### Next.js 16
+### Next.js 16.1.6
 
 - 支持 App Router 架构，更灵活的路由组织
 - 服务端组件与客户端组件分离，性能更好
 - 内置 API Routes，无需额外后端服务
 - 优秀的开发体验和部署支持
 
-### TypeScript
+### TypeScript 5.7.3
 
 - 类型安全，减少运行时错误
 - 更好的 IDE 支持和代码提示

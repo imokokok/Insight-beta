@@ -23,17 +23,17 @@ import {
 } from 'lucide-react';
 
 import { Sparkline, StatComparison, CHART_COLORS } from '@/components/charts';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+} from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import { cn, formatChangePercent, formatTimeAgo } from '@/shared/utils';
 
 // ============================================================================

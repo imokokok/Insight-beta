@@ -4,9 +4,9 @@ import { useMemo, useState } from 'react';
 
 import { Grid3X3, Info } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/shared/utils';
 

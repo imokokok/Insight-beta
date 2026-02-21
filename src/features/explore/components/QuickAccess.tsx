@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Heart, Clock, Database, Wallet, ChevronRight } from 'lucide-react';
 
-import { CardEnhanced } from '@/components/ui/card';
+import { CardEnhanced } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { cn } from '@/shared/utils';
 

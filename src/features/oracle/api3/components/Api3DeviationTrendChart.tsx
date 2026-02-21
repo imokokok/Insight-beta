@@ -16,10 +16,10 @@ import {
   Area,
 } from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useI18n } from '@/i18n';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
+import { useI18n } from '@/i18n';
 
 import type { ProtocolPricePoint } from '../types/api3';
 
@@ -42,10 +42,14 @@ export function Api3DeviationTrendChart({ pricePoints, className }: Api3Deviatio
 
   const chartData = useMemo<ChartData[]>(() => {
     return pricePoints.map((point) => {
-      const api3VsChainlink = ((point.api3Price - point.chainlinkPrice) / point.chainlinkPrice) * 100;
+      const api3VsChainlink =
+        ((point.api3Price - point.chainlinkPrice) / point.chainlinkPrice) * 100;
       const api3VsPyth = ((point.api3Price - point.pythPrice) / point.pythPrice) * 100;
       return {
-        time: new Date(point.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        time: new Date(point.timestamp).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
         timestamp: point.timestamp,
         api3VsChainlink,
         api3VsPyth,
@@ -53,23 +57,32 @@ export function Api3DeviationTrendChart({ pricePoints, className }: Api3Deviatio
     });
   }, [pricePoints]);
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{
+      value: number;
+      name: string;
+      color: string;
+      payload: { timestamp: string };
+    }>;
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div className="rounded-lg border bg-white p-3 shadow-lg">
-          <p className="text-xs text-muted-foreground mb-2">
-            {new Date(payload[0].payload.timestamp).toLocaleString()}
+          <p className="mb-2 text-xs text-muted-foreground">
+            {new Date(payload[0]!.payload.timestamp).toLocaleString()}
           </p>
           <div className="space-y-1">
-            {payload.map((entry: any, index: number) => (
+            {payload.map((entry, index: number) => (
               <div key={index} className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
                 <span className="text-xs text-muted-foreground">
                   {entry.name === 'api3VsChainlink' ? 'API3 vs Chainlink' : 'API3 vs Pyth'}
                 </span>
-                <span className="text-sm font-semibold">
-                  {entry.value.toFixed(4)}%
-                </span>
+                <span className="text-sm font-semibold">{entry.value.toFixed(4)}%</span>
               </div>
             ))}
           </div>

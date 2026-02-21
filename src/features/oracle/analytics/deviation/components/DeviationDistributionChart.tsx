@@ -16,8 +16,8 @@ import {
   ReferenceLine,
 } from 'recharts';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
 

@@ -14,12 +14,12 @@ import {
   Info,
 } from 'lucide-react';
 
-import { Badge, StatusBadge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { SkeletonList } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui';
+import { Badge, StatusBadge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Progress } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { formatTime } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';

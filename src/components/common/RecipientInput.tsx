@@ -4,7 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui';
 import { logger } from '@/shared/logger';
 import type { OracleAlertRule } from '@/types/unifiedOracleTypes';
 

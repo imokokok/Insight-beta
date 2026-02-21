@@ -2,7 +2,7 @@
 
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 

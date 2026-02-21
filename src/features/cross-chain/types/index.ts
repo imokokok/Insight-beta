@@ -194,6 +194,36 @@ export interface CorrelationResponse {
   };
 }
 
+export interface ChainStatusData {
+  chain: string;
+  displayName: string;
+  status: 'healthy' | 'degraded' | 'offline';
+  responseTimeMs: number;
+  staleMinutes: number;
+  lastPriceTimestamp: string;
+  dataFreshness: 'fresh' | 'stale' | 'unknown';
+}
+
+export interface ChainStatusSummary {
+  totalChains: number;
+  healthyChains: number;
+  degradedChains: number;
+  offlineChains: number;
+  avgResponseTimeMs: number;
+  healthRate: number;
+  lastUpdated: string;
+}
+
+export interface ChainStatusResponse {
+  success: boolean;
+  chains: ChainStatusData[];
+  summary: ChainStatusSummary;
+  meta: {
+    timestamp: string;
+    dataSource?: string;
+  };
+}
+
 export interface ChainLiquidity {
   chain: string;
   displayName: string;

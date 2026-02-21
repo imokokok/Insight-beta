@@ -12,7 +12,7 @@ import { Sidebar } from '@/components/common/EnhancedSidebar';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { MobileMenuButton, MobileSidebar, MobileNavProvider } from '@/components/common/MobileNav';
 import { QuickSearch, useQuickSearch } from '@/components/common/QuickSearch';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui';
 import { SyncStatus } from '@/features/oracle/components/SyncStatus';
 import { useI18n } from '@/i18n';
 import { FavoritesProvider } from '@/shared/contexts/FavoritesContext';

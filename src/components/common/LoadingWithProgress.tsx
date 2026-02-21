@@ -5,8 +5,8 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, RefreshCw, Clock, AlertCircle, Sparkles } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui';
+import { Progress } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 /**

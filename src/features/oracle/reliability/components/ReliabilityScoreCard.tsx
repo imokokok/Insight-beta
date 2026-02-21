@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Trophy, Award, Medal } from 'lucide-react';
 
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 

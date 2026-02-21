@@ -23,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security monitoring and manipulation detection
 - WebSocket price streaming with Redis adapter
 - Database optimization and caching layers
+- API3 协议支持：Airnode 监控、dAPIs 价格分析、OEV 监控
+- Band Protocol 支持：数据源验证、跨链桥监控、聚合验证
+- 预言机可靠性评分系统
+- 异常检测和安全监控模块
+- 钱包连接模块（支持 MetaMask、Phantom、WalletConnect）
 
 ### Changed
 
@@ -33,6 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated to TypeScript 5.7 with strict mode
 - Refactored all sync modules using SyncManagerFactory (68% code reduction)
 - Refactored EVM clients using EvmOracleClient base class (49% code reduction)
+- 跨链分析功能重新定位为"价格一致性监控"
+- 更新技术栈版本：Next.js 16.1.6、React 19.0.0、TypeScript 5.7.3
+- 文档全面更新，添加 API3 和 Band Protocol 文档
 
 ### Fixed
 
@@ -40,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced error handling in API client with better error classification
 - Fixed database connection pooling issues
 - Resolved WebSocket reconnection stability
+- 修复文档与代码不一致问题
 
 ## [0.1.0] - 2024
 

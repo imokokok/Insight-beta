@@ -11,4 +11,36 @@
 export * from './components';
 export * from './hooks';
 export * from './services';
-export * from './api3';
+export type {
+  Airnode,
+  UptimeTrendPoint,
+  OfflineEvent,
+  TimePeriod,
+  AirnodeHistoryData,
+  BeaconSetComponent,
+  Dapi,
+  PriceUpdateEvent as Api3PriceUpdateEvent,
+  PriceUpdateStats,
+  PriceUpdateFrequencyData,
+  PriceUpdateDelayTrend,
+  SignatureVerifyResult,
+  Api3PriceData,
+  UpdateFrequencyStats,
+  UpdateIntervalPoint,
+  UpdateFrequencyResponse,
+  ProtocolPricePoint,
+  DeviationMetrics,
+  ComparisonDeviation,
+  Api3DeviationData,
+  GasCostByDapi,
+  GasCostByChain,
+  GasCostTrendPoint,
+  GasCostAnalysisData,
+  CrossChainDapiData,
+  CrossChainPricePoint,
+  CrossChainComparisonData,
+  API3AlertType,
+  API3AlertConfig,
+  API3AlertSummary,
+  API3AlertsResponse,
+} from './api3';

@@ -14,19 +14,12 @@ import {
   List,
 } from 'lucide-react';
 
-import { Badge, StatusBadge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { SkeletonList } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui';
+import { Badge, StatusBadge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { formatTime } from '@/shared/utils';
 

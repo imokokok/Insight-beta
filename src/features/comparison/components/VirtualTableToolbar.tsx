@@ -4,8 +4,7 @@ import React from 'react';
 
 import { Search, Download, Settings2, AlignJustify } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,8 +13,9 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuSeparator,
   DropdownMenuLabel,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
+} from '@/components/ui';
+import { CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Input } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import { exportRealtimeToCSV } from '@/shared/utils/export';

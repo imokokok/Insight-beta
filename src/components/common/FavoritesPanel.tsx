@@ -7,8 +7,8 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Trash2, CircleDot, FileCode, Wallet } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui';
+import { ScrollArea } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { useFavoritesContext, type FavoriteItem } from '@/shared/contexts/FavoritesContext';
 import { cn } from '@/shared/utils';

@@ -2,9 +2,9 @@
 
 import { ExternalLink, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { SkeletonList } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, truncateAddress, formatTime } from '@/shared/utils';
 import type { Dispute } from '@/types/oracle/dispute';
@@ -18,20 +18,54 @@ interface DisputeListProps {
 function StatusBadge({ status }: { status: Dispute['status'] }) {
   const { t } = useI18n();
 
-  const badgeConfig = {
+  const badgeConfig: Record<
+    string,
+    {
+      label: string;
+      variant: 'default' | 'secondary' | 'destructive' | 'outline';
+      icon: React.ReactNode;
+    }
+  > = {
     active: {
       label: t('analytics:disputes.disputes.statusActive'),
       variant: 'default' as const,
       icon: <Clock className="mr-1 h-3 w-3" />,
+    },
+    disputed: {
+      label: t('analytics:disputes.disputes.statusDisputed'),
+      variant: 'default' as const,
+      icon: <AlertCircle className="mr-1 h-3 w-3" />,
     },
     resolved: {
       label: t('analytics:disputes.disputes.statusResolved'),
       variant: 'secondary' as const,
       icon: <CheckCircle className="mr-1 h-3 w-3" />,
     },
+    settled: {
+      label: t('analytics:disputes.disputes.statusSettled'),
+      variant: 'secondary' as const,
+      icon: <CheckCircle className="mr-1 h-3 w-3" />,
+    },
+    expired: {
+      label: t('analytics:disputes.disputes.statusExpired'),
+      variant: 'outline' as const,
+      icon: <Clock className="mr-1 h-3 w-3" />,
+    },
+    accepted: {
+      label: t('analytics:disputes.disputes.statusAccepted'),
+      variant: 'secondary' as const,
+      icon: <CheckCircle className="mr-1 h-3 w-3" />,
+    },
+    rejected: {
+      label: t('analytics:disputes.disputes.statusRejected'),
+      variant: 'destructive' as const,
+      icon: <AlertCircle className="mr-1 h-3 w-3" />,
+    },
   };
 
-  const config = badgeConfig[status];
+  const config = badgeConfig[status] ?? badgeConfig.active;
+
+  if (!config) return null;
 
   return (
     <Badge variant={config.variant} className="flex items-center">

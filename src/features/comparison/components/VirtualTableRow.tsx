@@ -12,14 +12,14 @@ import {
   ChevronDown,
 } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui';
+import { Badge } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';

@@ -4,16 +4,10 @@ import { useState, useCallback, useMemo } from 'react';
 
 import { RefreshCw, Filter, Calendar, TrendingUp, Minus, DollarSign, Database } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { Switch } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 

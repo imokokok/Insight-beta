@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { Activity, RefreshCw } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { SkeletonList } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
@@ -93,7 +93,7 @@ const timeRangeOptions = [
 
 export function Api3DeviationAnalysis({
   symbol = 'ETH',
-  chain,
+  chain: _chain,
   timeRange: initialTimeRange = '24h',
   className,
 }: Api3DeviationAnalysisProps) {
@@ -102,7 +102,7 @@ export function Api3DeviationAnalysis({
   const [data, setData] = useState<Api3DeviationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -130,11 +130,11 @@ export function Api3DeviationAnalysis({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [timeRange, symbol]);
 
   useEffect(() => {
     fetchData();
-  }, [symbol, chain, timeRange]);
+  }, [fetchData]);
 
   const handleRefresh = () => {
     fetchData();

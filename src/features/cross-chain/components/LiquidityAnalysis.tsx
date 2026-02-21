@@ -4,16 +4,10 @@ import { memo, useMemo, useState } from 'react';
 
 import { Droplets, TrendingUp, TrendingDown, Activity, CheckCircle, Filter } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 import type { LiquidityResponse, ChainLiquidity } from '../types';

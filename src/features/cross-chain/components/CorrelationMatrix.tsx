@@ -4,8 +4,8 @@ import { memo, useMemo } from 'react';
 
 import { Grid3X3, Info } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 import type { CorrelationResponse } from '../types';

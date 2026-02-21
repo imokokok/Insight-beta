@@ -30,10 +30,10 @@ import {
 } from 'recharts';
 
 import { Breadcrumb } from '@/components/common/Breadcrumb';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { formatTime, cn, copyToClipboard } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
@@ -161,16 +161,22 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
     { label: airnodeData?.airnode.address.slice(0, 8) ?? address.slice(0, 8) },
   ];
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{ value: number; payload: { timestamp: string } }>;
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div className="rounded-lg border bg-white p-3 shadow-lg dark:bg-slate-800">
           <p className="mb-1 text-xs text-muted-foreground">
-            {new Date(payload[0].payload.timestamp).toLocaleString()}
+            {new Date(payload[0]!.payload.timestamp).toLocaleString()}
           </p>
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-blue-500" />
-            <span className="text-sm font-semibold">{payload[0].value}ms</span>
+            <span className="text-sm font-semibold">{payload[0]!.value}ms</span>
           </div>
         </div>
       );

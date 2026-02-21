@@ -1,7 +1,6 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
-import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
+import { ok, error } from '@/lib/api/apiResponse';
 import type {
   NotificationChannel,
   NotificationChannelType,
@@ -51,36 +50,35 @@ function validateChannelConfig(
   return { valid: true };
 }
 
-async function handleGet(): Promise<NextResponse> {
-  return NextResponse.json({
-    ok: true,
+export async function GET() {
+  return ok({
     channels: channelsStore,
     total: channelsStore.length,
     timestamp: new Date().toISOString(),
   });
 }
 
-async function handlePost(request: NextRequest): Promise<NextResponse> {
+export async function POST(request: NextRequest) {
   const body = await request.json();
 
   if (!body.name || !body.type) {
-    return NextResponse.json(
-      { ok: false, error: 'Missing required fields: name, type' },
-      { status: 400 },
-    );
+    return error({ code: 'VALIDATION_ERROR', message: 'Missing required fields: name, type' }, 400);
   }
 
   const validTypes: NotificationChannelType[] = ['webhook', 'email', 'telegram', 'slack'];
   if (!validTypes.includes(body.type)) {
-    return NextResponse.json(
-      { ok: false, error: `Invalid channel type. Must be one of: ${validTypes.join(', ')}` },
-      { status: 400 },
+    return error(
+      {
+        code: 'VALIDATION_ERROR',
+        message: `Invalid channel type. Must be one of: ${validTypes.join(', ')}`,
+      },
+      400,
     );
   }
 
   const configValidation = validateChannelConfig(body.type, body.config || {});
   if (!configValidation.valid) {
-    return NextResponse.json({ ok: false, error: configValidation.error }, { status: 400 });
+    return error({ code: 'VALIDATION_ERROR', message: configValidation.error }, 400);
   }
 
   const now = new Date().toISOString();
@@ -99,21 +97,5 @@ async function handlePost(request: NextRequest): Promise<NextResponse> {
 
   channelsStore.push(newChannel);
 
-  return NextResponse.json({
-    ok: true,
-    data: newChannel,
-    timestamp: new Date().toISOString(),
-  });
+  return ok({ channel: newChannel, timestamp: new Date().toISOString() });
 }
-
-export const GET = withMiddleware({
-  rateLimit: DEFAULT_RATE_LIMIT,
-  auth: { required: true },
-  validate: { allowedMethods: ['GET'] },
-})(handleGet);
-
-export const POST = withMiddleware({
-  rateLimit: DEFAULT_RATE_LIMIT,
-  auth: { required: true },
-  validate: { allowedMethods: ['POST'] },
-})(handlePost);

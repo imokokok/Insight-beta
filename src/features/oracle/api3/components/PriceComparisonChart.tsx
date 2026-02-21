@@ -14,7 +14,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
 
@@ -59,15 +59,26 @@ export function PriceComparisonChart({
     return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{
+      value: number;
+      name: string;
+      color: string;
+      payload: { timestamp: string };
+    }>;
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div className="rounded-lg border bg-white p-3 shadow-lg">
           <p className="mb-2 text-xs text-muted-foreground">
-            {new Date(payload[0].payload.timestamp).toLocaleString()}
+            {new Date(payload[0]!.payload.timestamp).toLocaleString()}
           </p>
           <div className="space-y-1">
-            {payload.map((entry: any, index: number) => (
+            {payload.map((entry, index: number) => (
               <div key={index} className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
                 <span className="text-xs text-muted-foreground">{entry.name}</span>

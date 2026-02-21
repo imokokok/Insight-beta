@@ -2,8 +2,8 @@
 
 import { ArrowRight, Clock, Activity, TrendingUp, AlertCircle } from 'lucide-react';
 
-import { StatusBadge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { StatusBadge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 

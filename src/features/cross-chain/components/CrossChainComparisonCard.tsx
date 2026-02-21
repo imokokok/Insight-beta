@@ -13,11 +13,11 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, formatPrice, formatChangePercent, formatConfidence } from '@/shared/utils';
 

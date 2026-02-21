@@ -5,7 +5,7 @@ import { useCallback, useRef, useState } from 'react';
 import useSWR from 'swr';
 import { formatEther } from 'viem';
 
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui';
 import { useWallet as useWalletContext } from '@/features/wallet/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getChainSymbol } from '@/lib/blockchain/chainConfig';

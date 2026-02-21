@@ -13,7 +13,7 @@ import {
   Cell,
 } from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { formatNumber } from '@/shared/utils';
 import type { Dispute, DisputeTrend } from '@/types/oracle/dispute';

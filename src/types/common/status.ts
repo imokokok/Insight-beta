@@ -108,7 +108,8 @@ export type StatusType =
   | 'online'
   | 'offline'
   | 'warning'
-  | 'success';
+  | 'success'
+  | 'critical';
 
 // ============================================================================
 // 颜色常量 - 从 colors.ts 重新导出（向后兼容）

@@ -2,8 +2,8 @@
 
 import React, { useMemo, useCallback, useRef, useState } from 'react';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 
 import { RowDetailPanel } from './RowDetailPanel';
 import {

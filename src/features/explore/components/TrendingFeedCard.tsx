@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Star, Activity, Database, TrendingUp, TrendingDown } from 'lucide-react';
 
-import { CardEnhanced } from '@/components/ui/card';
+import { CardEnhanced } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useFavoritesContext } from '@/shared/contexts/FavoritesContext';
 import { cn, formatNumber } from '@/shared/utils';

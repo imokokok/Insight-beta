@@ -19,18 +19,13 @@ import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { StatCard, StatCardGroup, DashboardStatsSection } from '@/components/common/StatCard';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ErrorBanner } from '@/components/ui/ErrorBanner';
-import { Input } from '@/components/ui/input';
-import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
-import {
-  StatCardSkeleton,
-  ChartSkeleton,
-  CardSkeleton,
-  SkeletonList,
-} from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui';
+import { ErrorBanner } from '@/components/ui';
+import { RefreshIndicator } from '@/components/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Input } from '@/components/ui';
+import { StatCardSkeleton, ChartSkeleton, CardSkeleton, SkeletonList } from '@/components/ui';
 import {
   TrendList,
   AnomalyList,

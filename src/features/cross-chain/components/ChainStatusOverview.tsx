@@ -2,7 +2,7 @@
 
 import { memo, useMemo } from 'react';
 
-import { Droplets, TrendingUp, TrendingDown } from 'lucide-react';
+import { Activity, Clock, Server, Wifi, WifiOff } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -14,12 +14,13 @@ import {
   Cell,
 } from 'recharts';
 
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/Badge';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { cn } from '@/shared/utils';
+import { formatTime } from '@/shared/utils/format/date';
 
-import type { LiquidityResponse } from '../types';
+import type { ChainStatusResponse } from '../types';
 
 const CHAIN_COLORS: Record<string, string> = {
   ethereum: '#627eea',
@@ -31,33 +32,32 @@ const CHAIN_COLORS: Record<string, string> = {
   base: '#0052ff',
 };
 
-interface LiquidityDistributionProps {
-  data?: LiquidityResponse;
+interface ChainStatusOverviewProps {
+  data?: ChainStatusResponse;
   isLoading?: boolean;
   height?: number;
 }
 
-function formatLiquidity(value: number): string {
-  if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
-  if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
-  if (value >= 1e3) return `$${(value / 1e3).toFixed(1)}K`;
-  return `$${value.toFixed(0)}`;
+function formatResponseTime(ms: number): string {
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(1)}s`;
 }
 
-export const LiquidityDistribution = memo(function LiquidityDistribution({
+export const ChainStatusOverview = memo(function ChainStatusOverview({
   data,
   isLoading,
   height = 300,
-}: LiquidityDistributionProps) {
+}: ChainStatusOverviewProps) {
   const chartData = useMemo(() => {
     if (!data?.chains) return [];
     return data.chains
-      .sort((a, b) => b.totalLiquidity - a.totalLiquidity)
+      .sort((a, b) => a.responseTimeMs - b.responseTimeMs)
       .map((chain) => ({
         chain: chain.chain,
         displayName: chain.displayName,
-        liquidity: chain.totalLiquidity,
-        change24h: chain.liquidityChange24h,
+        responseTimeMs: chain.responseTimeMs,
+        staleMinutes: chain.staleMinutes,
+        status: chain.status,
         color: CHAIN_COLORS[chain.chain] || '#94a3b8',
       }));
   }, [data]);
@@ -81,10 +81,10 @@ export const LiquidityDistribution = memo(function LiquidityDistribution({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Droplets className="h-5 w-5" />
-            跨链流动性分布
+            <Server className="h-5 w-5" />
+            链状态概览
           </CardTitle>
-          <CardDescription>暂无流动性数据</CardDescription>
+          <CardDescription>暂无链状态数据</CardDescription>
         </CardHeader>
         <CardContent>
           <div
@@ -104,15 +104,15 @@ export const LiquidityDistribution = memo(function LiquidityDistribution({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Droplets className="h-5 w-5" />
-              跨链流动性分布
+              <Server className="h-5 w-5" />
+              链状态概览
             </CardTitle>
-            <CardDescription>各链总流动性分析</CardDescription>
+            <CardDescription>各链响应时间与数据新鲜度</CardDescription>
           </div>
           {data.summary && (
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="gap-1">
-                总流动性: {formatLiquidity(data.summary.totalLiquidity)}
+                健康链: {data.summary.healthyChains}/{data.summary.totalChains}
               </Badge>
             </div>
           )}
@@ -131,7 +131,7 @@ export const LiquidityDistribution = memo(function LiquidityDistribution({
               <XAxis
                 type="number"
                 tick={{ fontSize: 11 }}
-                tickFormatter={(value) => formatLiquidity(value)}
+                tickFormatter={(value) => formatResponseTime(value)}
               />
               <YAxis type="category" dataKey="displayName" tick={{ fontSize: 11 }} width={80} />
               <Tooltip
@@ -143,13 +143,16 @@ export const LiquidityDistribution = memo(function LiquidityDistribution({
                 }}
                 formatter={(value) => {
                   const numValue = typeof value === 'number' ? value : 0;
-                  return [formatLiquidity(numValue), '流动性'];
+                  return [formatResponseTime(numValue), '响应时间'];
                 }}
                 labelFormatter={(label) => String(label)}
               />
-              <Bar dataKey="liquidity" radius={[0, 4, 4, 0]}>
+              <Bar dataKey="responseTimeMs" radius={[0, 4, 4, 0]}>
                 {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.status === 'healthy' ? entry.color : '#94a3b8'}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -159,37 +162,50 @@ export const LiquidityDistribution = memo(function LiquidityDistribution({
           {chartData.slice(0, 4).map((item) => (
             <div
               key={item.chain}
-              className="flex items-center gap-2 rounded-md bg-muted px-2 py-1 text-xs"
-            >
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-              <span className="font-medium">{item.displayName}</span>
-              <span className="ml-auto font-mono">{formatLiquidity(item.liquidity)}</span>
-              {item.change24h >= 0 ? (
-                <TrendingUp className="h-3 w-3 text-green-600" />
-              ) : (
-                <TrendingDown className="h-3 w-3 text-red-600" />
+              className={cn(
+                'flex items-center gap-2 rounded-md px-2 py-1 text-xs',
+                item.status === 'healthy' && 'bg-green-500/10',
+                item.status === 'degraded' && 'bg-amber-500/10',
+                item.status === 'offline' && 'bg-red-500/10',
               )}
+            >
+              {item.status === 'healthy' ? (
+                <Wifi className="h-3 w-3 text-green-600" />
+              ) : (
+                <WifiOff className="h-3 w-3 text-red-600" />
+              )}
+              <span className="font-medium">{item.displayName}</span>
+              <span className="ml-auto font-mono text-muted-foreground">
+                {formatResponseTime(item.responseTimeMs)}
+              </span>
             </div>
           ))}
         </div>
         {data.summary && (
           <div className="mt-4 flex items-center justify-between border-t pt-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-4">
-              <span>
-                最高流动性: <span className="font-medium capitalize">{data.summary.topChain}</span>
+              <span className="flex items-center gap-1">
+                <Activity className="h-3 w-3" />
+                平均响应: {formatResponseTime(data.summary.avgResponseTimeMs)}
               </span>
-              <span>平均流动性: {formatLiquidity(data.summary.avgLiquidity)}</span>
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                最新更新: {formatTime(data.summary.lastUpdated)}
+              </span>
             </div>
             <span>
-              24h 变化:
+              健康率:
               <span
                 className={cn(
                   'ml-1 font-medium',
-                  data.summary.liquidityChange24h >= 0 ? 'text-green-600' : 'text-red-600',
+                  data.summary.healthRate >= 90
+                    ? 'text-green-600'
+                    : data.summary.healthRate >= 70
+                      ? 'text-amber-600'
+                      : 'text-red-600',
                 )}
               >
-                {data.summary.liquidityChange24h >= 0 ? '+' : ''}
-                {data.summary.liquidityChange24h.toFixed(2)}%
+                {data.summary.healthRate.toFixed(0)}%
               </span>
             </span>
           </div>

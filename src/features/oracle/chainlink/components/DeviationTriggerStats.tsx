@@ -4,18 +4,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import { RefreshCw, TrendingUp, AlertTriangle, Clock, Activity } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { fetchApiData, formatTime } from '@/shared/utils';
 import { cn } from '@/shared/utils';

@@ -20,10 +20,10 @@ import {
 } from 'lucide-react';
 
 import { Breadcrumb } from '@/components/common/Breadcrumb';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { usePriceHistory } from '@/features/oracle/analytics/deviation/hooks/usePriceHistory';
 import {
   PriceHistoryChart,

@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui';
 import { useI18n } from '@/i18n';
 
 interface DeviationSeverityBadgeProps {

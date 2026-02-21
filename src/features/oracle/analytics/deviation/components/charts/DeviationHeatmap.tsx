@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 
 import { Grid3X3 } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useI18n } from '@/i18n';
 
 import type { DeviationTrend, PriceDeviationPoint } from '../../types/deviation';

@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { BarChart3, Layers, TrendingUp } from 'lucide-react';
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import { ComparisonContent } from '@/features/comparison/components/ComparisonContent';
 import { DeviationContent } from '@/features/oracle/analytics/deviation/components/DeviationContent';
 import { DashboardContent } from '@/features/oracle/dashboard/components/DashboardContent';

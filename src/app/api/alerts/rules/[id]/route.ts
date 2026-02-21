@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { ok, error } from '@/lib/api/apiResponse';
 import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
 import type { SupportedChain } from '@/types/chains';
@@ -54,26 +54,23 @@ function rowToAlertRule(row: AlertRuleRow): AlertRule {
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+
     const result = await query<AlertRuleRow>('SELECT * FROM alert_rules WHERE id = $1', [id]);
 
     if (result.rows.length === 0) {
-      return NextResponse.json({ ok: false, error: 'Alert rule not found' }, { status: 404 });
+      return error({ code: 'NOT_FOUND', message: 'Alert rule not found' }, 404);
     }
 
     const rule = rowToAlertRule(result.rows[0]!);
 
-    return NextResponse.json({
-      ok: true,
-      data: rule,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    logger.error('Failed to fetch alert rule', { error });
-    return NextResponse.json({ ok: false, error: 'Failed to fetch alert rule' }, { status: 500 });
+    return ok({ rule, timestamp: new Date().toISOString() });
+  } catch (err) {
+    logger.error('Failed to fetch alert rule', { error: err });
+    return error({ code: 'INTERNAL_ERROR', message: 'Failed to fetch alert rule' }, 500);
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await request.json();
@@ -83,98 +80,89 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     ]);
 
     if (existingResult.rows.length === 0) {
-      return NextResponse.json({ ok: false, error: 'Alert rule not found' }, { status: 404 });
+      return error({ code: 'NOT_FOUND', message: 'Alert rule not found' }, 404);
     }
 
     const existing = existingResult.rows[0]!;
+    const now = new Date();
 
-    const updatedFields = {
-      name: (body.name ?? existing.name) as string,
-      enabled: (body.enabled ?? existing.enabled) as boolean,
-      event: (body.event ?? existing.event) as string,
-      severity: (body.severity ?? existing.severity) as string,
-      protocols: (body.protocols ?? existing.protocols) as string[] | null,
-      chains: (body.chains ?? existing.chains) as string[] | null,
-      instances: (body.instances ?? existing.instances) as string[] | null,
-      symbols: (body.symbols ?? existing.symbols) as string[] | null,
-      params: (body.params !== undefined
+    const updatedRule = {
+      name: body.name ?? existing.name,
+      enabled: body.enabled ?? existing.enabled,
+      event: body.event ?? existing.event,
+      severity: body.severity ?? existing.severity,
+      protocols: body.protocols ?? existing.protocols,
+      chains: body.chains ?? existing.chains,
+      instances: body.instances ?? existing.instances,
+      symbols: body.symbols ?? existing.symbols,
+      params: body.params
         ? JSON.stringify(body.params)
         : existing.params
           ? JSON.stringify(existing.params)
-          : null) as string | null,
-      channels: (body.channels ?? existing.channels) as string[] | null,
-      recipients: (body.recipients ?? existing.recipients) as string[] | null,
-      cooldown_minutes: (body.cooldownMinutes ?? existing.cooldown_minutes) as number | null,
-      max_notifications_per_hour: (body.maxNotificationsPerHour ??
-        existing.max_notifications_per_hour) as number | null,
-      runbook: (body.runbook ?? existing.runbook) as string | null,
-      owner: (body.owner ?? existing.owner) as string | null,
-      silenced_until:
-        body.silencedUntil !== undefined
-          ? ((body.silencedUntil ? new Date(body.silencedUntil) : null) as Date | null)
-          : existing.silenced_until,
-      updated_at: new Date() as Date,
+          : null,
+      channels: body.channels ?? existing.channels,
+      recipients: body.recipients ?? existing.recipients,
+      cooldown_minutes: body.cooldownMinutes ?? existing.cooldown_minutes,
+      max_notifications_per_hour:
+        body.maxNotificationsPerHour ?? existing.max_notifications_per_hour,
+      runbook: body.runbook ?? existing.runbook,
+      owner: body.owner ?? existing.owner,
+      silenced_until: body.silencedUntil ? new Date(body.silencedUntil) : existing.silenced_until,
     };
 
     await query(
-      `UPDATE alert_rules SET 
-        name = $2, enabled = $3, event = $4, severity = $5, protocols = $6,
-        chains = $7, instances = $8, symbols = $9, params = $10, channels = $11,
-        recipients = $12, cooldown_minutes = $13, max_notifications_per_hour = $14,
-        runbook = $15, owner = $16, silenced_until = $17, updated_at = $18
+      `UPDATE alert_rules SET
+        name = $2, enabled = $3, event = $4, severity = $5, protocols = $6, chains = $7,
+        instances = $8, symbols = $9, params = $10, channels = $11, recipients = $12,
+        cooldown_minutes = $13, max_notifications_per_hour = $14, runbook = $15, owner = $16,
+        silenced_until = $17, updated_at = $18
       WHERE id = $1`,
       [
         id,
-        updatedFields.name,
-        updatedFields.enabled,
-        updatedFields.event,
-        updatedFields.severity,
-        updatedFields.protocols,
-        updatedFields.chains,
-        updatedFields.instances,
-        updatedFields.symbols,
-        updatedFields.params,
-        updatedFields.channels,
-        updatedFields.recipients,
-        updatedFields.cooldown_minutes,
-        updatedFields.max_notifications_per_hour,
-        updatedFields.runbook,
-        updatedFields.owner,
-        updatedFields.silenced_until,
-        updatedFields.updated_at,
+        updatedRule.name,
+        updatedRule.enabled,
+        updatedRule.event,
+        updatedRule.severity,
+        updatedRule.protocols,
+        updatedRule.chains,
+        updatedRule.instances,
+        updatedRule.symbols,
+        updatedRule.params,
+        updatedRule.channels,
+        updatedRule.recipients,
+        updatedRule.cooldown_minutes,
+        updatedRule.max_notifications_per_hour,
+        updatedRule.runbook,
+        updatedRule.owner,
+        updatedRule.silenced_until,
+        now,
       ],
     );
 
-    const updatedRule: AlertRule = {
+    const rule: AlertRule = {
       id,
-      name: updatedFields.name,
-      enabled: updatedFields.enabled,
-      event: updatedFields.event as AlertEvent,
-      severity: updatedFields.severity as AlertSeverity,
-      protocols: (updatedFields.protocols as OracleProtocol[]) ?? undefined,
-      chains: (updatedFields.chains as SupportedChain[]) ?? undefined,
-      instances: updatedFields.instances ?? undefined,
-      symbols: updatedFields.symbols ?? undefined,
-      params: body.params ?? existing.params ?? undefined,
-      channels: updatedFields.channels as AlertRule['channels'],
-      recipients: updatedFields.recipients ?? undefined,
-      cooldownMinutes: updatedFields.cooldown_minutes ?? undefined,
-      maxNotificationsPerHour: updatedFields.max_notifications_per_hour ?? undefined,
-      runbook: updatedFields.runbook ?? undefined,
-      owner: updatedFields.owner ?? undefined,
-      silencedUntil: updatedFields.silenced_until
-        ? updatedFields.silenced_until.toISOString()
-        : undefined,
+      name: updatedRule.name,
+      enabled: updatedRule.enabled,
+      event: updatedRule.event as AlertEvent,
+      severity: updatedRule.severity as AlertSeverity,
+      protocols: (updatedRule.protocols as OracleProtocol[]) ?? undefined,
+      chains: (updatedRule.chains as SupportedChain[]) ?? undefined,
+      instances: updatedRule.instances ?? undefined,
+      symbols: updatedRule.symbols ?? undefined,
+      params: updatedRule.params ? JSON.parse(updatedRule.params as string) : undefined,
+      channels: (updatedRule.channels as AlertRule['channels']) ?? undefined,
+      recipients: updatedRule.recipients ?? undefined,
+      cooldownMinutes: updatedRule.cooldown_minutes ?? undefined,
+      maxNotificationsPerHour: updatedRule.max_notifications_per_hour ?? undefined,
+      runbook: updatedRule.runbook ?? undefined,
+      owner: updatedRule.owner ?? undefined,
+      silencedUntil: updatedRule.silenced_until?.toISOString() ?? undefined,
     };
 
-    return NextResponse.json({
-      ok: true,
-      data: updatedRule,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    logger.error('Failed to update alert rule', { error });
-    return NextResponse.json({ ok: false, error: 'Failed to update alert rule' }, { status: 500 });
+    return ok({ rule, timestamp: new Date().toISOString() });
+  } catch (err) {
+    logger.error('Failed to update alert rule', { error: err });
+    return error({ code: 'INTERNAL_ERROR', message: 'Failed to update alert rule' }, 500);
   }
 }
 
@@ -185,19 +173,23 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    const result = await query('DELETE FROM alert_rules WHERE id = $1 RETURNING id', [id]);
+    const existingResult = await query<AlertRuleRow>('SELECT * FROM alert_rules WHERE id = $1', [
+      id,
+    ]);
 
-    if (result.rowCount === 0) {
-      return NextResponse.json({ ok: false, error: 'Alert rule not found' }, { status: 404 });
+    if (existingResult.rows.length === 0) {
+      return error({ code: 'NOT_FOUND', message: 'Alert rule not found' }, 404);
     }
 
-    return NextResponse.json({
-      ok: true,
-      message: 'Alert rule deleted successfully',
+    await query('DELETE FROM alert_rules WHERE id = $1', [id]);
+
+    return ok({
+      success: true,
+      message: 'Alert rule deleted',
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    logger.error('Failed to delete alert rule', { error });
-    return NextResponse.json({ ok: false, error: 'Failed to delete alert rule' }, { status: 500 });
+  } catch (err) {
+    logger.error('Failed to delete alert rule', { error: err });
+    return error({ code: 'INTERNAL_ERROR', message: 'Failed to delete alert rule' }, 500);
   }
 }

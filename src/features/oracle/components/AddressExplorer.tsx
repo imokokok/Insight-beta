@@ -17,8 +17,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { EnhancedInput } from '@/components/ui/EnhancedInput';
+import { EnhancedInput } from '@/components/ui';
+import { Badge } from '@/components/ui';
 import { useI18n } from '@/i18n/LanguageProvider';
 
 import { useAddressHistory, type AddressHistoryItem } from '../hooks/useAddressHistory';

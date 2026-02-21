@@ -5,9 +5,9 @@ import { useState } from 'react';
 import { AlertTriangle, X, ChevronDown, ChevronUp, Info } from 'lucide-react';
 
 import { EmptyDeviationState } from '@/components/common/EmptyState';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { SkeletonList } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';

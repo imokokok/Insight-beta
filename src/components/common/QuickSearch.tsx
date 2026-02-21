@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Command, ArrowRight } from 'lucide-react';
 
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 

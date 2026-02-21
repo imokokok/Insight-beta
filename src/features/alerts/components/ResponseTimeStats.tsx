@@ -15,17 +15,11 @@ import {
 
 import { EnhancedLineChart, EnhancedBarChart, CHART_COLORS } from '@/components/charts';
 import { StatCard, ChartCard } from '@/components/common';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { fetchApiData, cn } from '@/shared/utils';
 

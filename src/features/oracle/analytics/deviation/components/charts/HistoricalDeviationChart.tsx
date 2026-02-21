@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import type { PriceHistoryRecord } from '@/features/oracle/analytics/deviation/hooks/usePriceHistory';
 import { useI18n } from '@/i18n';
 

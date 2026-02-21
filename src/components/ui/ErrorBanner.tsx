@@ -7,7 +7,7 @@
 
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 interface ErrorBannerProps {
@@ -22,6 +22,8 @@ interface ErrorBannerProps {
   /** 是否正在重试 */
   isRetrying?: boolean;
 }
+
+export type { ErrorBannerProps };
 
 /**
  * 统一错误横幅组件

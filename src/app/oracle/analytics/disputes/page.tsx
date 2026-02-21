@@ -5,10 +5,10 @@ import { RefreshCw, Gavel, Clock, DollarSign, TrendingUp, AlertCircle } from 'lu
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { ErrorBanner } from '@/components/ui/ErrorBanner';
-import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
+import { Button } from '@/components/ui';
+import { ErrorBanner } from '@/components/ui';
+import { RefreshIndicator } from '@/components/ui';
+import { Card, CardContent } from '@/components/ui';
 import { DisputeContent } from '@/features/oracle/analytics/disputes';
 import { ExportButton } from '@/features/oracle/analytics/disputes/components/export';
 import { WelcomeGuide } from '@/features/oracle/analytics/disputes/components/onboarding';

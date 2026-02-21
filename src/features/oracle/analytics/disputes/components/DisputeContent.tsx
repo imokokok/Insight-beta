@@ -4,22 +4,11 @@ import { useState } from 'react';
 
 import { Activity, Gavel, Calendar } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  StatCardSkeleton,
-  ChartSkeleton,
-  CardSkeleton,
-  SkeletonList,
-} from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Input } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { StatCardSkeleton, ChartSkeleton, CardSkeleton, SkeletonList } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import type { DisputeReport, Dispute, DisputeTrend } from '@/types/oracle/dispute';
 

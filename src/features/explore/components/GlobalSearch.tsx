@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 
 import { Search, X, Loader2 } from 'lucide-react';
 
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 

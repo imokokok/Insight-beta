@@ -26,8 +26,8 @@ const mockAlerts: UnifiedAlert[] = [
     timestamp: '2024-01-01T01:00:00Z',
     severity: 'high',
     status: 'investigating',
-    title: 'Cross-Chain Arbitrage Opportunity',
-    description: 'Arbitrage opportunity detected',
+    title: 'Cross-Chain Price Deviation',
+    description: 'Significant price deviation detected',
     symbol: 'ETH',
   },
   {

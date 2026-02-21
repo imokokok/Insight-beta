@@ -4,8 +4,8 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import { AlertTriangle, Network, Shield, Activity, Clock, TrendingUp } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Checkbox } from '@/components/ui';
+import { Badge } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 

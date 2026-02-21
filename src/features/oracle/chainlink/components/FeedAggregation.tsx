@@ -16,26 +16,13 @@ import {
 
 import type { SortState } from '@/components/common/SortableTableHeader';
 import { SortableTableHeader } from '@/components/common/SortableTableHeader';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { SkeletonList } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Input } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { formatTime } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';

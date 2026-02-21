@@ -23,9 +23,8 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 | **CrossChain** | `src/features/cross-chain/` | 跨链分析       |
 | **Explore**    | `src/features/explore/`     | 数据探索       |
 | **Alerts**     | `src/features/alerts/`      | 告警系统       |
-| **Charts**     | `src/features/charts/`      | 图表组件       |
-| **Wallet**     | `src/features/wallet/`      | 钱包连接       |
 | **Security**   | `src/features/security/`    | 安全与异常检测 |
+| **Wallet**     | `src/features/wallet/`      | 钱包连接       |
 
 ---
 
@@ -121,6 +120,47 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 - `unifiedPriceService.ts` - 统一价格服务
 - `syncFramework.ts` - 数据同步框架
 
+#### API3 子模块
+
+**路径**: `src/features/oracle/api3/`
+
+- Airnode 监控
+- dAPIs 价格分析
+- OEV 监控
+- 跨链价格比较
+
+**主要组件**:
+
+- `AirnodeDetail.tsx` - Airnode 详情
+- `DapiList.tsx` - dAPI 列表
+- `OevOverview.tsx` - OEV 概览
+
+#### Band 子模块
+
+**路径**: `src/features/oracle/band/`
+
+- 数据源验证
+- 跨链桥监控
+- 聚合验证
+
+**主要组件**:
+
+- `DataSourceList.tsx` - 数据源列表
+- `AggregationValidationCard.tsx` - 聚合验证
+
+#### Pyth 子模块
+
+**路径**: `src/features/oracle/pyth/`
+
+- Publisher 监控
+- 置信区间分析
+- 价格更新统计
+
+**主要组件**:
+
+- `PublisherMonitor.tsx` - Publisher 监控
+- `ConfidenceIntervalChart.tsx` - 置信区间图表
+
 ---
 
 ### Comparison 模块
@@ -154,7 +194,7 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 
 - 跨链价格比较
 - 相关性分析
-- 套利机会识别
+- 价格一致性监控
 - 流动性分析
 
 **主要组件**:
@@ -162,13 +202,13 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 - `CrossChainOverview.tsx` - 跨链概览
 - `CrossChainComparison.tsx` - 跨链对比
 - `CorrelationMatrix.tsx` - 相关性矩阵
-- `ArbitrageOpportunityList.tsx` - 套利机会列表
+- `PriceConsistencyMonitor.tsx` - 价格一致性监控
 - `LiquidityDistribution.tsx` - 流动性分布
 
 **主要 Hooks**:
 
 - `useCrossChain.ts` - 跨链数据管理
-- `useArbitrage.ts` - 套利机会检测
+- `usePriceConsistency.ts` - 价格一致性监控
 
 ---
 
@@ -228,21 +268,6 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 
 ---
 
-### Charts 模块
-
-**路径**: `src/features/charts/`
-
-**职责**:
-
-- 提供可复用的图表组件
-- 数据可视化
-
-**主要组件**:
-
-- `ChartsContent.tsx` - 图表内容
-- `ChartsHeader.tsx` - 图表头部
-- `AccuracySummary.tsx` - 精度汇总
-
 ---
 
 ### Wallet 模块
@@ -277,12 +302,12 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 
 - 异常检测
 - 威胁检测
+- 安全监控
 
 **主要服务**:
 
 - `AnomalyDetectionService.ts` - 异常检测服务
 - `StatisticalDetector.ts` - 统计检测器
-- `MLDetector.ts` - 机器学习检测器
 
 ---
 
@@ -333,11 +358,6 @@ graph TD
     Explore --> Oracle
     Alerts --> Oracle
 
-    Charts[Charts] --> Dashboard
-    Charts --> Oracle
-    Charts --> Comparison
-    Charts --> CrossChain
-
     Wallet[Wallet] --> Dashboard
     Wallet --> Alerts
 
@@ -349,7 +369,7 @@ graph TD
 
 - 所有模块依赖 Oracle 模块获取预言机数据
 - Dashboard 集成多个子模块功能
-- Charts 为多个模块提供可视化组件
+- Security 模块依赖 Oracle 和 Alerts 进行安全监控
 
 ---
 

@@ -6,8 +6,8 @@ import { TrendingUp } from 'lucide-react';
 import { StaggerContainer, StaggerItem } from '@/components/common/AnimatedContainer';
 import { EmptyDataState } from '@/components/common/EmptyState';
 import { RefreshIndicator } from '@/components/ui';
-import { ErrorBanner } from '@/components/ui/ErrorBanner';
-import { PriceCardSkeleton } from '@/components/ui/skeleton';
+import { ErrorBanner } from '@/components/ui';
+import { PriceCardSkeleton } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 
 import { SortSelector } from './SortSelector';

@@ -352,15 +352,21 @@ export class CrossChainAnalysisService {
   async getDashboardData(): Promise<CrossChainDashboardData> {
     try {
       const symbols = this.config.symbols;
+      let totalDeviations = 0;
+      let criticalDeviations = 0;
+      let totalDeviationPercent = 0;
+
       const dashboardData: CrossChainDashboardData = {
         lastUpdated: new Date(),
         monitoredSymbols: symbols,
         monitoredChains: this.config.chains,
         activeAlerts: 0,
-        opportunities: {
-          total: 0,
-          actionable: 0,
-          avgProfitPercent: 0,
+        priceConsistency: {
+          totalDeviations: 0,
+          criticalDeviations: 0,
+          avgDeviationPercent: 0,
+          disclaimer:
+            '本数据仅用于监控预言机数据质量，不提供交易建议。价格差异可能由数据延迟、流动性差异等因素造成。',
         },
         priceComparisons: [],
         chainHealth: [],
@@ -409,7 +415,20 @@ export class CrossChainAnalysisService {
       for (const result of results) {
         dashboardData.priceComparisons.push(result.priceComparison);
         dashboardData.activeAlerts += result.activeAlerts;
+        totalDeviations += result.activeAlerts;
+        if (result.priceComparison.status === 'critical') {
+          criticalDeviations++;
+        }
+        totalDeviationPercent += result.priceComparison.priceRangePercent;
       }
+
+      dashboardData.priceConsistency = {
+        totalDeviations,
+        criticalDeviations,
+        avgDeviationPercent: results.length > 0 ? totalDeviationPercent / results.length : 0,
+        disclaimer:
+          '本数据仅用于监控预言机数据质量，不提供交易建议。价格差异可能由数据延迟、流动性差异等因素造成。',
+      };
 
       for (const chain of this.config.chains) {
         const firstSymbol = symbols[0];

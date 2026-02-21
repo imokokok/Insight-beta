@@ -4,7 +4,7 @@ export { AirnodeOfflineEvents } from './AirnodeOfflineEvents';
 export { BeaconSetComposition } from './BeaconSetComposition';
 export { DapiList } from './DapiList';
 export { DataProviderInfo } from './DataProviderInfo';
-export { OevOverview } from './OevOverview';
+export { PriceUpdateMonitor } from './PriceUpdateMonitor';
 export { SignatureVerifyPanel } from './SignatureVerifyPanel';
 export { Api3PriceChart } from './Api3PriceChart';
 export { UpdateFrequencyChart } from './UpdateFrequencyChart';

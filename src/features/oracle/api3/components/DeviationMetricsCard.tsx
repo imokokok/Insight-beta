@@ -2,7 +2,7 @@
 
 import { BarChart3, Maximize2, Minimize2, TrendingUp } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useI18n } from '@/i18n';
 
 import type { ComparisonDeviation } from '../types/api3';
@@ -16,19 +16,22 @@ const formatDeviation = (value: number): string => {
   return `${value.toFixed(4)}%`;
 };
 
-const MetricItem = ({ 
-  label, 
-  value, 
-  icon: Icon, 
-  color 
-}: { 
-  label: string; 
-  value: string; 
-  icon: React.ElementType; 
-  color: string; 
+const MetricItem = ({
+  label,
+  value,
+  icon: Icon,
+  color,
+}: {
+  label: string;
+  value: string;
+  icon: React.ElementType;
+  color: string;
 }) => (
   <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-3">
-    <div className={`mt-0.5 flex h-9 w-9 items-center justify-center rounded-full`} style={{ backgroundColor: `${color}20` }}>
+    <div
+      className={`mt-0.5 flex h-9 w-9 items-center justify-center rounded-full`}
+      style={{ backgroundColor: `${color}20` }}
+    >
       <Icon className="h-5 w-5" style={{ color }} />
     </div>
     <div>

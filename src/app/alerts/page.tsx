@@ -10,21 +10,15 @@ import { Virtuoso } from 'react-virtuoso';
 import { StatCard } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { EmptyAlertsListState } from '@/components/common/EmptyState';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ErrorBanner } from '@/components/ui/ErrorBanner';
-import { Input } from '@/components/ui/input';
-import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { AlertListSkeleton, StatCardSkeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui';
+import { Checkbox } from '@/components/ui';
+import { ErrorBanner } from '@/components/ui';
+import { RefreshIndicator } from '@/components/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Input } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { AlertListSkeleton, StatCardSkeleton } from '@/components/ui';
 import {
   AlertCard,
   AlertDetailPanel,

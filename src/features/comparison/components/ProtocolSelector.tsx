@@ -4,10 +4,10 @@ import { useState, useCallback, memo } from 'react';
 
 import { Check, ChevronDown, X } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Input } from '@/components/ui';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import { PROTOCOL_DISPLAY_NAMES, type OracleProtocol } from '@/types/oracle';

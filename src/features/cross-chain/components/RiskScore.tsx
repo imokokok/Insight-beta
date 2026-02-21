@@ -4,9 +4,9 @@ import { memo, useMemo } from 'react';
 
 import { Shield, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Progress } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 interface RiskFactor {

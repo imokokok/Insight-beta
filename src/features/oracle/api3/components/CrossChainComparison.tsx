@@ -5,17 +5,11 @@ import { useState, useEffect } from 'react';
 import { GitCompare, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { EmptyDeviationState } from '@/components/common/EmptyState';
-import { Badge, StatusBadge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { SkeletonList } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui';
+import { Badge, StatusBadge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 

@@ -5,15 +5,9 @@ import { useMemo } from 'react';
 import { TrendingUp, TrendingDown, Minus, BarChart3 } from 'lucide-react';
 
 import { EnhancedAreaChart, EnhancedBarChart, CHART_COLORS } from '@/components/charts';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { formatNumber, cn } from '@/shared/utils';
 

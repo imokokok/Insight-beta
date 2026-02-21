@@ -18,26 +18,13 @@ import {
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 import { EmptyDeviationState } from '@/components/common/EmptyState';
-import { Badge, StatusBadge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { SkeletonList } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Button } from '@/components/ui';
+import { Badge, StatusBadge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Input } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, formatTime, fetchApiData } from '@/shared/utils';
 
@@ -358,6 +345,9 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
             <Badge variant="secondary" className="ml-2">
               {filteredPublishers.length}
             </Badge>
+            <Badge variant="outline" className="ml-1 border-amber-500 text-xs text-amber-500">
+              实验性
+            </Badge>
           </CardTitle>
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -376,6 +366,13 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-400">
+          <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <span>
+            信任评分和价格源分布为实验性功能，数据基于公开信息估算，仅供参考。Publisher
+            内部数据源不公开，无法完全验证价格来源的真实性。
+          </span>
+        </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="rounded-lg bg-amber-500/10 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

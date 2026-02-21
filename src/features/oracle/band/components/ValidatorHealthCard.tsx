@@ -2,12 +2,20 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-import { Users, Shield, Activity, RefreshCw, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
+import {
+  Users,
+  Shield,
+  Activity,
+  RefreshCw,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+} from 'lucide-react';
 
-import { Badge, StatusBadge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui';
+import { Badge, StatusBadge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 import type { ValidatorHealthSummary } from '../types';
@@ -147,7 +155,9 @@ export function ValidatorHealthCard({ className }: ValidatorHealthCardProps) {
           </div>
           <div className="flex items-center gap-2">
             <StatusBadge
-              status={isHealthy ? 'active' : data.networkParticipationRate >= 85 ? 'warning' : 'error'}
+              status={
+                isHealthy ? 'active' : data.networkParticipationRate >= 85 ? 'warning' : 'error'
+              }
               text={isHealthy ? '健康' : data.networkParticipationRate >= 85 ? '注意' : '异常'}
               size="sm"
               pulse={isHealthy}
@@ -185,14 +195,22 @@ export function ValidatorHealthCard({ className }: ValidatorHealthCardProps) {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">网络参与率</span>
-            <span className={cn('text-sm font-semibold', getParticipationColor(data.networkParticipationRate))}>
+            <span
+              className={cn(
+                'text-sm font-semibold',
+                getParticipationColor(data.networkParticipationRate),
+              )}
+            >
               {data.networkParticipationRate.toFixed(1)}%
             </span>
           </div>
 
           <div className="relative h-4 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className={cn('h-full transition-all duration-500', getParticipationBgColor(data.networkParticipationRate))}
+              className={cn(
+                'h-full transition-all duration-500',
+                getParticipationBgColor(data.networkParticipationRate),
+              )}
               style={{ width: `${data.networkParticipationRate}%` }}
             />
             <div className="absolute inset-0 flex items-center">
@@ -221,7 +239,9 @@ export function ValidatorHealthCard({ className }: ValidatorHealthCardProps) {
             <CheckCircle2
               className={cn(
                 'h-4 w-4',
-                data.activeValidators >= data.totalValidators * 0.9 ? 'text-emerald-500' : 'text-muted-foreground',
+                data.activeValidators >= data.totalValidators * 0.9
+                  ? 'text-emerald-500'
+                  : 'text-muted-foreground',
               )}
             />
             <span className="mt-1 text-xs">活跃</span>
@@ -245,7 +265,9 @@ export function ValidatorHealthCard({ className }: ValidatorHealthCardProps) {
           <div
             className={cn(
               'flex flex-col items-center rounded-lg p-2 text-center',
-              data.jailedValidators === 0 ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30',
+              data.jailedValidators === 0
+                ? 'bg-emerald-100 dark:bg-emerald-900/30'
+                : 'bg-amber-100 dark:bg-amber-900/30',
             )}
           >
             {data.jailedValidators === 0 ? (

@@ -4,13 +4,13 @@ import { useState, useCallback } from 'react';
 
 import { Download, FileJson, FileSpreadsheet, FileText, Loader2 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui';
 import { useI18n } from '@/i18n';
 
 type ExportFormat = 'json' | 'csv' | 'excel';

@@ -4,25 +4,12 @@ import { useState, useCallback, useMemo } from 'react';
 
 import { ArrowUpRight, ArrowDownRight, Info, RefreshCw, Globe } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import { getAvailablePythSymbols } from '@/config/pythPriceFeeds';
 import { cn } from '@/shared/utils/ui';
 import type { SupportedChain } from '@/types/unifiedOracleTypes';
@@ -592,10 +579,10 @@ export function CrossChainPriceComparison({ isLoading = false }: CrossChainPrice
                 </Badge>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {currentData.maxDeviationPercent < 0.1
-                    ? '跨链价格高度一致，套利空间极小'
+                    ? '跨链价格高度一致，数据质量良好'
                     : currentData.maxDeviationPercent < 0.5
                       ? '存在轻微价格差异，需持续监控'
-                      : '价格差异较大，可能存在套利机会或数据异常'}
+                      : '价格差异较大，建议检查数据源或网络状态'}
                 </p>
               </div>
             </div>

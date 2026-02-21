@@ -39,13 +39,16 @@ export const crossChain = {
     description: 'Analyze {{count}} assets across chains',
     loading: 'Loading dashboard...',
     activeAlerts: 'Active Alerts',
-    opportunities: 'Opportunities',
-    actionable: 'actionable',
+    priceConsistency: 'Price Consistency',
+    avgDeviation: 'Avg Deviation',
+    criticalDeviations: 'Critical Deviations',
     chainHealth: 'Chain Health',
     overallHealth: 'Overall Health',
     priceStatus: 'Price Status',
     lastSync: 'Last Synced',
     unknown: 'Unknown',
+    disclaimer:
+      'This feature is for monitoring oracle data quality only, not trading advice. Price differences may be caused by data latency, liquidity differences, etc., and do not constitute arbitrage opportunities.',
   },
   alerts: {
     title: 'Deviation Alerts',

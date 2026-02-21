@@ -4,17 +4,11 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { TrendingUp, TrendingDown, Clock, RefreshCw } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { fetchApiData, cn } from '@/shared/utils';
 

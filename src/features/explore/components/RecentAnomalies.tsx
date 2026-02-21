@@ -4,9 +4,9 @@ import Link from 'next/link';
 
 import { AlertTriangle, ArrowRight, Zap, Clock, TrendingUp } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { getSeverityConfig } from '@/features/alerts/constants';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { formatTime, cn } from '@/shared/utils';

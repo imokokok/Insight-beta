@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
 import type { AlertStatus, UnifiedAlert } from '@/features/alerts/types';
+import { ok, error } from '@/lib/api/apiResponse';
 import { logger } from '@/shared/logger';
 
 const alertStore = new Map<
@@ -21,9 +21,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     };
 
     if (!action || !['acknowledge', 'resolve', 'silence'].includes(action)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid action. Must be acknowledge, resolve, or silence.' },
-        { status: 400 },
+      return error(
+        {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid action. Must be acknowledge, resolve, or silence.',
+        },
+        400,
       );
     }
 
@@ -49,17 +52,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       status: newStatus,
     };
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        alert: updatedAlert,
-        message,
-      },
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    logger.error('Failed to update alert', { error });
-    return NextResponse.json({ success: false, error: 'Failed to update alert' }, { status: 500 });
+    return ok({ alert: updatedAlert, message, timestamp: new Date().toISOString() });
+  } catch (err) {
+    logger.error('Failed to update alert', { error: err });
+    return error({ code: 'INTERNAL_ERROR', message: 'Failed to update alert' }, 500);
   }
 }
 
@@ -69,21 +65,13 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     const storedData = alertStore.get(id);
 
     if (!storedData) {
-      return NextResponse.json({
-        success: true,
-        data: null,
-        message: 'No stored data for this alert',
-      });
+      return ok({ data: null, message: 'No stored data for this alert' });
     }
 
-    return NextResponse.json({
-      success: true,
-      data: storedData,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    logger.error('Failed to get alert', { error });
-    return NextResponse.json({ success: false, error: 'Failed to get alert' }, { status: 500 });
+    return ok({ data: storedData, timestamp: new Date().toISOString() });
+  } catch (err) {
+    logger.error('Failed to get alert', { error: err });
+    return error({ code: 'INTERNAL_ERROR', message: 'Failed to get alert' }, 500);
   }
 }
 

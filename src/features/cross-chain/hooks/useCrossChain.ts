@@ -9,6 +9,7 @@ import type {
   BridgesResponse,
   CorrelationResponse,
   LiquidityResponse,
+  ChainStatusResponse,
   CrossChainDeviationAlertsResponse,
   CrossChainDashboardResponse,
   CrossChainHistoricalResponse,
@@ -39,6 +40,11 @@ export function useCorrelation(symbol?: string, timeRange?: string) {
 export function useLiquidity() {
   const url = buildApiUrl('/api/cross-chain/liquidity');
   return useSWR<LiquidityResponse>(url, (url: string) => fetchApiData<LiquidityResponse>(url));
+}
+
+export function useChainStatus() {
+  const url = buildApiUrl('/api/cross-chain/chain-status');
+  return useSWR<ChainStatusResponse>(url, (url: string) => fetchApiData<ChainStatusResponse>(url));
 }
 
 export function useCrossChainDashboard() {

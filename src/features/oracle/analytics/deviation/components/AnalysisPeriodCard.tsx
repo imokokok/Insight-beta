@@ -2,7 +2,7 @@
 
 import { Clock } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { formatTime } from '@/shared/utils';
 

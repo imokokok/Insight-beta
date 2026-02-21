@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 
 import { HelpCircle } from 'lucide-react';
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 interface HelpTooltipProps {

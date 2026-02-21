@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 
 import { Clock, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 

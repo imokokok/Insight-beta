@@ -3,9 +3,9 @@
 import { ExternalLink, ThumbsUp, ThumbsDown, Scale, Clock } from 'lucide-react';
 
 import type { Vote } from '@/app/api/oracle/uma/votes/route';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { SkeletonList } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, truncateAddress, formatTime } from '@/shared/utils';
 

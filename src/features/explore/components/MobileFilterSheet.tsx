@@ -5,7 +5,7 @@ import { useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, RotateCcw, Check } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { cn } from '@/shared/utils';
 

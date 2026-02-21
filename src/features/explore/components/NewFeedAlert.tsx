@@ -2,8 +2,8 @@
 
 import { Sparkles, Clock, ChevronRight, Activity, Layers } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 

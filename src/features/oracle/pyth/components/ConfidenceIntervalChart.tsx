@@ -17,7 +17,7 @@ import {
   Scatter,
 } from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useI18n } from '@/i18n';
 
 import type { ConfidenceHistoryPoint, ConfidenceHistoryResponse } from '../types/pyth';

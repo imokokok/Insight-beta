@@ -2,7 +2,7 @@
 
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 
-import { TableHead } from '@/components/ui/table';
+import { TableHead } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 export interface SortState {

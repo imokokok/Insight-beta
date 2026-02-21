@@ -1,20 +1,22 @@
 # Insight - Oracle Data Analytics Platform
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Next.js](https://img.shields.io/badge/Next.js-16-black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)
-![Tailwind](https://img.shields.io/badge/Tailwind-3.4-cyan)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
+![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black)
+![React](https://img.shields.io/badge/React-19.0.0-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.7.3-blue)
+![Tailwind](https://img.shields.io/badge/Tailwind-3.4.17-cyan)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-blue)
 
 Insight 是一个专业的**预言机数据分析平台**，专为 DeFi 协议和数据提供商设计。它提供来自多个协议的预言机数据的全面实时聚合、分析和监控。
 
 ## ✨ 功能特性
 
-### 多协议支持（集成 4 个协议）
+### 多协议支持（集成 5 个协议）
 
 - **Chainlink** - 行业标准价格源和数据预言机
 - **Pyth** - 来自机构来源的低延迟金融数据
-- **RedStone** - 专为 L2 和 Rollup 优化的模块化预言机
+- **API3** - 去中心化 API 服务，提供 dAPIs 和 Airnode
+- **Band Protocol** - 跨链数据预言机平台
 - **UMA** - 具有断言和争议机制的乐观预言机
 
 ### 核心功能模块
@@ -22,9 +24,14 @@ Insight 是一个专业的**预言机数据分析平台**，专为 DeFi 协议�
 - 📊 **仪表盘** - 统一视图展示所有预言机协议的状态和关键指标
 - 🔍 **预言机分析** - 价格偏差分析、争议分析、协议对比
 - 📈 **价格比较** - 实时价格对比、热力图、延迟分析
-- 🌐 **跨链分析** - 跨链价格比较、相关性分析、套利机会
+- 🌐 **跨链分析** - 跨链价格比较、相关性分析、价格一致性监控
 - 🔎 **数据探索** - 市场概览、热门价格源、协议和地址探索
 - 🔔 **智能告警** - 价格偏差告警、陈旧检测、同步健康监控
+- 🎯 **预言机专项分析** - 各协议深度分析功能
+  - **API3 分析**：Airnode 监控、dAPIs 价格、OEV 监控
+  - **Band Protocol 分析**：数据源验证、跨链桥监控
+  - **Pyth 分析**：Publisher 监控、置信区间分析
+  - **Chainlink 分析**：OCR 轮次监控、节点运营商
 - 🌍 **多语言支持** - 支持中英文
 - 🔌 **钱包连接** - 支持 MetaMask、Phantom、WalletConnect 等
 
@@ -36,6 +43,8 @@ Insight 是一个专业的**预言机数据分析平台**，专为 DeFi 协议�
 - 🔒 **企业级安全** - API 密钥管理、审计日志
 - 🚀 **无服务器就绪** - 为 Vercel + Supabase 优化
 - 📝 **完整 API 文档** - Swagger/OpenAPI 规范
+- ⭐ **预言机可靠性评分系统** - 基于多维度指标的预言机可靠性评估
+- 🛡️ **异常检测和安全监控** - 实时监控预言机数据异常和安全风险
 
 ## 🚀 快速开始
 

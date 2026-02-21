@@ -2,8 +2,8 @@
 
 import { RefreshCw } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useI18n } from '@/i18n/LanguageProvider';
 

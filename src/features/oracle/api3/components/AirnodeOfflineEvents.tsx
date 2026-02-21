@@ -2,8 +2,8 @@
 
 import { AlertCircle, Clock, Calendar } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useI18n } from '@/i18n';
 
 import type { OfflineEvent } from '../types/api3';
@@ -52,9 +52,7 @@ export function AirnodeOfflineEvents({ offlineEvents, className }: AirnodeOfflin
             </div>
             <div className="text-right">
               <p className="text-xs text-muted-foreground">事件数量</p>
-              <p className="text-lg font-bold">
-                {offlineEvents.length}
-              </p>
+              <p className="text-lg font-bold">{offlineEvents.length}</p>
             </div>
           </div>
         </div>
@@ -62,23 +60,23 @@ export function AirnodeOfflineEvents({ offlineEvents, className }: AirnodeOfflin
       <CardContent>
         {offlineEvents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <AlertCircle className="h-12 w-12 text-muted-foreground/50 mb-4" />
+            <AlertCircle className="mb-4 h-12 w-12 text-muted-foreground/50" />
             <p className="text-muted-foreground">
               {t('api3.airnode.noOfflineEvents') || '暂无离线事件记录'}
             </p>
           </div>
         ) : (
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+          <div className="max-h-96 space-y-3 overflow-y-auto">
             {offlineEvents.map((event) => (
               <div
                 key={event.id}
-                className="flex items-start gap-4 p-4 rounded-lg border bg-muted/30"
+                className="flex items-start gap-4 rounded-lg border bg-muted/30 p-4"
               >
                 <div className="mt-1">
                   <div className="h-3 w-3 rounded-full bg-red-500" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex items-center justify-between">
                     <Badge variant="destructive" className="text-xs">
                       {t('api3.airnode.offline') || '离线'}
                     </Badge>
@@ -99,9 +97,7 @@ export function AirnodeOfflineEvents({ offlineEvents, className }: AirnodeOfflin
                       </span>
                     </div>
                     {event.reason && (
-                      <p className="text-xs text-muted-foreground">
-                        {event.reason}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{event.reason}</p>
                     )}
                   </div>
                 </div>

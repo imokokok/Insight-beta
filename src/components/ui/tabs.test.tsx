@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
 
 describe('Tabs', () => {
   const renderTabs = (props = {}) => {

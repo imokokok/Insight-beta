@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { Clock, AlertTriangle, RefreshCw, CheckCircle2, XCircle, Activity } from 'lucide-react';
 
-import { Badge, StatusBadge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui';
+import { Badge, StatusBadge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 export interface FreshnessData {

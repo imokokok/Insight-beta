@@ -1,21 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { Fuel, RefreshCw } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { SkeletonList } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
@@ -92,7 +85,7 @@ const generateMockGasData = (timeRange: string): GasCostAnalysisData => {
   const totalTransactions = byDapi.reduce((sum, d) => sum + d.transactionCount, 0);
 
   return {
-    timeRange: timeRange as any,
+    timeRange: timeRange as '1h' | '24h' | '7d' | '30d',
     byDapi,
     byChain: byChain.filter((c) => c.dapiCount > 0),
     trend,
@@ -142,7 +135,7 @@ export function GasCostAnalysis({
   const [isLoading, setIsLoading] = useState(true);
   const [view, setView] = useState<'dapis' | 'chains'>('dapis');
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -176,11 +169,11 @@ export function GasCostAnalysis({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [timeRange, chain, dapiName]);
 
   useEffect(() => {
     fetchData();
-  }, [chain, dapiName, timeRange]);
+  }, [fetchData]);
 
   const handleRefresh = () => {
     fetchData();

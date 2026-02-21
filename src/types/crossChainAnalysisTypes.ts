@@ -1,7 +1,9 @@
 /**
  * Cross-Chain Analysis Types - 跨链价格分析类型定义
  *
- * 支持跨链价格对比、历史偏差分析等功能
+ * 支持跨链价格对比、历史偏差分析、价格一致性监控等功能
+ *
+ * @ disclaimer 本模块仅用于监控预言机数据质量，不提供交易建议
  */
 
 import type { OracleProtocol, SupportedChain } from './unifiedOracleTypes';
@@ -125,10 +127,11 @@ export interface CrossChainDashboardData {
   monitoredSymbols: string[];
   monitoredChains: SupportedChain[];
   activeAlerts: number;
-  opportunities: {
-    total: number;
-    actionable: number;
-    avgProfitPercent: number;
+  priceConsistency: {
+    totalDeviations: number;
+    criticalDeviations: number;
+    avgDeviationPercent: number;
+    disclaimer: string;
   };
   priceComparisons: {
     symbol: string;

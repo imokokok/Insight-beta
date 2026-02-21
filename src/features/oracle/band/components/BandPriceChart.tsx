@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import { TrendingUp, AlertTriangle, RefreshCw, CheckCircle, Clock } from 'lucide-react';
 
-import { StatusBadge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui';
+import { StatusBadge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 

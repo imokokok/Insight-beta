@@ -2,9 +2,9 @@
 
 import { Activity, RefreshCw, Layers, TrendingUp, TrendingDown } from 'lucide-react';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui';
+import { Progress } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/shared/utils';
 

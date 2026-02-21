@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X, Maximize } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 import { ExportButton } from './ExportButton';

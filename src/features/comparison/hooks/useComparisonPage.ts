@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui';
 import { WS_CONFIG } from '@/config/constants';
 import { useComparisonData } from '@/features/comparison/hooks';
 import { useDebounce } from '@/hooks/useDebounce';

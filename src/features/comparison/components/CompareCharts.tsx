@@ -19,8 +19,8 @@ import {
   YAxis,
 } from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import {
   CHART_COLORS,

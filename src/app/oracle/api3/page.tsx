@@ -20,15 +20,15 @@ import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { ProtocolHealthBadge } from '@/components/common/ProtocolHealthBadge';
 import { TrendIndicator } from '@/components/common/TrendIndicator';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ErrorBanner } from '@/components/ui/ErrorBanner';
-import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui';
+import { ErrorBanner } from '@/components/ui';
+import { RefreshIndicator } from '@/components/ui';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import {
-  OevOverview,
+  PriceUpdateMonitor,
   DapiList,
   SignatureVerifyPanel,
   Api3ExportButton,
@@ -67,7 +67,6 @@ interface OevResponse {
     feedId: string;
     value: string;
     timestamp: string;
-    oevAmount: string;
     blockNumber?: number;
   }>;
   metadata: {
@@ -103,7 +102,6 @@ interface DapisResponse {
 interface OverviewStats {
   totalAirnodes: number;
   onlineAirnodes: number;
-  totalOev: number;
   totalDapis: number;
 }
 
@@ -143,7 +141,6 @@ export default function Api3Page() {
       setOverviewStats({
         totalAirnodes: airnodesRes.metadata?.total ?? 0,
         onlineAirnodes: airnodesRes.metadata?.online ?? 0,
-        totalOev: 0,
         totalDapis: dapisRes.metadata?.total ?? 0,
       });
 
@@ -180,12 +177,6 @@ export default function Api3Page() {
   }, [autoRefreshEnabled, refreshInterval, fetchAllData]);
 
   const breadcrumbItems = [{ label: t('nav.oracle'), href: '/oracle' }, { label: 'API3' }];
-
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(2)}M`;
-    if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-    return `$${value.toFixed(2)}`;
-  };
 
   const getResponseTimeColor = (ms: number) => {
     if (ms < 100) return 'text-green-500';
@@ -310,12 +301,12 @@ export default function Api3Page() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">OEV 总量</span>
+                <span className="text-sm font-medium text-muted-foreground">价格更新事件</span>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="mt-2 flex items-center gap-2">
                 <div className="text-2xl font-bold text-purple-600">
-                  {formatCurrency(overviewStats.totalOev)}
+                  {oevData?.metadata?.total ?? 0}
                 </div>
                 <TrendIndicator trend="up" value={15.8} />
               </div>
@@ -348,7 +339,7 @@ export default function Api3Page() {
           </TabsTrigger>
           <TabsTrigger value="oev" className="flex items-center gap-1.5">
             <TrendingUp className="h-4 w-4" />
-            OEV
+            价格更新
           </TabsTrigger>
           <TabsTrigger value="dapis" className="flex items-center gap-1.5">
             <Database className="h-4 w-4" />
@@ -411,8 +402,8 @@ export default function Api3Page() {
                     <div className="flex items-center gap-3">
                       <TrendingUp className="h-8 w-8 text-purple-500" />
                       <div>
-                        <p className="text-sm text-muted-foreground">OEV 捕获</p>
-                        <p className="font-semibold">最大化价值提取</p>
+                        <p className="text-sm text-muted-foreground">价格更新监控</p>
+                        <p className="font-semibold">追踪价格更新事件</p>
                       </div>
                     </div>
                   </CardContent>
@@ -503,27 +494,7 @@ export default function Api3Page() {
         </TabsContent>
 
         <TabsContent value="oev" className="mt-6">
-          {loading && !oevData ? (
-            <div className="space-y-6">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {[...Array(4)].map((_, i) => (
-                  <Card key={i}>
-                    <CardContent className="p-4">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="mt-2 h-8 w-16" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              <Card>
-                <CardContent className="p-6">
-                  <Skeleton className="h-64 w-full" />
-                </CardContent>
-              </Card>
-            </div>
-          ) : oevData ? (
-            <OevOverview loading={loading} />
-          ) : null}
+          <PriceUpdateMonitor loading={loading} />
         </TabsContent>
 
         <TabsContent value="dapis" className="mt-6">

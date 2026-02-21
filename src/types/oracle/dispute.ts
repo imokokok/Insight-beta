@@ -1,4 +1,6 @@
-export type DisputeStatus = 'active' | 'resolved';
+import type { DisputeStatus } from '@/types/common/status';
+
+export type { DisputeStatus };
 
 export interface Dispute {
   id: string;

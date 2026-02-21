@@ -5,8 +5,10 @@ export interface PriceComparison {
   deviation: number;
 }
 
-export interface ComparisonConfig {
+export interface ComparisonQueryParams {
   symbol: string;
   timeRange: string;
   protocols: string[];
 }
+
+export type ComparisonConfig = ComparisonQueryParams;

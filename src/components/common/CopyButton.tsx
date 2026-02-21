@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { Copy, Check } from 'lucide-react';
 
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/shared/logger';
 import { cn } from '@/shared/utils';

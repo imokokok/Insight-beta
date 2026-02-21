@@ -16,19 +16,12 @@ import {
 
 import { useToast } from '@/components/common/DashboardToast';
 import { EmptyFirstItemState } from '@/components/common/EmptyState';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { TableSkeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { TableSkeleton } from '@/components/ui';
+import { Switch } from '@/components/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import type { AlertRule } from '@/types/oracle/alert';

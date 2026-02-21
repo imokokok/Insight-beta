@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { Clock, Info } from 'lucide-react';
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 interface LivenessProgressBarProps {

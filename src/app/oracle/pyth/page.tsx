@@ -25,21 +25,14 @@ import { ProtocolHealthBadge } from '@/components/common/ProtocolHealthBadge';
 import type { SortState } from '@/components/common/SortableTableHeader';
 import { SortableTableHeader } from '@/components/common/SortableTableHeader';
 import { TrendIndicator } from '@/components/common/TrendIndicator';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ErrorBanner } from '@/components/ui/ErrorBanner';
-import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui';
+import { Button } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { ErrorBanner } from '@/components/ui';
+import { RefreshIndicator } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import {
   PythExportButton,
   ConfidenceComparisonChart,

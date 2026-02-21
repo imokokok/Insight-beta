@@ -4,9 +4,9 @@ import { useState, useMemo } from 'react';
 
 import { TrendingUp, AlertTriangle, RefreshCw } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { usePriceHistory } from '@/features/oracle/analytics/deviation/hooks/usePriceHistory';
 import { PriceHistoryChart } from '@/features/oracle/components/PriceHistoryChart';
 import type { SingleAssetDataPoint } from '@/features/oracle/components/PriceHistoryChart';

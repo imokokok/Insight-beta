@@ -39,13 +39,16 @@ export const crossChain = {
     description: '分析 {{count}} 个资产',
     loading: '加载仪表板...',
     activeAlerts: '活跃告警',
-    opportunities: '套利机会',
-    actionable: '可执行',
+    priceConsistency: '价格一致性',
+    avgDeviation: '平均偏差',
+    criticalDeviations: '严重偏差',
     chainHealth: '链状态',
     overallHealth: '整体健康度',
     priceStatus: '价格状态',
     lastSync: '最后同步',
     unknown: '未知',
+    disclaimer:
+      '本功能仅用于监控预言机数据质量，不提供交易建议。价格差异可能由数据延迟、流动性差异等因素造成，不构成套利机会。',
   },
   alerts: {
     title: '偏差告警',

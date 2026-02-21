@@ -5,7 +5,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 interface MobileNavContextType {

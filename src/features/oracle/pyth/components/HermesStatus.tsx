@@ -15,10 +15,10 @@ import {
 } from 'lucide-react';
 
 import { EmptyDeviationState } from '@/components/common/EmptyState';
-import { Badge, StatusBadge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { SkeletonList } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui';
+import { Badge, StatusBadge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, fetchApiData } from '@/shared/utils';
 

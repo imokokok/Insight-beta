@@ -7,7 +7,7 @@ import { CheckCircle2, Clock, ArrowUpRight, RotateCw, FileQuestion } from 'lucid
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
 
 import { CopyButton } from '@/components/common/CopyButton';
-import { SkeletonList } from '@/components/ui/skeleton';
+import { SkeletonList } from '@/components/ui';
 import { LivenessProgressBar } from '@/features/oracle/components/LivenessProgressBar';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';

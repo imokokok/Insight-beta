@@ -17,9 +17,9 @@ import {
 
 import { StatCard } from '@/components/common';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { SUPPORTED_CHAINS } from '@/config/constants';
 import { logger } from '@/shared/logger';
 import { cn, fetchApiData } from '@/shared/utils';

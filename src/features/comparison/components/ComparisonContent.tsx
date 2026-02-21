@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react';
 
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import { ChartSkeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/components/ui/toast';
+import { ChartSkeleton } from '@/components/ui';
+import { useToast } from '@/components/ui';
 import { WS_CONFIG } from '@/config/constants';
 import { ComparisonControls } from '@/features/comparison/components/ComparisonControls';
 import { useComparisonData } from '@/features/comparison/hooks';

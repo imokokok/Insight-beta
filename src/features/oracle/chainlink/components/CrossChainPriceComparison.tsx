@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 
 import { ArrowRight, TrendingUp, Clock } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { formatTime, cn } from '@/shared/utils';
 

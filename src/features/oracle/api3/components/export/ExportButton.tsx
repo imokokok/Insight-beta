@@ -13,7 +13,6 @@ interface Api3ExportData {
   overviewStats: {
     totalAirnodes: number;
     onlineAirnodes: number;
-    totalOev: number;
     totalDapis: number;
   } | null;
   airnodesData: {
@@ -40,7 +39,6 @@ interface Api3ExportData {
       feedId: string;
       value: string;
       timestamp: string;
-      oevAmount: string;
       blockNumber?: number;
     }>;
     metadata: {
@@ -87,7 +85,6 @@ function generateCSV(data: Api3ExportData): string {
   if (data.overviewStats) {
     rows.push(`Total Airnodes,${data.overviewStats.totalAirnodes}`);
     rows.push(`Online Airnodes,${data.overviewStats.onlineAirnodes}`);
-    rows.push(`Total OEV,${data.overviewStats.totalOev}`);
     rows.push(`Total dAPIs,${data.overviewStats.totalDapis}`);
   }
 
@@ -128,8 +125,8 @@ function generateCSV(data: Api3ExportData): string {
 
   if (data.oevData?.events && data.oevData.events.length > 0) {
     rows.push('');
-    rows.push('=== OEV Events ===');
-    rows.push('ID,dAPI Name,Chain,Feed ID,Value,OEV Amount,Timestamp,Block Number');
+    rows.push('=== Price Update Events ===');
+    rows.push('ID,dAPI Name,Chain,Feed ID,Value,Timestamp,Block Number');
     data.oevData.events.forEach((event) => {
       rows.push(
         [
@@ -138,7 +135,6 @@ function generateCSV(data: Api3ExportData): string {
           escapeCSV(event.chain),
           escapeCSV(event.feedId),
           escapeCSV(event.value),
-          escapeCSV(event.oevAmount),
           escapeCSV(event.timestamp),
           event.blockNumber || '',
         ].join(','),
@@ -201,10 +197,6 @@ ${
       <Row>
         <Cell><Data ss:Type="String">Online Airnodes</Data></Cell>
         <Cell><Data ss:Type="Number">${data.overviewStats.onlineAirnodes}</Data></Cell>
-      </Row>
-      <Row>
-        <Cell><Data ss:Type="String">Total OEV</Data></Cell>
-        <Cell><Data ss:Type="Number">${data.overviewStats.totalOev}</Data></Cell>
       </Row>
       <Row>
         <Cell><Data ss:Type="String">Total dAPIs</Data></Cell>

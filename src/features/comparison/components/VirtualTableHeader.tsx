@@ -4,7 +4,7 @@ import React from 'react';
 
 import { ArrowUp, ArrowDown } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 

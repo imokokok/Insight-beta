@@ -5,8 +5,8 @@ import { useMemo } from 'react';
 import { BarChart3, Clock, Zap, DollarSign, Activity } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 
 import type { CrossChainComparisonData } from '../types/api3';
 

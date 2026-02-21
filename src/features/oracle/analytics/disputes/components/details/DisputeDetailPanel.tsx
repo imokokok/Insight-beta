@@ -8,6 +8,7 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
+  XCircle,
   User,
   Coins,
   Link2,
@@ -16,10 +17,10 @@ import {
 } from 'lucide-react';
 import useSWR from 'swr';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import type {
   UMAAssertionEvent,
@@ -139,13 +140,29 @@ export function DisputeDetailPanel({
 
   if (!dispute) return null;
 
-  const statusConfig = {
+  const statusConfig: Record<
+    string,
+    {
+      label: string;
+      icon: React.ReactNode;
+      variant: 'default' | 'secondary' | 'destructive' | 'outline';
+      color: string;
+      bgColor: string;
+    }
+  > = {
     active: {
       label: t('analytics:disputes.disputes.statusActive'),
       icon: <Clock className="h-4 w-4" />,
       variant: 'default' as const,
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50',
+    },
+    disputed: {
+      label: t('analytics:disputes.disputes.statusDisputed'),
+      icon: <AlertCircle className="h-4 w-4" />,
+      variant: 'default' as const,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
     },
     resolved: {
       label: t('analytics:disputes.disputes.statusResolved'),
@@ -154,9 +171,39 @@ export function DisputeDetailPanel({
       color: 'text-green-600',
       bgColor: 'bg-green-50',
     },
+    settled: {
+      label: t('analytics:disputes.disputes.statusSettled'),
+      icon: <CheckCircle className="h-4 w-4" />,
+      variant: 'secondary' as const,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+    },
+    expired: {
+      label: t('analytics:disputes.disputes.statusExpired'),
+      icon: <XCircle className="h-4 w-4" />,
+      variant: 'outline' as const,
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50',
+    },
+    accepted: {
+      label: t('analytics:disputes.disputes.statusAccepted'),
+      icon: <CheckCircle className="h-4 w-4" />,
+      variant: 'secondary' as const,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+    },
+    rejected: {
+      label: t('analytics:disputes.disputes.statusRejected'),
+      icon: <XCircle className="h-4 w-4" />,
+      variant: 'destructive' as const,
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+    },
   };
 
-  const config = statusConfig[dispute.status];
+  const config = statusConfig[dispute.status] ?? statusConfig.active;
+
+  if (!config) return null;
 
   return (
     <>

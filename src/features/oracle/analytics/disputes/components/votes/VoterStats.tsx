@@ -3,9 +3,9 @@
 import { User, TrendingUp, Award, Scale, ExternalLink } from 'lucide-react';
 
 import type { VoterStats as VoterStatsType } from '@/app/api/oracle/uma/votes/route';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { SkeletonList } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, truncateAddress } from '@/shared/utils';
 

@@ -4,21 +4,21 @@ import { useState } from 'react';
 
 import { RefreshCw, Settings, Save, RotateCcw } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Input } from '@/components/ui';
+import { Label } from '@/components/ui';
+import { Switch } from '@/components/ui';
 import {
   BridgeStatusCard,
-  LiquidityDistribution,
+  ChainStatusOverview,
   RiskScore,
   LiquidityAnalysis,
 } from '@/features/cross-chain/components';
 import {
   useCrossChainDashboard,
   useBridgeStatus,
-  useLiquidity,
+  useChainStatus,
   useLiquidityAnalysis,
 } from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
@@ -48,7 +48,7 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
 
   const { data: bridgeData, isLoading: bridgeLoading, mutate: refreshBridges } = useBridgeStatus();
 
-  const { data: liquidityData, isLoading: liquidityLoading } = useLiquidity();
+  const { data: chainStatusData, isLoading: chainStatusLoading } = useChainStatus();
 
   const {
     data: liquidityAnalysisData,
@@ -97,6 +97,12 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
             {t('crossChain.controls.refresh')}
           </Button>
         </div>
+      </div>
+
+      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
+        <p className="text-sm text-amber-700 dark:text-amber-400">
+          ⚠️ {t('crossChain.dashboard.disclaimer')}
+        </p>
       </div>
 
       {showSettings && (
@@ -173,24 +179,23 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
             <div className="text-2xl font-bold">
               {dashboardLoading ? '-' : (dashboard?.activeAlerts ?? 0)}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t('crossChain.dashboard.opportunities')}
-            </p>
+            <p className="text-xs text-muted-foreground">价格偏差告警</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('crossChain.dashboard.opportunities')}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">价格一致性</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardLoading ? '-' : (dashboard?.opportunities?.total ?? 0)}
+              {dashboardLoading
+                ? '-'
+                : (dashboard?.priceConsistency?.avgDeviationPercent?.toFixed(2) ?? '0.00')}
+              %
             </div>
             <p className="text-xs text-muted-foreground">
-              {t('crossChain.dashboard.actionable')}: {dashboard?.opportunities?.actionable ?? 0}
+              平均偏差 | 严重: {dashboard?.priceConsistency?.criticalDeviations ?? 0}
             </p>
           </CardContent>
         </Card>
@@ -238,7 +243,7 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <LiquidityDistribution data={liquidityData} isLoading={liquidityLoading} />
+        <ChainStatusOverview data={chainStatusData} isLoading={chainStatusLoading} />
         <RiskScore />
       </div>
 

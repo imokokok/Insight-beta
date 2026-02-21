@@ -77,12 +77,10 @@ function generateValidators(
   const end = Math.min(start + limit, total);
   const validators: ValidatorDetail[] = [];
 
-  let cumulativePower = 0;
   const totalVotingPower = 1000000000;
 
   for (let i = start; i < end; i++) {
     const votingPower = Math.floor(Math.random() * 50000000) + 1000000;
-    cumulativePower += votingPower;
 
     const status: ValidatorDetail['status'] = i < 80 ? 'active' : i < 95 ? 'inactive' : 'jailed';
 

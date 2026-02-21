@@ -1,11 +1,11 @@
 import type { NextRequest } from 'next/server';
 
 import { error, ok } from '@/lib/api/apiResponse';
-import { AppError } from '@/lib/errors';
-import { createUMAClient, getSupportedUMAChains } from '@/lib/blockchain/umaOracle';
 import { getDefaultRpcUrl } from '@/lib/blockchain/chainConfig';
-import type { SupportedChain } from '@/types/unifiedOracleTypes';
+import { createUMAClient, getSupportedUMAChains } from '@/lib/blockchain/umaOracle';
+import { AppError } from '@/lib/errors';
 import { logger } from '@/shared/logger';
+import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
 interface ChainHealthData {
   chain: SupportedChain;
@@ -136,7 +136,9 @@ export async function GET(request: NextRequest) {
 
     const supportedChains = getSupportedUMAChains();
     const requestedChains = params.chains
-      ? params.chains.split(',').filter((c): c is SupportedChain => supportedChains.includes(c as SupportedChain))
+      ? params.chains
+          .split(',')
+          .filter((c): c is SupportedChain => supportedChains.includes(c as SupportedChain))
       : supportedChains;
 
     const assertionIds = params.assertionIds ? params.assertionIds.split(',') : [];
@@ -236,7 +238,8 @@ export async function GET(request: NextRequest) {
         healthy: overallHealthy,
         totalChains: requestedChains.length,
         healthyChains: chainHealthData.filter((c) => c.healthy).length,
-        avgLatency: requestedChains.length > 0 ? Math.floor(totalLatency / requestedChains.length) : 0,
+        avgLatency:
+          requestedChains.length > 0 ? Math.floor(totalLatency / requestedChains.length) : 0,
         totalActiveAssertions: totalAssertions,
         totalActiveDisputes: totalDisputes,
         totalBonded: totalBonded.toString(),

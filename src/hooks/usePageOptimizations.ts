@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui';
 
 interface PageOptimizationOptions {
   /** 页面名称 */

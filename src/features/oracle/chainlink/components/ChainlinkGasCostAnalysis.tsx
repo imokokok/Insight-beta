@@ -18,19 +18,12 @@ import {
   Bar,
 } from 'recharts';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { SkeletonList } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { SkeletonList } from '@/components/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
@@ -90,15 +83,23 @@ function GasCostTrendChart({ trend, className }: TrendChartProps) {
     transactionCount: point.transactionCount,
   }));
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{ name: string; value: number; color: string; payload: { timestamp: number } }>;
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div className="rounded-lg border bg-white p-3 shadow-lg dark:bg-gray-800">
           <p className="mb-2 text-xs text-muted-foreground">
-            {new Date(payload[0].payload.timestamp).toLocaleString()}
+            {payload[0]?.payload?.timestamp
+              ? new Date(payload[0].payload.timestamp).toLocaleString()
+              : ''}
           </p>
           <div className="space-y-1">
-            {payload.map((entry: any, index: number) => (
+            {payload.map((entry, index: number) => (
               <div key={index} className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
                 <span className="text-xs text-muted-foreground">
@@ -207,14 +208,20 @@ function GasCostTrendChart({ trend, className }: TrendChartProps) {
             </CardDescription>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Tabs value={metricType} onValueChange={(v) => setMetricType(v as any)}>
+            <Tabs
+              value={metricType}
+              onValueChange={(v) => setMetricType(v as 'gas' | 'cost' | 'transactions')}
+            >
               <TabsList>
                 <TabsTrigger value="cost">成本</TabsTrigger>
                 <TabsTrigger value="gas">Gas</TabsTrigger>
                 <TabsTrigger value="transactions">交易</TabsTrigger>
               </TabsList>
             </Tabs>
-            <Tabs value={chartType} onValueChange={(v) => setChartType(v as any)}>
+            <Tabs
+              value={chartType}
+              onValueChange={(v) => setChartType(v as 'line' | 'area' | 'bar')}
+            >
               <TabsList>
                 <TabsTrigger value="line">折线</TabsTrigger>
                 <TabsTrigger value="area">面积</TabsTrigger>

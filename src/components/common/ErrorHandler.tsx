@@ -25,8 +25,8 @@ import {
   Bug,
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/toast';
+import { Button } from '@/components/ui';
+import { useToast } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 // ==================== 错误类型定义 ====================

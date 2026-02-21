@@ -1,7 +1,6 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
-import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
+import { ok, error } from '@/lib/api/apiResponse';
 import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
 import type { SupportedChain } from '@/types/chains';
@@ -56,32 +55,27 @@ function generateId(): string {
   return `rule-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
-async function handleGet(): Promise<NextResponse> {
+export async function GET() {
   try {
     const result = await query<AlertRuleRow>('SELECT * FROM alert_rules ORDER BY created_at DESC');
 
     const rules = result.rows.map(rowToAlertRule);
 
-    return NextResponse.json({
-      ok: true,
-      rules,
-      total: rules.length,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    logger.error('Failed to fetch alert rules', { error });
-    return NextResponse.json({ ok: false, error: 'Failed to fetch alert rules' }, { status: 500 });
+    return ok({ rules, total: rules.length, timestamp: new Date().toISOString() });
+  } catch (err) {
+    logger.error('Failed to fetch alert rules', { error: err });
+    return error({ code: 'INTERNAL_ERROR', message: 'Failed to fetch alert rules' }, 500);
   }
 }
 
-async function handlePost(request: NextRequest): Promise<NextResponse> {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
     if (!body.name || !body.event) {
-      return NextResponse.json(
-        { ok: false, error: 'Missing required fields: name, event' },
-        { status: 400 },
+      return error(
+        { code: 'VALIDATION_ERROR', message: 'Missing required fields: name, event' },
+        400,
       );
     }
 
@@ -136,25 +130,9 @@ async function handlePost(request: NextRequest): Promise<NextResponse> {
       owner: body.owner,
     };
 
-    return NextResponse.json({
-      ok: true,
-      data: newRule,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    logger.error('Failed to create alert rule', { error });
-    return NextResponse.json({ ok: false, error: 'Failed to create alert rule' }, { status: 500 });
+    return ok({ rule: newRule, timestamp: new Date().toISOString() });
+  } catch (err) {
+    logger.error('Failed to create alert rule', { error: err });
+    return error({ code: 'INTERNAL_ERROR', message: 'Failed to create alert rule' }, 500);
   }
 }
-
-export const GET = withMiddleware({
-  rateLimit: DEFAULT_RATE_LIMIT,
-  auth: { required: true },
-  validate: { allowedMethods: ['GET'] },
-})(handleGet);
-
-export const POST = withMiddleware({
-  rateLimit: DEFAULT_RATE_LIMIT,
-  auth: { required: true },
-  validate: { allowedMethods: ['POST'] },
-})(handlePost);

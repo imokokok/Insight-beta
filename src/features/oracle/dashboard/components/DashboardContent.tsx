@@ -7,7 +7,7 @@ import { Activity, Shield, Zap, TrendingUp } from 'lucide-react';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { KPIOverviewBar, type KPIItem } from '@/components/common/KPIOverviewBar';
 import { EmptyDashboardState, RefreshIndicator } from '@/components/ui';
-import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import { ErrorBanner } from '@/components/ui';
 import { useOracleDashboard } from '@/features/oracle/dashboard';
 import { DashboardCharts } from '@/features/oracle/dashboard/components/DashboardCharts';
 import { DashboardStats as DashboardStatsComponent } from '@/features/oracle/dashboard/components/DashboardStats';

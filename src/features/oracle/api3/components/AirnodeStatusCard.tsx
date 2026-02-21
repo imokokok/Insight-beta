@@ -4,9 +4,9 @@ import { useState, useMemo } from 'react';
 
 import { Activity, Clock, Server, Zap, Calendar, TrendingUp } from 'lucide-react';
 
-import { Badge, StatusBadge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
+import { Badge, StatusBadge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 

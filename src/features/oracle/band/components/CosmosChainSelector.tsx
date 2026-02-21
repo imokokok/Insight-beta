@@ -4,15 +4,9 @@ import { useState, useEffect } from 'react';
 
 import { Globe, Users, Clock, Link2, Radio } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { fetchApiData, cn } from '@/shared/utils';
 

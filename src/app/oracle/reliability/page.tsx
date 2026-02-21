@@ -5,10 +5,10 @@ import { useState } from 'react';
 import { Shield, RefreshCw, TrendingUp, Calendar } from 'lucide-react';
 
 import { Breadcrumb } from '@/components/common/Breadcrumb';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
+import { RefreshIndicator } from '@/components/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import {
   ReliabilityScoreCard,
   ReliabilityComparisonTable,

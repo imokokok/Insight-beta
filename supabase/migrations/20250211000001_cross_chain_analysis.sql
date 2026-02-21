@@ -32,7 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_cross_chain_symbol_timestamp ON cross_chain_compa
 COMMENT ON TABLE cross_chain_comparisons IS '跨链价格对比历史表';
 
 -- ============================================================================
--- 核心表：跨链套利机会
+-- 核心表：跨链价格偏差记录（用于数据质量监控，非交易建议）
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS cross_chain_arbitrage (
     id TEXT PRIMARY KEY,
@@ -69,7 +69,7 @@ CREATE INDEX IF NOT EXISTS idx_arbitrage_actionable ON cross_chain_arbitrage(is_
 CREATE INDEX IF NOT EXISTS idx_arbitrage_symbol_status ON cross_chain_arbitrage(symbol, status);
 CREATE INDEX IF NOT EXISTS idx_arbitrage_profit ON cross_chain_arbitrage(net_profit_estimate DESC);
 
-COMMENT ON TABLE cross_chain_arbitrage IS '跨链套利机会表';
+COMMENT ON TABLE cross_chain_arbitrage IS '跨链价格偏差记录表（用于数据质量监控，不构成交易建议）';
 
 -- ============================================================================
 -- 核心表：跨链偏差告警
@@ -155,7 +155,7 @@ CREATE INDEX IF NOT EXISTS idx_dashboard_snapshots_symbol ON cross_chain_dashboa
 COMMENT ON TABLE cross_chain_dashboard_snapshots IS '跨链分析仪表板快照表';
 
 -- ============================================================================
--- 视图：活跃的套利机会
+-- 视图：活跃的价格偏差记录
 -- ============================================================================
 CREATE OR REPLACE VIEW cross_chain_active_arbitrage AS
 SELECT * 
@@ -165,7 +165,7 @@ WHERE status = 'detected'
   AND (expires_at IS NULL OR expires_at > NOW())
 ORDER BY net_profit_estimate DESC;
 
-COMMENT ON VIEW cross_chain_active_arbitrage IS '活跃的跨链套利机会';
+COMMENT ON VIEW cross_chain_active_arbitrage IS '活跃的跨链价格偏差记录（用于数据质量监控）';
 
 -- ============================================================================
 -- 视图：活跃的偏差告警

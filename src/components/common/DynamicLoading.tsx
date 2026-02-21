@@ -1,6 +1,6 @@
 import { Loader2 } from 'lucide-react';
 
-import { CardSkeleton, ChartSkeleton, PageSkeleton } from '@/components/ui/skeleton';
+import { CardSkeleton, ChartSkeleton, PageSkeleton } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 /**

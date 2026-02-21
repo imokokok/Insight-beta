@@ -4,9 +4,9 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 
 import { TrendingUp, Activity, Clock } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
 import type { BridgeTrendData } from '../types';

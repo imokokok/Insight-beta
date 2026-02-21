@@ -2,15 +2,9 @@
 
 import { RefreshCw, Radio, Clock } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { Switch } from '@/components/ui';
 import { formatLastUpdated } from '@/config/refreshStrategy';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';

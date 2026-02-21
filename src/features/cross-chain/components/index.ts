@@ -8,6 +8,6 @@ export { CrossChainComparison } from './CrossChainComparison';
 export { CrossChainHistory } from './CrossChainHistory';
 export { BridgeStatusCard } from './BridgeStatusCard';
 export { CorrelationMatrix } from './CorrelationMatrix';
-export { LiquidityDistribution } from './LiquidityDistribution';
+export { ChainStatusOverview } from './ChainStatusOverview';
 export { RiskScore } from './RiskScore';
 export { LiquidityAnalysis } from './LiquidityAnalysis';

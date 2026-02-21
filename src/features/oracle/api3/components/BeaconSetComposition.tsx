@@ -2,8 +2,8 @@
 
 import { PieChart } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui';
+import { Progress } from '@/components/ui';
 import { useI18n } from '@/i18n';
 
 import type { BeaconSetComponent } from '../types/api3';

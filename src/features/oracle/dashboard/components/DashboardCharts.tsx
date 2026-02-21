@@ -5,7 +5,7 @@ import { Activity, TrendingUp, BarChart3, Clock } from 'lucide-react';
 import { EnhancedAreaChart, EnhancedLineChart, EnhancedBarChart } from '@/components/charts';
 import { CHART_COLORS } from '@/components/charts';
 import { ChartCard } from '@/components/common/ChartCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { formatNumber } from '@/shared/utils';
 

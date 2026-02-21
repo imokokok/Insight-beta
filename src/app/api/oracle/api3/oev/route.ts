@@ -10,33 +10,38 @@ import {
 } from '@/lib/blockchain/api3Oracle';
 import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
-interface OevQueryParams {
+interface PriceUpdateQueryParams {
   dapi_name?: string;
   chain?: SupportedChain;
   timeRange?: '1h' | '24h' | '7d' | '30d';
 }
 
-interface OevEvent {
+interface PriceUpdateEvent {
   id: string;
   dapiName: string;
   chain: SupportedChain;
-  feedId: string;
-  value: string;
+  price: number;
   timestamp: string;
-  oevAmount: string;
-  blockNumber?: number;
+  updateDelayMs: number;
+  status: 'normal' | 'warning' | 'critical';
 }
 
-function parseQueryParams(request: NextRequest): OevQueryParams {
+interface UpdateFrequencyStats {
+  dapiName: string;
+  updatesPerMinute: number;
+  avgDelayMs: number;
+}
+
+function parseQueryParams(request: NextRequest): PriceUpdateQueryParams {
   const { searchParams } = new URL(request.url);
   return {
     dapi_name: searchParams.get('dapi_name') ?? undefined,
     chain: searchParams.get('chain') as SupportedChain | undefined,
-    timeRange: (searchParams.get('timeRange') as OevQueryParams['timeRange']) ?? '24h',
+    timeRange: (searchParams.get('timeRange') as PriceUpdateQueryParams['timeRange']) ?? '24h',
   };
 }
 
-function getTimeRangeMs(timeRange: OevQueryParams['timeRange']): number {
+function getTimeRangeMs(timeRange: PriceUpdateQueryParams['timeRange']): number {
   switch (timeRange) {
     case '1h':
       return 60 * 60 * 1000;
@@ -49,6 +54,12 @@ function getTimeRangeMs(timeRange: OevQueryParams['timeRange']): number {
     default:
       return 24 * 60 * 60 * 1000;
   }
+}
+
+function getDelayStatus(delayMs: number): 'normal' | 'warning' | 'critical' {
+  if (delayMs < 1500) return 'normal';
+  if (delayMs < 3000) return 'warning';
+  return 'critical';
 }
 
 export async function GET(request: NextRequest) {
@@ -74,7 +85,8 @@ export async function GET(request: NextRequest) {
 
     const chainsToQuery = chain ? [chain] : supportedChains.slice(0, 3);
     const symbolsToQuery = dapi_name ? [dapi_name] : availableSymbols.slice(0, 10);
-    const oevEvents: OevEvent[] = [];
+    const priceUpdateEvents: PriceUpdateEvent[] = [];
+    const frequencyStats: UpdateFrequencyStats[] = [];
     const errors: Array<{ chain: string; dapiName: string; error: string }> = [];
     const timeRangeMs = getTimeRangeMs(timeRange);
     const cutoffTime = new Date(Date.now() - timeRangeMs);
@@ -90,7 +102,7 @@ export async function GET(request: NextRequest) {
       }
 
       try {
-        const client = createAPI3Client(targetChain, rpcUrl, { oevEnabled: true });
+        const client = createAPI3Client(targetChain, rpcUrl);
 
         for (const sym of symbolsToQuery) {
           const feedId = getDataFeedId(sym);
@@ -101,20 +113,21 @@ export async function GET(request: NextRequest) {
           }
 
           try {
-            const oevData = await client.getOEVData(feedId);
+            const priceData = await client.fetchPrice(sym);
 
-            if (oevData) {
-              const eventTime = new Date(Number(oevData.timestamp) * 1000);
+            if (priceData) {
+              const eventTime = new Date(priceData.timestamp);
 
               if (eventTime >= cutoffTime) {
-                oevEvents.push({
-                  id: oevData.updateId,
+                const delayMs = (priceData.stalenessSeconds ?? 0) * 1000;
+                priceUpdateEvents.push({
+                  id: `${sym}-${targetChain}-${priceData.timestamp}`,
                   dapiName: sym,
                   chain: targetChain,
-                  feedId: oevData.dataFeedId,
-                  value: oevData.value.toString(),
+                  price: priceData.price,
                   timestamp: eventTime.toISOString(),
-                  oevAmount: oevData.oevAmount.toString(),
+                  updateDelayMs: delayMs,
+                  status: getDelayStatus(delayMs),
                 });
               }
             }
@@ -131,12 +144,31 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const sortedEvents = oevEvents.sort(
+    const sortedEvents = priceUpdateEvents.sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     );
 
+    const dapiStatsMap = new Map<string, { count: number; totalDelay: number }>();
+    for (const event of sortedEvents) {
+      const existing = dapiStatsMap.get(event.dapiName) || { count: 0, totalDelay: 0 };
+      dapiStatsMap.set(event.dapiName, {
+        count: existing.count + 1,
+        totalDelay: existing.totalDelay + event.updateDelayMs,
+      });
+    }
+
+    for (const [dapiName, stats] of dapiStatsMap) {
+      const timeRangeMinutes = timeRangeMs / (60 * 1000);
+      frequencyStats.push({
+        dapiName,
+        updatesPerMinute: Math.round((stats.count / timeRangeMinutes) * 10) / 10,
+        avgDelayMs: Math.round(stats.totalDelay / stats.count),
+      });
+    }
+
     const result = {
       events: sortedEvents,
+      frequencyStats,
       metadata: {
         total: sortedEvents.length,
         timeRange,

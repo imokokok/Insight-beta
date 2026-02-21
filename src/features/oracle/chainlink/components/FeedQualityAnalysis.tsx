@@ -4,13 +4,13 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { TrendingUp, AlertTriangle, BarChart3, Activity, Shield, RefreshCw } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Progress } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { fetchApiData } from '@/shared/utils/api';
 
 interface VolatilityMetrics {
@@ -71,7 +71,7 @@ export function FeedQualityAnalysis() {
 
     try {
       const data = await fetchApiData<{ qualityData: FeedQualityData }>(
-        `/api/oracle/chainlink/quality?symbol=${encodeURIComponent(symbol)}`
+        `/api/oracle/chainlink/quality?symbol=${encodeURIComponent(symbol)}`,
       );
       setQualityData(data.qualityData);
     } catch (err) {
@@ -158,7 +158,9 @@ export function FeedQualityAnalysis() {
               <div className="flex-1">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">质量评分</span>
-                  <span className={`text-2xl font-bold ${getQualityScoreColor(qualityData.qualityScore)}`}>
+                  <span
+                    className={`text-2xl font-bold ${getQualityScoreColor(qualityData.qualityScore)}`}
+                  >
                     {qualityData.qualityScore}/100
                   </span>
                 </div>
@@ -168,10 +170,10 @@ export function FeedQualityAnalysis() {
                 {qualityData.qualityScore >= 90
                   ? '优秀'
                   : qualityData.qualityScore >= 70
-                  ? '良好'
-                  : qualityData.qualityScore >= 50
-                  ? '一般'
-                  : '较差'}
+                    ? '良好'
+                    : qualityData.qualityScore >= 50
+                      ? '一般'
+                      : '较差'}
               </Badge>
             </div>
           </CardContent>
@@ -199,7 +201,9 @@ export function FeedQualityAnalysis() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">最大回撤</span>
-              <span className="font-mono text-sm text-red-600">-{qualityData.volatility.maxDrawdown}%</span>
+              <span className="font-mono text-sm text-red-600">
+                -{qualityData.volatility.maxDrawdown}%
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -232,7 +236,11 @@ export function FeedQualityAnalysis() {
                       {item.protocol === 'Chainlink' ? (
                         <Badge variant="secondary">基准</Badge>
                       ) : (
-                        <span className={item.deviationPercentage > 0 ? 'text-red-600' : 'text-blue-600'}>
+                        <span
+                          className={
+                            item.deviationPercentage > 0 ? 'text-red-600' : 'text-blue-600'
+                          }
+                        >
                           {item.deviationPercentage > 0 ? '+' : ''}
                           {item.deviationPercentage.toFixed(4)}%
                         </span>
@@ -256,7 +264,7 @@ export function FeedQualityAnalysis() {
           <CardContent>
             {qualityData.recentAnomalies.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <TrendingUp className="h-8 w-8 text-green-500 mb-2" />
+                <TrendingUp className="mb-2 h-8 w-8 text-green-500" />
                 <p className="text-sm text-muted-foreground">近期未检测到异常事件</p>
               </div>
             ) : (
@@ -265,13 +273,17 @@ export function FeedQualityAnalysis() {
                   <div
                     key={index}
                     className={`flex items-center justify-between rounded-lg border p-3 ${
-                      anomaly.type === 'spike' ? 'bg-green-50 dark:bg-green-950/20' : 'bg-red-50 dark:bg-red-950/20'
+                      anomaly.type === 'spike'
+                        ? 'bg-green-50 dark:bg-green-950/20'
+                        : 'bg-red-50 dark:bg-red-950/20'
                     }`}
                   >
                     <div>
-                      <p className="font-medium text-sm">
+                      <p className="text-sm font-medium">
                         {anomaly.type === 'spike' ? (
-                          <span className="text-green-700 dark:text-green-400">⬆️ 价格大幅上涨</span>
+                          <span className="text-green-700 dark:text-green-400">
+                            ⬆️ 价格大幅上涨
+                          </span>
                         ) : (
                           <span className="text-red-700 dark:text-red-400">⬇️ 价格大幅下跌</span>
                         )}

@@ -58,38 +58,35 @@ export interface Dapi {
   beaconSetComponents?: BeaconSetComponent[];
 }
 
-export interface OevEvent {
+export interface PriceUpdateEvent {
   id: string;
   dapiName: string;
   chain: string;
-  blockNumber: number;
-  transactionHash: string;
-  oevValue: number;
-  priceBefore: number;
-  priceAfter: number;
+  price: number;
   timestamp: string;
+  updateDelayMs: number;
+  status: 'normal' | 'warning' | 'critical';
 }
 
-export interface OevOverviewData {
-  totalOev: number;
-  totalEvents: number;
-  avgOevPerEvent: number;
-  affectedDapis: number;
-  eventsCount: number;
-  topDapis: Array<{
-    dapiName: string;
-    oevValue: number;
-    percentage: number;
-  }>;
-  chainDistribution: Array<{
-    chain: string;
-    oevValue: number;
-    percentage: number;
-  }>;
-  trend: Array<{
-    date: string;
-    oevValue: number;
-  }>;
+export interface PriceUpdateStats {
+  totalUpdates: number;
+  avgDelayMs: number;
+  warningCount: number;
+  criticalCount: number;
+  uniqueDapis: number;
+  uniqueChains: number;
+}
+
+export interface PriceUpdateFrequencyData {
+  dapiName: string;
+  updatesPerMinute: number;
+  avgDelayMs: number;
+}
+
+export interface PriceUpdateDelayTrend {
+  hour: string;
+  avgDelayMs: number;
+  updateCount: number;
 }
 
 export interface SignatureVerifyResult {

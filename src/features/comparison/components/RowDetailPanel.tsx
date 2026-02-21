@@ -14,9 +14,9 @@ import {
 } from 'lucide-react';
 
 import { MiniChart } from '@/components/common/MiniChart';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import type { TableRowData } from '@/features/comparison/components/VirtualTable';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';

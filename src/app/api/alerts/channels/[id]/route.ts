@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { error, ok } from '@/lib/api/apiResponse';
 import { logger } from '@/shared/logger';
 import type {
   NotificationChannel,
@@ -57,20 +57,13 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     const channel = channelsStore.find((c) => c.id === id);
 
     if (!channel) {
-      return NextResponse.json({ ok: false, error: 'Channel not found' }, { status: 404 });
+      return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);
     }
 
-    return NextResponse.json({
-      ok: true,
-      data: channel,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    logger.error('Failed to fetch notification channel', { error });
-    return NextResponse.json(
-      { ok: false, error: 'Failed to fetch notification channel' },
-      { status: 500 },
-    );
+    return ok({ channel, timestamp: new Date().toISOString() });
+  } catch (err) {
+    logger.error('Failed to fetch notification channel', { error: err });
+    return error({ code: 'INTERNAL_ERROR', message: 'Failed to fetch notification channel' }, 500);
   }
 }
 
@@ -81,18 +74,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const channelIndex = channelsStore.findIndex((c) => c.id === id);
 
     if (channelIndex === -1) {
-      return NextResponse.json({ ok: false, error: 'Channel not found' }, { status: 404 });
+      return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);
     }
 
     const existingChannel = channelsStore[channelIndex];
     if (!existingChannel) {
-      return NextResponse.json({ ok: false, error: 'Channel not found' }, { status: 404 });
+      return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);
     }
 
     if (body.config) {
       const configValidation = validateChannelConfig(existingChannel.type, body.config);
       if (!configValidation.valid) {
-        return NextResponse.json({ ok: false, error: configValidation.error }, { status: 400 });
+        return error({ code: 'VALIDATION_ERROR', message: configValidation.error }, 400);
       }
     }
 
@@ -112,17 +105,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     channelsStore[channelIndex] = updatedChannel;
 
-    return NextResponse.json({
-      ok: true,
-      data: updatedChannel,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    logger.error('Failed to update notification channel', { error });
-    return NextResponse.json(
-      { ok: false, error: 'Failed to update notification channel' },
-      { status: 500 },
-    );
+    return ok({ channel: updatedChannel, timestamp: new Date().toISOString() });
+  } catch (err) {
+    logger.error('Failed to update notification channel', { error: err });
+    return error({ code: 'INTERNAL_ERROR', message: 'Failed to update notification channel' }, 500);
   }
 }
 
@@ -135,21 +121,14 @@ export async function DELETE(
     const channelIndex = channelsStore.findIndex((c) => c.id === id);
 
     if (channelIndex === -1) {
-      return NextResponse.json({ ok: false, error: 'Channel not found' }, { status: 404 });
+      return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);
     }
 
     channelsStore.splice(channelIndex, 1);
 
-    return NextResponse.json({
-      ok: true,
-      message: 'Channel deleted successfully',
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    logger.error('Failed to delete notification channel', { error });
-    return NextResponse.json(
-      { ok: false, error: 'Failed to delete notification channel' },
-      { status: 500 },
-    );
+    return ok({ message: 'Channel deleted successfully', timestamp: new Date().toISOString() });
+  } catch (err) {
+    logger.error('Failed to delete notification channel', { error: err });
+    return error({ code: 'INTERNAL_ERROR', message: 'Failed to delete notification channel' }, 500);
   }
 }

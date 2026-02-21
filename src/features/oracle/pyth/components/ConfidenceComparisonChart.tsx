@@ -15,8 +15,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Checkbox } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useI18n } from '@/i18n';
 
 interface PriceSourceData {
@@ -118,7 +118,7 @@ export function ConfidenceComparisonChart({ isLoading }: ConfidenceComparisonCha
     if (!firstSource) return [];
 
     return firstSource.data.map((point, index) => {
-      const row: any = {
+      const row: Record<string, string | number> = {
         time: new Date(point.timestamp).toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
@@ -140,7 +140,9 @@ export function ConfidenceComparisonChart({ isLoading }: ConfidenceComparisonCha
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t('oracle.pyth.confidenceComparisonTitle') || '多价格源置信区间对比'}</CardTitle>
+          <CardTitle>
+            {t('oracle.pyth.confidenceComparisonTitle') || '多价格源置信区间对比'}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-80 animate-pulse rounded bg-muted" />
@@ -157,7 +159,9 @@ export function ConfidenceComparisonChart({ isLoading }: ConfidenceComparisonCha
     >
       <Card>
         <CardHeader>
-          <CardTitle>{t('oracle.pyth.confidenceComparisonTitle') || '多价格源置信区间对比'}</CardTitle>
+          <CardTitle>
+            {t('oracle.pyth.confidenceComparisonTitle') || '多价格源置信区间对比'}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-4 flex flex-wrap gap-4">
@@ -212,7 +216,9 @@ export function ConfidenceComparisonChart({ isLoading }: ConfidenceComparisonCha
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                     }}
-                    formatter={(value: number | undefined) => value !== undefined ? [`${value.toFixed(3)}%`, ''] : ['', '']}
+                    formatter={(value: number | undefined) =>
+                      value !== undefined ? [`${value.toFixed(3)}%`, ''] : ['', '']
+                    }
                   />
                   <Legend />
                   {selectedSources.map((sourceName) => {

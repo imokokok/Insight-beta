@@ -2,13 +2,7 @@
 
 import { Layers, ArrowUpDown, Clock, Sparkles, AlertTriangle } from 'lucide-react';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { useI18n } from '@/i18n';
 
 import type { GroupMode, SortMode } from '../utils/alertScoring';

@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { LayoutDashboard, Globe, BarChart3 } from 'lucide-react';
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import {
   CrossChainOverview,
   CrossChainComparison,

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { Landmark, Coins, FileCheck, AlertTriangle, RefreshCw } from 'lucide-react';
 
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui';
 import { useI18n } from '@/i18n';
 
 interface TVLData {
