@@ -2,6 +2,10 @@
 // ==================== 核心组件 ====================
 export { ClientComponentsWrapper } from './ClientComponentsWrapper';
 
+// ==================== 内容容器 ====================
+export { ContentGroup, ContentSection, ContentGrid } from './ContentGroup';
+export type { ContentGroupProps, ContentSectionProps, ContentGridProps } from './ContentGroup';
+
 // ==================== 加载状态 ====================
 export { DynamicLoading, createLoadingComponent, type LoadingType } from './DynamicLoading';
 export { ChartCard, ChartCardSkeleton } from './ChartCard';

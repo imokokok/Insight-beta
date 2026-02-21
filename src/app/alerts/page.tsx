@@ -7,11 +7,11 @@ import { AlertTriangle, RefreshCw, Download } from 'lucide-react';
 import { Search, Filter } from 'lucide-react';
 import { Virtuoso } from 'react-virtuoso';
 
-import { StatCard, EmptyAlertsListState } from '@/components/common';
+import { StatCard } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
+import { EmptyAlertsListState } from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { Input } from '@/components/ui/input';
@@ -232,61 +232,57 @@ export default function AlertsCenterPage() {
           </TabsList>
         </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder={t('alerts.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <Select
-                  value={filterSeverity}
-                  onValueChange={(v) => setFilterSeverity(v as AlertSeverity | 'all')}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('alerts.filters.allSeverity')}</SelectItem>
-                    <SelectItem value="critical">{t('alerts.filters.critical')}</SelectItem>
-                    <SelectItem value="high">{t('alerts.filters.high')}</SelectItem>
-                    <SelectItem value="medium">{t('alerts.filters.medium')}</SelectItem>
-                    <SelectItem value="low">{t('alerts.filters.low')}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={filterStatus}
-                  onValueChange={(v) => setFilterStatus(v as AlertStatus | 'all')}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('alerts.filters.allStatus')}</SelectItem>
-                    <SelectItem value="active">{t('alerts.filters.active')}</SelectItem>
-                    <SelectItem value="investigating">
-                      {t('alerts.filters.investigating')}
-                    </SelectItem>
-                    <SelectItem value="resolved">{t('alerts.filters.resolved')}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <AlertGroupSelector
-                  groupMode={groupMode}
-                  onGroupModeChange={setGroupMode}
-                  sortMode={sortMode}
-                  onSortModeChange={setSortMode}
-                />
-              </div>
+        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={t('alerts.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex flex-wrap items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select
+                value={filterSeverity}
+                onValueChange={(v) => setFilterSeverity(v as AlertSeverity | 'all')}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('alerts.filters.allSeverity')}</SelectItem>
+                  <SelectItem value="critical">{t('alerts.filters.critical')}</SelectItem>
+                  <SelectItem value="high">{t('alerts.filters.high')}</SelectItem>
+                  <SelectItem value="medium">{t('alerts.filters.medium')}</SelectItem>
+                  <SelectItem value="low">{t('alerts.filters.low')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={filterStatus}
+                onValueChange={(v) => setFilterStatus(v as AlertStatus | 'all')}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('alerts.filters.allStatus')}</SelectItem>
+                  <SelectItem value="active">{t('alerts.filters.active')}</SelectItem>
+                  <SelectItem value="investigating">{t('alerts.filters.investigating')}</SelectItem>
+                  <SelectItem value="resolved">{t('alerts.filters.resolved')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <AlertGroupSelector
+                groupMode={groupMode}
+                onGroupModeChange={setGroupMode}
+                sortMode={sortMode}
+                onSortModeChange={setSortMode}
+              />
+            </div>
+          </div>
+        </div>
 
         <TabsContent value={activeTab} className="space-y-6">
           <AlertBatchActions
@@ -296,10 +292,10 @@ export default function AlertsCenterPage() {
           />
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
+            <div className="rounded-xl border border-border/50 bg-card/30">
+              <div className="border-b border-border/30 p-4">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                     {(() => {
                       const Icon = sourceIcons[activeTab as keyof typeof sourceIcons];
                       return Icon ? (
@@ -308,11 +304,13 @@ export default function AlertsCenterPage() {
                         <sourceIcons.all className="h-5 w-5" />
                       );
                     })()}
-                    {t('alerts.cards.alertList')}
+                    <h3 className="text-lg font-semibold text-foreground">
+                      {t('alerts.cards.alertList')}
+                    </h3>
                     <Badge variant="secondary" className="ml-2">
                       {filteredAlerts.length}
                     </Badge>
-                  </CardTitle>
+                  </div>
                   {filteredAlerts.length > 0 && (
                     <div className="flex items-center gap-2">
                       <Checkbox
@@ -328,30 +326,32 @@ export default function AlertsCenterPage() {
                     </div>
                   )}
                 </div>
-                <CardDescription>
+                <p className="mt-1 text-sm text-muted-foreground">
                   {t('alerts.cards.showingAlerts', {
                     count: filteredAlerts.length,
                     total: data?.alerts.length || 0,
                   })}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div>
                 {loading && !data ? (
                   <AlertListSkeleton count={5} />
                 ) : filteredAlerts.length === 0 ? (
-                  <EmptyAlertsListState
-                    isFiltered={
-                      searchQuery !== '' || filterSeverity !== 'all' || filterStatus !== 'all'
-                    }
-                    onClearFilters={() => {
-                      setSearchQuery('');
-                      setFilterSeverity('all');
-                      setFilterStatus('all');
-                    }}
-                    onRefresh={refresh}
-                  />
+                  <div className="p-6">
+                    <EmptyAlertsListState
+                      isFiltered={
+                        searchQuery !== '' || filterSeverity !== 'all' || filterStatus !== 'all'
+                      }
+                      onClearFilters={() => {
+                        setSearchQuery('');
+                        setFilterSeverity('all');
+                        setFilterStatus('all');
+                      }}
+                      onRefresh={refresh}
+                    />
+                  </div>
                 ) : groupMode !== 'none' && alertGroups.length > 0 ? (
-                  <div className="max-h-[600px] space-y-3 overflow-y-auto pr-2">
+                  <div className="max-h-[600px] space-y-3 overflow-y-auto p-2 pr-2">
                     <AlertGroupList
                       groups={alertGroups}
                       selectedAlertId={selectedAlert?.id}
@@ -361,27 +361,29 @@ export default function AlertsCenterPage() {
                     />
                   </div>
                 ) : (
-                  <Virtuoso
-                    data={filteredAlerts}
-                    style={{ height: '600px' }}
-                    components={{
-                      List: ListContainer,
-                    }}
-                    itemContent={(_index, alert) => (
-                      <AlertCard
-                        key={alert.id}
-                        alert={alert}
-                        onClick={() => setSelectedAlert(alert)}
-                        isSelected={selectedAlert?.id === alert.id}
-                        showCheckbox
-                        isChecked={isSelected(alert.id)}
-                        onCheckChange={() => toggleSelection(alert.id)}
-                      />
-                    )}
-                  />
+                  <div className="p-2">
+                    <Virtuoso
+                      data={filteredAlerts}
+                      style={{ height: '600px' }}
+                      components={{
+                        List: ListContainer,
+                      }}
+                      itemContent={(_index, alert) => (
+                        <AlertCard
+                          key={alert.id}
+                          alert={alert}
+                          onClick={() => setSelectedAlert(alert)}
+                          isSelected={selectedAlert?.id === alert.id}
+                          showCheckbox
+                          isChecked={isSelected(alert.id)}
+                          onCheckChange={() => toggleSelection(alert.id)}
+                        />
+                      )}
+                    />
+                  </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             <AlertDetailPanel alert={selectedAlert} />
           </div>

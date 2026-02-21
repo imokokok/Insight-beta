@@ -6,19 +6,23 @@ import { cn } from '@/shared/utils';
 
 import type { HTMLMotionProps } from 'framer-motion';
 
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        'rounded-2xl border border-border bg-card text-card-foreground shadow-sm backdrop-blur-xl',
-        'transition-all duration-300 ease-out will-change-transform',
-        'hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10',
-        className,
-      )}
-      {...props}
-    />
-  ),
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: 'default' | 'subtle' | 'borderless';
+}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant = 'default', ...props }, ref) => {
+    const variantStyles = {
+      default:
+        'rounded-2xl border border-border/50 bg-card text-card-foreground shadow-sm backdrop-blur-xl transition-all duration-300 ease-out will-change-transform hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5',
+      subtle:
+        'rounded-2xl border border-border/30 bg-card/80 text-card-foreground backdrop-blur-lg transition-all duration-300 ease-out will-change-transform hover:bg-card',
+      borderless:
+        'rounded-2xl bg-card text-card-foreground backdrop-blur-xl transition-all duration-300 ease-out will-change-transform',
+    };
+
+    return <div ref={ref} className={cn(variantStyles[variant], className)} {...props} />;
+  },
 );
 Card.displayName = 'Card';
 
@@ -69,23 +73,33 @@ interface CardEnhancedProps extends HTMLMotionProps<'div'> {
   clickable?: boolean;
   gradient?: boolean;
   glow?: boolean;
+  variant?: 'default' | 'subtle' | 'borderless';
 }
 
 const CardEnhanced = React.forwardRef<HTMLDivElement, CardEnhancedProps>(
-  ({ className, hover = true, clickable, gradient, glow, children, ...props }, ref) => {
+  (
+    { className, hover = true, clickable, gradient, glow, variant = 'default', children, ...props },
+    ref,
+  ) => {
+    const variantStyles = {
+      default: 'border border-border/50 shadow-sm',
+      subtle: 'border border-border/30 bg-card/80',
+      borderless: 'border-0',
+    };
+
     return (
       <motion.div
         ref={ref}
         className={cn(
-          'relative overflow-hidden rounded-2xl border border-border bg-card p-6 backdrop-blur-xl',
-          'transition-all duration-300',
-          hover && 'hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10',
+          'relative overflow-hidden rounded-2xl bg-card p-6 backdrop-blur-xl transition-all duration-300',
+          variantStyles[variant],
+          hover && 'hover:border-primary/20 hover:shadow-md hover:shadow-primary/5',
           clickable && 'cursor-pointer active:scale-[0.98]',
           gradient && 'via-primary-5/10 to-accent-5/10 bg-gradient-to-br from-card',
           glow && 'shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30',
           className,
         )}
-        whileHover={hover ? { y: -4, transition: { duration: 0.2 } } : undefined}
+        whileHover={hover ? { y: -2, transition: { duration: 0.2 } } : undefined}
         whileTap={clickable ? { scale: 0.98 } : undefined}
         {...props}
       >

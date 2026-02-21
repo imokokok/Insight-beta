@@ -10,6 +10,7 @@ export {
   StatCardSkeleton,
   StatCardGroup,
   DashboardStatsSection,
+  UnifiedStatsPanel,
 } from './EnhancedStatCard';
 
 export type {

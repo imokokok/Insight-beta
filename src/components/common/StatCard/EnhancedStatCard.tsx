@@ -631,6 +631,106 @@ export const DashboardStatsSection = memo(function DashboardStatsSection({
 });
 
 // ============================================================================
+// Unified Stats Panel Component - 一体化统计面板
+// ============================================================================
+
+interface StatItem {
+  title: string;
+  value: string | number;
+  icon?: React.ReactNode;
+  color?: StatCardColor;
+  trend?: TrendData;
+  status?: StatCardStatus;
+}
+
+interface UnifiedStatsPanelProps {
+  title?: string;
+  description?: string;
+  icon?: React.ReactNode;
+  items: StatItem[];
+  columns?: 2 | 3 | 4 | 6;
+  className?: string;
+}
+
+export const UnifiedStatsPanel = memo(function UnifiedStatsPanel({
+  title,
+  description,
+  icon,
+  items,
+  columns = 4,
+  className,
+}: UnifiedStatsPanelProps) {
+  const gridCols = {
+    2: 'grid-cols-1 sm:grid-cols-2',
+    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+    4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+    6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
+  };
+
+  return (
+    <div className={className}>
+      {(title || description) && (
+        <div className="mb-4 flex items-center gap-2">
+          {icon && <div className="text-primary">{icon}</div>}
+          <div>
+            {title && <h3 className="text-sm font-semibold text-foreground">{title}</h3>}
+            {description && <p className="text-xs text-muted-foreground">{description}</p>}
+          </div>
+        </div>
+      )}
+      <div className={cn('grid', gridCols[columns], 'gap-4')}>
+        {items.map((item, index) => {
+          const config = item.color
+            ? colorConfig[item.color]
+            : statusConfig[item.status || 'neutral'];
+
+          const trendDisplay = item.trend
+            ? (() => {
+                const { value: trendValue, isPositive, label } = item.trend;
+                const color = isPositive ? 'text-success' : 'text-error';
+                const Icon = isPositive ? TrendingUp : TrendingDown;
+
+                return (
+                  <div className="flex items-center gap-1">
+                    <Icon className={cn('h-3 w-3', color)} />
+                    <span className={cn('text-xs font-medium', color)}>
+                      {formatChangePercent(trendValue / 100, 1, false)}
+                    </span>
+                    {label && <span className="text-xs text-muted-foreground">{label}</span>}
+                  </div>
+                );
+              })()
+            : null;
+
+          return (
+            <div
+              key={index}
+              className={cn(
+                'rounded-xl p-4 transition-all duration-200 hover:bg-card/50',
+                index < items.length - 1 &&
+                  'border-r border-border/30 last:border-r-0 sm:border-r lg:border-r-0',
+                index % columns !== columns - 1 && 'lg:border-r lg:border-border/30',
+              )}
+            >
+              <div className="mb-2 flex items-start justify-between">
+                <span className="text-xs font-medium text-muted-foreground">{item.title}</span>
+                {item.icon && (
+                  <div className={cn('rounded-lg p-1.5', config.bg, config.text)}>{item.icon}</div>
+                )}
+              </div>
+              <div className="mb-1">
+                <span className="text-xl font-bold text-foreground">{item.value}</span>
+              </div>
+              {trendDisplay}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
+
+// ============================================================================
 // Export
 // ============================================================================
 
