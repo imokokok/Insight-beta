@@ -1,3 +1,16 @@
+export interface PriceSourceDistribution {
+  name: string;
+  value: number;
+  color: string;
+}
+
+export interface ActiveTimeStats {
+  onlinePercentage: number;
+  totalHours: number;
+  activeHours: number;
+  inactiveHours: number;
+}
+
 export interface Publisher {
   name: string;
   trustScore: number;
@@ -5,6 +18,8 @@ export interface Publisher {
   supportedSymbols: string[];
   status: 'active' | 'inactive';
   lastPublish: string;
+  priceSourceDistribution: PriceSourceDistribution[];
+  activeTimeStats: ActiveTimeStats;
 }
 
 export interface PriceUpdate {

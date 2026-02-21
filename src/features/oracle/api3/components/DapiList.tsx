@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronRight,
   Database,
+  Fuel,
   Radio,
   RefreshCw,
   Search,
@@ -111,6 +112,13 @@ const mockDapis: Dapi[] = [
     ],
   },
 ];
+
+const gasCostByDapi: Record<string, { costUsd: number; gasUsed: number }> = {
+  'ETH/USD': { costUsd: 45.20, gasUsed: 8500000 },
+  'BTC/USD': { costUsd: 32.80, gasUsed: 6200000 },
+  'LINK/USD': { costUsd: 12.50, gasUsed: 2800000 },
+  'USDC/USD': { costUsd: 8.90, gasUsed: 1500000 },
+};
 
 export function DapiList({ chain, symbol, className }: DapiListProps) {
   const { t } = useI18n();
@@ -250,6 +258,7 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                 <TableHead>{t('api3.dapi.sourceType')}</TableHead>
                 <TableHead>{t('api3.dapi.provider')}</TableHead>
                 <TableHead>{t('api3.dapi.price')}</TableHead>
+                <TableHead>Gas 成本</TableHead>
                 <TableHead>{t('api3.dapi.status')}</TableHead>
                 <TableHead>{t('api3.dapi.lastUpdate')}</TableHead>
                 <TableHead>{t('api3.dapi.dataFeedId')}</TableHead>
@@ -258,7 +267,7 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
             <TableBody>
               {filteredDapis.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
+                  <TableCell colSpan={9} className="h-24 text-center">
                     <p className="text-muted-foreground">{t('common.noResults')}</p>
                   </TableCell>
                 </TableRow>
@@ -266,6 +275,7 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                 filteredDapis.map((dapi) => {
                   const isExpanded = expandedRows.has(dapi.dataFeedId);
                   const canExpand = isBeaconSet(dapi);
+                  const gasInfo = gasCostByDapi[dapi.dapiName];
 
                   return (
                     <>
@@ -338,6 +348,19 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                           </span>
                         </TableCell>
                         <TableCell>
+                          {gasInfo ? (
+                            <Badge
+                              variant="outline"
+                              className="flex items-center gap-1 text-xs bg-amber-50 text-amber-700 border-amber-200"
+                            >
+                              <Fuel className="h-3 w-3" />
+                              ${gasInfo.costUsd.toFixed(2)}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <StatusBadge
                             status={dapi.status === 'active' ? 'active' : 'inactive'}
                             text={
@@ -359,7 +382,7 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                       </TableRow>
                       {isExpanded && canExpand && dapi.beaconSetComponents && (
                         <TableRow key={`${dapi.dataFeedId}-expanded`} className="bg-muted/30">
-                          <TableCell colSpan={8} className="p-4">
+                          <TableCell colSpan={9} className="p-4">
                             <BeaconSetComposition components={dapi.beaconSetComponents} />
                           </TableCell>
                         </TableRow>

@@ -9,6 +9,31 @@ export interface Airnode {
   uptimePercentage: number;
 }
 
+export interface UptimeTrendPoint {
+  timestamp: string;
+  uptimePercentage: number;
+  responseTimeMs: number;
+}
+
+export interface OfflineEvent {
+  id: string;
+  startTime: string;
+  endTime: string;
+  durationMs: number;
+  reason?: string;
+}
+
+export type TimePeriod = 'day' | 'week' | 'month';
+
+export interface AirnodeHistoryData {
+  timePeriod: TimePeriod;
+  uptimeTrend: UptimeTrendPoint[];
+  offlineEvents: OfflineEvent[];
+  totalUptimePercentage: number;
+  totalOfflineDurationMs: number;
+  offlineEventCount: number;
+}
+
 export interface BeaconSetComponent {
   beaconId: string;
   beaconName: string;
@@ -103,4 +128,102 @@ export interface UpdateFrequencyResponse {
   stats: UpdateFrequencyStats;
   intervals: UpdateIntervalPoint[];
   timeRange: string;
+}
+
+export interface ProtocolPricePoint {
+  timestamp: string;
+  api3Price: number;
+  chainlinkPrice: number;
+  pythPrice: number;
+}
+
+export interface DeviationMetrics {
+  mean: number;
+  max: number;
+  min: number;
+  stdDev: number;
+}
+
+export interface ComparisonDeviation {
+  api3VsChainlink: DeviationMetrics;
+  api3VsPyth: DeviationMetrics;
+}
+
+export interface Api3DeviationData {
+  timeRange: string;
+  symbol: string;
+  pricePoints: ProtocolPricePoint[];
+  deviations: ComparisonDeviation;
+  generatedAt: string;
+}
+
+export interface GasCostByDapi {
+  dapiName: string;
+  chain: string;
+  totalGasUsed: number;
+  totalCostEth: number;
+  totalCostUsd: number;
+  transactionCount: number;
+  avgGasPerTransaction: number;
+}
+
+export interface GasCostByChain {
+  chain: string;
+  totalGasUsed: number;
+  totalCostEth: number;
+  totalCostUsd: number;
+  transactionCount: number;
+  dapiCount: number;
+}
+
+export interface GasCostTrendPoint {
+  timestamp: string;
+  gasUsed: number;
+  costEth: number;
+  costUsd: number;
+  transactionCount: number;
+}
+
+export interface GasCostAnalysisData {
+  timeRange: '1h' | '24h' | '7d' | '30d';
+  byDapi: GasCostByDapi[];
+  byChain: GasCostByChain[];
+  trend: GasCostTrendPoint[];
+  totalGasUsed: number;
+  totalCostEth: number;
+  totalCostUsd: number;
+  totalTransactions: number;
+  generatedAt: string;
+}
+
+export interface CrossChainDapiData {
+  dapiName: string;
+  chain: string;
+  lastPrice: number;
+  lastUpdatedAt: string;
+  avgUpdateIntervalMs: number;
+  minUpdateIntervalMs: number;
+  maxUpdateIntervalMs: number;
+  avgLatencyMs: number;
+  minLatencyMs: number;
+  maxLatencyMs: number;
+  gasCostUsd: number;
+  gasCostEth: number;
+  status: 'active' | 'inactive';
+  uptimePercentage: number;
+  updateCount24h: number;
+}
+
+export interface CrossChainPricePoint {
+  timestamp: string;
+  [chain: string]: string | number;
+}
+
+export interface CrossChainComparisonData {
+  dapiName: string;
+  chains: string[];
+  dapiData: CrossChainDapiData[];
+  priceHistory: CrossChainPricePoint[];
+  timeRange: '1h' | '24h' | '7d' | '30d';
+  generatedAt: string;
 }

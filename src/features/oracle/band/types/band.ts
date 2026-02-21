@@ -58,3 +58,62 @@ export interface BandPriceData {
   sourcesCount: number;
   aggregationValid: boolean;
 }
+
+export interface OracleScript {
+  scriptId: string;
+  name: string;
+  description: string;
+  owner: string;
+  codeHash: string;
+  schema: string;
+  status: 'active' | 'inactive' | 'deprecated';
+  totalRequests: number;
+  lastRequestAt: string;
+  avgResponseTimeMs: number;
+  successRate: number;
+}
+
+export interface Validator {
+  validatorAddress: string;
+  moniker: string;
+  status: 'active' | 'inactive' | 'jailed';
+  votingPower: number;
+  commissionRate: number;
+  uptimePercent: number;
+  lastSeenAt: string;
+  totalRequestsProcessed: number;
+  missedBlocks: number;
+}
+
+export interface ValidatorHealthSummary {
+  totalValidators: number;
+  activeValidators: number;
+  jailedValidators: number;
+  networkParticipationRate: number;
+  avgUptimePercent: number;
+  totalVotingPower: number;
+}
+
+export interface BridgeTrendData {
+  timestamp: string;
+  transferCount: number;
+  totalVolume: number;
+  avgLatencyMs: number;
+  successRate: number;
+}
+
+export interface OracleScriptResponse {
+  scripts: OracleScript[];
+  summary: {
+    total: number;
+    active: number;
+    deprecated: number;
+    totalRequests: number;
+    avgResponseTimeMs: number;
+  };
+}
+
+export interface ValidatorResponse {
+  validators: Validator[];
+  summary: ValidatorHealthSummary;
+}

@@ -14,6 +14,8 @@ import {
   XCircle,
   AlertTriangle,
   LayoutDashboard,
+  BarChart3,
+  Globe,
 } from 'lucide-react';
 
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
@@ -37,7 +39,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { PythExportButton } from '@/features/oracle/pyth/components';
+import { PythExportButton, ConfidenceComparisonChart, CrossChainPriceComparison } from '@/features/oracle/pyth/components';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
 import { cn } from '@/shared/utils/ui';
@@ -81,6 +83,8 @@ interface PublisherDetail {
   status: 'active' | 'inactive' | 'degraded';
 }
 
+type PriceFeedCategory = 'Crypto' | 'Equities' | 'FX' | 'Commodities';
+
 interface PriceFeedDetail {
   id: string;
   name: string;
@@ -90,6 +94,12 @@ interface PriceFeedDetail {
   updateFrequency: number;
   avgLatency: number;
   status: 'active' | 'stale' | 'error';
+  category: PriceFeedCategory;
+  confidenceInterval: number;
+  anomalies: {
+    priceVolatility: boolean;
+    highConfidenceInterval: boolean;
+  };
 }
 
 const mockPublisherDetails: PublisherDetail[] = [
@@ -169,6 +179,9 @@ const mockPriceFeedDetails: PriceFeedDetail[] = [
     updateFrequency: 1.2,
     avgLatency: 85,
     status: 'active',
+    category: 'Crypto',
+    confidenceInterval: 0.8,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
   },
   {
     id: '2',
@@ -179,6 +192,9 @@ const mockPriceFeedDetails: PriceFeedDetail[] = [
     updateFrequency: 1.5,
     avgLatency: 92,
     status: 'active',
+    category: 'Crypto',
+    confidenceInterval: 1.0,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
   },
   {
     id: '3',
@@ -189,6 +205,9 @@ const mockPriceFeedDetails: PriceFeedDetail[] = [
     updateFrequency: 1.8,
     avgLatency: 78,
     status: 'active',
+    category: 'Crypto',
+    confidenceInterval: 1.5,
+    anomalies: { priceVolatility: true, highConfidenceInterval: false },
   },
   {
     id: '4',
@@ -199,6 +218,9 @@ const mockPriceFeedDetails: PriceFeedDetail[] = [
     updateFrequency: 2.1,
     avgLatency: 105,
     status: 'active',
+    category: 'Crypto',
+    confidenceInterval: 1.2,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
   },
   {
     id: '5',
@@ -209,6 +231,9 @@ const mockPriceFeedDetails: PriceFeedDetail[] = [
     updateFrequency: 2.3,
     avgLatency: 112,
     status: 'active',
+    category: 'Crypto',
+    confidenceInterval: 2.5,
+    anomalies: { priceVolatility: false, highConfidenceInterval: true },
   },
   {
     id: '6',
@@ -219,6 +244,9 @@ const mockPriceFeedDetails: PriceFeedDetail[] = [
     updateFrequency: 3.2,
     avgLatency: 156,
     status: 'stale',
+    category: 'Crypto',
+    confidenceInterval: 1.8,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
   },
   {
     id: '7',
@@ -229,16 +257,22 @@ const mockPriceFeedDetails: PriceFeedDetail[] = [
     updateFrequency: 1.9,
     avgLatency: 88,
     status: 'active',
+    category: 'Crypto',
+    confidenceInterval: 1.0,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
   },
   {
     id: '8',
     name: 'Dogecoin',
     symbol: 'DOGE/USD',
     latestPrice: 0.1234,
-    priceChange: -2.34,
+    priceChange: -7.89,
     updateFrequency: 4.5,
     avgLatency: 234,
     status: 'error',
+    category: 'Crypto',
+    confidenceInterval: 3.2,
+    anomalies: { priceVolatility: true, highConfidenceInterval: true },
   },
   {
     id: '9',
@@ -249,6 +283,9 @@ const mockPriceFeedDetails: PriceFeedDetail[] = [
     updateFrequency: 2.8,
     avgLatency: 134,
     status: 'active',
+    category: 'Crypto',
+    confidenceInterval: 1.1,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
   },
   {
     id: '10',
@@ -259,6 +296,204 @@ const mockPriceFeedDetails: PriceFeedDetail[] = [
     updateFrequency: 2.0,
     avgLatency: 95,
     status: 'active',
+    category: 'Crypto',
+    confidenceInterval: 1.3,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '11',
+    name: 'Apple Inc.',
+    symbol: 'AAPL/USD',
+    latestPrice: 178.45,
+    priceChange: 1.23,
+    updateFrequency: 2.5,
+    avgLatency: 145,
+    status: 'active',
+    category: 'Equities',
+    confidenceInterval: 1.5,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '12',
+    name: 'Microsoft Corp.',
+    symbol: 'MSFT/USD',
+    latestPrice: 412.34,
+    priceChange: -0.56,
+    updateFrequency: 2.8,
+    avgLatency: 152,
+    status: 'active',
+    category: 'Equities',
+    confidenceInterval: 1.2,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '13',
+    name: 'Amazon.com',
+    symbol: 'AMZN/USD',
+    latestPrice: 178.90,
+    priceChange: 2.45,
+    updateFrequency: 3.0,
+    avgLatency: 168,
+    status: 'active',
+    category: 'Equities',
+    confidenceInterval: 1.7,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '14',
+    name: 'Tesla Inc.',
+    symbol: 'TSLA/USD',
+    latestPrice: 245.67,
+    priceChange: -6.78,
+    updateFrequency: 2.2,
+    avgLatency: 123,
+    status: 'active',
+    category: 'Equities',
+    confidenceInterval: 2.8,
+    anomalies: { priceVolatility: true, highConfidenceInterval: true },
+  },
+  {
+    id: '15',
+    name: 'NVIDIA Corp.',
+    symbol: 'NVDA/USD',
+    latestPrice: 875.43,
+    priceChange: 4.56,
+    updateFrequency: 1.8,
+    avgLatency: 98,
+    status: 'active',
+    category: 'Equities',
+    confidenceInterval: 1.4,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '16',
+    name: 'EUR/USD',
+    symbol: 'EUR/USD',
+    latestPrice: 1.0876,
+    priceChange: 0.34,
+    updateFrequency: 1.5,
+    avgLatency: 87,
+    status: 'active',
+    category: 'FX',
+    confidenceInterval: 0.5,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '17',
+    name: 'GBP/USD',
+    symbol: 'GBP/USD',
+    latestPrice: 1.2678,
+    priceChange: -0.12,
+    updateFrequency: 1.7,
+    avgLatency: 91,
+    status: 'active',
+    category: 'FX',
+    confidenceInterval: 0.6,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '18',
+    name: 'JPY/USD',
+    symbol: 'JPY/USD',
+    latestPrice: 0.0067,
+    priceChange: 0.78,
+    updateFrequency: 1.3,
+    avgLatency: 82,
+    status: 'active',
+    category: 'FX',
+    confidenceInterval: 0.8,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '19',
+    name: 'AUD/USD',
+    symbol: 'AUD/USD',
+    latestPrice: 0.6543,
+    priceChange: -0.45,
+    updateFrequency: 1.9,
+    avgLatency: 95,
+    status: 'active',
+    category: 'FX',
+    confidenceInterval: 0.7,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '20',
+    name: 'CHF/USD',
+    symbol: 'CHF/USD',
+    latestPrice: 1.1567,
+    priceChange: 0.23,
+    updateFrequency: 1.6,
+    avgLatency: 89,
+    status: 'active',
+    category: 'FX',
+    confidenceInterval: 0.9,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '21',
+    name: 'Gold',
+    symbol: 'XAU/USD',
+    latestPrice: 2345.67,
+    priceChange: 1.34,
+    updateFrequency: 2.1,
+    avgLatency: 112,
+    status: 'active',
+    category: 'Commodities',
+    confidenceInterval: 1.6,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '22',
+    name: 'Silver',
+    symbol: 'XAG/USD',
+    latestPrice: 27.89,
+    priceChange: 2.56,
+    updateFrequency: 2.4,
+    avgLatency: 118,
+    status: 'active',
+    category: 'Commodities',
+    confidenceInterval: 1.8,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '23',
+    name: 'Crude Oil',
+    symbol: 'WTI/USD',
+    latestPrice: 78.45,
+    priceChange: -5.89,
+    updateFrequency: 1.8,
+    avgLatency: 105,
+    status: 'active',
+    category: 'Commodities',
+    confidenceInterval: 2.3,
+    anomalies: { priceVolatility: true, highConfidenceInterval: true },
+  },
+  {
+    id: '24',
+    name: 'Natural Gas',
+    symbol: 'NG/USD',
+    latestPrice: 2.56,
+    priceChange: -3.45,
+    updateFrequency: 2.7,
+    avgLatency: 125,
+    status: 'stale',
+    category: 'Commodities',
+    confidenceInterval: 1.5,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
+  },
+  {
+    id: '25',
+    name: 'Copper',
+    symbol: 'HG/USD',
+    latestPrice: 3.89,
+    priceChange: 0.78,
+    updateFrequency: 2.2,
+    avgLatency: 110,
+    status: 'active',
+    category: 'Commodities',
+    confidenceInterval: 1.2,
+    anomalies: { priceVolatility: false, highConfidenceInterval: false },
   },
 ];
 
@@ -281,6 +516,7 @@ export default function PythPage() {
 
   const [publisherSort, setPublisherSort] = useState<SortState | null>(null);
   const [priceFeedSort, setPriceFeedSort] = useState<SortState | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<PriceFeedCategory | 'All'>('All');
 
   const handlePublisherSort = useCallback((key: string) => {
     setPublisherSort((prev) => {
@@ -337,40 +573,47 @@ export default function PythPage() {
   }, [publisherSort]);
 
   const sortedPriceFeedDetails = useMemo(() => {
-    if (!priceFeedSort) return mockPriceFeedDetails;
-    const { key, direction } = priceFeedSort;
-    const sorted = [...mockPriceFeedDetails].sort((a, b) => {
-      let aVal: number | string = 0;
-      let bVal: number | string = 0;
-      switch (key) {
-        case 'name':
-          aVal = a.name;
-          bVal = b.name;
-          break;
-        case 'latestPrice':
-          aVal = a.latestPrice;
-          bVal = b.latestPrice;
-          break;
-        case 'updateFrequency':
-          aVal = a.updateFrequency;
-          bVal = b.updateFrequency;
-          break;
-        case 'avgLatency':
-          aVal = a.avgLatency;
-          bVal = b.avgLatency;
-          break;
-        default:
-          return 0;
-      }
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        return direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-      }
-      return direction === 'asc'
-        ? (aVal as number) - (bVal as number)
-        : (bVal as number) - (aVal as number);
-    });
-    return sorted;
-  }, [priceFeedSort]);
+    let filtered = [...mockPriceFeedDetails];
+    
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(feed => feed.category === selectedCategory);
+    }
+
+    if (priceFeedSort) {
+      const { key, direction } = priceFeedSort;
+      filtered.sort((a, b) => {
+        let aVal: number | string = 0;
+        let bVal: number | string = 0;
+        switch (key) {
+          case 'name':
+            aVal = a.name;
+            bVal = b.name;
+            break;
+          case 'latestPrice':
+            aVal = a.latestPrice;
+            bVal = b.latestPrice;
+            break;
+          case 'updateFrequency':
+            aVal = a.updateFrequency;
+            bVal = b.updateFrequency;
+            break;
+          case 'avgLatency':
+            aVal = a.avgLatency;
+            bVal = b.avgLatency;
+            break;
+          default:
+            return 0;
+        }
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          return direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        }
+        return direction === 'asc'
+          ? (aVal as number) - (bVal as number)
+          : (bVal as number) - (aVal as number);
+      });
+    }
+    return filtered;
+  }, [priceFeedSort, selectedCategory]);
 
   const protocolHealthStatus = useMemo(() => {
     if (hermesStatus?.status === 'down') return 'critical';
@@ -455,6 +698,17 @@ export default function PythPage() {
     if (ms < 200) return 'text-green-500';
     if (ms < 500) return 'text-yellow-500';
     return 'text-red-500';
+  };
+
+  const detectAnomalies = (priceChange: number, confidenceInterval: number) => {
+    return {
+      priceVolatility: Math.abs(priceChange) > 5,
+      highConfidenceInterval: confidenceInterval > 2,
+    };
+  };
+
+  const hasAnomaly = (feed: PriceFeedDetail) => {
+    return feed.anomalies.priceVolatility || feed.anomalies.highConfidenceInterval;
   };
 
   return (
@@ -588,7 +842,7 @@ export default function PythPage() {
       ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview" className="flex items-center gap-1.5">
             <LayoutDashboard className="h-4 w-4" />
             <span>概览</span>
@@ -600,6 +854,14 @@ export default function PythPage() {
           <TabsTrigger value="price-feeds" className="flex items-center gap-1.5">
             <Activity className="h-4 w-4" />
             <span>价格推送</span>
+          </TabsTrigger>
+          <TabsTrigger value="cross-chain" className="flex items-center gap-1.5">
+            <Globe className="h-4 w-4" />
+            <span>跨链对比</span>
+          </TabsTrigger>
+          <TabsTrigger value="confidence-comparison" className="flex items-center gap-1.5">
+            <BarChart3 className="h-4 w-4" />
+            <span>置信对比</span>
           </TabsTrigger>
           <TabsTrigger value="hermes" className="flex items-center gap-1.5">
             <Server className="h-4 w-4" />
@@ -879,6 +1141,21 @@ export default function PythPage() {
                 价格推送详细统计
               </CardTitle>
               <CardDescription>实时价格更新频率与延迟分析</CardDescription>
+              <div className="mt-4">
+                <Tabs 
+                  value={selectedCategory} 
+                  onValueChange={(value) => setSelectedCategory(value as PriceFeedCategory | 'All')}
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="All">全部</TabsTrigger>
+                    <TabsTrigger value="Crypto">Crypto</TabsTrigger>
+                    <TabsTrigger value="Equities">Equities</TabsTrigger>
+                    <TabsTrigger value="FX">FX</TabsTrigger>
+                    <TabsTrigger value="Commodities">Commodities</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -899,6 +1176,7 @@ export default function PythPage() {
                         >
                           价格源名称
                         </SortableTableHeader>
+                        <TableHead>分类</TableHead>
                         <SortableTableHeader
                           sortKey="latestPrice"
                           currentSort={priceFeedSort}
@@ -921,19 +1199,25 @@ export default function PythPage() {
                           onSort={handlePriceFeedSort}
                           className="text-right"
                         >
-                          平均延迟
+                          置信区间
                         </SortableTableHeader>
                         <TableHead className="text-center">状态</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {sortedPriceFeedDetails.map((feed) => (
-                        <TableRow key={feed.id}>
+                        <TableRow key={feed.id} className={cn(hasAnomaly(feed) && 'bg-red-50/50')}>
                           <TableCell>
-                            <div className="flex flex-col">
-                              <span className="font-medium">{feed.name}</span>
-                              <span className="text-xs text-muted-foreground">{feed.symbol}</span>
+                            <div className="flex items-center gap-2">
+                              {hasAnomaly(feed) && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                              <div className="flex flex-col">
+                                <span className="font-medium">{feed.name}</span>
+                                <span className="text-xs text-muted-foreground">{feed.symbol}</span>
+                              </div>
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{feed.category}</Badge>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex flex-col items-end">
@@ -945,22 +1229,41 @@ export default function PythPage() {
                                     })
                                   : feed.latestPrice.toFixed(4)}
                               </span>
-                              <span
-                                className={cn(
-                                  'text-xs',
-                                  feed.priceChange >= 0 ? 'text-green-500' : 'text-red-500',
+                              <div className="flex items-center gap-1">
+                                {feed.anomalies.priceVolatility && (
+                                  <Badge variant="destructive" className="h-4 px-1 text-[10px]">
+                                    波动异常
+                                  </Badge>
                                 )}
-                              >
-                                {feed.priceChange >= 0 ? '+' : ''}
-                                {feed.priceChange.toFixed(2)}%
-                              </span>
+                                <span
+                                  className={cn(
+                                    'text-xs',
+                                    feed.priceChange >= 0 ? 'text-green-500' : 'text-red-500',
+                                  )}
+                                >
+                                  {feed.priceChange >= 0 ? '+' : ''}
+                                  {feed.priceChange.toFixed(2)}%
+                                </span>
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell className="text-right">{feed.updateFrequency}s</TableCell>
                           <TableCell className="text-right">
-                            <span className={cn('font-medium', getLatencyColor(feed.avgLatency))}>
-                              {formatLatency(feed.avgLatency)}
-                            </span>
+                            <div className="flex flex-col items-end">
+                              <span
+                                className={cn(
+                                  'font-medium',
+                                  feed.anomalies.highConfidenceInterval ? 'text-red-500' : 'text-muted-foreground',
+                                )}
+                              >
+                                {feed.confidenceInterval.toFixed(2)}%
+                              </span>
+                              {feed.anomalies.highConfidenceInterval && (
+                                <Badge variant="destructive" className="h-4 px-1 text-[10px] mt-0.5">
+                                  置信过高
+                                </Badge>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge
@@ -991,6 +1294,14 @@ export default function PythPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="cross-chain" className="mt-6">
+          <CrossChainPriceComparison isLoading={loading} />
+        </TabsContent>
+
+        <TabsContent value="confidence-comparison" className="mt-6">
+          <ConfidenceComparisonChart isLoading={loading} />
         </TabsContent>
 
         <TabsContent value="hermes" className="mt-6">

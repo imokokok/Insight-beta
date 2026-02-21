@@ -13,6 +13,7 @@ import {
   Users,
   LayoutDashboard,
   TrendingUp,
+  BarChart3,
 } from 'lucide-react';
 
 import { TrendIndicator, ProtocolHealthBadge } from '@/components/common';
@@ -28,6 +29,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   ChainlinkExportButton,
   ChainlinkPriceHistory,
+  FeedQualityAnalysis,
 } from '@/features/oracle/chainlink/components';
 import { FeedAggregation } from '@/features/oracle/chainlink/components/FeedAggregation';
 import { OcrRoundMonitor } from '@/features/oracle/chainlink/components/OcrRoundMonitor';
@@ -250,7 +252,7 @@ export default function ChainlinkPage() {
       ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">
             <LayoutDashboard className="mr-1.5 h-4 w-4" />
             概览
@@ -258,6 +260,10 @@ export default function ChainlinkPage() {
           <TabsTrigger value="price-trend">
             <TrendingUp className="mr-1.5 h-4 w-4" />
             价格趋势
+          </TabsTrigger>
+          <TabsTrigger value="quality">
+            <BarChart3 className="mr-1.5 h-4 w-4" />
+            数据质量
           </TabsTrigger>
           <TabsTrigger value="ocr">
             <Activity className="mr-1.5 h-4 w-4" />
@@ -350,6 +356,10 @@ export default function ChainlinkPage() {
 
         <TabsContent value="price-trend" className="mt-6">
           <ChainlinkPriceHistory />
+        </TabsContent>
+
+        <TabsContent value="quality" className="mt-6">
+          <FeedQualityAnalysis />
         </TabsContent>
 
         <TabsContent value="ocr" className="mt-6">

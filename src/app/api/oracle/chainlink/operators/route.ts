@@ -27,40 +27,47 @@ function getMockOperators(): Operator[] {
     'DAI/USD',
     'EUR/USD',
     'GBP/USD',
+    'AUD/USD',
+    'JPY/USD',
   ];
 
-  const operatorNames = [
-    'Chainlink Labs Node 1',
-    'Chainlink Labs Node 2',
-    'Oracle Cloud Node A',
-    'Oracle Cloud Node B',
-    'DeFi Security Node',
-    'Blockdaemon Node 1',
-    'Blockdaemon Node 2',
-    'Staked.us Node',
-    'Figment Node',
-    'Bison Trails Node',
-    'Alchemy Node',
-    'Infura Oracle Node',
-    'QuickNode Node',
-    'Ankr Node',
-    'Pocket Network Node',
+  const operatorData = [
+    { name: 'Chainlink Labs', baseFeeds: ['ETH/USD', 'BTC/USD', 'LINK/USD', 'USDC/USD'], baseUptime: 99.95, baseResponse: 85 },
+    { name: 'Oracle Cloud Infrastructure', baseFeeds: ['ETH/USD', 'BTC/USD', 'LINK/USD'], baseUptime: 99.92, baseResponse: 95 },
+    { name: 'Blockdaemon', baseFeeds: ['ETH/USD', 'BTC/USD', 'USDC/USD', 'USDT/USD', 'DAI/USD'], baseUptime: 99.88, baseResponse: 105 },
+    { name: 'Figment', baseFeeds: ['ETH/USD', 'BTC/USD', 'LINK/USD', 'EUR/USD'], baseUptime: 99.85, baseResponse: 115 },
+    { name: 'Staked.us', baseFeeds: ['ETH/USD', 'BTC/USD', 'USDC/USD'], baseUptime: 99.78, baseResponse: 125 },
+    { name: 'Bison Trails (Coinbase Cloud)', baseFeeds: ['ETH/USD', 'BTC/USD', 'LINK/USD', 'USDT/USD', 'DAI/USD', 'GBP/USD'], baseUptime: 99.9, baseResponse: 90 },
+    { name: 'P2P.org', baseFeeds: ['ETH/USD', 'BTC/USD'], baseUptime: 99.7, baseResponse: 135 },
+    { name: 'Kiln', baseFeeds: ['ETH/USD', 'BTC/USD', 'LINK/USD', 'USDC/USD'], baseUptime: 99.82, baseResponse: 110 },
+    { name: 'Everstake', baseFeeds: ['ETH/USD', 'BTC/USD', 'USDT/USD'], baseUptime: 99.75, baseResponse: 120 },
+    { name: 'Chorus One', baseFeeds: ['ETH/USD', 'BTC/USD', 'LINK/USD', 'EUR/USD', 'GBP/USD'], baseUptime: 99.8, baseResponse: 100 },
   ];
 
-  return operatorNames.map((name) => {
-    const online = Math.random() > 0.15;
-    const supportedCount = Math.floor(Math.random() * 5) + 3;
-    const shuffledFeeds = [...feedTypes].sort(() => Math.random() - 0.5);
-    const uptimePercentage = online ? 85 + Math.random() * 15 : Math.random() * 30;
+  return operatorData.map((data) => {
+    const online = Math.random() > 0.03;
+    const additionalFeeds = feedTypes.filter((f) => !data.baseFeeds.includes(f));
+    const randomExtraFeeds = additionalFeeds.sort(() => Math.random() - 0.5).slice(0, Math.floor(Math.random() * 3));
+    const supportedFeeds = [...data.baseFeeds, ...randomExtraFeeds].sort();
+    
+    const uptimeVariation = (Math.random() - 0.5) * 0.4;
+    const uptimePercentage = online 
+      ? Math.min(100, Math.max(95, data.baseUptime + uptimeVariation))
+      : Math.random() * 20 + 5;
+    
+    const responseVariation = (Math.random() - 0.5) * 40;
+    const responseTime = online 
+      ? Math.max(50, Math.floor(data.baseResponse + responseVariation))
+      : 0;
 
     const operator: Operator = {
-      name,
+      name: data.name,
       online,
-      responseTime: online ? Math.floor(Math.random() * 200) + 50 : 0,
-      supportedFeeds: shuffledFeeds.slice(0, supportedCount),
+      responseTime,
+      supportedFeeds,
       lastHeartbeat: online
-        ? new Date(Date.now() - Math.floor(Math.random() * 300000)).toISOString()
-        : null,
+        ? new Date(Date.now() - Math.floor(Math.random() * 120000)).toISOString()
+        : new Date(Date.now() - Math.floor(Math.random() * 86400000)).toISOString(),
       uptimePercentage,
     };
 

@@ -29,16 +29,26 @@ function parseQueryParams(request: NextRequest): OcrQueryParams {
 function getMockRounds(limit: number): OcrRound[] {
   const now = Date.now();
   const rounds: OcrRound[] = [];
+  const basePrice = 3500;
 
   for (let i = 0; i < limit; i++) {
     const roundNum = 18446744073709552000 - i;
+    const volatility = 0.001;
+    const priceVariation = 1 + (Math.random() - 0.5) * volatility * 2;
+    const price = basePrice * priceVariation;
+    
+    const nodeCountDistribution = [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
+    const participatingNodes = nodeCountDistribution[Math.floor(Math.random() * nodeCountDistribution.length)];
+    
+    const roundInterval = i < 5 ? 180000 : 360000;
+    
     rounds.push({
       roundId: `0x${roundNum.toString(16)}`,
-      participatingNodes: Math.floor(Math.random() * 15) + 17,
+      participatingNodes,
       aggregationThreshold: '2/3',
-      answer: (Math.random() * 50000 + 1500).toFixed(8),
-      startedAt: new Date(now - i * 60000).toISOString(),
-      updatedAt: new Date(now - i * 60000 + Math.floor(Math.random() * 30000)).toISOString(),
+      answer: price.toFixed(8),
+      startedAt: new Date(now - i * roundInterval).toISOString(),
+      updatedAt: new Date(now - i * roundInterval + 5000 + Math.floor(Math.random() * 15000)).toISOString(),
     });
   }
 

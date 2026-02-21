@@ -7,12 +7,22 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronUp,
+  Clock,
+  PieChart as PieChartIcon,
   RefreshCw,
   Search,
   Shield,
   TrendingUp,
   Users,
 } from 'lucide-react';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from 'recharts';
 
 import { EmptyDeviationState } from '@/components/common/EmptyState';
 import { Badge, StatusBadge } from '@/components/ui/badge';
@@ -59,6 +69,18 @@ const mockPublishers: Publisher[] = [
     supportedSymbols: ['BTC/USD', 'ETH/USD', 'BNB/USD', 'SOL/USD'],
     status: 'active',
     lastPublish: new Date().toISOString(),
+    priceSourceDistribution: [
+      { name: 'Spot Market', value: 45, color: '#f97316' },
+      { name: 'Futures', value: 30, color: '#22c55e' },
+      { name: 'Options', value: 15, color: '#3b82f6' },
+      { name: 'OTC', value: 10, color: '#a855f7' },
+    ],
+    activeTimeStats: {
+      onlinePercentage: 99.5,
+      totalHours: 730,
+      activeHours: 726,
+      inactiveHours: 4,
+    },
   },
   {
     name: 'OKX',
@@ -67,6 +89,18 @@ const mockPublishers: Publisher[] = [
     supportedSymbols: ['BTC/USD', 'ETH/USD', 'OKB/USD'],
     status: 'active',
     lastPublish: new Date(Date.now() - 5000).toISOString(),
+    priceSourceDistribution: [
+      { name: 'Spot Market', value: 40, color: '#f97316' },
+      { name: 'Futures', value: 35, color: '#22c55e' },
+      { name: 'Options', value: 20, color: '#3b82f6' },
+      { name: 'OTC', value: 5, color: '#a855f7' },
+    ],
+    activeTimeStats: {
+      onlinePercentage: 98.2,
+      totalHours: 730,
+      activeHours: 717,
+      inactiveHours: 13,
+    },
   },
   {
     name: 'Coinbase',
@@ -75,6 +109,18 @@ const mockPublishers: Publisher[] = [
     supportedSymbols: ['BTC/USD', 'ETH/USD', 'SOL/USD', 'AVAX/USD', 'MATIC/USD'],
     status: 'active',
     lastPublish: new Date(Date.now() - 3000).toISOString(),
+    priceSourceDistribution: [
+      { name: 'Spot Market', value: 60, color: '#f97316' },
+      { name: 'Futures', value: 25, color: '#22c55e' },
+      { name: 'Options', value: 10, color: '#3b82f6' },
+      { name: 'OTC', value: 5, color: '#a855f7' },
+    ],
+    activeTimeStats: {
+      onlinePercentage: 99.8,
+      totalHours: 730,
+      activeHours: 729,
+      inactiveHours: 1,
+    },
   },
   {
     name: 'Kraken',
@@ -83,6 +129,18 @@ const mockPublishers: Publisher[] = [
     supportedSymbols: ['BTC/USD', 'ETH/USD', 'DOT/USD'],
     status: 'active',
     lastPublish: new Date(Date.now() - 8000).toISOString(),
+    priceSourceDistribution: [
+      { name: 'Spot Market', value: 55, color: '#f97316' },
+      { name: 'Futures', value: 30, color: '#22c55e' },
+      { name: 'Options', value: 10, color: '#3b82f6' },
+      { name: 'OTC', value: 5, color: '#a855f7' },
+    ],
+    activeTimeStats: {
+      onlinePercentage: 97.5,
+      totalHours: 730,
+      activeHours: 712,
+      inactiveHours: 18,
+    },
   },
   {
     name: 'Bybit',
@@ -91,6 +149,18 @@ const mockPublishers: Publisher[] = [
     supportedSymbols: ['BTC/USD', 'ETH/USD'],
     status: 'inactive',
     lastPublish: new Date(Date.now() - 3600000).toISOString(),
+    priceSourceDistribution: [
+      { name: 'Spot Market', value: 35, color: '#f97316' },
+      { name: 'Futures', value: 40, color: '#22c55e' },
+      { name: 'Options', value: 15, color: '#3b82f6' },
+      { name: 'OTC', value: 10, color: '#a855f7' },
+    ],
+    activeTimeStats: {
+      onlinePercentage: 85.0,
+      totalHours: 730,
+      activeHours: 620,
+      inactiveHours: 110,
+    },
   },
 ];
 
@@ -152,6 +222,7 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showChart, setShowChart] = useState(false);
+  const [showContributionAnalysis, setShowContributionAnalysis] = useState(false);
   const [selectedPublisher, setSelectedPublisher] = useState<string>('');
   const [publisherHistory, setPublisherHistory] = useState<PublisherHistoryPoint[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
@@ -253,6 +324,10 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
     const totalSymbols = new Set(publishers.flatMap((p) => p.supportedSymbols)).size;
     return { activeCount, avgTrustScore, totalSymbols };
   }, [publishers]);
+
+  const currentPublisher = useMemo(() => {
+    return publishers.find((p) => p.name === selectedPublisher);
+  }, [publishers, selectedPublisher]);
 
   if (isLoading) {
     return (
@@ -375,6 +450,122 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
                 publisherName={selectedPublisher}
                 isLoading={isHistoryLoading}
               />
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-lg border">
+          <button
+            type="button"
+            onClick={() => setShowContributionAnalysis(!showContributionAnalysis)}
+            className="flex w-full items-center justify-between p-3 text-left hover:bg-muted/50"
+          >
+            <span className="text-sm font-medium flex items-center gap-2">
+              <PieChartIcon className="h-4 w-4" />
+              贡献度分析
+            </span>
+            {showContributionAnalysis ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+          {showContributionAnalysis && (
+            <div className="border-t p-4 space-y-6">
+              <div className="mb-4 flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  选择 Publisher:
+                </span>
+                <Select value={selectedPublisher} onValueChange={setSelectedPublisher}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="选择 Publisher" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {publishers.map((publisher) => (
+                      <SelectItem key={publisher.name} value={publisher.name}>
+                        {publisher.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {currentPublisher && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <PieChartIcon className="h-4 w-4 text-amber-500" />
+                      价格源分布
+                    </h4>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={currentPublisher.priceSourceDistribution}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {currentPublisher.priceSourceDistribution.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-amber-500" />
+                      活跃时间统计
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">在线时长占比</span>
+                          <span className="text-sm font-bold text-amber-500">
+                            {currentPublisher.activeTimeStats.onlinePercentage.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
+                          <span
+                            className="absolute inset-y-0 left-0 rounded-full bg-amber-500 transition-all"
+                            style={{ width: `${currentPublisher.activeTimeStats.onlinePercentage}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3 pt-2">
+                        <div className="rounded-lg bg-amber-500/10 p-3 text-center">
+                          <div className="text-xs text-muted-foreground">总时长</div>
+                          <div className="mt-1 text-lg font-bold text-amber-500">
+                            {currentPublisher.activeTimeStats.totalHours}h
+                          </div>
+                        </div>
+                        <div className="rounded-lg bg-green-500/10 p-3 text-center">
+                          <div className="text-xs text-muted-foreground">活跃时长</div>
+                          <div className="mt-1 text-lg font-bold text-green-500">
+                            {currentPublisher.activeTimeStats.activeHours}h
+                          </div>
+                        </div>
+                        <div className="rounded-lg bg-gray-500/10 p-3 text-center">
+                          <div className="text-xs text-muted-foreground">离线时长</div>
+                          <div className="mt-1 text-lg font-bold text-gray-500">
+                            {currentPublisher.activeTimeStats.inactiveHours}h
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

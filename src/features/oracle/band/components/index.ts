@@ -8,3 +8,7 @@ export { AggregationValidationCard } from './AggregationValidationCard';
 export type { AggregationResult } from './AggregationValidationCard';
 export { DataFreshnessCard } from './DataFreshnessCard';
 export type { FreshnessData } from './DataFreshnessCard';
+export { OracleScriptList } from './OracleScriptList';
+export { ValidatorHealthCard } from './ValidatorHealthCard';
+export { DataSourcePerformanceComparison } from './DataSourcePerformanceComparison';
+export { BridgeTrendChart } from './BridgeTrendChart';

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import type { Bridge, DataSource } from '@/features/oracle/band';
+import type { Bridge, DataSource, OracleScript, ValidatorHealthSummary } from '@/features/oracle/band';
 import {
   ExportButton,
   escapeCSV,
@@ -39,6 +39,8 @@ interface BandExportData {
       avgReliability: number;
     };
   } | null;
+  oracleScripts?: OracleScript[];
+  validatorSummary?: ValidatorHealthSummary;
   generatedAt: string;
 }
 
@@ -98,6 +100,39 @@ function generateCSV(data: BandExportData): string {
     });
   }
 
+  if (data.oracleScripts && data.oracleScripts.length > 0) {
+    rows.push('');
+    rows.push('=== Oracle Scripts ===');
+    rows.push(
+      'Script ID,Name,Description,Status,Total Requests,Avg Response Time (ms),Success Rate',
+    );
+    data.oracleScripts.forEach((script) => {
+      rows.push(
+        [
+          escapeCSV(script.scriptId),
+          escapeCSV(script.name),
+          escapeCSV(script.description),
+          escapeCSV(script.status),
+          script.totalRequests,
+          script.avgResponseTimeMs,
+          script.successRate,
+        ].join(','),
+      );
+    });
+  }
+
+  if (data.validatorSummary) {
+    rows.push('');
+    rows.push('=== Validator Network ===');
+    rows.push('Metric,Value');
+    rows.push(`Total Validators,${data.validatorSummary.totalValidators}`);
+    rows.push(`Active Validators,${data.validatorSummary.activeValidators}`);
+    rows.push(`Jailed Validators,${data.validatorSummary.jailedValidators}`);
+    rows.push(`Network Participation Rate,${data.validatorSummary.networkParticipationRate}%`);
+    rows.push(`Avg Uptime,${data.validatorSummary.avgUptimePercent}%`);
+    rows.push(`Total Voting Power,${data.validatorSummary.totalVotingPower}`);
+  }
+
   rows.push('');
   rows.push(`Generated At,${escapeCSV(data.generatedAt)}`);
 
@@ -133,6 +168,23 @@ function generateExcelXML(data: BandExportData): string {
         <Cell><Data ss:Type="String">${escapeXML(source.symbol)}</Data></Cell>
         <Cell><Data ss:Type="String">${escapeXML(source.status)}</Data></Cell>
         <Cell><Data ss:Type="Number">${source.reliabilityScore}</Data></Cell>
+      </Row>`,
+      )
+      .join('\n');
+  }
+
+  let oracleScriptsTable = '';
+  if (data.oracleScripts && data.oracleScripts.length > 0) {
+    oracleScriptsTable = data.oracleScripts
+      .map(
+        (script) => `      <Row>
+        <Cell><Data ss:Type="String">${escapeXML(script.scriptId)}</Data></Cell>
+        <Cell><Data ss:Type="String">${escapeXML(script.name)}</Data></Cell>
+        <Cell><Data ss:Type="String">${escapeXML(script.description)}</Data></Cell>
+        <Cell><Data ss:Type="String">${escapeXML(script.status)}</Data></Cell>
+        <Cell><Data ss:Type="Number">${script.totalRequests}</Data></Cell>
+        <Cell><Data ss:Type="Number">${script.avgResponseTimeMs}</Data></Cell>
+        <Cell><Data ss:Type="Number">${script.successRate}</Data></Cell>
       </Row>`,
       )
       .join('\n');
@@ -184,6 +236,32 @@ ${
 `
     : ''
 }
+${
+  data.validatorSummary
+    ? `
+      <Row>
+        <Cell><Data ss:Type="String">Total Validators</Data></Cell>
+        <Cell><Data ss:Type="Number">${data.validatorSummary.totalValidators}</Data></Cell>
+      </Row>
+      <Row>
+        <Cell><Data ss:Type="String">Active Validators</Data></Cell>
+        <Cell><Data ss:Type="Number">${data.validatorSummary.activeValidators}</Data></Cell>
+      </Row>
+      <Row>
+        <Cell><Data ss:Type="String">Jailed Validators</Data></Cell>
+        <Cell><Data ss:Type="Number">${data.validatorSummary.jailedValidators}</Data></Cell>
+      </Row>
+      <Row>
+        <Cell><Data ss:Type="String">Network Participation Rate (%)</Data></Cell>
+        <Cell><Data ss:Type="Number">${data.validatorSummary.networkParticipationRate}</Data></Cell>
+      </Row>
+      <Row>
+        <Cell><Data ss:Type="String">Avg Uptime (%)</Data></Cell>
+        <Cell><Data ss:Type="Number">${data.validatorSummary.avgUptimePercent}</Data></Cell>
+      </Row>
+`
+    : ''
+}
       <Row>
         <Cell><Data ss:Type="String">Generated At</Data></Cell>
         <Cell><Data ss:Type="String">${escapeXML(data.generatedAt)}</Data></Cell>
@@ -217,6 +295,26 @@ ${bridgesTable}
 ${sourcesTable}
     </Table>
   </Worksheet>
+${
+  data.oracleScripts && data.oracleScripts.length > 0
+    ? `
+  <Worksheet ss:Name="Oracle Scripts">
+    <Table>
+      <Row>
+        <Cell><Data ss:Type="String">Script ID</Data></Cell>
+        <Cell><Data ss:Type="String">Name</Data></Cell>
+        <Cell><Data ss:Type="String">Description</Data></Cell>
+        <Cell><Data ss:Type="String">Status</Data></Cell>
+        <Cell><Data ss:Type="Number">Total Requests</Data></Cell>
+        <Cell><Data ss:Type="Number">Avg Response Time (ms)</Data></Cell>
+        <Cell><Data ss:Type="Number">Success Rate</Data></Cell>
+      </Row>
+${oracleScriptsTable}
+    </Table>
+  </Worksheet>
+`
+    : ''
+}
 </Workbook>`;
 }
 

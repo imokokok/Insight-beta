@@ -10,6 +10,7 @@ import {
   Shield,
   Globe,
   LayoutDashboard,
+  FileCode,
 } from 'lucide-react';
 
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
@@ -32,10 +33,13 @@ import {
   AggregationValidationCard,
   BandPriceChart,
   DataFreshnessCard,
+  OracleScriptList,
+  ValidatorHealthCard,
+  BridgeTrendChart,
 } from '@/features/oracle/band';
-import type { Bridge, DataSource } from '@/features/oracle/band';
+import type { Bridge, DataSource, OracleScript, ValidatorHealthSummary } from '@/features/oracle/band';
 import { useI18n } from '@/i18n';
-import { fetchApiData } from '@/shared/utils';
+import { fetchApiData, cn } from '@/shared/utils';
 
 interface BridgesResponse {
   bridges: Bridge[];
@@ -96,6 +100,19 @@ interface OverviewStats {
   totalSources: number;
 }
 
+const CHAIN_DISPLAY_NAMES: Record<string, string> = {
+  ethereum: 'Ethereum',
+  polygon: 'Polygon',
+  arbitrum: 'Arbitrum',
+  optimism: 'Optimism',
+  avalanche: 'Avalanche',
+  bsc: 'BSC',
+  fantom: 'Fantom',
+  cosmos: 'Cosmos Hub',
+  osmosis: 'Osmosis',
+  juno: 'Juno',
+};
+
 const SUPPORTED_CHAINS = [
   'ethereum',
   'polygon',
@@ -120,6 +137,9 @@ export default function BandProtocolPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [selectedCosmosChain, setSelectedCosmosChain] = useState('cosmoshub-4');
+  const [selectedBridge, setSelectedBridge] = useState<Bridge | null>(null);
+  const [oracleScripts, setOracleScripts] = useState<OracleScript[] | null>(null);
+  const [validatorSummary, setValidatorSummary] = useState<ValidatorHealthSummary | null>(null);
 
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(30);
@@ -149,6 +169,73 @@ export default function BandProtocolPage() {
 
       setBridgesData(bridgesRes);
       setSourcesData(sourcesRes);
+
+      const mockOracleScripts: OracleScript[] = [
+        {
+          scriptId: 'price_feed',
+          name: 'Price Feed',
+          description: '获取加密货币价格数据',
+          owner: 'band1abc123def456',
+          codeHash: '0x1234abcd5678efgh',
+          schema: '{symbol:string,price:uint64}',
+          status: 'active',
+          totalRequests: 125000,
+          lastRequestAt: new Date(Date.now() - 300000).toISOString(),
+          avgResponseTimeMs: 450,
+          successRate: 99.2,
+        },
+        {
+          scriptId: 'weather_data',
+          name: 'Weather Data',
+          description: '获取全球天气数据',
+          owner: 'band1def456ghi789',
+          codeHash: '0x5678efgh90abijkl',
+          schema: '{location:string,temp:uint64}',
+          status: 'active',
+          totalRequests: 34500,
+          lastRequestAt: new Date(Date.now() - 600000).toISOString(),
+          avgResponseTimeMs: 820,
+          successRate: 97.8,
+        },
+        {
+          scriptId: 'sports_results',
+          name: 'Sports Results',
+          description: '获取体育比赛结果',
+          owner: 'band1ghi789jkl012',
+          codeHash: '0x90abijklcdefmnop',
+          schema: '{gameId:string,score:string}',
+          status: 'inactive',
+          totalRequests: 12300,
+          lastRequestAt: new Date(Date.now() - 86400000).toISOString(),
+          avgResponseTimeMs: 580,
+          successRate: 96.5,
+        },
+        {
+          scriptId: 'stock_prices',
+          name: 'Stock Prices',
+          description: '获取股票价格数据',
+          owner: 'band1jkl012mno345',
+          codeHash: '0xcdefmnopqrstuvwx',
+          schema: '{ticker:string,price:uint64}',
+          status: 'deprecated',
+          totalRequests: 89200,
+          lastRequestAt: new Date(Date.now() - 259200000).toISOString(),
+          avgResponseTimeMs: 380,
+          successRate: 99.5,
+        },
+      ];
+      setOracleScripts(mockOracleScripts);
+
+      const mockValidatorSummary: ValidatorHealthSummary = {
+        totalValidators: 100,
+        activeValidators: 95,
+        jailedValidators: 3,
+        networkParticipationRate: 98.5,
+        avgUptimePercent: 99.1,
+        totalVotingPower: 1000000000,
+      };
+      setValidatorSummary(mockValidatorSummary);
+
       setLastUpdated(new Date());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
@@ -239,11 +326,13 @@ export default function BandProtocolPage() {
           />
           <BandExportButton
             data={
-              bridgesData || sourcesData
+              bridgesData || sourcesData || oracleScripts || validatorSummary
                 ? {
                     overviewStats,
                     bridgesData,
                     sourcesData,
+                    oracleScripts,
+                    validatorSummary,
                     generatedAt: lastUpdated?.toISOString() || new Date().toISOString(),
                   }
                 : null
@@ -349,6 +438,10 @@ export default function BandProtocolPage() {
                 <Database className="mr-1.5 h-4 w-4" />
                 数据源
               </TabsTrigger>
+              <TabsTrigger value="oracle-scripts">
+                <FileCode className="mr-1.5 h-4 w-4" />
+                Oracle Scripts
+              </TabsTrigger>
               <TabsTrigger value="transfers">
                 <Activity className="mr-1.5 h-4 w-4" />
                 传输历史
@@ -403,6 +496,8 @@ export default function BandProtocolPage() {
                   <AggregationValidationCard symbol="ETH/USD" chain="ethereum" />
                   <DataFreshnessCard symbol="ETH/USD" chain="ethereum" />
                 </div>
+
+                <ValidatorHealthCard />
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <BandPriceChart symbol="ATOM/USD" chain="cosmos" timeRange="24h" />
@@ -507,28 +602,49 @@ export default function BandProtocolPage() {
             </TabsContent>
 
             <TabsContent value="bridges">
-              <Card>
-                <CardHeader>
-                  <CardTitle>数据桥列表</CardTitle>
-                  <CardDescription>
-                    显示 {bridgesData?.bridges.length ?? 0} 个数据桥
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {bridgesData?.bridges.length === 0 ? (
-                    <div className="py-12 text-center text-muted-foreground">
-                      <GitBranch className="mx-auto h-12 w-12 opacity-50" />
-                      <p className="mt-2">暂无数据桥信息</p>
-                    </div>
-                  ) : (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      {bridgesData?.bridges.map((bridge) => (
-                        <BridgeStatusCard key={bridge.bridgeId} bridge={bridge} />
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>数据桥列表</CardTitle>
+                    <CardDescription>
+                      显示 {bridgesData?.bridges.length ?? 0} 个数据桥
+                      {selectedBridge && (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          (点击数据桥查看趋势)
+                        </span>
+                      )}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {bridgesData?.bridges.length === 0 ? (
+                      <div className="py-12 text-center text-muted-foreground">
+                        <GitBranch className="mx-auto h-12 w-12 opacity-50" />
+                        <p className="mt-2">暂无数据桥信息</p>
+                      </div>
+                    ) : (
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {bridgesData?.bridges.map((bridge) => (
+                          <BridgeStatusCard
+                            key={bridge.bridgeId}
+                            bridge={bridge}
+                            onClick={(b) => setSelectedBridge(b)}
+                            className={cn(
+                              selectedBridge?.bridgeId === bridge.bridgeId && 'border-primary'
+                            )}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {selectedBridge && (
+                  <BridgeTrendChart
+                    bridgeId={selectedBridge.bridgeId}
+                    bridgeName={`${CHAIN_DISPLAY_NAMES[selectedBridge.sourceChain] ?? selectedBridge.sourceChain} → ${CHAIN_DISPLAY_NAMES[selectedBridge.destinationChain] ?? selectedBridge.destinationChain}`}
+                  />
+                )}
+              </div>
             </TabsContent>
 
             <TabsContent value="sources">
@@ -544,6 +660,10 @@ export default function BandProtocolPage() {
                   symbol={undefined}
                 />
               </div>
+            </TabsContent>
+
+            <TabsContent value="oracle-scripts">
+              <OracleScriptList scripts={oracleScripts} loading={loading} />
             </TabsContent>
 
             <TabsContent value="transfers">
@@ -568,6 +688,35 @@ export default function BandProtocolPage() {
                       showIBCStatus={true}
                       filterType="mainnet"
                     />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Band Chain 区块信息</CardTitle>
+                    <CardDescription>最新区块状态</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <div className="rounded-lg bg-muted/30 p-4">
+                        <span className="text-sm text-muted-foreground">区块高度</span>
+                        <div className="mt-1 font-mono text-lg">
+                          {Math.floor(Math.random() * 10000000).toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="rounded-lg bg-muted/30 p-4">
+                        <span className="text-sm text-muted-foreground">区块哈希</span>
+                        <div className="mt-1 font-mono text-sm truncate">
+                          0x{Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}
+                        </div>
+                      </div>
+                      <div className="rounded-lg bg-muted/30 p-4">
+                        <span className="text-sm text-muted-foreground">时间戳</span>
+                        <div className="mt-1 text-sm">
+                          {new Date().toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 

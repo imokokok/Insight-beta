@@ -10,12 +10,15 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
+  BarChart3,
+  List,
 } from 'lucide-react';
 
 import { Badge, StatusBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { SkeletonList } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -28,6 +31,7 @@ import { useI18n } from '@/i18n';
 import { formatTime } from '@/shared/utils';
 
 import { DataSourcePerformanceCard } from './DataSourcePerformanceCard';
+import { DataSourcePerformanceComparison } from './DataSourcePerformanceComparison';
 
 import type { DataSource } from '../types';
 
@@ -186,6 +190,8 @@ export function DataSourceList({
     );
   }
 
+  const [viewMode, setViewMode] = useState<'list' | 'comparison'>('list');
+
   return (
     <Card className={className}>
       <CardHeader>
@@ -199,104 +205,122 @@ export function DataSourceList({
               {t('band.dataSource.description', { count: dataSources.length })}
             </CardDescription>
           </div>
-          <Button variant="ghost" size="sm" onClick={fetchDataSources}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'comparison')}>
+              <TabsList>
+                <TabsTrigger value="list" className="flex items-center gap-1">
+                  <List className="h-4 w-4" />
+                  <span className="hidden sm:inline">列表</span>
+                </TabsTrigger>
+                <TabsTrigger value="comparison" className="flex items-center gap-1">
+                  <BarChart3 className="h-4 w-4" />
+                  <span className="hidden sm:inline">对比</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Button variant="ghost" size="sm" onClick={fetchDataSources}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-8" />
-                <TableHead>{t('band.dataSource.name')}</TableHead>
-                <TableHead>{t('band.dataSource.symbol')}</TableHead>
-                <TableHead>{t('band.dataSource.chain')}</TableHead>
-                <TableHead>{t('band.dataSource.type')}</TableHead>
-                <TableHead>{t('band.dataSource.status')}</TableHead>
-                <TableHead className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <Zap className="h-3 w-3" />
-                    {t('band.dataSource.interval')}
-                  </div>
-                </TableHead>
-                <TableHead className="text-center">{t('band.dataSource.reliability')}</TableHead>
-                <TableHead>{t('band.dataSource.lastUpdate')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {dataSources.map((source) => {
-                const isExpanded = expandedRows.has(source.sourceId);
-                return (
-                  <>
-                    <TableRow
-                      key={source.sourceId}
-                      className="group cursor-pointer hover:bg-muted/50"
-                      onClick={() => toggleRow(source.sourceId)}
-                    >
-                      <TableCell className="w-8">
-                        <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-muted">
-                          {isExpanded ? (
-                            <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </button>
-                      </TableCell>
-                      <TableCell className="font-medium">{source.name}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" size="sm">
-                          {source.symbol}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{CHAIN_DISPLAY_NAMES[source.chain] ?? source.chain}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" size="sm">
-                          {source.sourceType.toUpperCase()}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge
-                          status={source.status === 'active' ? 'active' : 'offline'}
-                          text={source.status}
-                          size="sm"
-                          pulse={source.status === 'active'}
-                        />
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className="font-mono text-sm">
-                          {formatUpdateInterval(source.updateIntervalSeconds)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge
-                          variant={getReliabilityBadgeVariant(source.reliabilityScore)}
-                          size="sm"
-                        >
-                          {source.reliabilityScore.toFixed(1)}%
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {formatTime(source.lastUpdateAt)}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                    {isExpanded && (
-                      <TableRow key={`${source.sourceId}-details`} className="bg-muted/30">
-                        <TableCell colSpan={9} className="p-4">
-                          <DataSourcePerformanceCard source={source} />
+        {viewMode === 'list' ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-8" />
+                  <TableHead>{t('band.dataSource.name')}</TableHead>
+                  <TableHead>{t('band.dataSource.symbol')}</TableHead>
+                  <TableHead>{t('band.dataSource.chain')}</TableHead>
+                  <TableHead>{t('band.dataSource.type')}</TableHead>
+                  <TableHead>{t('band.dataSource.status')}</TableHead>
+                  <TableHead className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <Zap className="h-3 w-3" />
+                      {t('band.dataSource.interval')}
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-center">{t('band.dataSource.reliability')}</TableHead>
+                  <TableHead>{t('band.dataSource.lastUpdate')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {dataSources.map((source) => {
+                  const isExpanded = expandedRows.has(source.sourceId);
+                  return (
+                    <>
+                      <TableRow
+                        key={source.sourceId}
+                        className="group cursor-pointer hover:bg-muted/50"
+                        onClick={() => toggleRow(source.sourceId)}
+                      >
+                        <TableCell className="w-8">
+                          <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-muted">
+                            {isExpanded ? (
+                              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </button>
+                        </TableCell>
+                        <TableCell className="font-medium">{source.name}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" size="sm">
+                            {source.symbol}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{CHAIN_DISPLAY_NAMES[source.chain] ?? source.chain}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" size="sm">
+                            {source.sourceType.toUpperCase()}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge
+                            status={source.status === 'active' ? 'active' : 'offline'}
+                            text={source.status}
+                            size="sm"
+                            pulse={source.status === 'active'}
+                          />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className="font-mono text-sm">
+                            {formatUpdateInterval(source.updateIntervalSeconds)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            variant={getReliabilityBadgeVariant(source.reliabilityScore)}
+                            size="sm"
+                          >
+                            {source.reliabilityScore.toFixed(1)}%
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatTime(source.lastUpdateAt)}
+                          </div>
                         </TableCell>
                       </TableRow>
-                    )}
-                  </>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                      {isExpanded && (
+                        <TableRow key={`${source.sourceId}-details`} className="bg-muted/30">
+                          <TableCell colSpan={9} className="p-4">
+                            <DataSourcePerformanceCard source={source} />
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <DataSourcePerformanceComparison sources={dataSources} />
+        )}
       </CardContent>
     </Card>
   );

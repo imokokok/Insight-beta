@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-import { RefreshCw, Server, TrendingUp, Database, Shield, LayoutDashboard } from 'lucide-react';
+import { RefreshCw, Server, TrendingUp, Database, Shield, LayoutDashboard, Fuel } from 'lucide-react';
 
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
@@ -20,6 +20,7 @@ import {
   DapiList,
   SignatureVerifyPanel,
   Api3ExportButton,
+  GasCostAnalysis,
 } from '@/features/oracle/api3';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
@@ -320,7 +321,7 @@ export default function Api3Page() {
       ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview" className="flex items-center gap-1.5">
             <LayoutDashboard className="h-4 w-4" />
             概览
@@ -336,6 +337,10 @@ export default function Api3Page() {
           <TabsTrigger value="dapis" className="flex items-center gap-1.5">
             <Database className="h-4 w-4" />
             dAPIs
+          </TabsTrigger>
+          <TabsTrigger value="gas" className="flex items-center gap-1.5">
+            <Fuel className="h-4 w-4" />
+            Gas 成本
           </TabsTrigger>
           <TabsTrigger value="verify" className="flex items-center gap-1.5">
             <Shield className="h-4 w-4" />
@@ -495,6 +500,10 @@ export default function Api3Page() {
 
         <TabsContent value="dapis" className="mt-6">
           <DapiList />
+        </TabsContent>
+
+        <TabsContent value="gas" className="mt-6">
+          <GasCostAnalysis />
         </TabsContent>
 
         <TabsContent value="verify" className="mt-6">
