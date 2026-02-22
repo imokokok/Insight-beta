@@ -1,3 +1,5 @@
+import type { CrossChainPriceBase } from '@/types/shared';
+
 export interface CrossChainComparison {
   timestamp: string;
   recommendedPrice?: number;
@@ -5,19 +7,17 @@ export interface CrossChainComparison {
   medianPrice?: number;
 }
 
+export interface CrossChainPriceByChain extends CrossChainPriceBase {
+  protocol: string;
+  isStale: boolean;
+}
+
 export interface CrossChainComparisonData {
   symbol: string;
   baseAsset: string;
   quoteAsset: string;
   timestamp: string;
-  pricesByChain: {
-    chain: string;
-    protocol: string;
-    price: number;
-    confidence?: number;
-    timestamp: string;
-    isStale: boolean;
-  }[];
+  pricesByChain: CrossChainPriceByChain[];
   statistics: {
     avgPrice: number;
     medianPrice: number;

@@ -1,3 +1,11 @@
+import type {
+  GasCostTrendPoint,
+  GasCostAnalysisDataBase,
+  ReliabilityScoreBase,
+} from '@/types/shared';
+
+export type { GasCostTrendPoint };
+
 export interface OcrRound {
   roundId: string;
   participatingNodes: number;
@@ -14,12 +22,8 @@ export interface NodeContribution {
   role: 'proposer' | 'observer';
 }
 
-export interface ReliabilityScore {
-  overall: number;
-  uptime: number;
-  responseTime: number;
+export interface ReliabilityScore extends ReliabilityScoreBase {
   feedSupport: number;
-  trend: 'up' | 'down' | 'stable';
 }
 
 export interface Operator {
@@ -44,14 +48,6 @@ export interface ChainlinkFeed {
   chain?: string;
 }
 
-export interface GasCostTrendPoint {
-  timestamp: string;
-  gasUsed: number;
-  costEth: number;
-  costUsd: number;
-  transactionCount: number;
-}
-
 export interface GasCostByFeed {
   feedName: string;
   chain: string;
@@ -71,16 +67,9 @@ export interface GasCostByChain {
   feedCount: number;
 }
 
-export interface GasCostAnalysisData {
-  timeRange: '1h' | '24h' | '7d' | '30d';
+export interface GasCostAnalysisData extends GasCostAnalysisDataBase {
   byFeed: GasCostByFeed[];
   byChain: GasCostByChain[];
-  trend: GasCostTrendPoint[];
-  totalGasUsed: number;
-  totalCostEth: number;
-  totalCostUsd: number;
-  totalTransactions: number;
-  generatedAt: string;
 }
 
 export interface HeartbeatAlert {

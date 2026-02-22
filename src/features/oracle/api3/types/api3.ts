@@ -1,3 +1,10 @@
+import type {
+  GasCostTrendPoint as GasCostTrendPointBase,
+  GasCostAnalysisDataBase,
+} from '@/types/shared';
+
+export type { GasCostTrendPointBase as GasCostTrendPoint };
+
 export interface Airnode {
   airnodeAddress: string;
   endpointId: string;
@@ -173,24 +180,9 @@ export interface GasCostByChain {
   dapiCount: number;
 }
 
-export interface GasCostTrendPoint {
-  timestamp: string;
-  gasUsed: number;
-  costEth: number;
-  costUsd: number;
-  transactionCount: number;
-}
-
-export interface GasCostAnalysisData {
-  timeRange: '1h' | '24h' | '7d' | '30d';
+export interface GasCostAnalysisData extends GasCostAnalysisDataBase {
   byDapi: GasCostByDapi[];
   byChain: GasCostByChain[];
-  trend: GasCostTrendPoint[];
-  totalGasUsed: number;
-  totalCostEth: number;
-  totalCostUsd: number;
-  totalTransactions: number;
-  generatedAt: string;
 }
 
 export interface CrossChainDapiData {

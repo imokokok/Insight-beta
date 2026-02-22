@@ -1,3 +1,11 @@
+import {
+  formatPercentValue,
+  formatAddress as formatAddressShared,
+  formatLatency as formatLatencyShared,
+  formatGas as formatGasShared,
+  getLatencyColor,
+} from '@/shared/utils/format';
+
 export function formatNumber(value: number, decimals: number = 2): string {
   if (!Number.isFinite(value)) return '—';
 
@@ -21,7 +29,7 @@ export function formatNumber(value: number, decimals: number = 2): string {
 
 export function formatPercent(value: number, decimals: number = 2): string {
   if (!Number.isFinite(value)) return '—';
-  return `${value >= 0 ? '+' : ''}${value.toFixed(decimals)}%`;
+  return formatPercentValue(value, decimals, { showSign: true });
 }
 
 export function formatPrice(price: number): string {
@@ -35,8 +43,7 @@ export function formatPrice(price: number): string {
 }
 
 export function formatAddress(address: string, start: number = 6, end: number = 4): string {
-  if (!address || address.length < start + end) return address || '';
-  return `${address.slice(0, start)}...${address.slice(-end)}`;
+  return formatAddressShared(address, { start, end });
 }
 
 export function formatRelativeTime(
@@ -81,12 +88,26 @@ export function formatRelativeTime(
 }
 
 export function formatLatency(ms: number): string {
-  if (!Number.isFinite(ms)) return '—';
-  if (ms < 1000) return `${Math.round(ms)}ms`;
-  return `${(ms / 1000).toFixed(2)}s`;
+  return formatLatencyShared(ms);
 }
 
 export function formatGas(gwei: number): string {
-  if (!Number.isFinite(gwei)) return '—';
-  return `${gwei.toFixed(2)} Gwei`;
+  return formatGasShared(gwei);
 }
+
+export function getDeviationColor(deviation: number): string {
+  const absDeviation = Math.abs(deviation);
+  if (absDeviation < 0.5) return 'text-green-500';
+  if (absDeviation < 1) return 'text-yellow-500';
+  if (absDeviation < 2) return 'text-orange-500';
+  return 'text-red-500';
+}
+
+export function getDeviationBadgeVariant(deviation: number): 'success' | 'warning' | 'error' {
+  const absDeviation = Math.abs(deviation);
+  if (absDeviation < 0.5) return 'success';
+  if (absDeviation < 2) return 'warning';
+  return 'error';
+}
+
+export { getLatencyColor };

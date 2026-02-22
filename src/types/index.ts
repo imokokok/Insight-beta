@@ -4,6 +4,9 @@
  * 这是所有类型的统一入口，按领域组织
  */
 
+// 共享类型（基础类型）
+export * from './shared';
+
 // 领域类型（核心领域模型）- 优先级最高
 export * from './domain';
 
@@ -40,4 +43,4 @@ export type {
 
 // 通用类型
 export type { PaginationParams } from './common/pagination';
-export type { HealthStatus } from './common/status';
+export type { HealthStatus as CommonHealthStatus } from './common/status';
