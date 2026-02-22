@@ -12,9 +12,9 @@ import {
   XCircle,
 } from 'lucide-react';
 
+import { ContentSection, ContentGrid } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge, StatusBadge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { cn } from '@/shared/utils';
 
@@ -78,100 +78,76 @@ export function ValidatorHealthCard({ className }: ValidatorHealthCardProps) {
 
   if (loading && !data) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            验证者网络健康
-          </CardTitle>
-          <CardDescription>验证者参与率与网络状态</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <ContentSection className={className}>
+        <div className="space-y-4">
           <Skeleton className="h-8 w-full" />
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-16 w-full" />
-        </CardContent>
-      </Card>
+        </div>
+      </ContentSection>
     );
   }
 
   if (error) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            验证者网络健康
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center gap-4 py-8 text-center">
-            <AlertTriangle className="h-10 w-10 text-amber-500" />
-            <div>
-              <p className="font-medium text-foreground">加载失败</p>
-              <p className="text-sm text-muted-foreground">{error}</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={fetchData}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              重试
-            </Button>
+      <ContentSection className={className}>
+        <div className="flex flex-col items-center justify-center gap-4 py-8 text-center">
+          <AlertTriangle className="h-10 w-10 text-amber-500" />
+          <div>
+            <p className="font-medium text-foreground">加载失败</p>
+            <p className="text-sm text-muted-foreground">{error}</p>
           </div>
-        </CardContent>
-      </Card>
+          <Button variant="outline" size="sm" onClick={fetchData}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            重试
+          </Button>
+        </div>
+      </ContentSection>
     );
   }
 
   if (!data) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            验证者网络健康
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
-            <Users className="h-10 w-10 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">暂无验证者数据</p>
-          </div>
-        </CardContent>
-      </Card>
+      <ContentSection className={className}>
+        <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
+          <Users className="h-10 w-10 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">暂无验证者数据</p>
+        </div>
+      </ContentSection>
     );
   }
 
   const isHealthy = data.networkParticipationRate >= 95 && data.avgUptimePercent >= 99;
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              验证者网络健康
-            </CardTitle>
-            <CardDescription>验证者参与率与网络状态</CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <StatusBadge
-              status={
-                isHealthy ? 'active' : data.networkParticipationRate >= 85 ? 'warning' : 'error'
-              }
-              text={isHealthy ? '健康' : data.networkParticipationRate >= 85 ? '注意' : '异常'}
-              size="sm"
-              pulse={isHealthy}
-            />
-            <Button variant="ghost" size="sm" onClick={fetchData} disabled={loading}>
-              <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
-            </Button>
-          </div>
+    <ContentSection
+      className={className}
+      title={
+        <span className="flex items-center gap-2">
+          <Users className="h-5 w-5" />
+          验证者网络健康
+        </span>
+      }
+      description="验证者参与率与网络状态"
+      action={
+        <div className="flex items-center gap-2">
+          <StatusBadge
+            status={
+              isHealthy ? 'active' : data.networkParticipationRate >= 85 ? 'warning' : 'error'
+            }
+            text={isHealthy ? '健康' : data.networkParticipationRate >= 85 ? '注意' : '异常'}
+            size="sm"
+            pulse={isHealthy}
+          />
+          <Button variant="ghost" size="sm" onClick={fetchData} disabled={loading}>
+            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
+          </Button>
         </div>
-      </CardHeader>
-
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-lg bg-muted/30 p-4">
+      }
+    >
+      <div className="space-y-6">
+        <ContentGrid columns={2}>
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Users className="h-3 w-3" />
               验证者总数
@@ -182,7 +158,7 @@ export function ValidatorHealthCard({ className }: ValidatorHealthCardProps) {
             </p>
           </div>
 
-          <div className="rounded-lg bg-muted/30 p-4">
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Shield className="h-3 w-3" />
               总投票权
@@ -190,7 +166,7 @@ export function ValidatorHealthCard({ className }: ValidatorHealthCardProps) {
             <p className="mt-1 text-lg font-semibold">{formatVotingPower(data.totalVotingPower)}</p>
             <p className="text-xs text-muted-foreground">Band Tokens</p>
           </div>
-        </div>
+        </ContentGrid>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -293,7 +269,7 @@ export function ValidatorHealthCard({ className }: ValidatorHealthCardProps) {
             {isHealthy ? '健康' : '异常'}
           </Badge>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </ContentSection>
   );
 }

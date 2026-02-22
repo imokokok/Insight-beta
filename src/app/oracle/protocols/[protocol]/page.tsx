@@ -11,15 +11,13 @@ import {
   Globe2,
   Zap,
   Link2,
-  Server,
   AlertTriangle,
 } from 'lucide-react';
 
-import { StatCard } from '@/components/common';
+import { StatsBar, ContentSection, ContentGrid } from '@/components/common';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { SUPPORTED_CHAINS } from '@/config/constants';
 import { logger } from '@/shared/logger';
 import { cn, fetchApiData } from '@/shared/utils';
@@ -126,17 +124,15 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
     return (
       <ErrorBoundary>
         <div className="container mx-auto p-6">
-          <Card className="border-destructive/50 bg-destructive/10">
-            <CardContent className="p-6 text-center">
-              <AlertTriangle className="text-destructive mx-auto mb-4 h-12 w-12" />
-              <h2 className="text-destructive mb-2 text-xl font-bold">Failed to Load Protocol</h2>
-              <p className="mb-4 text-muted-foreground">{error}</p>
-              <Button variant="outline" onClick={fetchProtocol}>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Retry
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="border-destructive/50 bg-destructive/10 rounded-xl border p-6 text-center">
+            <AlertTriangle className="text-destructive mx-auto mb-4 h-12 w-12" />
+            <h2 className="text-destructive mb-2 text-xl font-bold">Failed to Load Protocol</h2>
+            <p className="mb-4 text-muted-foreground">{error}</p>
+            <Button variant="outline" onClick={fetchProtocol}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry
+            </Button>
+          </div>
         </div>
       </ErrorBoundary>
     );
@@ -178,181 +174,154 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
         </div>
 
         {loading && !protocol ? (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-24 animate-pulse rounded-lg bg-gray-100" />
-            ))}
-          </div>
+          <div className="h-16 animate-pulse rounded-xl bg-muted" />
         ) : protocol ? (
           <>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-              <StatCard
-                title="Price Feeds"
-                value={protocol.priceFeeds}
-                icon={<Link2 className="h-5 w-5" />}
-                color="blue"
-              />
-              <StatCard
-                title="Active Feeds"
-                value={protocol.stats.activeFeeds}
-                icon={<Activity className="h-5 w-5" />}
-                color="green"
-              />
-              <StatCard
-                title="Avg Latency"
-                value={`${protocol.avgLatency}ms`}
-                icon={<Zap className="h-5 w-5" />}
-                color="amber"
-              />
-              <StatCard
-                title="Uptime"
-                value={`${protocol.uptime}%`}
-                icon={<TrendingUp className="h-5 w-5" />}
-                color="green"
-              />
-              <StatCard
-                title="TVL"
-                value={`$${(protocol.tvl / 1e9).toFixed(2)}B`}
-                icon={<Zap className="h-5 w-5" />}
-                color="purple"
-                trend={{
-                  value: protocol.tvlChange24h,
-                  isPositive: protocol.tvlChange24h >= 0,
-                }}
-              />
-              <StatCard
-                title="Supported Chains"
-                value={protocol.supportedChains.length}
-                icon={<Globe2 className="h-5 w-5" />}
-                color="blue"
-              />
-            </div>
+            <StatsBar
+              title="协议统计"
+              items={[
+                {
+                  label: 'Price Feeds',
+                  value: protocol.priceFeeds,
+                  icon: <Link2 className="h-4 w-4" />,
+                },
+                {
+                  label: 'Active Feeds',
+                  value: protocol.stats.activeFeeds,
+                  status: 'healthy',
+                  icon: <Activity className="h-4 w-4" />,
+                },
+                {
+                  label: 'Avg Latency',
+                  value: `${protocol.avgLatency}ms`,
+                  status:
+                    protocol.avgLatency < 200
+                      ? 'healthy'
+                      : protocol.avgLatency < 500
+                        ? 'warning'
+                        : 'critical',
+                  icon: <Zap className="h-4 w-4" />,
+                },
+                {
+                  label: 'Uptime',
+                  value: `${protocol.uptime}%`,
+                  status:
+                    protocol.uptime >= 99
+                      ? 'healthy'
+                      : protocol.uptime >= 95
+                        ? 'warning'
+                        : 'critical',
+                  icon: <TrendingUp className="h-4 w-4" />,
+                },
+                {
+                  label: 'TVL',
+                  value: `$${(protocol.tvl / 1e9).toFixed(2)}B`,
+                  trend: protocol.tvlChange24h >= 0 ? 'up' : 'down',
+                  icon: <Zap className="h-4 w-4" />,
+                },
+                {
+                  label: 'Supported Chains',
+                  value: protocol.supportedChains.length,
+                  icon: <Globe2 className="h-4 w-4" />,
+                },
+              ]}
+            />
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Link2 className="h-5 w-5" />
-                    Price Feeds
-                  </CardTitle>
-                  <CardDescription>
-                    {protocol.stats.activeFeeds} active / {protocol.stats.totalFeeds} total
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {protocol.feeds.slice(0, 10).map((feed) => (
+            <ContentGrid columns={2}>
+              <ContentSection
+                title="Price Feeds"
+                description={`${protocol.stats.activeFeeds} active / ${protocol.stats.totalFeeds} total`}
+              >
+                <div className="space-y-2">
+                  {protocol.feeds.slice(0, 10).map((feed) => (
+                    <div
+                      key={feed.id}
+                      className="flex items-center justify-between rounded-lg border border-border/30 bg-muted/20 p-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Badge className={feedStatusColors[feed.status]}>{feed.status}</Badge>
+                        <div>
+                          <div className="font-medium">{feed.symbol}</div>
+                          <div className="text-xs text-muted-foreground">{feed.chain}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">${feed.price.toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(feed.updatedAt).toLocaleTimeString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {protocol.feeds.length > 10 && (
+                    <div className="text-center text-sm text-muted-foreground">
+                      +{protocol.feeds.length - 10} more feeds
+                    </div>
+                  )}
+                </div>
+              </ContentSection>
+
+              {protocol.nodes.length > 0 && (
+                <ContentSection
+                  title="Nodes"
+                  description={`${protocol.nodes.filter((n) => n.status === 'active').length} active / ${protocol.nodes.length} total`}
+                >
+                  <div className="space-y-2">
+                    {protocol.nodes.map((node) => (
                       <div
-                        key={feed.id}
-                        className="flex items-center justify-between rounded-lg border p-3"
+                        key={node.id}
+                        className="flex items-center justify-between rounded-lg border border-border/30 bg-muted/20 p-3"
                       >
                         <div className="flex items-center gap-3">
-                          <Badge className={feedStatusColors[feed.status]}>{feed.status}</Badge>
+                          <Badge
+                            className={
+                              node.status === 'active'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }
+                          >
+                            {node.status}
+                          </Badge>
                           <div>
-                            <div className="font-medium">{feed.symbol}</div>
-                            <div className="text-xs text-muted-foreground">{feed.chain}</div>
+                            <div className="font-medium">{node.name}</div>
+                            <div className="font-mono text-xs text-muted-foreground">
+                              {node.address.slice(0, 10)}...{node.address.slice(-8)}
+                            </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold">${feed.price.toLocaleString()}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(feed.updatedAt).toLocaleTimeString()}
-                          </div>
+                          <div className="font-semibold">{node.accuracy.toFixed(1)}%</div>
+                          <div className="text-xs text-muted-foreground">accuracy</div>
                         </div>
                       </div>
                     ))}
-                    {protocol.feeds.length > 10 && (
-                      <div className="text-center text-sm text-muted-foreground">
-                        +{protocol.feeds.length - 10} more feeds
-                      </div>
-                    )}
                   </div>
-                </CardContent>
-              </Card>
-
-              {protocol.nodes.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Server className="h-5 w-5" />
-                      Nodes
-                    </CardTitle>
-                    <CardDescription>
-                      {protocol.nodes.filter((n) => n.status === 'active').length} active /{' '}
-                      {protocol.nodes.length} total
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {protocol.nodes.map((node) => (
-                        <div
-                          key={node.id}
-                          className="flex items-center justify-between rounded-lg border p-3"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Badge
-                              className={
-                                node.status === 'active'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
-                              }
-                            >
-                              {node.status}
-                            </Badge>
-                            <div>
-                              <div className="font-medium">{node.name}</div>
-                              <div className="font-mono text-xs text-muted-foreground">
-                                {node.address.slice(0, 10)}...{node.address.slice(-8)}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-semibold">{node.accuracy.toFixed(1)}%</div>
-                            <div className="text-xs text-muted-foreground">accuracy</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                </ContentSection>
               )}
-            </div>
+            </ContentGrid>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe2 className="h-5 w-5" />
-                  Supported Chains
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {protocol.supportedChains.map((chainId) => {
-                    const chainInfo = getChainInfo(chainId);
-                    return (
-                      <Badge key={chainId} variant="outline" className="gap-1">
-                        {chainInfo?.name || chainId}
-                      </Badge>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Features</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {protocol.features.map((feature) => (
-                    <Badge key={feature} variant="secondary">
-                      {feature.replace(/_/g, ' ')}
+            <ContentSection title="Supported Chains">
+              <div className="flex flex-wrap gap-2">
+                {protocol.supportedChains.map((chainId) => {
+                  const chainInfo = getChainInfo(chainId);
+                  return (
+                    <Badge key={chainId} variant="outline" className="gap-1">
+                      {chainInfo?.name || chainId}
                     </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  );
+                })}
+              </div>
+            </ContentSection>
+
+            <ContentSection title="Features">
+              <div className="flex flex-wrap gap-2">
+                {protocol.features.map((feature) => (
+                  <Badge key={feature} variant="secondary">
+                    {feature.replace(/_/g, ' ')}
+                  </Badge>
+                ))}
+              </div>
+            </ContentSection>
           </>
         ) : null}
       </div>

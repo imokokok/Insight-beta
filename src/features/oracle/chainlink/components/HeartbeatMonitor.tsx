@@ -12,9 +12,9 @@ import {
   Timer,
 } from 'lucide-react';
 
+import { ContentSection, ContentGrid } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
@@ -22,26 +22,24 @@ import { formatTime, cn, fetchApiData } from '@/shared/utils';
 
 import type { HeartbeatStats, HeartbeatAlert } from '../types/chainlink';
 
-interface StatCardProps {
+interface StatItemProps {
   title: string;
   value: number | string;
   icon: React.ReactNode;
   colorClass: string;
 }
 
-function StatCard({ title, value, icon, colorClass }: StatCardProps) {
+function StatItem({ title, value, icon, colorClass }: StatItemProps) {
   return (
-    <Card>
-      <CardContent className="flex items-center gap-4 p-4">
-        <div className={cn('flex h-12 w-12 items-center justify-center rounded-lg', colorClass)}>
-          {icon}
-        </div>
-        <div>
-          <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold">{value}</p>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center gap-4 rounded-lg border border-border/30 bg-muted/20 p-4">
+      <div className={cn('flex h-12 w-12 items-center justify-center rounded-lg', colorClass)}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-sm text-muted-foreground">{title}</p>
+        <p className="text-2xl font-bold">{value}</p>
+      </div>
+    </div>
   );
 }
 
@@ -128,26 +126,23 @@ export function HeartbeatMonitor() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <ContentSection>
+        <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} className="h-24 w-full" />
             ))}
           </div>
           <Skeleton className="h-64 w-full" />
-        </CardContent>
-      </Card>
+        </div>
+      </ContentSection>
     );
   }
 
   if (error || !stats) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center gap-4 py-12">
+      <ContentSection>
+        <div className="flex flex-col items-center justify-center gap-4 py-12">
           <AlertTriangle className="h-12 w-12 text-amber-500" />
           <div className="text-center">
             <p className="font-medium text-foreground">{t('common.error') || '加载数据失败'}</p>
@@ -157,72 +152,71 @@ export function HeartbeatMonitor() {
             <RefreshCw className="mr-2 h-4 w-4" />
             {t('common.retry') || '重试'}
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </ContentSection>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">{t('chainlink.heartbeat.title') || '心跳监控'}</h3>
-          <p className="text-sm text-muted-foreground">
-            {t('chainlink.heartbeat.description') || '监控 Chainlink 数据 Feed 的心跳状态'}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">
-            {t('common.lastUpdated') || '最后更新'}: {formatTime(stats.generatedAt)}
-          </span>
-          <Button variant="outline" size="sm" onClick={fetchData}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            {t('common.refresh') || '刷新'}
-          </Button>
-        </div>
-      </div>
+      <ContentSection
+        title={t('chainlink.heartbeat.title') || '心跳监控'}
+        description={t('chainlink.heartbeat.description') || '监控 Chainlink 数据 Feed 的心跳状态'}
+        action={
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              {t('common.lastUpdated') || '最后更新'}: {formatTime(stats.generatedAt)}
+            </span>
+            <Button variant="outline" size="sm" onClick={fetchData}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {t('common.refresh') || '刷新'}
+            </Button>
+          </div>
+        }
+      >
+        <ContentGrid columns={4}>
+          <StatItem
+            title={t('chainlink.heartbeat.stats.totalFeeds') || '总 Feed 数'}
+            value={stats.totalFeeds}
+            icon={<Activity className="h-6 w-6 text-blue-600" />}
+            colorClass="bg-blue-100 dark:bg-blue-900"
+          />
+          <StatItem
+            title={t('chainlink.heartbeat.stats.activeFeeds') || '活跃数'}
+            value={stats.activeFeeds}
+            icon={<CheckCircle className="h-6 w-6 text-green-600" />}
+            colorClass="bg-green-100 dark:bg-green-900"
+          />
+          <StatItem
+            title={t('chainlink.heartbeat.stats.timeoutFeeds') || '超时数'}
+            value={stats.timeoutFeeds}
+            icon={<Timer className="h-6 w-6 text-yellow-600" />}
+            colorClass="bg-yellow-100 dark:bg-yellow-900"
+          />
+          <StatItem
+            title={t('chainlink.heartbeat.stats.criticalFeeds') || '严重超时数'}
+            value={stats.criticalFeeds}
+            icon={<XCircle className="h-6 w-6 text-red-600" />}
+            colorClass="bg-red-100 dark:bg-red-900"
+          />
+        </ContentGrid>
+      </ContentSection>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <StatCard
-          title={t('chainlink.heartbeat.stats.totalFeeds') || '总 Feed 数'}
-          value={stats.totalFeeds}
-          icon={<Activity className="h-6 w-6 text-blue-600" />}
-          colorClass="bg-blue-100 dark:bg-blue-900"
-        />
-        <StatCard
-          title={t('chainlink.heartbeat.stats.activeFeeds') || '活跃数'}
-          value={stats.activeFeeds}
-          icon={<CheckCircle className="h-6 w-6 text-green-600" />}
-          colorClass="bg-green-100 dark:bg-green-900"
-        />
-        <StatCard
-          title={t('chainlink.heartbeat.stats.timeoutFeeds') || '超时数'}
-          value={stats.timeoutFeeds}
-          icon={<Timer className="h-6 w-6 text-yellow-600" />}
-          colorClass="bg-yellow-100 dark:bg-yellow-900"
-        />
-        <StatCard
-          title={t('chainlink.heartbeat.stats.criticalFeeds') || '严重超时数'}
-          value={stats.criticalFeeds}
-          icon={<XCircle className="h-6 w-6 text-red-600" />}
-          colorClass="bg-red-100 dark:bg-red-900"
-        />
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <ContentSection
+        title={
+          <span className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
             {t('chainlink.heartbeat.alerts') || '告警列表'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {sortedAlerts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
-              <CheckCircle className="h-12 w-12 text-green-500" />
-              <p>{t('chainlink.heartbeat.noAlerts') || '暂无告警，所有 Feed 正常运行'}</p>
-            </div>
-          ) : (
+          </span>
+        }
+      >
+        {sortedAlerts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
+            <CheckCircle className="h-12 w-12 text-green-500" />
+            <p>{t('chainlink.heartbeat.noAlerts') || '暂无告警，所有 Feed 正常运行'}</p>
+          </div>
+        ) : (
+          <div className="rounded-lg border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -274,9 +268,9 @@ export function HeartbeatMonitor() {
                 })}
               </TableBody>
             </Table>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </ContentSection>
     </div>
   );
 }

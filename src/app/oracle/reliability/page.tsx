@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 
-import { Shield, RefreshCw, TrendingUp, Calendar } from 'lucide-react';
+import { Shield, RefreshCw, Calendar } from 'lucide-react';
 
+import { ContentSection, ContentGrid } from '@/components/common';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { Button } from '@/components/ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import { RefreshIndicator } from '@/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import {
@@ -71,37 +71,33 @@ export default function ReliabilityPage() {
         </div>
       </div>
 
-      <Card className="border-border/50">
-        <CardContent className="p-4">
-          <Tabs value={period} onValueChange={(v) => setPeriod(v as TimePeriod)}>
-            <TabsList className="grid w-full grid-cols-3">
-              {periods.map((p) => (
-                <TabsTrigger key={p.value} value={p.value}>
-                  {t(p.labelKey)}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-          {periodStart && periodEnd && (
-            <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>
-                {t('oracle.reliability.dataRangeLabel', {
-                  startDate: formatDate(periodStart),
-                  endDate: formatDate(periodEnd),
-                })}
-              </span>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div className="rounded-xl border border-border/30 bg-card/30 p-4">
+        <Tabs value={period} onValueChange={(v) => setPeriod(v as TimePeriod)}>
+          <TabsList className="grid w-full grid-cols-3">
+            {periods.map((p) => (
+              <TabsTrigger key={p.value} value={p.value}>
+                {t(p.labelKey)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        {periodStart && periodEnd && (
+          <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <Calendar className="h-4 w-4" />
+            <span>
+              {t('oracle.reliability.dataRangeLabel', {
+                startDate: formatDate(periodStart),
+                endDate: formatDate(periodEnd),
+              })}
+            </span>
+          </div>
+        )}
+      </div>
 
       {isError && (
-        <Card className="border-destructive/50 bg-destructive/10">
-          <CardContent className="p-4">
-            <p className="text-destructive text-sm">{t('oracle.reliability.loadError')}</p>
-          </CardContent>
-        </Card>
+        <div className="border-destructive/50 bg-destructive/10 rounded-xl border p-4">
+          <p className="text-destructive text-sm">{t('oracle.reliability.loadError')}</p>
+        </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -122,66 +118,61 @@ export default function ReliabilityPage() {
 
       <ReliabilityComparisonTable rankings={rankings} isLoading={isLoading} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            {t('oracle.reliability.trendAnalysis')}
-          </CardTitle>
-          <CardDescription>{t('oracle.reliability.trendDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={selectedProtocol} onValueChange={setSelectedProtocol}>
-            <TabsList className="mb-4">
-              {rankings.map((r) => (
-                <TabsTrigger key={r.protocol} value={r.protocol} className="capitalize">
-                  {r.protocol}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+      <ContentSection
+        title={t('oracle.reliability.trendAnalysis')}
+        description={t('oracle.reliability.trendDescription')}
+      >
+        <Tabs value={selectedProtocol} onValueChange={setSelectedProtocol}>
+          <TabsList className="mb-4">
             {rankings.map((r) => (
-              <TabsContent key={r.protocol} value={r.protocol}>
-                <ReliabilityTrendChart
-                  data={trendData}
-                  protocol={r.protocol}
-                  isLoading={trendLoading}
-                />
-              </TabsContent>
+              <TabsTrigger key={r.protocol} value={r.protocol} className="capitalize">
+                {r.protocol}
+              </TabsTrigger>
             ))}
-          </Tabs>
-        </CardContent>
-      </Card>
+          </TabsList>
+          {rankings.map((r) => (
+            <TabsContent key={r.protocol} value={r.protocol}>
+              <ReliabilityTrendChart
+                data={trendData}
+                protocol={r.protocol}
+                isLoading={trendLoading}
+              />
+            </TabsContent>
+          ))}
+        </Tabs>
+      </ContentSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('oracle.reliability.methodology')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4 text-sm text-muted-foreground">
-            <p>{t('oracle.reliability.methodologyDesc')}</p>
-            <div className="grid gap-2 sm:grid-cols-3">
-              <div className="rounded-lg border p-3">
-                <div className="font-medium text-foreground">
-                  {t('oracle.reliability.accuracy')} (50%)
-                </div>
-                <p className="mt-1 text-xs">{t('oracle.reliability.accuracyDesc')}</p>
-              </div>
-              <div className="rounded-lg border p-3">
-                <div className="font-medium text-foreground">
-                  {t('oracle.reliability.latency')} (30%)
-                </div>
-                <p className="mt-1 text-xs">{t('oracle.reliability.latencyDesc')}</p>
-              </div>
-              <div className="rounded-lg border p-3">
-                <div className="font-medium text-foreground">
-                  {t('oracle.reliability.availability')} (20%)
-                </div>
-                <p className="mt-1 text-xs">{t('oracle.reliability.availabilityDesc')}</p>
-              </div>
+      <ContentSection title={t('oracle.reliability.methodology')}>
+        <p className="mb-4 text-sm text-muted-foreground">
+          {t('oracle.reliability.methodologyDesc')}
+        </p>
+        <ContentGrid columns={3}>
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+            <div className="font-medium text-foreground">
+              {t('oracle.reliability.accuracy')} (50%)
             </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t('oracle.reliability.accuracyDesc')}
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+            <div className="font-medium text-foreground">
+              {t('oracle.reliability.latency')} (30%)
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t('oracle.reliability.latencyDesc')}
+            </p>
+          </div>
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+            <div className="font-medium text-foreground">
+              {t('oracle.reliability.availability')} (20%)
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t('oracle.reliability.availabilityDesc')}
+            </p>
+          </div>
+        </ContentGrid>
+      </ContentSection>
     </div>
   );
 }

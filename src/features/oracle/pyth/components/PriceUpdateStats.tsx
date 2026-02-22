@@ -14,10 +14,10 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
+import { ContentSection, ContentGrid } from '@/components/common';
 import { EmptyDeviationState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Input } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
@@ -318,74 +318,66 @@ export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
 
   if (isLoading) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-amber-500" />
-            {t('pyth.updates.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SkeletonList count={5} />
-        </CardContent>
-      </Card>
+      <ContentSection className={className}>
+        <SkeletonList count={5} />
+      </ContentSection>
     );
   }
 
   if (filteredUpdates.length === 0 && !searchQuery && selectedSymbol === 'all') {
     return (
-      <Card className={className}>
-        <CardContent className="pt-6">
-          <EmptyDeviationState onRefresh={handleRefresh} />
-        </CardContent>
-      </Card>
+      <ContentSection className={className}>
+        <EmptyDeviationState onRefresh={handleRefresh} />
+      </ContentSection>
     );
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-amber-500" />
-            {t('pyth.updates.title')}
-            <Badge variant="secondary" className="ml-2">
-              {filteredUpdates.length}
-            </Badge>
-          </CardTitle>
-          <div className="flex flex-wrap items-center gap-2">
-            <Select value={selectedSymbol} onValueChange={setSelectedSymbol}>
-              <SelectTrigger className="w-[140px]">
-                <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder={t('pyth.updates.filterSymbol')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('common.all')}</SelectItem>
-                {uniqueSymbols.map((symbol) => (
-                  <SelectItem key={symbol} value={symbol}>
-                    {symbol}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder={t('common.search')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 sm:w-48"
-              />
-            </div>
-            <Button variant="outline" size="icon" onClick={handleRefresh}>
-              <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-            </Button>
+    <ContentSection
+      className={className}
+      title={
+        <span className="flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-amber-500" />
+          {t('pyth.updates.title')}
+          <Badge variant="secondary" className="ml-2">
+            {filteredUpdates.length}
+          </Badge>
+        </span>
+      }
+      action={
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={selectedSymbol} onValueChange={setSelectedSymbol}>
+            <SelectTrigger className="w-[140px]">
+              <Filter className="mr-2 h-4 w-4" />
+              <SelectValue placeholder={t('pyth.updates.filterSymbol')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('common.all')}</SelectItem>
+              {uniqueSymbols.map((symbol) => (
+                <SelectItem key={symbol} value={symbol}>
+                  {symbol}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={t('common.search')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 sm:w-48"
+            />
           </div>
+          <Button variant="outline" size="icon" onClick={handleRefresh}>
+            <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-lg bg-amber-500/10 p-3">
+      }
+    >
+      <div className="space-y-4">
+        <ContentGrid columns={3}>
+          <div className="rounded-lg border border-border/30 bg-amber-500/10 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <TrendingUp className="h-3 w-3" />
               {t('pyth.updates.symbols')}
@@ -393,7 +385,7 @@ export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
             <p className="mt-1 text-lg font-bold text-amber-500">{stats.symbolCount}</p>
           </div>
 
-          <div className="rounded-lg bg-amber-500/10 p-3">
+          <div className="rounded-lg border border-border/30 bg-amber-500/10 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <BarChart3 className="h-3 w-3" />
               {t('pyth.updates.publishers')}
@@ -401,7 +393,7 @@ export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
             <p className="mt-1 text-lg font-bold text-amber-500">{stats.publisherCount}</p>
           </div>
 
-          <div className="rounded-lg bg-amber-500/10 p-3">
+          <div className="rounded-lg border border-border/30 bg-amber-500/10 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <TrendingDown className="h-3 w-3" />
               {t('pyth.updates.avgConfidence')}
@@ -410,7 +402,7 @@ export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
               {(stats.avgConfidenceRange * 100).toFixed(2)}%
             </p>
           </div>
-        </div>
+        </ContentGrid>
 
         <div className="rounded-lg border">
           <button
@@ -508,7 +500,7 @@ export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
             </TableBody>
           </Table>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </ContentSection>
   );
 }

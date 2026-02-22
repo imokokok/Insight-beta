@@ -17,10 +17,10 @@ import {
 } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
+import { ContentSection, ContentGrid } from '@/components/common';
 import { EmptyDeviationState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui';
 import { Badge, StatusBadge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Input } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
@@ -311,61 +311,53 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
 
   if (isLoading) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-amber-500" />
-            {t('pyth.publisher.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SkeletonList count={5} />
-        </CardContent>
-      </Card>
+      <ContentSection className={className}>
+        <SkeletonList count={5} />
+      </ContentSection>
     );
   }
 
   if (filteredPublishers.length === 0 && !searchQuery) {
     return (
-      <Card className={className}>
-        <CardContent className="pt-6">
-          <EmptyDeviationState onRefresh={handleRefresh} />
-        </CardContent>
-      </Card>
+      <ContentSection className={className}>
+        <EmptyDeviationState onRefresh={handleRefresh} />
+      </ContentSection>
     );
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-amber-500" />
-            {t('pyth.publisher.title')}
-            <Badge variant="secondary" className="ml-2">
-              {filteredPublishers.length}
-            </Badge>
-            <Badge variant="outline" className="ml-1 border-amber-500 text-xs text-amber-500">
-              实验性
-            </Badge>
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder={t('common.search')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 sm:w-64"
-              />
-            </div>
-            <Button variant="outline" size="icon" onClick={handleRefresh}>
-              <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-            </Button>
+    <ContentSection
+      className={className}
+      title={
+        <span className="flex items-center gap-2">
+          <Users className="h-5 w-5 text-amber-500" />
+          {t('pyth.publisher.title')}
+          <Badge variant="secondary" className="ml-2">
+            {filteredPublishers.length}
+          </Badge>
+          <Badge variant="outline" className="ml-1 border-amber-500 text-xs text-amber-500">
+            实验性
+          </Badge>
+        </span>
+      }
+      action={
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={t('common.search')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 sm:w-64"
+            />
           </div>
+          <Button variant="outline" size="icon" onClick={handleRefresh}>
+            <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      }
+    >
+      <div className="space-y-4">
         <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-400">
           <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
           <span>
@@ -373,8 +365,8 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
             内部数据源不公开，无法完全验证价格来源的真实性。
           </span>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-lg bg-amber-500/10 p-3">
+        <ContentGrid columns={3}>
+          <div className="rounded-lg border border-border/30 bg-amber-500/10 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Activity className="h-3 w-3" />
               {t('pyth.publisher.activePublishers')}
@@ -382,7 +374,7 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
             <p className="mt-1 text-lg font-bold text-amber-500">{stats.activeCount}</p>
           </div>
 
-          <div className="rounded-lg bg-amber-500/10 p-3">
+          <div className="rounded-lg border border-border/30 bg-amber-500/10 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Shield className="h-3 w-3" />
               {t('pyth.publisher.avgTrustScore')}
@@ -394,14 +386,14 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
             </p>
           </div>
 
-          <div className="rounded-lg bg-amber-500/10 p-3">
+          <div className="rounded-lg border border-border/30 bg-amber-500/10 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <TrendingUp className="h-3 w-3" />
               {t('pyth.publisher.totalSymbols')}
             </div>
             <p className="mt-1 text-lg font-bold text-amber-500">{stats.totalSymbols}</p>
           </div>
-        </div>
+        </ContentGrid>
 
         <div className="rounded-lg border">
           <button
@@ -658,7 +650,7 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
             </TableBody>
           </Table>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </ContentSection>
   );
 }

@@ -18,7 +18,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-import { StatsBar, FeatureTags, Gauge } from '@/components/common';
+import { StatsBar, FeatureTags, Gauge, ContentSection, ContentGrid } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { ProtocolHealthBadge } from '@/components/common/ProtocolHealthBadge';
@@ -26,7 +26,6 @@ import type { SortState } from '@/components/common/SortableTableHeader';
 import { SortableTableHeader } from '@/components/common/SortableTableHeader';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { RefreshIndicator } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
@@ -272,227 +271,6 @@ const mockPriceFeedDetails: PriceFeedDetail[] = [
     confidenceInterval: 3.2,
     anomalies: { priceVolatility: true, highConfidenceInterval: true },
   },
-  {
-    id: '9',
-    name: 'Polkadot',
-    symbol: 'DOT/USD',
-    latestPrice: 7.89,
-    priceChange: 0.56,
-    updateFrequency: 2.8,
-    avgLatency: 134,
-    status: 'active',
-    category: 'Crypto',
-    confidenceInterval: 1.1,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '10',
-    name: 'Chainlink',
-    symbol: 'LINK/USD',
-    latestPrice: 14.56,
-    priceChange: 1.89,
-    updateFrequency: 2.0,
-    avgLatency: 95,
-    status: 'active',
-    category: 'Crypto',
-    confidenceInterval: 1.3,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '11',
-    name: 'Apple Inc.',
-    symbol: 'AAPL/USD',
-    latestPrice: 178.45,
-    priceChange: 1.23,
-    updateFrequency: 2.5,
-    avgLatency: 145,
-    status: 'active',
-    category: 'Equities',
-    confidenceInterval: 1.5,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '12',
-    name: 'Microsoft Corp.',
-    symbol: 'MSFT/USD',
-    latestPrice: 412.34,
-    priceChange: -0.56,
-    updateFrequency: 2.8,
-    avgLatency: 152,
-    status: 'active',
-    category: 'Equities',
-    confidenceInterval: 1.2,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '13',
-    name: 'Amazon.com',
-    symbol: 'AMZN/USD',
-    latestPrice: 178.9,
-    priceChange: 2.45,
-    updateFrequency: 3.0,
-    avgLatency: 168,
-    status: 'active',
-    category: 'Equities',
-    confidenceInterval: 1.7,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '14',
-    name: 'Tesla Inc.',
-    symbol: 'TSLA/USD',
-    latestPrice: 245.67,
-    priceChange: -6.78,
-    updateFrequency: 2.2,
-    avgLatency: 123,
-    status: 'active',
-    category: 'Equities',
-    confidenceInterval: 2.8,
-    anomalies: { priceVolatility: true, highConfidenceInterval: true },
-  },
-  {
-    id: '15',
-    name: 'NVIDIA Corp.',
-    symbol: 'NVDA/USD',
-    latestPrice: 875.43,
-    priceChange: 4.56,
-    updateFrequency: 1.8,
-    avgLatency: 98,
-    status: 'active',
-    category: 'Equities',
-    confidenceInterval: 1.4,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '16',
-    name: 'EUR/USD',
-    symbol: 'EUR/USD',
-    latestPrice: 1.0876,
-    priceChange: 0.34,
-    updateFrequency: 1.5,
-    avgLatency: 87,
-    status: 'active',
-    category: 'FX',
-    confidenceInterval: 0.5,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '17',
-    name: 'GBP/USD',
-    symbol: 'GBP/USD',
-    latestPrice: 1.2678,
-    priceChange: -0.12,
-    updateFrequency: 1.7,
-    avgLatency: 91,
-    status: 'active',
-    category: 'FX',
-    confidenceInterval: 0.6,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '18',
-    name: 'JPY/USD',
-    symbol: 'JPY/USD',
-    latestPrice: 0.0067,
-    priceChange: 0.78,
-    updateFrequency: 1.3,
-    avgLatency: 82,
-    status: 'active',
-    category: 'FX',
-    confidenceInterval: 0.8,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '19',
-    name: 'AUD/USD',
-    symbol: 'AUD/USD',
-    latestPrice: 0.6543,
-    priceChange: -0.45,
-    updateFrequency: 1.9,
-    avgLatency: 95,
-    status: 'active',
-    category: 'FX',
-    confidenceInterval: 0.7,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '20',
-    name: 'CHF/USD',
-    symbol: 'CHF/USD',
-    latestPrice: 1.1567,
-    priceChange: 0.23,
-    updateFrequency: 1.6,
-    avgLatency: 89,
-    status: 'active',
-    category: 'FX',
-    confidenceInterval: 0.9,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '21',
-    name: 'Gold',
-    symbol: 'XAU/USD',
-    latestPrice: 2345.67,
-    priceChange: 1.34,
-    updateFrequency: 2.1,
-    avgLatency: 112,
-    status: 'active',
-    category: 'Commodities',
-    confidenceInterval: 1.6,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '22',
-    name: 'Silver',
-    symbol: 'XAG/USD',
-    latestPrice: 27.89,
-    priceChange: 2.56,
-    updateFrequency: 2.4,
-    avgLatency: 118,
-    status: 'active',
-    category: 'Commodities',
-    confidenceInterval: 1.8,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '23',
-    name: 'Crude Oil',
-    symbol: 'WTI/USD',
-    latestPrice: 78.45,
-    priceChange: -5.89,
-    updateFrequency: 1.8,
-    avgLatency: 105,
-    status: 'active',
-    category: 'Commodities',
-    confidenceInterval: 2.3,
-    anomalies: { priceVolatility: true, highConfidenceInterval: true },
-  },
-  {
-    id: '24',
-    name: 'Natural Gas',
-    symbol: 'NG/USD',
-    latestPrice: 2.56,
-    priceChange: -3.45,
-    updateFrequency: 2.7,
-    avgLatency: 125,
-    status: 'stale',
-    category: 'Commodities',
-    confidenceInterval: 1.5,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
-  {
-    id: '25',
-    name: 'Copper',
-    symbol: 'HG/USD',
-    latestPrice: 3.89,
-    priceChange: 0.78,
-    updateFrequency: 2.2,
-    avgLatency: 110,
-    status: 'active',
-    category: 'Commodities',
-    confidenceInterval: 1.2,
-    anomalies: { priceVolatility: false, highConfidenceInterval: false },
-  },
 ];
 
 export default function PythPage() {
@@ -572,11 +350,9 @@ export default function PythPage() {
 
   const sortedPriceFeedDetails = useMemo(() => {
     let filtered = [...mockPriceFeedDetails];
-
     if (selectedCategory !== 'All') {
       filtered = filtered.filter((feed) => feed.category === selectedCategory);
     }
-
     if (priceFeedSort) {
       const { key, direction } = priceFeedSort;
       filtered.sort((a, b) => {
@@ -636,15 +412,9 @@ export default function PythPage() {
         fetchApiData<HermesStatus>('/api/oracle/pyth/hermes').catch(() => null),
       ]);
 
-      if (publishersRes) {
-        setPublisherStats(publishersRes);
-      }
-      if (priceFeedsRes) {
-        setPriceFeedStats(priceFeedsRes);
-      }
-      if (hermesRes) {
-        setHermesStatus(hermesRes);
-      }
+      if (publishersRes) setPublisherStats(publishersRes);
+      if (priceFeedsRes) setPriceFeedStats(priceFeedsRes);
+      if (hermesRes) setHermesStatus(hermesRes);
 
       setOverviewStats({
         totalPublishers: publishersRes?.total ?? 0,
@@ -764,6 +534,7 @@ export default function PythPage() {
         <div className="h-16 animate-pulse rounded-xl bg-muted" />
       ) : overviewStats ? (
         <StatsBar
+          title="Pyth 网络状态"
           items={[
             { label: '总 Publisher', value: overviewStats.totalPublishers, trend: 'up' as const },
             {
@@ -821,254 +592,233 @@ export default function PythPage() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pyth Network 协议概览</CardTitle>
-              <CardDescription>高频预言机网络状态摘要</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Pyth Network 是一个专注于高频金融数据的第一方预言机网络，通过 Publisher
-                直接在链上推送价格数据，实现低延迟、高精度的价格更新。
-              </p>
-              <FeatureTags
-                features={[
-                  {
-                    icon: <Zap className="h-5 w-5" />,
-                    title: '高频更新',
-                    description: '亚秒级价格推送',
-                  },
-                  {
-                    icon: <Users className="h-5 w-5" />,
-                    title: 'Publisher 网络',
-                    description: '第一方数据源',
-                  },
-                  {
-                    icon: <Shield className="h-5 w-5" />,
-                    title: '数据完整性',
-                    description: '可验证的价格证明',
-                  },
-                ]}
-              />
-            </CardContent>
-          </Card>
+          <ContentSection title="Pyth Network 协议概览" description="高频预言机网络状态摘要">
+            <p className="text-muted-foreground">
+              Pyth Network 是一个专注于高频金融数据的第一方预言机网络，通过 Publisher
+              直接在链上推送价格数据，实现低延迟、高精度的价格更新。
+            </p>
+          </ContentSection>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Publisher 状态
-                </CardTitle>
-                <CardDescription>数据发布者运行状态</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {loading && !publisherStats ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-3/4" />
-                  </div>
-                ) : publisherStats ? (
-                  <div className="flex items-center justify-center gap-8">
-                    <Gauge
-                      value={
-                        publisherStats.total > 0
-                          ? Math.round((publisherStats.active / publisherStats.total) * 100)
-                          : 0
-                      }
-                      label="活跃率"
-                      subLabel={`${publisherStats.active} / ${publisherStats.total}`}
-                      size="md"
-                    />
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground">活跃 Publisher</p>
-                      <p className="text-2xl font-bold text-green-600">{publisherStats.active}</p>
-                      <p className="text-sm text-muted-foreground">离线 Publisher</p>
-                      <p className="text-xl font-semibold text-red-600">
-                        {publisherStats.inactive}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="py-8 text-center text-muted-foreground">暂无 Publisher 数据</div>
-                )}
-              </CardContent>
-            </Card>
+          <ContentSection title="核心特性">
+            <FeatureTags
+              features={[
+                {
+                  icon: <Zap className="h-5 w-5" />,
+                  title: '高频更新',
+                  description: '亚秒级价格推送',
+                },
+                {
+                  icon: <Users className="h-5 w-5" />,
+                  title: 'Publisher 网络',
+                  description: '第一方数据源',
+                },
+                {
+                  icon: <Shield className="h-5 w-5" />,
+                  title: '数据完整性',
+                  description: '可验证的价格证明',
+                },
+              ]}
+            />
+          </ContentSection>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  价格推送统计
-                </CardTitle>
-                <CardDescription>价格更新频率与延迟</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {loading && !priceFeedStats ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-3/4" />
+          <ContentGrid columns={2}>
+            <div className="rounded-xl border border-border/30 bg-card/30 p-4">
+              <div className="mb-4 flex items-center gap-2 border-b border-border/30 pb-3">
+                <Users className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold">Publisher 状态</h3>
+              </div>
+              {loading && !publisherStats ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              ) : publisherStats ? (
+                <div className="flex items-center justify-center gap-8">
+                  <Gauge
+                    value={
+                      publisherStats.total > 0
+                        ? Math.round((publisherStats.active / publisherStats.total) * 100)
+                        : 0
+                    }
+                    label="活跃率"
+                    subLabel={`${publisherStats.active} / ${publisherStats.total}`}
+                    size="md"
+                  />
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">活跃 Publisher</p>
+                    <p className="text-2xl font-bold text-green-600">{publisherStats.active}</p>
+                    <p className="text-sm text-muted-foreground">离线 Publisher</p>
+                    <p className="text-xl font-semibold text-red-600">{publisherStats.inactive}</p>
                   </div>
-                ) : priceFeedStats ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="rounded-lg bg-muted/30 p-3">
-                        <p className="text-xs text-muted-foreground">总价格源</p>
-                        <p className="mt-1 text-lg font-semibold">{priceFeedStats.total}</p>
-                      </div>
-                      <div className="rounded-lg bg-muted/30 p-3">
-                        <p className="text-xs text-muted-foreground">活跃价格源</p>
-                        <p className="mt-1 text-lg font-semibold text-green-600">
-                          {priceFeedStats.active}
-                        </p>
-                      </div>
-                      <div className="rounded-lg bg-muted/30 p-3">
-                        <p className="text-xs text-muted-foreground">平均更新频率</p>
-                        <p className="mt-1 text-lg font-semibold">
-                          {priceFeedStats.avgUpdateFrequency}s
-                        </p>
-                      </div>
-                      <div className="rounded-lg bg-muted/30 p-3">
-                        <p className="text-xs text-muted-foreground">平均延迟</p>
-                        <p
-                          className={cn(
-                            'mt-1 text-lg font-semibold',
-                            getLatencyColor(priceFeedStats.avgLatency),
-                          )}
-                        >
-                          {formatLatency(priceFeedStats.avgLatency)}
-                        </p>
-                      </div>
-                    </div>
+                </div>
+              ) : (
+                <div className="py-8 text-center text-muted-foreground">暂无 Publisher 数据</div>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-border/30 bg-card/30 p-4">
+              <div className="mb-4 flex items-center gap-2 border-b border-border/30 pb-3">
+                <Activity className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold">价格推送统计</h3>
+              </div>
+              {loading && !priceFeedStats ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              ) : priceFeedStats ? (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-lg bg-muted/30 p-3">
+                    <p className="text-xs text-muted-foreground">总价格源</p>
+                    <p className="mt-1 text-lg font-semibold">{priceFeedStats.total}</p>
                   </div>
-                ) : (
-                  <div className="py-8 text-center text-muted-foreground">暂无价格推送数据</div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                  <div className="rounded-lg bg-muted/30 p-3">
+                    <p className="text-xs text-muted-foreground">活跃价格源</p>
+                    <p className="mt-1 text-lg font-semibold text-green-600">
+                      {priceFeedStats.active}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 p-3">
+                    <p className="text-xs text-muted-foreground">平均更新频率</p>
+                    <p className="mt-1 text-lg font-semibold">
+                      {priceFeedStats.avgUpdateFrequency}s
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 p-3">
+                    <p className="text-xs text-muted-foreground">平均延迟</p>
+                    <p
+                      className={cn(
+                        'mt-1 text-lg font-semibold',
+                        getLatencyColor(priceFeedStats.avgLatency),
+                      )}
+                    >
+                      {formatLatency(priceFeedStats.avgLatency)}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-8 text-center text-muted-foreground">暂无价格推送数据</div>
+              )}
+            </div>
+          </ContentGrid>
         </TabsContent>
 
         <TabsContent value="publishers" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Publisher 详细列表
-              </CardTitle>
-              <CardDescription>Pyth 数据发布者状态与性能监控</CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-xl border border-border/30 bg-card/30">
+            <div className="border-b border-border/30 p-4">
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold">Publisher 详细列表</h3>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">Pyth 数据发布者状态与性能监控</p>
+            </div>
+            <div className="overflow-x-auto">
               {loading ? (
-                <div className="space-y-2">
+                <div className="space-y-2 p-4">
                   {[...Array(5)].map((_, i) => (
                     <div key={i} className="h-12 animate-pulse rounded bg-muted" />
                   ))}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <SortableTableHeader
-                          sortKey="name"
-                          currentSort={publisherSort}
-                          onSort={handlePublisherSort}
-                        >
-                          Publisher 名称
-                        </SortableTableHeader>
-                        <SortableTableHeader
-                          sortKey="credibilityScore"
-                          currentSort={publisherSort}
-                          onSort={handlePublisherSort}
-                          className="text-right"
-                        >
-                          可信度评分
-                        </SortableTableHeader>
-                        <SortableTableHeader
-                          sortKey="publishFrequency"
-                          currentSort={publisherSort}
-                          onSort={handlePublisherSort}
-                          className="text-right"
-                        >
-                          发布频率 (s)
-                        </SortableTableHeader>
-                        <SortableTableHeader
-                          sortKey="supportedFeeds"
-                          currentSort={publisherSort}
-                          onSort={handlePublisherSort}
-                          className="text-right"
-                        >
-                          支持的价格源
-                        </SortableTableHeader>
-                        <TableHead className="text-center">状态</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {sortedPublisherDetails.map((publisher) => (
-                        <TableRow key={publisher.id}>
-                          <TableCell className="font-medium">{publisher.name}</TableCell>
-                          <TableCell className="text-right">
-                            <span
-                              className={cn(
-                                'font-semibold',
-                                publisher.credibilityScore >= 95
-                                  ? 'text-green-500'
-                                  : publisher.credibilityScore >= 90
-                                    ? 'text-blue-500'
-                                    : publisher.credibilityScore >= 85
-                                      ? 'text-yellow-500'
-                                      : 'text-red-500',
-                              )}
-                            >
-                              {publisher.credibilityScore}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {publisher.publishFrequency}s
-                          </TableCell>
-                          <TableCell className="text-right">{publisher.supportedFeeds}</TableCell>
-                          <TableCell className="text-center">
-                            <Badge
-                              variant={
-                                publisher.status === 'active'
-                                  ? 'success'
-                                  : publisher.status === 'degraded'
-                                    ? 'warning'
-                                    : 'destructive'
-                              }
-                              className="flex items-center justify-center gap-1"
-                            >
-                              {publisher.status === 'active' && <CheckCircle className="h-3 w-3" />}
-                              {publisher.status === 'degraded' && (
-                                <AlertTriangle className="h-3 w-3" />
-                              )}
-                              {publisher.status === 'inactive' && <XCircle className="h-3 w-3" />}
-                              {publisher.status === 'active'
-                                ? '活跃'
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <SortableTableHeader
+                        sortKey="name"
+                        currentSort={publisherSort}
+                        onSort={handlePublisherSort}
+                      >
+                        Publisher 名称
+                      </SortableTableHeader>
+                      <SortableTableHeader
+                        sortKey="credibilityScore"
+                        currentSort={publisherSort}
+                        onSort={handlePublisherSort}
+                        className="text-right"
+                      >
+                        可信度评分
+                      </SortableTableHeader>
+                      <SortableTableHeader
+                        sortKey="publishFrequency"
+                        currentSort={publisherSort}
+                        onSort={handlePublisherSort}
+                        className="text-right"
+                      >
+                        发布频率 (s)
+                      </SortableTableHeader>
+                      <SortableTableHeader
+                        sortKey="supportedFeeds"
+                        currentSort={publisherSort}
+                        onSort={handlePublisherSort}
+                        className="text-right"
+                      >
+                        支持的价格源
+                      </SortableTableHeader>
+                      <TableHead className="text-center">状态</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedPublisherDetails.map((publisher) => (
+                      <TableRow key={publisher.id}>
+                        <TableCell className="font-medium">{publisher.name}</TableCell>
+                        <TableCell className="text-right">
+                          <span
+                            className={cn(
+                              'font-semibold',
+                              publisher.credibilityScore >= 95
+                                ? 'text-green-500'
+                                : publisher.credibilityScore >= 90
+                                  ? 'text-blue-500'
+                                  : publisher.credibilityScore >= 85
+                                    ? 'text-yellow-500'
+                                    : 'text-red-500',
+                            )}
+                          >
+                            {publisher.credibilityScore}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">{publisher.publishFrequency}s</TableCell>
+                        <TableCell className="text-right">{publisher.supportedFeeds}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            variant={
+                              publisher.status === 'active'
+                                ? 'success'
                                 : publisher.status === 'degraded'
-                                  ? '降级'
-                                  : '离线'}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                                  ? 'warning'
+                                  : 'destructive'
+                            }
+                            className="flex items-center justify-center gap-1"
+                          >
+                            {publisher.status === 'active' && <CheckCircle className="h-3 w-3" />}
+                            {publisher.status === 'degraded' && (
+                              <AlertTriangle className="h-3 w-3" />
+                            )}
+                            {publisher.status === 'inactive' && <XCircle className="h-3 w-3" />}
+                            {publisher.status === 'active'
+                              ? '活跃'
+                              : publisher.status === 'degraded'
+                                ? '降级'
+                                : '离线'}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="price-feeds" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                价格推送详细统计
-              </CardTitle>
-              <CardDescription>实时价格更新频率与延迟分析</CardDescription>
+          <div className="rounded-xl border border-border/30 bg-card/30">
+            <div className="border-b border-border/30 p-4">
+              <div className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold">价格推送详细统计</h3>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">实时价格更新频率与延迟分析</p>
               <div className="mt-4">
                 <Tabs
                   value={selectedCategory}
@@ -1084,151 +834,130 @@ export default function PythPage() {
                   </TabsList>
                 </Tabs>
               </div>
-            </CardHeader>
-            <CardContent>
+            </div>
+            <div className="overflow-x-auto">
               {loading ? (
-                <div className="space-y-2">
+                <div className="space-y-2 p-4">
                   {[...Array(5)].map((_, i) => (
                     <div key={i} className="h-12 animate-pulse rounded bg-muted" />
                   ))}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <SortableTableHeader
-                          sortKey="name"
-                          currentSort={priceFeedSort}
-                          onSort={handlePriceFeedSort}
-                        >
-                          价格源名称
-                        </SortableTableHeader>
-                        <TableHead>分类</TableHead>
-                        <SortableTableHeader
-                          sortKey="latestPrice"
-                          currentSort={priceFeedSort}
-                          onSort={handlePriceFeedSort}
-                          className="text-right"
-                        >
-                          最新价格
-                        </SortableTableHeader>
-                        <SortableTableHeader
-                          sortKey="updateFrequency"
-                          currentSort={priceFeedSort}
-                          onSort={handlePriceFeedSort}
-                          className="text-right"
-                        >
-                          更新频率 (s)
-                        </SortableTableHeader>
-                        <SortableTableHeader
-                          sortKey="avgLatency"
-                          currentSort={priceFeedSort}
-                          onSort={handlePriceFeedSort}
-                          className="text-right"
-                        >
-                          置信区间
-                        </SortableTableHeader>
-                        <TableHead className="text-center">状态</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {sortedPriceFeedDetails.map((feed) => (
-                        <TableRow key={feed.id} className={cn(hasAnomaly(feed) && 'bg-red-50/50')}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              {hasAnomaly(feed) && (
-                                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <SortableTableHeader
+                        sortKey="name"
+                        currentSort={priceFeedSort}
+                        onSort={handlePriceFeedSort}
+                      >
+                        价格源名称
+                      </SortableTableHeader>
+                      <TableHead>分类</TableHead>
+                      <SortableTableHeader
+                        sortKey="latestPrice"
+                        currentSort={priceFeedSort}
+                        onSort={handlePriceFeedSort}
+                        className="text-right"
+                      >
+                        最新价格
+                      </SortableTableHeader>
+                      <SortableTableHeader
+                        sortKey="updateFrequency"
+                        currentSort={priceFeedSort}
+                        onSort={handlePriceFeedSort}
+                        className="text-right"
+                      >
+                        更新频率 (s)
+                      </SortableTableHeader>
+                      <SortableTableHeader
+                        sortKey="avgLatency"
+                        currentSort={priceFeedSort}
+                        onSort={handlePriceFeedSort}
+                        className="text-right"
+                      >
+                        置信区间
+                      </SortableTableHeader>
+                      <TableHead className="text-center">状态</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedPriceFeedDetails.map((feed) => (
+                      <TableRow key={feed.id} className={cn(hasAnomaly(feed) && 'bg-red-50/50')}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {hasAnomaly(feed) && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                            <div className="flex flex-col">
+                              <span className="font-medium">{feed.name}</span>
+                              <span className="text-xs text-muted-foreground">{feed.symbol}</span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{feed.category}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex flex-col items-end">
+                            <span className="font-semibold">
+                              {feed.latestPrice >= 1
+                                ? feed.latestPrice.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })
+                                : feed.latestPrice.toFixed(4)}
+                            </span>
+                            <span
+                              className={cn(
+                                'text-xs',
+                                feed.priceChange >= 0 ? 'text-green-500' : 'text-red-500',
                               )}
-                              <div className="flex flex-col">
-                                <span className="font-medium">{feed.name}</span>
-                                <span className="text-xs text-muted-foreground">{feed.symbol}</span>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{feed.category}</Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex flex-col items-end">
-                              <span className="font-semibold">
-                                {feed.latestPrice >= 1
-                                  ? feed.latestPrice.toLocaleString(undefined, {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })
-                                  : feed.latestPrice.toFixed(4)}
-                              </span>
-                              <div className="flex items-center gap-1">
-                                {feed.anomalies.priceVolatility && (
-                                  <Badge variant="destructive" className="h-4 px-1 text-[10px]">
-                                    波动异常
-                                  </Badge>
-                                )}
-                                <span
-                                  className={cn(
-                                    'text-xs',
-                                    feed.priceChange >= 0 ? 'text-green-500' : 'text-red-500',
-                                  )}
-                                >
-                                  {feed.priceChange >= 0 ? '+' : ''}
-                                  {feed.priceChange.toFixed(2)}%
-                                </span>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">{feed.updateFrequency}s</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex flex-col items-end">
-                              <span
-                                className={cn(
-                                  'font-medium',
-                                  feed.anomalies.highConfidenceInterval
-                                    ? 'text-red-500'
-                                    : 'text-muted-foreground',
-                                )}
-                              >
-                                {feed.confidenceInterval.toFixed(2)}%
-                              </span>
-                              {feed.anomalies.highConfidenceInterval && (
-                                <Badge
-                                  variant="destructive"
-                                  className="mt-0.5 h-4 px-1 text-[10px]"
-                                >
-                                  置信过高
-                                </Badge>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge
-                              variant={
-                                feed.status === 'active'
-                                  ? 'success'
-                                  : feed.status === 'stale'
-                                    ? 'warning'
-                                    : 'destructive'
-                              }
-                              className="flex items-center justify-center gap-1"
                             >
-                              {feed.status === 'active' && <CheckCircle className="h-3 w-3" />}
-                              {feed.status === 'stale' && <AlertTriangle className="h-3 w-3" />}
-                              {feed.status === 'error' && <XCircle className="h-3 w-3" />}
-                              {feed.status === 'active'
-                                ? '活跃'
+                              {feed.priceChange >= 0 ? '+' : ''}
+                              {feed.priceChange.toFixed(2)}%
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">{feed.updateFrequency}s</TableCell>
+                        <TableCell className="text-right">
+                          <span
+                            className={cn(
+                              'font-medium',
+                              feed.anomalies.highConfidenceInterval
+                                ? 'text-red-500'
+                                : 'text-muted-foreground',
+                            )}
+                          >
+                            {feed.confidenceInterval.toFixed(2)}%
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            variant={
+                              feed.status === 'active'
+                                ? 'success'
                                 : feed.status === 'stale'
-                                  ? '延迟'
-                                  : '异常'}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                                  ? 'warning'
+                                  : 'destructive'
+                            }
+                            className="flex items-center justify-center gap-1"
+                          >
+                            {feed.status === 'active' && <CheckCircle className="h-3 w-3" />}
+                            {feed.status === 'stale' && <AlertTriangle className="h-3 w-3" />}
+                            {feed.status === 'error' && <XCircle className="h-3 w-3" />}
+                            {feed.status === 'active'
+                              ? '活跃'
+                              : feed.status === 'stale'
+                                ? '延迟'
+                                : '异常'}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="price-trend" className="mt-6">
@@ -1244,79 +973,71 @@ export default function PythPage() {
         </TabsContent>
 
         <TabsContent value="hermes" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Server className="h-5 w-5" />
-                Hermes 服务状态
-              </CardTitle>
-              <CardDescription>Pyth 数据传输服务节点监控</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading && !hermesStatus ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
+          <div className="rounded-xl border border-border/30 bg-card/30 p-4">
+            <div className="mb-4 flex items-center gap-2 border-b border-border/30 pb-3">
+              <Server className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold">Hermes 服务状态</h3>
+            </div>
+            <p className="mb-4 text-sm text-muted-foreground">Pyth 数据传输服务节点监控</p>
+            {loading && !hermesStatus ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex items-center justify-between rounded-lg border p-4">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                ))}
+              </div>
+            ) : hermesStatus ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Badge
+                    variant={
+                      hermesStatus.status === 'healthy'
+                        ? 'success'
+                        : hermesStatus.status === 'degraded'
+                          ? 'warning'
+                          : 'destructive'
+                    }
+                  >
+                    {hermesStatus.status === 'healthy'
+                      ? '运行正常'
+                      : hermesStatus.status === 'degraded'
+                        ? '性能降级'
+                        : '服务异常'}
+                  </Badge>
+                </div>
+                <div className="grid gap-3">
+                  {hermesStatus.endpoints.map((endpoint, index) => (
                     <div
-                      key={i}
+                      key={index}
                       className="flex items-center justify-between rounded-lg border p-4"
                     >
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-4 w-16" />
+                      <div>
+                        <p className="font-medium">{endpoint.name}</p>
+                        <p className="text-sm text-muted-foreground">{endpoint.url}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={cn('text-sm font-medium', getLatencyColor(endpoint.latency))}
+                        >
+                          {formatLatency(endpoint.latency)}
+                        </span>
+                        <div
+                          className={`h-2 w-2 rounded-full ${endpoint.status === 'online' ? 'bg-green-500' : 'bg-red-500'}`}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
-              ) : hermesStatus ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Badge
-                      variant={
-                        hermesStatus.status === 'healthy'
-                          ? 'success'
-                          : hermesStatus.status === 'degraded'
-                            ? 'warning'
-                            : 'destructive'
-                      }
-                    >
-                      {hermesStatus.status === 'healthy'
-                        ? '运行正常'
-                        : hermesStatus.status === 'degraded'
-                          ? '性能降级'
-                          : '服务异常'}
-                    </Badge>
-                  </div>
-                  <div className="grid gap-3">
-                    {hermesStatus.endpoints.map((endpoint, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between rounded-lg border p-4"
-                      >
-                        <div>
-                          <p className="font-medium">{endpoint.name}</p>
-                          <p className="text-sm text-muted-foreground">{endpoint.url}</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={cn('text-sm font-medium', getLatencyColor(endpoint.latency))}
-                          >
-                            {formatLatency(endpoint.latency)}
-                          </span>
-                          <div
-                            className={`h-2 w-2 rounded-full ${endpoint.status === 'online' ? 'bg-green-500' : 'bg-red-500'}`}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="py-12 text-center text-muted-foreground">
-                  <Server className="mx-auto h-12 w-12 opacity-50" />
-                  <p className="mt-2">Hermes 服务数据加载中...</p>
-                  <p className="mt-1 text-sm">请稍后刷新页面查看完整数据</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            ) : (
+              <div className="py-12 text-center text-muted-foreground">
+                <Server className="mx-auto h-12 w-12 opacity-50" />
+                <p className="mt-2">Hermes 服务数据加载中...</p>
+              </div>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

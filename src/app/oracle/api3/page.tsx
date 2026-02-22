@@ -16,16 +16,15 @@ import {
   Bell,
 } from 'lucide-react';
 
+import { ContentSection, ContentGrid, StatsBar } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { ProtocolHealthBadge } from '@/components/common/ProtocolHealthBadge';
-import { TrendIndicator } from '@/components/common/TrendIndicator';
 import { Button } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { RefreshIndicator } from '@/components/ui';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import { Badge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import {
   PriceUpdateMonitor,
@@ -260,71 +259,46 @@ export default function Api3Page() {
       )}
 
       {loading && !overviewStats ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="mt-2 h-8 w-16" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <div className="h-16 animate-pulse rounded-xl bg-muted" />
       ) : overviewStats ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">总 Airnodes</span>
-                <Server className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <div className="text-2xl font-bold">{overviewStats.totalAirnodes}</div>
-                <TrendIndicator trend="up" value={2.5} />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">在线 Airnodes</span>
-                <div className="h-2 w-2 rounded-full bg-green-500" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <div className="text-2xl font-bold text-green-600">
-                  {overviewStats.onlineAirnodes}
-                </div>
-                <TrendIndicator trend="up" value={3.1} />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">价格更新事件</span>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <div className="text-2xl font-bold text-purple-600">
-                  {oevData?.metadata?.total ?? 0}
-                </div>
-                <TrendIndicator trend="up" value={15.8} />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">dAPIs 数量</span>
-                <Database className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <div className="text-2xl font-bold">{overviewStats.totalDapis}</div>
-                <TrendIndicator trend="up" value={1.2} />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <StatsBar
+          title="API3 网络状态"
+          items={[
+            {
+              label: '总 Airnodes',
+              value: overviewStats.totalAirnodes,
+              trend: 'up' as const,
+              icon: <Server className="h-4 w-4" />,
+            },
+            {
+              label: '在线 Airnodes',
+              value: overviewStats.onlineAirnodes,
+              trend: 'up' as const,
+              status: 'healthy' as const,
+            },
+            {
+              label: '价格更新事件',
+              value: oevData?.metadata?.total ?? 0,
+              trend: 'up' as const,
+              icon: <TrendingUp className="h-4 w-4" />,
+            },
+            {
+              label: 'dAPIs 数量',
+              value: overviewStats.totalDapis,
+              trend: 'up' as const,
+              icon: <Database className="h-4 w-4" />,
+            },
+          ]}
+          showProgress
+          progressData={[
+            { label: '在线', value: overviewStats.onlineAirnodes, color: '#22c55e' },
+            {
+              label: '离线',
+              value: overviewStats.totalAirnodes - overviewStats.onlineAirnodes,
+              color: '#ef4444',
+            },
+          ]}
+        />
       ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -364,128 +338,111 @@ export default function Api3Page() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>API3 协议概览</CardTitle>
-              <CardDescription>第一方预言机网络状态摘要</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                API3 是一个第一方预言机解决方案，通过 Airnode 技术实现去中心化数据馈送。 API3
-                协议提供安全、透明且可验证的链上数据，支持多种区块链网络。
-              </p>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Server className="h-8 w-8 text-blue-500" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Airnode 技术</p>
-                        <p className="font-semibold">第一方预言机节点</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Shield className="h-8 w-8 text-green-500" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">签名验证</p>
-                        <p className="font-semibold">可验证的数据源</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <TrendingUp className="h-8 w-8 text-purple-500" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">价格更新监控</p>
-                        <p className="font-semibold">追踪价格更新事件</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+          <ContentSection title="API3 协议概览" description="第一方预言机网络状态摘要">
+            <p className="text-muted-foreground">
+              API3 是一个第一方预言机解决方案，通过 Airnode 技术实现去中心化数据馈送。 API3
+              协议提供安全、透明且可验证的链上数据，支持多种区块链网络。
+            </p>
+          </ContentSection>
+
+          <ContentSection title="核心特性">
+            <ContentGrid columns={3}>
+              <div className="flex items-center gap-3 rounded-xl border border-border/30 bg-muted/30 p-4">
+                <div className="rounded-lg bg-blue-500/10 p-3">
+                  <Server className="h-6 w-6 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Airnode 技术</p>
+                  <p className="font-semibold text-foreground">第一方预言机节点</p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex items-center gap-3 rounded-xl border border-border/30 bg-muted/30 p-4">
+                <div className="rounded-lg bg-green-500/10 p-3">
+                  <Shield className="h-6 w-6 text-green-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">签名验证</p>
+                  <p className="font-semibold text-foreground">可验证的数据源</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 rounded-xl border border-border/30 bg-muted/30 p-4">
+                <div className="rounded-lg bg-purple-500/10 p-3">
+                  <TrendingUp className="h-6 w-6 text-purple-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">价格更新监控</p>
+                  <p className="font-semibold text-foreground">追踪价格更新事件</p>
+                </div>
+              </div>
+            </ContentGrid>
+          </ContentSection>
         </TabsContent>
 
         <TabsContent value="airnodes" className="mt-6">
           {loading && !airnodesData ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[...Array(6)].map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="p-4">
-                    <Skeleton className="h-32 w-full" />
-                  </CardContent>
-                </Card>
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
               ))}
             </div>
           ) : airnodesData ? (
             <>
               {airnodesData.airnodes.length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center text-muted-foreground">
-                    <Server className="mx-auto h-12 w-12 opacity-50" />
-                    <p className="mt-2">暂无 Airnode 数据</p>
-                  </CardContent>
-                </Card>
+                <div className="rounded-xl border border-border/30 bg-card/30 py-12 text-center text-muted-foreground">
+                  <Server className="mx-auto h-12 w-12 opacity-50" />
+                  <p className="mt-2">暂无 Airnode 数据</p>
+                </div>
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-2">
                   {airnodesData.airnodes.map((airnode, index) => (
-                    <Card
+                    <div
                       key={index}
-                      className="cursor-pointer transition-shadow hover:shadow-lg"
+                      className="flex cursor-pointer items-center justify-between rounded-xl border border-border/30 bg-card/30 p-4 transition-colors hover:bg-muted/30"
                       onClick={() => router.push(`/oracle/api3/airnode/${airnode.address}`)}
                     >
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="flex items-center gap-2 text-base">
-                            <Server className="h-4 w-4 text-primary" />
-                            Airnode
-                          </CardTitle>
-                          <span
-                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                              airnode.online
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                            }`}
-                          >
-                            {airnode.online ? t('common.online') : t('common.offline')}
-                          </span>
+                      <div className="flex items-center gap-4">
+                        <div className="rounded-lg bg-primary/10 p-2">
+                          <Server className="h-5 w-5 text-primary" />
                         </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">链</p>
-                            <Badge variant="secondary" className="text-xs">
-                              {airnode.chain}
-                            </Badge>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">响应时间</p>
-                            <p
-                              className={cn(
-                                'font-medium',
-                                getResponseTimeColor(airnode.responseTime),
-                              )}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">Airnode</span>
+                            <span
+                              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                                airnode.online
+                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                              }`}
                             >
-                              {airnode.responseTime}ms
-                            </p>
+                              {airnode.online ? t('common.online') : t('common.offline')}
+                            </span>
                           </div>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground">最后心跳</p>
-                          <p className="text-sm font-medium">
+                          <p className="text-sm text-muted-foreground">
+                            最后心跳:{' '}
                             {airnode.lastHeartbeat ? formatTime(airnode.lastHeartbeat) : '-'}
                           </p>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground">链</p>
+                          <Badge variant="secondary" className="text-xs">
+                            {airnode.chain}
+                          </Badge>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground">响应时间</p>
+                          <p
+                            className={cn(
+                              'font-medium',
+                              getResponseTimeColor(airnode.responseTime),
+                            )}
+                          >
+                            {airnode.responseTime}ms
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}

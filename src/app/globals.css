@@ -1325,3 +1325,250 @@ body::before {
   background-color: rgba(59, 130, 246, 0.3);
   color: rgb(var(--color-foreground));
 }
+
+/* ============================================================================
+   数据展示专用样式
+   ============================================================================ */
+
+/* 数据表格增强 */
+.data-table {
+  @apply w-full border-collapse;
+}
+
+.data-table th {
+  @apply text-left text-xs font-medium uppercase tracking-wider text-muted-foreground;
+  @apply border-b border-border/50 bg-muted/20 px-4 py-3;
+}
+
+.data-table td {
+  @apply border-b border-border/30 px-4 py-3;
+}
+
+.data-table tr:hover td {
+  @apply bg-muted/10;
+}
+
+/* 数据网格布局 */
+.data-grid {
+  display: grid;
+  gap: var(--density-gap, 0.75rem);
+}
+
+.data-grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.data-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.data-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* 数据卡片样式 */
+.data-card {
+  @apply rounded-lg border border-border/30 bg-muted/20 p-4;
+  @apply transition-all duration-200;
+}
+
+.data-card:hover {
+  @apply border-border/50 bg-muted/30;
+}
+
+/* 数据标签 */
+.data-label {
+  @apply text-xs font-medium text-muted-foreground;
+}
+
+.data-value {
+  @apply text-lg font-semibold text-foreground;
+}
+
+.data-value-sm {
+  @apply text-sm font-medium text-foreground;
+}
+
+.data-value-lg {
+  @apply text-2xl font-bold text-foreground;
+}
+
+/* 数据变化指示 */
+.data-change-positive {
+  @apply text-green-500;
+}
+
+.data-change-negative {
+  @apply text-red-500;
+}
+
+.data-change-neutral {
+  @apply text-muted-foreground;
+}
+
+/* 数据状态指示器 */
+.data-status-dot {
+  @apply h-2 w-2 rounded-full;
+}
+
+.data-status-active {
+  @apply bg-green-500;
+}
+
+.data-status-warning {
+  @apply bg-yellow-500;
+}
+
+.data-status-error {
+  @apply bg-red-500;
+}
+
+.data-status-inactive {
+  @apply bg-gray-400;
+}
+
+/* 数据面板 */
+.data-panel {
+  @apply rounded-lg border border-border/30 bg-card/50;
+}
+
+.data-panel-header {
+  @apply flex items-center justify-between border-b border-border/30 px-4 py-3;
+}
+
+.data-panel-title {
+  @apply text-sm font-semibold text-foreground;
+}
+
+.data-panel-content {
+  @apply p-4;
+}
+
+/* 数据分隔线 */
+.data-divider {
+  @apply border-t border-border/30 my-4;
+}
+
+/* 数据高亮行 */
+.data-row-highlight {
+  @apply bg-primary/5 border-l-2 border-l-primary;
+}
+
+/* 数据紧凑模式 */
+.data-compact .data-table th,
+.data-compact .data-table td {
+  @apply px-3 py-2 text-sm;
+}
+
+.data-compact .data-card {
+  @apply p-3;
+}
+
+.data-compact .data-value {
+  @apply text-base;
+}
+
+/* 数据宽松模式 */
+.data-comfortable .data-table th,
+.data-comfortable .data-table td {
+  @apply px-6 py-4;
+}
+
+.data-comfortable .data-card {
+  @apply p-6;
+}
+
+.data-comfortable .data-value {
+  @apply text-xl;
+}
+
+/* 数据刷新动画 */
+.data-refreshing {
+  @apply animate-pulse;
+}
+
+/* 数据加载骨架 */
+.data-skeleton {
+  @apply bg-muted/30 rounded animate-shimmer;
+}
+
+/* 数据趋势箭头 */
+.data-trend-up::before {
+  content: '↑';
+  @apply mr-1 text-green-500;
+}
+
+.data-trend-down::before {
+  content: '↓';
+  @apply mr-1 text-red-500;
+}
+
+.data-trend-neutral::before {
+  content: '→';
+  @apply mr-1 text-muted-foreground;
+}
+
+/* 数据百分比条 */
+.data-progress-bar {
+  @apply h-2 w-full rounded-full bg-muted/30 overflow-hidden;
+}
+
+.data-progress-fill {
+  @apply h-full rounded-full transition-all duration-500 ease-out;
+}
+
+.data-progress-primary {
+  @apply bg-primary;
+}
+
+.data-progress-success {
+  @apply bg-green-500;
+}
+
+.data-progress-warning {
+  @apply bg-yellow-500;
+}
+
+.data-progress-error {
+  @apply bg-red-500;
+}
+
+/* 数据徽章 */
+.data-badge {
+  @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+}
+
+.data-badge-success {
+  @apply bg-green-500/10 text-green-500;
+}
+
+.data-badge-warning {
+  @apply bg-yellow-500/10 text-yellow-500;
+}
+
+.data-badge-error {
+  @apply bg-red-500/10 text-red-500;
+}
+
+.data-badge-info {
+  @apply bg-primary/10 text-primary;
+}
+
+/* 数据工具提示 */
+.data-tooltip {
+  @apply absolute z-50 rounded-lg border border-border/50 bg-popover p-3 shadow-lg;
+  @apply text-sm text-foreground;
+}
+
+/* 数据对比高亮 */
+.data-compare-better {
+  @apply text-green-500 font-medium;
+}
+
+.data-compare-worse {
+  @apply text-red-500 font-medium;
+}
+
+.data-compare-same {
+  @apply text-muted-foreground;
+}

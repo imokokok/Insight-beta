@@ -16,12 +16,11 @@ import {
   Heart,
 } from 'lucide-react';
 
-import { StatsBar, ProtocolHealthBadge } from '@/components/common';
+import { StatsBar, ProtocolHealthBadge, ContentSection, ContentGrid } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { RefreshIndicator } from '@/components/ui';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
@@ -190,8 +189,14 @@ export default function ChainlinkPage() {
         <div className="h-16 animate-pulse rounded-xl bg-muted" />
       ) : overviewStats ? (
         <StatsBar
+          title="Chainlink 网络状态"
           items={[
-            { label: '总喂价数', value: overviewStats.totalFeeds, trend: 'up' as const },
+            {
+              label: '总喂价数',
+              value: overviewStats.totalFeeds,
+              trend: 'up' as const,
+              icon: <Database className="h-4 w-4" />,
+            },
             {
               label: '活跃节点数',
               value: overviewStats.activeNodes,
@@ -259,78 +264,63 @@ export default function ChainlinkPage() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Chainlink 协议概览</CardTitle>
-              <CardDescription>去中心化预言机网络状态摘要</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Chainlink 是领先的去中心化预言机网络，通过 OCR (Offchain Reporting)
-                协议实现高效的数据聚合。网络由多个独立节点运营商组成，为智能合约提供可靠的外部数据。
-              </p>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Activity className="h-8 w-8 text-blue-500" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">OCR 协议</p>
-                        <p className="font-semibold">链下报告聚合</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Users className="h-8 w-8 text-green-500" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">节点运营商</p>
-                        <p className="font-semibold">去中心化数据源</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Shield className="h-8 w-8 text-purple-500" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">安全机制</p>
-                        <p className="font-semibold">多签名验证</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </CardContent>
-          </Card>
+          <ContentSection title="Chainlink 协议概览" description="去中心化预言机网络状态摘要">
+            <p className="text-muted-foreground">
+              Chainlink 是领先的去中心化预言机网络，通过 OCR (Offchain Reporting)
+              协议实现高效的数据聚合。网络由多个独立节点运营商组成，为智能合约提供可靠的外部数据。
+            </p>
+          </ContentSection>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>支持的链</CardTitle>
-              <CardDescription>Chainlink 支持的区块链网络</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {overviewData?.metadata?.supportedChains?.map((chain) => (
-                  <Badge key={chain} variant="secondary" className="capitalize">
-                    {chain}
-                  </Badge>
-                )) || (
-                  <>
-                    <Badge variant="secondary">Ethereum</Badge>
-                    <Badge variant="secondary">Polygon</Badge>
-                    <Badge variant="secondary">Arbitrum</Badge>
-                    <Badge variant="secondary">Optimism</Badge>
-                    <Badge variant="secondary">Avalanche</Badge>
-                    <Badge variant="secondary">BSC</Badge>
-                  </>
-                )}
+          <ContentSection title="核心特性">
+            <ContentGrid columns={3}>
+              <div className="flex items-center gap-3 rounded-xl border border-border/30 bg-muted/30 p-4">
+                <div className="rounded-lg bg-blue-500/10 p-3">
+                  <Activity className="h-6 w-6 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">OCR 协议</p>
+                  <p className="font-semibold text-foreground">链下报告聚合</p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex items-center gap-3 rounded-xl border border-border/30 bg-muted/30 p-4">
+                <div className="rounded-lg bg-green-500/10 p-3">
+                  <Users className="h-6 w-6 text-green-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">节点运营商</p>
+                  <p className="font-semibold text-foreground">去中心化数据源</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 rounded-xl border border-border/30 bg-muted/30 p-4">
+                <div className="rounded-lg bg-purple-500/10 p-3">
+                  <Shield className="h-6 w-6 text-purple-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">安全机制</p>
+                  <p className="font-semibold text-foreground">多签名验证</p>
+                </div>
+              </div>
+            </ContentGrid>
+          </ContentSection>
+
+          <ContentSection title="支持的链" description="Chainlink 支持的区块链网络">
+            <div className="flex flex-wrap gap-2">
+              {overviewData?.metadata?.supportedChains?.map((chain) => (
+                <Badge key={chain} variant="secondary" className="capitalize">
+                  {chain}
+                </Badge>
+              )) || (
+                <>
+                  <Badge variant="secondary">Ethereum</Badge>
+                  <Badge variant="secondary">Polygon</Badge>
+                  <Badge variant="secondary">Arbitrum</Badge>
+                  <Badge variant="secondary">Optimism</Badge>
+                  <Badge variant="secondary">Avalanche</Badge>
+                  <Badge variant="secondary">BSC</Badge>
+                </>
+              )}
+            </div>
+          </ContentSection>
         </TabsContent>
 
         <TabsContent value="price-trend" className="mt-6">

@@ -16,7 +16,7 @@ import {
   ArrowLeftRight,
 } from 'lucide-react';
 
-import { StatsBar } from '@/components/common';
+import { StatsBar, ContentSection, ContentGrid } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { ProtocolHealthBadge } from '@/components/common/ProtocolHealthBadge';
@@ -430,43 +430,41 @@ export default function BandProtocolPage() {
 
         <TabsContent value="overview">
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>协议状态摘要</CardTitle>
-                <CardDescription>Band Protocol 整体运行状态</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <div className="rounded-lg bg-muted/30 p-4">
-                    <div className="flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-green-500" />
-                      <span className="font-medium">系统状态</span>
-                    </div>
-                    <div className="mt-2 flex items-center gap-2">
-                      <Badge variant="success">正常运行</Badge>
-                    </div>
+            <ContentSection title="协议状态摘要" description="Band Protocol 整体运行状态">
+              <ContentGrid columns={3}>
+                <div className="flex items-center gap-3 rounded-lg border border-border/30 bg-muted/20 p-4">
+                  <div className="rounded-lg bg-green-500/10 p-2">
+                    <Shield className="h-5 w-5 text-green-500" />
                   </div>
-                  <div className="rounded-lg bg-muted/30 p-4">
-                    <div className="flex items-center gap-2">
-                      <Activity className="h-5 w-5 text-blue-500" />
-                      <span className="font-medium">平均延迟</span>
-                    </div>
-                    <div className="mt-2 text-lg font-semibold">
-                      {bridgesData?.summary.avgLatency ?? 0}ms
-                    </div>
-                  </div>
-                  <div className="rounded-lg bg-muted/30 p-4">
-                    <div className="flex items-center gap-2">
-                      <Database className="h-5 w-5 text-purple-500" />
-                      <span className="font-medium">数据可靠性</span>
-                    </div>
-                    <div className="mt-2 text-lg font-semibold">
-                      {sourcesData?.summary.avgReliability.toFixed(1) ?? 0}%
-                    </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">系统状态</p>
+                    <Badge variant="success">正常运行</Badge>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex items-center gap-3 rounded-lg border border-border/30 bg-muted/20 p-4">
+                  <div className="rounded-lg bg-blue-500/10 p-2">
+                    <Activity className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">平均延迟</p>
+                    <p className="text-lg font-semibold">
+                      {bridgesData?.summary.avgLatency ?? 0}ms
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 rounded-lg border border-border/30 bg-muted/20 p-4">
+                  <div className="rounded-lg bg-purple-500/10 p-2">
+                    <Database className="h-5 w-5 text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">数据可靠性</p>
+                    <p className="text-lg font-semibold">
+                      {sourcesData?.summary.avgReliability.toFixed(1) ?? 0}%
+                    </p>
+                  </div>
+                </div>
+              </ContentGrid>
+            </ContentSection>
 
             <div className="grid gap-4 lg:grid-cols-2">
               <AggregationValidationCard symbol="ETH/USD" chain="ethereum" />
@@ -480,96 +478,72 @@ export default function BandProtocolPage() {
               <BandPriceChart symbol="ETH/USD" chain="ethereum" timeRange="24h" />
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>支持的链连接情况</CardTitle>
-                <CardDescription>各区块链网络的数据桥连接状态</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {getChainConnectivity().map(({ chain, isActive }) => (
-                    <Badge
-                      key={chain}
-                      variant="secondary"
-                      className={`capitalize ${isActive ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}
-                    >
-                      {chain}
-                      {isActive && <span className="ml-1 text-xs">●</span>}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <ContentSection title="支持的链连接情况" description="各区块链网络的数据桥连接状态">
+              <div className="flex flex-wrap gap-2">
+                {getChainConnectivity().map(({ chain, isActive }) => (
+                  <Badge
+                    key={chain}
+                    variant="secondary"
+                    className={`capitalize ${isActive ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}
+                  >
+                    {chain}
+                    {isActive && <span className="ml-1 text-xs">●</span>}
+                  </Badge>
+                ))}
+              </div>
+            </ContentSection>
 
-            <div className="grid gap-4 lg:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <GitBranch className="h-5 w-5" />
-                    最近数据桥
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {bridgesData?.bridges.slice(0, 3).map((bridge) => (
-                    <BridgeStatusCard key={bridge.bridgeId} bridge={bridge} className="mb-3" />
-                  ))}
-                  {bridgesData?.bridges.length === 0 && (
-                    <div className="py-8 text-center text-muted-foreground">暂无数据桥信息</div>
-                  )}
-                </CardContent>
-              </Card>
+            <ContentGrid columns={2}>
+              <ContentSection title="最近数据桥">
+                {bridgesData?.bridges.slice(0, 3).map((bridge) => (
+                  <BridgeStatusCard key={bridge.bridgeId} bridge={bridge} className="mb-3" />
+                ))}
+                {bridgesData?.bridges.length === 0 && (
+                  <div className="py-8 text-center text-muted-foreground">暂无数据桥信息</div>
+                )}
+              </ContentSection>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Database className="h-5 w-5" />
-                    数据源分布
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">EVM 链数据源</span>
-                      <span className="font-semibold">{sourcesData?.summary.evmCount ?? 0}</span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-muted">
-                      <div
-                        className="h-2 rounded-full bg-blue-500"
-                        style={{
-                          width: `${
-                            sourcesData
-                              ? (sourcesData.summary.evmCount /
-                                  (sourcesData.summary.evmCount +
-                                    sourcesData.summary.cosmosCount)) *
-                                100
-                              : 0
-                          }%`,
-                        }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Cosmos 链数据源</span>
-                      <span className="font-semibold">{sourcesData?.summary.cosmosCount ?? 0}</span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-muted">
-                      <div
-                        className="h-2 rounded-full bg-purple-500"
-                        style={{
-                          width: `${
-                            sourcesData
-                              ? (sourcesData.summary.cosmosCount /
-                                  (sourcesData.summary.evmCount +
-                                    sourcesData.summary.cosmosCount)) *
-                                100
-                              : 0
-                          }%`,
-                        }}
-                      />
-                    </div>
+              <ContentSection title="数据源分布">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">EVM 链数据源</span>
+                    <span className="font-semibold">{sourcesData?.summary.evmCount ?? 0}</span>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <div className="h-2 w-full rounded-full bg-muted">
+                    <div
+                      className="h-2 rounded-full bg-blue-500"
+                      style={{
+                        width: `${
+                          sourcesData
+                            ? (sourcesData.summary.evmCount /
+                                (sourcesData.summary.evmCount + sourcesData.summary.cosmosCount)) *
+                              100
+                            : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Cosmos 链数据源</span>
+                    <span className="font-semibold">{sourcesData?.summary.cosmosCount ?? 0}</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-muted">
+                    <div
+                      className="h-2 rounded-full bg-purple-500"
+                      style={{
+                        width: `${
+                          sourcesData
+                            ? (sourcesData.summary.cosmosCount /
+                                (sourcesData.summary.evmCount + sourcesData.summary.cosmosCount)) *
+                              100
+                            : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </ContentSection>
+            </ContentGrid>
           </div>
         </TabsContent>
 

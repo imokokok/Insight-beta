@@ -1,59 +1,20 @@
 'use client';
 
-import { RefreshCw, Gavel, Clock, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
+import { RefreshCw, Gavel, Clock, DollarSign, AlertCircle } from 'lucide-react';
 
+import { StatsBar } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { Button } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { RefreshIndicator } from '@/components/ui';
-import { Card, CardContent } from '@/components/ui';
 import { DisputeContent } from '@/features/oracle/analytics/disputes';
 import { ExportButton } from '@/features/oracle/analytics/disputes/components/export';
 import { WelcomeGuide } from '@/features/oracle/analytics/disputes/components/onboarding';
 import { TVLOverviewCard } from '@/features/oracle/analytics/disputes/components/tvl';
 import { useDisputeAnalytics } from '@/features/oracle/analytics/disputes/hooks';
 import { useI18n } from '@/i18n';
-
-function InsightCard({
-  icon,
-  title,
-  value,
-  trend,
-  color,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  value: string | number;
-  trend?: 'up' | 'down' | 'neutral';
-  color: string;
-}) {
-  return (
-    <Card className="min-w-[140px] flex-1">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className={`rounded-lg p-2 ${color}`}>{icon}</div>
-          {trend && (
-            <TrendingUp
-              className={`h-4 w-4 ${
-                trend === 'up'
-                  ? 'text-green-500'
-                  : trend === 'down'
-                    ? 'rotate-180 text-red-500'
-                    : 'text-gray-400'
-              }`}
-            />
-          )}
-        </div>
-        <div className="mt-3">
-          <p className="text-2xl font-bold">{value}</p>
-          <p className="text-xs text-muted-foreground">{title}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function DisputeAnalyticsPage() {
   const { t } = useI18n();
@@ -103,37 +64,6 @@ export default function DisputeAnalyticsPage() {
     );
   }
 
-  const insightCards = report
-    ? [
-        {
-          icon: <AlertCircle className="h-4 w-4 text-amber-600" />,
-          title: t('analytics:disputes.insights.activeDisputes'),
-          value: report.summary.activeDisputes,
-          trend: report.summary.activeDisputes > 3 ? ('up' as const) : ('neutral' as const),
-          color: 'bg-amber-100',
-        },
-        {
-          icon: <DollarSign className="h-4 w-4 text-purple-600" />,
-          title: t('analytics:disputes.insights.pendingBonds'),
-          value: `${(report.summary.totalBonded / 1000).toFixed(1)}K`,
-          color: 'bg-purple-100',
-        },
-        {
-          icon: <Gavel className="h-4 w-4 text-blue-600" />,
-          title: t('analytics:disputes.insights.todayDisputes'),
-          value: report.recentActivity.length,
-          trend: 'up' as const,
-          color: 'bg-blue-100',
-        },
-        {
-          icon: <Clock className="h-4 w-4 text-green-600" />,
-          title: t('analytics:disputes.insights.avgResolution'),
-          value: `${report.summary.avgResolutionTimeHours}h`,
-          color: 'bg-green-100',
-        },
-      ]
-    : [];
-
   const breadcrumbItems = [{ label: t('nav.oracle'), href: '/oracle' }, { label: 'UMA 分析' }];
 
   return (
@@ -172,11 +102,34 @@ export default function DisputeAnalyticsPage() {
       </div>
 
       {report && (
-        <div className="flex flex-wrap gap-4">
-          {insightCards.map((card, index) => (
-            <InsightCard key={index} {...card} />
-          ))}
-        </div>
+        <StatsBar
+          title="争议统计概览"
+          items={[
+            {
+              label: t('analytics:disputes.insights.activeDisputes'),
+              value: report.summary.activeDisputes,
+              trend: report.summary.activeDisputes > 3 ? 'up' : 'neutral',
+              status: report.summary.activeDisputes > 5 ? 'warning' : 'healthy',
+              icon: <AlertCircle className="h-4 w-4" />,
+            },
+            {
+              label: t('analytics:disputes.insights.pendingBonds'),
+              value: `${(report.summary.totalBonded / 1000).toFixed(1)}K`,
+              icon: <DollarSign className="h-4 w-4" />,
+            },
+            {
+              label: t('analytics:disputes.insights.todayDisputes'),
+              value: report.recentActivity.length,
+              trend: 'up',
+              icon: <Gavel className="h-4 w-4" />,
+            },
+            {
+              label: t('analytics:disputes.insights.avgResolution'),
+              value: `${report.summary.avgResolutionTimeHours}h`,
+              icon: <Clock className="h-4 w-4" />,
+            },
+          ]}
+        />
       )}
 
       <TVLOverviewCard />

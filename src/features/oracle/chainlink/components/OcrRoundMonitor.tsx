@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback, Fragment } from 'react';
 
 import { AlertTriangle, RefreshCw, Users, Target, ChevronDown, ChevronRight } from 'lucide-react';
 
+import { ContentSection } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
@@ -106,162 +106,138 @@ export function OcrRoundMonitor({ className }: OcrRoundMonitorProps) {
 
   if (isLoading) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
-            {t('chainlink.ocr.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SkeletonList count={5} />
-        </CardContent>
-      </Card>
+      <ContentSection className={className}>
+        <SkeletonList count={5} />
+      </ContentSection>
     );
   }
 
   if (error) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
-            {t('chainlink.ocr.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center gap-4 py-8 text-center">
-            <AlertTriangle className="h-10 w-10 text-amber-500" />
-            <div>
-              <p className="font-medium text-foreground">{t('common.error')}</p>
-              <p className="text-sm text-muted-foreground">{error}</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={fetchOcrRounds}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              {t('common.retry')}
-            </Button>
+      <ContentSection className={className}>
+        <div className="flex flex-col items-center justify-center gap-4 py-8 text-center">
+          <AlertTriangle className="h-10 w-10 text-amber-500" />
+          <div>
+            <p className="font-medium text-foreground">{t('common.error')}</p>
+            <p className="text-sm text-muted-foreground">{error}</p>
           </div>
-        </CardContent>
-      </Card>
+          <Button variant="outline" size="sm" onClick={fetchOcrRounds}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            {t('common.retry')}
+          </Button>
+        </div>
+      </ContentSection>
     );
   }
 
   if (rounds.length === 0) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
-            {t('chainlink.ocr.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
-            <Target className="h-10 w-10 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">{t('chainlink.ocr.noData')}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <ContentSection className={className}>
+        <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
+          <Target className="h-10 w-10 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">{t('chainlink.ocr.noData')}</p>
+        </div>
+      </ContentSection>
     );
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
-            {t('chainlink.ocr.title')}
-            <Badge variant="secondary" className="ml-2">
-              {rounds.length}
-            </Badge>
-          </CardTitle>
-          <Button variant="outline" size="sm" onClick={fetchOcrRounds}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            {t('common.refresh')}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('chainlink.ocr.roundId')}</TableHead>
-                <TableHead className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <Users className="h-3 w-3" />
-                    {t('chainlink.ocr.participatingNodes')}
-                  </div>
-                </TableHead>
-                <TableHead className="text-center">{t('chainlink.ocr.threshold')}</TableHead>
-                <TableHead>{t('chainlink.ocr.answer')}</TableHead>
-                <TableHead>{t('chainlink.ocr.startedAt')}</TableHead>
-                <TableHead>{t('chainlink.ocr.updatedAt')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rounds.map((round) => (
-                <Fragment key={round.roundId}>
+    <ContentSection
+      className={className}
+      title={
+        <span className="flex items-center gap-2">
+          <Target className="h-5 w-5 text-primary" />
+          {t('chainlink.ocr.title')}
+          <Badge variant="secondary" className="ml-2">
+            {rounds.length}
+          </Badge>
+        </span>
+      }
+      action={
+        <Button variant="outline" size="sm" onClick={fetchOcrRounds}>
+          <RefreshCw className="mr-2 h-4 w-4" />
+          {t('common.refresh')}
+        </Button>
+      }
+    >
+      <div className="overflow-x-auto rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t('chainlink.ocr.roundId')}</TableHead>
+              <TableHead className="text-center">
+                <div className="flex items-center justify-center gap-1">
+                  <Users className="h-3 w-3" />
+                  {t('chainlink.ocr.participatingNodes')}
+                </div>
+              </TableHead>
+              <TableHead className="text-center">{t('chainlink.ocr.threshold')}</TableHead>
+              <TableHead>{t('chainlink.ocr.answer')}</TableHead>
+              <TableHead>{t('chainlink.ocr.startedAt')}</TableHead>
+              <TableHead>{t('chainlink.ocr.updatedAt')}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rounds.map((round) => (
+              <Fragment key={round.roundId}>
+                <TableRow>
+                  <TableCell>
+                    <button
+                      onClick={() => round.nodeContributions && toggleRound(round.roundId)}
+                      className={`flex items-center gap-2 font-mono font-medium ${
+                        round.nodeContributions
+                          ? 'cursor-pointer hover:text-primary'
+                          : 'cursor-default'
+                      }`}
+                      disabled={!round.nodeContributions}
+                    >
+                      {round.nodeContributions ? (
+                        expandedRounds.has(round.roundId) ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )
+                      ) : null}
+                      {round.roundId}
+                    </button>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge
+                      variant={round.participatingNodes >= 3 ? 'success' : 'warning'}
+                      size="sm"
+                    >
+                      {round.participatingNodes}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span className="font-mono text-sm">{round.aggregationThreshold}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-mono font-medium">{formatAnswer(round.answer)}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {formatTime(round.startedAt)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {formatTime(round.updatedAt)}
+                    </span>
+                  </TableCell>
+                </TableRow>
+                {round.nodeContributions && expandedRounds.has(round.roundId) && (
                   <TableRow>
-                    <TableCell>
-                      <button
-                        onClick={() => round.nodeContributions && toggleRound(round.roundId)}
-                        className={`flex items-center gap-2 font-mono font-medium ${
-                          round.nodeContributions
-                            ? 'cursor-pointer hover:text-primary'
-                            : 'cursor-default'
-                        }`}
-                        disabled={!round.nodeContributions}
-                      >
-                        {round.nodeContributions ? (
-                          expandedRounds.has(round.roundId) ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )
-                        ) : null}
-                        {round.roundId}
-                      </button>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge
-                        variant={round.participatingNodes >= 3 ? 'success' : 'warning'}
-                        size="sm"
-                      >
-                        {round.participatingNodes}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <span className="font-mono text-sm">{round.aggregationThreshold}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono font-medium">{formatAnswer(round.answer)}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {formatTime(round.startedAt)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {formatTime(round.updatedAt)}
-                      </span>
+                    <TableCell colSpan={6}>
+                      {renderNodeContributions(round.nodeContributions)}
                     </TableCell>
                   </TableRow>
-                  {round.nodeContributions && expandedRounds.has(round.roundId) && (
-                    <TableRow>
-                      <TableCell colSpan={6}>
-                        {renderNodeContributions(round.nodeContributions)}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </Fragment>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+                )}
+              </Fragment>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </ContentSection>
   );
 }

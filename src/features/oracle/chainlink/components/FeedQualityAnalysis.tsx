@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { TrendingUp, AlertTriangle, BarChart3, Activity, Shield, RefreshCw } from 'lucide-react';
 
+import { ContentSection, ContentGrid } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Progress } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
@@ -87,22 +87,19 @@ export function FeedQualityAnalysis() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <ContentSection>
+        <div className="space-y-4">
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-40 w-full" />
-        </CardContent>
-      </Card>
+        </div>
+      </ContentSection>
     );
   }
 
   if (error || !qualityData) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center gap-4 py-12">
+      <ContentSection>
+        <div className="flex flex-col items-center justify-center gap-4 py-12">
           <AlertTriangle className="h-12 w-12 text-amber-500" />
           <div className="text-center">
             <p className="font-medium text-foreground">加载数据失败</p>
@@ -112,48 +109,46 @@ export function FeedQualityAnalysis() {
             <RefreshCw className="mr-2 h-4 w-4" />
             重试
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </ContentSection>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">喂价数据质量分析</h3>
-          <p className="text-sm text-muted-foreground">多维度评估 Chainlink 喂价的数据质量</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Select value={selectedSymbol} onValueChange={setSelectedSymbol}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="选择交易对" />
-            </SelectTrigger>
-            <SelectContent>
-              {FEED_SYMBOLS.map((symbol) => (
-                <SelectItem key={symbol} value={symbol}>
-                  {symbol}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button variant="outline" size="sm" onClick={() => fetchQualityData(selectedSymbol)}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            刷新
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+      <ContentSection
+        title="喂价数据质量分析"
+        description="多维度评估 Chainlink 喂价的数据质量"
+        action={
+          <div className="flex items-center gap-2">
+            <Select value={selectedSymbol} onValueChange={setSelectedSymbol}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="选择交易对" />
+              </SelectTrigger>
+              <SelectContent>
+                {FEED_SYMBOLS.map((symbol) => (
+                  <SelectItem key={symbol} value={symbol}>
+                    {symbol}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" onClick={() => fetchQualityData(selectedSymbol)}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              刷新
+            </Button>
+          </div>
+        }
+      >
+        <ContentGrid columns={3}>
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-4 lg:col-span-2">
+            <div className="mb-3 flex items-center gap-2">
               <Shield className="h-5 w-5 text-blue-600" />
-              综合质量评分
-            </CardTitle>
-            <CardDescription>基于波动性、异常检测等多维度综合评估</CardDescription>
-          </CardHeader>
-          <CardContent>
+              <span className="font-medium">综合质量评分</span>
+            </div>
+            <p className="mb-4 text-xs text-muted-foreground">
+              基于波动性、异常检测等多维度综合评估
+            </p>
             <div className="flex items-center gap-6">
               <div className="flex-1">
                 <div className="mb-2 flex items-center justify-between">
@@ -176,49 +171,48 @@ export function FeedQualityAnalysis() {
                       : '较差'}
               </Badge>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+            <div className="mb-3 flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-purple-600" />
-              波动性指标
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">小时波动率</span>
-              <span className="font-mono text-sm">{qualityData.volatility.hourly}%</span>
+              <span className="font-medium">波动性指标</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">日波动率</span>
-              <span className="font-mono text-sm">{qualityData.volatility.daily}%</span>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">小时波动率</span>
+                <span className="font-mono text-sm">{qualityData.volatility.hourly}%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">日波动率</span>
+                <span className="font-mono text-sm">{qualityData.volatility.daily}%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">周波动率</span>
+                <span className="font-mono text-sm">{qualityData.volatility.weekly}%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">最大回撤</span>
+                <span className="font-mono text-sm text-red-600">
+                  -{qualityData.volatility.maxDrawdown}%
+                </span>
+              </div>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">周波动率</span>
-              <span className="font-mono text-sm">{qualityData.volatility.weekly}%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">最大回撤</span>
-              <span className="font-mono text-sm text-red-600">
-                -{qualityData.volatility.maxDrawdown}%
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </ContentGrid>
+      </ContentSection>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+      <ContentGrid columns={2}>
+        <ContentSection
+          title={
+            <span className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-green-600" />
               多协议价格对比
-            </CardTitle>
-            <CardDescription>Chainlink 与其他预言机协议的价格偏差对比</CardDescription>
-          </CardHeader>
-          <CardContent>
+            </span>
+          }
+          description="Chainlink 与其他预言机协议的价格偏差对比"
+        >
+          <div className="rounded-lg border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -250,58 +244,55 @@ export function FeedQualityAnalysis() {
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </div>
+        </ContentSection>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <ContentSection
+          title={
+            <span className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-600" />
               近期异常事件
-            </CardTitle>
-            <CardDescription>检测到的价格大幅波动</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {qualityData.recentAnomalies.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <TrendingUp className="mb-2 h-8 w-8 text-green-500" />
-                <p className="text-sm text-muted-foreground">近期未检测到异常事件</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {qualityData.recentAnomalies.map((anomaly, index) => (
-                  <div
-                    key={index}
-                    className={`flex items-center justify-between rounded-lg border p-3 ${
-                      anomaly.type === 'spike'
-                        ? 'bg-green-50 dark:bg-green-950/20'
-                        : 'bg-red-50 dark:bg-red-950/20'
-                    }`}
-                  >
-                    <div>
-                      <p className="text-sm font-medium">
-                        {anomaly.type === 'spike' ? (
-                          <span className="text-green-700 dark:text-green-400">
-                            ⬆️ 价格大幅上涨
-                          </span>
-                        ) : (
-                          <span className="text-red-700 dark:text-red-400">⬇️ 价格大幅下跌</span>
-                        )}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(anomaly.timestamp).toLocaleString()}
-                      </p>
-                    </div>
-                    <Badge variant={anomaly.type === 'spike' ? 'default' : 'destructive'}>
-                      {anomaly.magnitude}%
-                    </Badge>
+            </span>
+          }
+          description="检测到的价格大幅波动"
+        >
+          {qualityData.recentAnomalies.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <TrendingUp className="mb-2 h-8 w-8 text-green-500" />
+              <p className="text-sm text-muted-foreground">近期未检测到异常事件</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {qualityData.recentAnomalies.map((anomaly, index) => (
+                <div
+                  key={index}
+                  className={`flex items-center justify-between rounded-lg border p-3 ${
+                    anomaly.type === 'spike'
+                      ? 'bg-green-50 dark:bg-green-950/20'
+                      : 'bg-red-50 dark:bg-red-950/20'
+                  }`}
+                >
+                  <div>
+                    <p className="text-sm font-medium">
+                      {anomaly.type === 'spike' ? (
+                        <span className="text-green-700 dark:text-green-400">⬆️ 价格大幅上涨</span>
+                      ) : (
+                        <span className="text-red-700 dark:text-red-400">⬇️ 价格大幅下跌</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(anomaly.timestamp).toLocaleString()}
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  <Badge variant={anomaly.type === 'spike' ? 'default' : 'destructive'}>
+                    {anomaly.magnitude}%
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </ContentSection>
+      </ContentGrid>
     </div>
   );
 }

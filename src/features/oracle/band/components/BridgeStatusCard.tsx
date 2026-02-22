@@ -2,8 +2,8 @@
 
 import { ArrowRight, Clock, Activity, TrendingUp, AlertCircle } from 'lucide-react';
 
+import { ContentGrid } from '@/components/common';
 import { StatusBadge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { formatLatency, getLatencyColor } from '@/features/cross-chain/utils/format';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
@@ -59,28 +59,29 @@ export function BridgeStatusCard({ bridge, onClick, className }: BridgeStatusCar
   };
 
   return (
-    <Card
-      className={cn('cursor-pointer transition-all hover:border-primary/30', className)}
+    <div
+      className={cn(
+        'cursor-pointer rounded-lg border border-border/30 bg-muted/20 transition-all hover:border-primary/30',
+        className,
+      )}
       onClick={() => onClick?.(bridge)}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-base">
-              {CHAIN_DISPLAY_NAMES[bridge.sourceChain] ?? bridge.sourceChain}
-            </CardTitle>
-            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-base">
-              {CHAIN_DISPLAY_NAMES[bridge.destinationChain] ?? bridge.destinationChain}
-            </CardTitle>
-          </div>
-          <StatusBadge status={statusConfig.status} text={statusConfig.label} size="sm" />
+      <div className="flex items-start justify-between border-b border-border/30 p-4">
+        <div className="flex items-center gap-2">
+          <span className="text-base font-semibold">
+            {CHAIN_DISPLAY_NAMES[bridge.sourceChain] ?? bridge.sourceChain}
+          </span>
+          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          <span className="text-base font-semibold">
+            {CHAIN_DISPLAY_NAMES[bridge.destinationChain] ?? bridge.destinationChain}
+          </span>
         </div>
-      </CardHeader>
+        <StatusBadge status={statusConfig.status} text={statusConfig.label} size="sm" />
+      </div>
 
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-lg bg-muted/30 p-3">
+      <div className="space-y-4 p-4">
+        <ContentGrid columns={4}>
+          <div className="rounded-lg border border-border/30 bg-background/50 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Activity className="h-3 w-3" />
               {t('common.transfers')}
@@ -90,7 +91,7 @@ export function BridgeStatusCard({ bridge, onClick, className }: BridgeStatusCar
             </p>
           </div>
 
-          <div className="rounded-lg bg-muted/30 p-3">
+          <div className="rounded-lg border border-border/30 bg-background/50 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <TrendingUp className="h-3 w-3" />
               {t('common.volume')}
@@ -98,7 +99,7 @@ export function BridgeStatusCard({ bridge, onClick, className }: BridgeStatusCar
             <p className="mt-1 text-lg font-semibold">{formatVolume(bridge.totalVolume)}</p>
           </div>
 
-          <div className="rounded-lg bg-muted/30 p-3">
+          <div className="rounded-lg border border-border/30 bg-background/50 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
               {t('common.avgLatency')}
@@ -108,7 +109,7 @@ export function BridgeStatusCard({ bridge, onClick, className }: BridgeStatusCar
             </p>
           </div>
 
-          <div className="rounded-lg bg-muted/30 p-3">
+          <div className="rounded-lg border border-border/30 bg-background/50 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <TrendingUp className="h-3 w-3" />
               {t('common.successRate')}
@@ -119,7 +120,7 @@ export function BridgeStatusCard({ bridge, onClick, className }: BridgeStatusCar
               {bridge.successRate.toFixed(1)}%
             </p>
           </div>
-        </div>
+        </ContentGrid>
 
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{t('common.lastTransfer')}</span>
@@ -132,7 +133,7 @@ export function BridgeStatusCard({ bridge, onClick, className }: BridgeStatusCar
             <span>{t('band.bridge.degradedWarning')}</span>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

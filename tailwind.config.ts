@@ -61,6 +61,10 @@ const config: Config = {
           DEFAULT: 'rgb(var(--color-card) / <alpha-value>)',
           foreground: 'rgb(var(--color-card-foreground) / <alpha-value>)',
         },
+        popover: {
+          DEFAULT: 'rgb(var(--color-popover) / <alpha-value>)',
+          foreground: 'rgb(var(--color-popover-foreground) / <alpha-value>)',
+        },
         muted: {
           DEFAULT: 'rgb(var(--color-muted) / <alpha-value>)',
           foreground: 'rgb(var(--color-muted-foreground) / <alpha-value>)',

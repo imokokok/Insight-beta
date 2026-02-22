@@ -13,9 +13,9 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
+import { ContentSection } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import { getChainColorTailwind, getChainDisplayName, type ChainId } from '@/config/chains';
@@ -56,85 +56,69 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
 
   if (isLoading) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="mt-1 h-4 w-72" />
+      <ContentSection className="w-full">
+        <div className="space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4">
+              <Skeleton className="h-12 w-28" />
+              <Skeleton className="h-12 w-32" />
+              <Skeleton className="h-6 w-20" />
             </div>
-            <Skeleton className="h-9 w-24" />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <Skeleton className="h-12 w-28" />
-                <Skeleton className="h-12 w-32" />
-                <Skeleton className="h-6 w-20" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+          ))}
+        </div>
+      </ContentSection>
     );
   }
 
   if (!data || filteredPrices.length === 0) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{t('crossChain.comparison.title')}</CardTitle>
-          <CardDescription>{t('crossChain.comparison.noData')}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex h-64 items-center justify-center text-muted-foreground">
+      <ContentSection
+        className="w-full"
+        title={t('crossChain.comparison.title')}
+        description={t('crossChain.comparison.noData')}
+      >
+        <div className="flex h-64 items-center justify-center text-muted-foreground">
           <Info className="mr-2 h-5 w-5" />
           {t('crossChain.comparison.selectAsset')}
-        </CardContent>
-      </Card>
+        </div>
+      </ContentSection>
     );
   }
 
   return (
     <TooltipProvider delayDuration={100}>
-      <Card className="w-full">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                {data.symbol} / USD
-                {status === 'critical' && (
-                  <Badge variant="destructive" className="gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    {t('crossChain.status.critical')}
-                  </Badge>
-                )}
-                {status === 'warning' && (
-                  <Badge variant="secondary" className="gap-1 bg-yellow-500/20 text-yellow-600">
-                    <AlertTriangle className="h-3 w-3" />
-                    {t('crossChain.status.warning')}
-                  </Badge>
-                )}
-              </CardTitle>
-              <CardDescription className="mt-1 text-sm text-muted-foreground">
-                {t('crossChain.comparison.description', {
-                  count: filteredPrices.length.toString(),
-                })}
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              {onRefresh && (
-                <Button variant="outline" size="sm" onClick={onRefresh}>
-                  <RefreshCw className="mr-1 h-4 w-4" />
-                  {t('crossChain.controls.refresh')}
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
+      <ContentSection
+        className="w-full"
+        title={
+          <span className="flex items-center gap-2 text-lg font-semibold">
+            {data.symbol} / USD
+            {status === 'critical' && (
+              <Badge variant="destructive" className="gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                {t('crossChain.status.critical')}
+              </Badge>
+            )}
+            {status === 'warning' && (
+              <Badge variant="secondary" className="gap-1 bg-yellow-500/20 text-yellow-600">
+                <AlertTriangle className="h-3 w-3" />
+                {t('crossChain.status.warning')}
+              </Badge>
+            )}
+          </span>
+        }
+        description={t('crossChain.comparison.description', {
+          count: filteredPrices.length.toString(),
+        })}
+        action={
+          onRefresh && (
+            <Button variant="outline" size="sm" onClick={onRefresh}>
+              <RefreshCw className="mr-1 h-4 w-4" />
+              {t('crossChain.controls.refresh')}
+            </Button>
+          )
+        }
+      >
+        <div className="space-y-4">
           {/* Statistics Summary */}
           <div className="grid grid-cols-4 gap-3">
             <div className="rounded-lg border bg-muted/30 p-3">
@@ -321,8 +305,8 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
               {filteredPrices.length} {t('crossChain.chainsMonitored')}
             </span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </ContentSection>
     </TooltipProvider>
   );
 });

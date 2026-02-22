@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { TrendingUp, TrendingDown, Minus, BarChart3 } from 'lucide-react';
 
 import { EnhancedAreaChart, EnhancedBarChart, CHART_COLORS } from '@/components/charts';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { ContentSection } from '@/components/common';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n/LanguageProvider';
@@ -27,8 +27,6 @@ interface AlertTrendChartProps {
   onGroupByChange: (groupBy: GroupBy) => void;
   loading?: boolean;
   className?: string;
-  periodStart?: string;
-  periodEnd?: string;
   previousStats?: AlertHistoryStats;
 }
 
@@ -68,19 +66,6 @@ function formatTimestamp(timestamp: string, timeRange: TimeRange): string {
   } else {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
-}
-
-function formatDateTimeRange(start: string, end: string): string {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  const formatDate = (d: Date) =>
-    d.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  return `${formatDate(startDate)} - ${formatDate(endDate)}`;
 }
 
 function TrendIndicator({ trend, percent }: { trend: string; percent: number }) {
@@ -149,8 +134,6 @@ export function AlertTrendChart({
   onGroupByChange,
   loading,
   className,
-  periodStart,
-  periodEnd,
   previousStats,
 }: AlertTrendChartProps) {
   const { t } = useI18n();
@@ -220,100 +203,79 @@ export function AlertTrendChart({
 
   if (loading) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="mt-2 h-4 w-60" />
-            </div>
-            <div className="flex gap-2">
-              <Skeleton className="h-9 w-20" />
-              <Skeleton className="h-9 w-24" />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[280px] w-full" />
-        </CardContent>
-      </Card>
+      <ContentSection className={className}>
+        <Skeleton className="h-[280px] w-full" />
+      </ContentSection>
     );
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              {t('alerts.analysis.trendChart')}
-            </CardTitle>
-            <CardDescription>{t('alerts.analysis.trendChartDesc')}</CardDescription>
-            {periodStart && periodEnd && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t('alerts.analysis.periodRange')}: {formatDateTimeRange(periodStart, periodEnd)}
-              </p>
-            )}
+    <ContentSection
+      className={className}
+      title={
+        <span className="flex items-center gap-2">
+          <BarChart3 className="h-5 w-5" />
+          {t('alerts.analysis.trendChart')}
+        </span>
+      }
+      description={t('alerts.analysis.trendChartDesc')}
+      action={
+        <div className="flex gap-2">
+          <Select value={timeRange} onValueChange={(v) => onTimeRangeChange(v as TimeRange)}>
+            <SelectTrigger className="w-20">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {timeRangeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={groupBy} onValueChange={(v) => onGroupByChange(v as GroupBy)}>
+            <SelectTrigger className="w-28">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {groupByOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      }
+    >
+      {stats && (
+        <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="rounded-lg bg-gray-50 p-3">
+            <p className="text-xs text-muted-foreground">{t('alerts.analysis.totalAlerts')}</p>
+            <div className="flex items-baseline">
+              <p className="text-xl font-bold">{formatNumber(stats.totalAlerts, 0)}</p>
+              <ComparisonIndicator
+                current={stats.totalAlerts}
+                previous={previousStats?.totalAlerts}
+                label={t('alerts.analysis.comparedTo')}
+              />
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Select value={timeRange} onValueChange={(v) => onTimeRangeChange(v as TimeRange)}>
-              <SelectTrigger className="w-20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {timeRangeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={groupBy} onValueChange={(v) => onGroupByChange(v as GroupBy)}>
-              <SelectTrigger className="w-28">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {groupByOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="rounded-lg bg-gray-50 p-3">
+            <p className="text-xs text-muted-foreground">{t('alerts.analysis.avgPerHour')}</p>
+            <p className="text-xl font-bold">{stats.avgPerHour}</p>
+          </div>
+          <div className="rounded-lg bg-gray-50 p-3">
+            <p className="text-xs text-muted-foreground">{t('alerts.analysis.peakHour')}</p>
+            <p className="text-xl font-bold">{stats.peakHour}:00</p>
+          </div>
+          <div className="rounded-lg bg-gray-50 p-3">
+            <p className="text-xs text-muted-foreground">{t('alerts.analysis.trend')}</p>
+            <TrendIndicator trend={stats.trend} percent={stats.trendPercent} />
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        {stats && (
-          <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div className="rounded-lg bg-gray-50 p-3">
-              <p className="text-xs text-muted-foreground">{t('alerts.analysis.totalAlerts')}</p>
-              <div className="flex items-baseline">
-                <p className="text-xl font-bold">{formatNumber(stats.totalAlerts, 0)}</p>
-                <ComparisonIndicator
-                  current={stats.totalAlerts}
-                  previous={previousStats?.totalAlerts}
-                  label={t('alerts.analysis.comparedTo')}
-                />
-              </div>
-            </div>
-            <div className="rounded-lg bg-gray-50 p-3">
-              <p className="text-xs text-muted-foreground">{t('alerts.analysis.avgPerHour')}</p>
-              <p className="text-xl font-bold">{stats.avgPerHour}</p>
-            </div>
-            <div className="rounded-lg bg-gray-50 p-3">
-              <p className="text-xs text-muted-foreground">{t('alerts.analysis.peakHour')}</p>
-              <p className="text-xl font-bold">{stats.peakHour}:00</p>
-            </div>
-            <div className="rounded-lg bg-gray-50 p-3">
-              <p className="text-xs text-muted-foreground">{t('alerts.analysis.trend')}</p>
-              <TrendIndicator trend={stats.trend} percent={stats.trendPercent} />
-            </div>
-          </div>
-        )}
-        {renderChart}
-      </CardContent>
-    </Card>
+      )}
+      {renderChart}
+    </ContentSection>
   );
 }

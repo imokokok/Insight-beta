@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 
 import { GitCompare, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 
+import { ContentSection } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge, StatusBadge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
 import { CHAIN_COLORS, API3_SUPPORTED_CHAINS } from '@/config/chains';
@@ -130,85 +130,71 @@ export function CrossChainComparison({
 
   if (isLoading) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GitCompare className="h-5 w-5 text-primary" />
-            跨链对比
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SkeletonList count={3} />
-        </CardContent>
-      </Card>
+      <ContentSection className={className}>
+        <SkeletonList count={3} />
+      </ContentSection>
     );
   }
 
   if (!data) {
     return (
-      <Card className={className}>
-        <CardContent className="pt-6">
-          <div className="py-8 text-center text-muted-foreground">暂无数据</div>
-        </CardContent>
-      </Card>
+      <ContentSection className={className}>
+        <div className="py-8 text-center text-muted-foreground">暂无数据</div>
+      </ContentSection>
     );
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <GitCompare className="h-5 w-5 text-primary" />
-              跨链对比
-            </CardTitle>
-            <CardDescription className="mt-1">同一 dAPI 在不同链上的指标对比分析</CardDescription>
-          </div>
-          <div className="flex flex-col gap-3 sm:w-80">
-            <Select value={dapiName} onValueChange={setDapiName}>
-              <SelectTrigger>
-                <SelectValue placeholder="选择 dAPI" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableDapis.map((dapi) => (
-                  <SelectItem key={dapi} value={dapi}>
-                    {dapi}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={handleRefresh}>
-                <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-              </Button>
-            </div>
-          </div>
+    <ContentSection
+      className={className}
+      title={
+        <span className="flex items-center gap-2">
+          <GitCompare className="h-5 w-5 text-primary" />
+          跨链对比
+        </span>
+      }
+      description="同一 dAPI 在不同链上的指标对比分析"
+      action={
+        <div className="flex items-center gap-3">
+          <Select value={dapiName} onValueChange={setDapiName}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="选择 dAPI" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableDapis.map((dapi) => (
+                <SelectItem key={dapi} value={dapi}>
+                  {dapi}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="icon" onClick={handleRefresh}>
+            <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+          </Button>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {API3_SUPPORTED_CHAINS.map((chain) => (
-            <button
-              key={chain}
-              type="button"
-              onClick={() => toggleChain(chain)}
-              className={cn(
-                'rounded-md px-3 py-1.5 text-xs font-medium transition-all',
-                selectedChains.includes(chain)
-                  ? 'text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-muted',
-              )}
-              style={
-                selectedChains.includes(chain)
-                  ? { backgroundColor: CHAIN_COLORS[chain] }
-                  : undefined
-              }
-            >
-              {chain}
-            </button>
-          ))}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
+      }
+    >
+      <div className="mb-4 flex flex-wrap gap-2">
+        {API3_SUPPORTED_CHAINS.map((chain) => (
+          <button
+            key={chain}
+            type="button"
+            onClick={() => toggleChain(chain)}
+            className={cn(
+              'rounded-md px-3 py-1.5 text-xs font-medium transition-all',
+              selectedChains.includes(chain)
+                ? 'text-primary-foreground'
+                : 'text-muted-foreground hover:bg-muted',
+            )}
+            style={
+              selectedChains.includes(chain) ? { backgroundColor: CHAIN_COLORS[chain] } : undefined
+            }
+          >
+            {chain}
+          </button>
+        ))}
+      </div>
+      <div className="space-y-6">
         {data && (
           <>
             <CrossChainPriceChart data={data} chainColors={CHAIN_COLORS} />
@@ -318,7 +304,7 @@ export function CrossChainComparison({
             </div>
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </ContentSection>
   );
 }

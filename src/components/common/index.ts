@@ -68,6 +68,20 @@ export {
   type CompactListItem,
   type DualColumnListProps,
 } from './CompactList';
+export {
+  InlineDataDisplay,
+  InlineDataRow,
+  type InlineDataDisplayProps,
+  type InlineDataRowProps,
+  type InlineDataItem,
+} from './InlineDataDisplay';
+export {
+  TableSection,
+  DataPanel,
+  type TableSectionProps,
+  type TableSectionColumn,
+  type DataPanelProps,
+} from './TableSection';
 
 // ==================== 页面布局 ====================
 export {
@@ -167,3 +181,13 @@ export {
   type SortState,
   type SortableTableHeaderProps,
 } from './SortableTableHeader';
+
+// ==================== 图表工具栏 ====================
+export { ChartToolbar } from './ChartToolbar';
+export type { ChartToolbarProps } from './ChartToolbar';
+
+// ==================== 密度控制 ====================
+export { DensityProvider, useDensity } from './DensityProvider';
+export type { DensityMode, DensityConfig, DensityProviderProps } from './DensityProvider';
+export { DensityToggle } from './DensityToggle';
+export type { DensityToggleProps } from './DensityToggle';

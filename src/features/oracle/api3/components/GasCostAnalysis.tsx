@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { Fuel, RefreshCw } from 'lucide-react';
 
+import { ContentSection, ContentGrid } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { TIME_RANGE_OPTIONS } from '@/config/constants';
@@ -155,19 +155,11 @@ export function GasCostAnalysis({
     fetchData();
   };
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Fuel className="h-5 w-5 text-primary" />
-            {t('api3.gas.title') || 'Gas 成本分析'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SkeletonList count={3} />
-        </CardContent>
-      </Card>
+      <ContentSection className={className}>
+        <SkeletonList count={3} />
+      </ContentSection>
     );
   }
 
@@ -177,189 +169,159 @@ export function GasCostAnalysis({
 
   return (
     <div className={cn('space-y-6', className)}>
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Fuel className="h-5 w-5 text-primary" />
-                {t('api3.gas.title') || 'Gas 成本分析'}
-              </CardTitle>
-              <CardDescription>
-                {t('api3.gas.description') || '按链和 dAPI 分析 Gas 消耗和成本'}
-              </CardDescription>
+      <ContentSection
+        title={t('api3.gas.title') || 'Gas 成本分析'}
+        description={t('api3.gas.description') || '按链和 dAPI 分析 Gas 消耗和成本'}
+        action={
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg border p-1">
+              {TIME_RANGE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setTimeRange(option.value)}
+                  className={cn(
+                    'rounded-md px-3 py-1 text-xs font-medium transition-colors',
+                    timeRange === option.value
+                      ? 'text-primary-foreground bg-primary'
+                      : 'hover:bg-muted',
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex rounded-lg border p-1">
-                {TIME_RANGE_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setTimeRange(option.value)}
-                    className={cn(
-                      'rounded-md px-3 py-1 text-xs font-medium transition-colors',
-                      timeRange === option.value
-                        ? 'text-primary-foreground bg-primary'
-                        : 'hover:bg-muted',
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-              <Button variant="outline" size="icon" onClick={handleRefresh}>
-                <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-              </Button>
-            </div>
+            <Button variant="outline" size="icon" onClick={handleRefresh}>
+              <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+            </Button>
           </div>
-        </CardHeader>
-      </Card>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">总 Gas 消耗</span>
-              <Fuel className="h-4 w-4 text-muted-foreground" />
+        }
+      >
+        <ContentGrid columns={4}>
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-4 text-center">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Fuel className="h-4 w-4" />总 Gas 消耗
             </div>
             <div className="mt-2 text-2xl font-bold">{formatGas(data.totalGasUsed)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">ETH 成本</span>
-              <span className="text-sm text-muted-foreground">Ξ</span>
-            </div>
+          </div>
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-4 text-center">
+            <div className="text-sm text-muted-foreground">ETH 成本</div>
             <div className="mt-2 text-2xl font-bold text-blue-600">
               {formatEth(data.totalCostEth)}
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">USD 成本</span>
-              <span className="text-sm text-muted-foreground">$</span>
-            </div>
+          </div>
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-4 text-center">
+            <div className="text-sm text-muted-foreground">USD 成本</div>
             <div className="mt-2 text-2xl font-bold text-green-600">
               {formatUsd(data.totalCostUsd)}
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">交易数量</span>
-              <span className="text-sm text-muted-foreground">Tx</span>
-            </div>
+          </div>
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-4 text-center">
+            <div className="text-sm text-muted-foreground">交易数量</div>
             <div className="mt-2 text-2xl font-bold text-purple-600">
               {data.totalTransactions.toLocaleString()}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </ContentGrid>
+      </ContentSection>
 
       <GasCostTrendChart trend={data.trend} />
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-lg">
+      <ContentSection
+        title={
+          view === 'dapis'
+            ? t('api3.gas.byDapi') || '按 dAPI 统计'
+            : t('api3.gas.byChain') || '按链统计'
+        }
+        action={
+          <div className="flex rounded-lg border p-1">
+            <button
+              onClick={() => setView('dapis')}
+              className={cn(
+                'rounded-md px-3 py-1 text-xs font-medium transition-colors',
+                view === 'dapis' ? 'text-primary-foreground bg-primary' : 'hover:bg-muted',
+              )}
+            >
+              {t('api3.gas.dapis') || 'dAPIs'}
+            </button>
+            <button
+              onClick={() => setView('chains')}
+              className={cn(
+                'rounded-md px-3 py-1 text-xs font-medium transition-colors',
+                view === 'chains' ? 'text-primary-foreground bg-primary' : 'hover:bg-muted',
+              )}
+            >
+              {t('api3.gas.chains') || 'Chains'}
+            </button>
+          </div>
+        }
+      >
+        <div className="rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>
+                  {view === 'dapis'
+                    ? t('api3.gas.dapiName') || 'dAPI 名称'
+                    : t('api3.gas.chain') || '链'}
+                </TableHead>
+                {view === 'dapis' && <TableHead>{t('api3.gas.chain') || '链'}</TableHead>}
+                <TableHead>{t('api3.gas.gasUsed') || 'Gas 消耗'}</TableHead>
+                <TableHead>{t('api3.gas.costEth') || 'ETH 成本'}</TableHead>
+                <TableHead>{t('api3.gas.costUsd') || 'USD 成本'}</TableHead>
+                <TableHead>{t('api3.gas.transactions') || '交易数'}</TableHead>
+                {view === 'dapis' && <TableHead>{t('api3.gas.avgGas') || '平均 Gas'}</TableHead>}
+                {view === 'chains' && (
+                  <TableHead>{t('api3.gas.dapiCount') || 'dAPI 数量'}</TableHead>
+                )}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {view === 'dapis'
-                ? t('api3.gas.byDapi') || '按 dAPI 统计'
-                : t('api3.gas.byChain') || '按链统计'}
-            </CardTitle>
-            <div className="flex rounded-lg border p-1">
-              <button
-                onClick={() => setView('dapis')}
-                className={cn(
-                  'rounded-md px-3 py-1 text-xs font-medium transition-colors',
-                  view === 'dapis' ? 'text-primary-foreground bg-primary' : 'hover:bg-muted',
-                )}
-              >
-                {t('api3.gas.dapis') || 'dAPIs'}
-              </button>
-              <button
-                onClick={() => setView('chains')}
-                className={cn(
-                  'rounded-md px-3 py-1 text-xs font-medium transition-colors',
-                  view === 'chains' ? 'text-primary-foreground bg-primary' : 'hover:bg-muted',
-                )}
-              >
-                {t('api3.gas.chains') || 'Chains'}
-              </button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
-                    {view === 'dapis'
-                      ? t('api3.gas.dapiName') || 'dAPI 名称'
-                      : t('api3.gas.chain') || '链'}
-                  </TableHead>
-                  {view === 'dapis' && <TableHead>{t('api3.gas.chain') || '链'}</TableHead>}
-                  <TableHead>{t('api3.gas.gasUsed') || 'Gas 消耗'}</TableHead>
-                  <TableHead>{t('api3.gas.costEth') || 'ETH 成本'}</TableHead>
-                  <TableHead>{t('api3.gas.costUsd') || 'USD 成本'}</TableHead>
-                  <TableHead>{t('api3.gas.transactions') || '交易数'}</TableHead>
-                  {view === 'dapis' && <TableHead>{t('api3.gas.avgGas') || '平均 Gas'}</TableHead>}
-                  {view === 'chains' && (
-                    <TableHead>{t('api3.gas.dapiCount') || 'dAPI 数量'}</TableHead>
-                  )}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {view === 'dapis'
-                  ? data.byDapi.map((dapi) => (
-                      <TableRow key={dapi.dapiName}>
-                        <TableCell className="font-semibold">{dapi.dapiName}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="capitalize">
-                            {dapi.chain}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-mono">{formatGas(dapi.totalGasUsed)}</TableCell>
-                        <TableCell className="font-mono">{formatEth(dapi.totalCostEth)}</TableCell>
-                        <TableCell className="font-mono">{formatUsd(dapi.totalCostUsd)}</TableCell>
-                        <TableCell className="font-mono">
-                          {dapi.transactionCount.toLocaleString()}
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {formatGas(dapi.avgGasPerTransaction)}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  : data.byChain.map((chainItem) => (
-                      <TableRow key={chainItem.chain}>
-                        <TableCell className="font-semibold">
-                          <Badge variant="secondary" className="capitalize">
-                            {chainItem.chain}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {formatGas(chainItem.totalGasUsed)}
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {formatEth(chainItem.totalCostEth)}
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {formatUsd(chainItem.totalCostUsd)}
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {chainItem.transactionCount.toLocaleString()}
-                        </TableCell>
-                        <TableCell className="font-mono">{chainItem.dapiCount}</TableCell>
-                      </TableRow>
-                    ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                ? data.byDapi.map((dapi) => (
+                    <TableRow key={dapi.dapiName}>
+                      <TableCell className="font-semibold">{dapi.dapiName}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="capitalize">
+                          {dapi.chain}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono">{formatGas(dapi.totalGasUsed)}</TableCell>
+                      <TableCell className="font-mono">{formatEth(dapi.totalCostEth)}</TableCell>
+                      <TableCell className="font-mono">{formatUsd(dapi.totalCostUsd)}</TableCell>
+                      <TableCell className="font-mono">
+                        {dapi.transactionCount.toLocaleString()}
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {formatGas(dapi.avgGasPerTransaction)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                : data.byChain.map((chainItem) => (
+                    <TableRow key={chainItem.chain}>
+                      <TableCell className="font-semibold">
+                        <Badge variant="secondary" className="capitalize">
+                          {chainItem.chain}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {formatGas(chainItem.totalGasUsed)}
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {formatEth(chainItem.totalCostEth)}
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {formatUsd(chainItem.totalCostUsd)}
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {chainItem.transactionCount.toLocaleString()}
+                      </TableCell>
+                      <TableCell className="font-mono">{chainItem.dapiCount}</TableCell>
+                    </TableRow>
+                  ))}
+            </TableBody>
+          </Table>
+        </div>
+      </ContentSection>
     </div>
   );
 }

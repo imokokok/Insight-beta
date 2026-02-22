@@ -1,5 +1,6 @@
 import { Trophy, ShieldAlert, Coins, Activity } from 'lucide-react';
 
+import { InlineDataDisplay } from '@/components/common';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
 import { formatUsdCompact } from '@/shared/utils';
@@ -16,16 +17,18 @@ export function UserStatsCard({ stats, loading }: UserStatsCardProps) {
 
   if (loading || !stats) {
     return (
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="glass-card flex animate-pulse items-center gap-4 rounded-2xl p-4">
-            <div className="h-12 w-12 rounded-xl bg-gray-200/50" />
-            <div className="space-y-2">
-              <div className="h-3 w-20 rounded bg-gray-200/50" />
-              <div className="h-6 w-16 rounded bg-gray-200/50" />
+      <div className="rounded-xl border border-border/30 bg-card/30 p-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex animate-pulse items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-muted" />
+              <div className="space-y-2">
+                <div className="h-3 w-20 rounded bg-muted" />
+                <div className="h-5 w-16 rounded bg-muted" />
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
   }
@@ -34,51 +37,31 @@ export function UserStatsCard({ stats, loading }: UserStatsCardProps) {
     {
       label: t('oracle.stats.totalAssertions'),
       value: stats.totalAssertions,
-      icon: Activity,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
+      icon: <Activity className="h-4 w-4 text-blue-500" />,
+      status: 'neutral' as const,
     },
     {
       label: t('oracle.stats.totalDisputes'),
       value: stats.totalDisputes,
-      icon: ShieldAlert,
-      color: 'text-rose-600',
-      bg: 'bg-rose-50',
+      icon: <ShieldAlert className="h-4 w-4 text-rose-500" />,
+      status: (stats.totalDisputes > 0 ? 'warning' : 'healthy') as 'warning' | 'healthy',
     },
     {
       label: t('oracle.stats.totalBonded'),
       value: formatUsdCompact(stats.totalBondedUsd, locale),
-      icon: Coins,
-      color: 'text-amber-600',
-      bg: 'bg-amber-50',
+      icon: <Coins className="h-4 w-4 text-amber-500" />,
+      status: 'neutral' as const,
     },
     {
       label: t('oracle.stats.winRate'),
       value: `${stats.winRate}%`,
-      icon: Trophy,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
+      icon: <Trophy className="h-4 w-4 text-emerald-500" />,
+      status: (stats.winRate >= 70 ? 'healthy' : stats.winRate >= 50 ? 'warning' : 'critical') as
+        | 'healthy'
+        | 'warning'
+        | 'critical',
     },
   ];
 
-  return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      {items.map((item, i) => (
-        <div
-          key={i}
-          className="glass-card flex items-center gap-4 rounded-2xl p-4 transition-all hover:scale-105"
-        >
-          <div className={`rounded-xl p-3 ${item.bg} ${item.color}`}>
-            <item.icon size={20} />
-          </div>
-          <div>
-            <div className="mb-0.5 text-xs font-medium uppercase tracking-wider text-gray-500">
-              {item.label}
-            </div>
-            <div className="text-xl font-bold text-gray-900">{item.value}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return <InlineDataDisplay items={items} columns={4} gap="md" showDividers />;
 }
