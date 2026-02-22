@@ -24,8 +24,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SkeletonList } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { formatTime } from '@/shared/utils';
+import { formatTime, cn } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
+
+import { formatPrice, formatAddress as formatAddr } from './dashboard/formatters';
 
 import type { ChainlinkFeed } from '../types/chainlink';
 import type { Route } from 'next';
@@ -66,8 +68,8 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
     setError(null);
 
     try {
-      const data = await fetchApiData<ChainlinkFeed[]>('/api/oracle/chainlink/feeds');
-      setFeeds(data);
+      const data = await fetchApiData<{ feeds: ChainlinkFeed[] }>('/api/oracle/chainlink/feeds');
+      setFeeds(data.feeds ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch feeds');
       setFeeds([]);
@@ -143,14 +145,11 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
     return result;
   }, [feeds, searchQuery, sortState, statusFilter, isFeedActive]);
 
-  const formatPrice = (price: string, decimals: number) => {
+  const formatPriceValue = (price: string, decimals: number) => {
     const num = parseFloat(price);
     if (isNaN(num)) return price;
     const adjusted = num / Math.pow(10, 18 - decimals);
-    if (adjusted >= 1000)
-      return `$${adjusted.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-    if (adjusted >= 1) return `$${adjusted.toFixed(4)}`;
-    return `$${adjusted.toFixed(6)}`;
+    return formatPrice(adjusted);
   };
 
   const formatHeartbeat = (seconds: number): string => {
@@ -159,9 +158,8 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
     return `${Math.floor(seconds / 3600)}h`;
   };
 
-  const formatAddress = (address: string) => {
-    if (address.length <= 12) return address;
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  const formatAddressLocal = (address: string) => {
+    return formatAddr(address);
   };
 
   if (isLoading) {
@@ -266,19 +264,24 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <SortableTableHeader sortKey="pair" currentSort={sortState} onSort={handleSort}>
+              <TableRow className="hover:bg-transparent">
+                <SortableTableHeader
+                  sortKey="pair"
+                  currentSort={sortState}
+                  onSort={handleSort}
+                  className="h-9 px-3 text-xs"
+                >
                   {t('chainlink.feeds.pair')}
                 </SortableTableHeader>
                 <SortableTableHeader
                   sortKey="price"
                   currentSort={sortState}
                   onSort={handleSort}
-                  className="text-right"
+                  className="h-9 px-3 text-right text-xs"
                 >
                   {t('chainlink.feeds.price')}
                 </SortableTableHeader>
@@ -286,7 +289,7 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
                   sortKey="heartbeat"
                   currentSort={sortState}
                   onSort={handleSort}
-                  className="text-center"
+                  className="h-9 px-3 text-center text-xs"
                 >
                   <div className="flex items-center justify-center gap-1">
                     <Activity className="h-3 w-3" />
@@ -297,79 +300,87 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
                   sortKey="deviation"
                   currentSort={sortState}
                   onSort={handleSort}
-                  className="text-center"
+                  className="h-9 px-3 text-center text-xs"
                 >
                   {t('chainlink.feeds.deviation')}
                 </SortableTableHeader>
-                <TableHead>{t('chainlink.feeds.aggregator')}</TableHead>
+                <TableHead className="h-9 px-3 text-xs">
+                  {t('chainlink.feeds.aggregator')}
+                </TableHead>
                 <SortableTableHeader
                   sortKey="lastUpdate"
                   currentSort={sortState}
                   onSort={handleSort}
+                  className="h-9 px-3 text-xs"
                 >
                   {t('chainlink.feeds.lastUpdate')}
                 </SortableTableHeader>
-                <TableHead className="w-12"></TableHead>
+                <TableHead className="h-9 w-10 px-2 text-xs"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredAndSortedFeeds.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-20 text-center">
                     <p className="text-muted-foreground">{t('common.noResults')}</p>
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredAndSortedFeeds.map((feed) => {
                   const feedHref = `/oracle/chainlink/feed/${feed.aggregatorAddress}` as Route;
+                  const isActive = isFeedActive(feed);
                   return (
                     <TableRow
                       key={feed.aggregatorAddress}
-                      className="group cursor-pointer hover:bg-muted/50"
+                      className={cn(
+                        'group cursor-pointer transition-colors',
+                        'hover:bg-primary/5 dark:hover:bg-primary/10',
+                        !isActive && 'opacity-60',
+                      )}
                     >
-                      <TableCell>
+                      <TableCell className="px-3 py-2">
                         <Link href={feedHref} className="flex items-center gap-2">
-                          <span className="font-semibold">{feed.pair}</span>
-                          <Badge variant="outline" className="text-xs">
+                          <span className="text-sm font-semibold">{feed.pair}</span>
+                          <Badge variant="outline" className="h-4 px-1.5 py-0 text-[10px]">
                             {feed.symbol}
                           </Badge>
                         </Link>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-3 py-2">
                         <Link href={feedHref}>
-                          <span className="font-mono font-medium">
-                            {formatPrice(feed.latestPrice, feed.decimals)}
+                          <span className="font-mono text-sm font-medium tabular-nums">
+                            {formatPriceValue(feed.latestPrice, feed.decimals)}
                           </span>
                         </Link>
                       </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant="secondary" size="sm">
+                      <TableCell className="px-3 py-2 text-center">
+                        <Badge variant="secondary" size="sm" className="px-1.5 text-[10px]">
                           {formatHeartbeat(feed.heartbeat)}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant="outline" size="sm">
+                      <TableCell className="px-3 py-2 text-center">
+                        <Badge variant="outline" size="sm" className="px-1.5 text-[10px]">
                           {feed.deviationThreshold}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <span className="font-mono text-xs text-muted-foreground">
-                          {formatAddress(feed.aggregatorAddress)}
+                      <TableCell className="px-3 py-2">
+                        <span className="font-mono text-[11px] text-muted-foreground">
+                          {formatAddressLocal(feed.aggregatorAddress)}
                         </span>
                       </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-muted-foreground">
+                      <TableCell className="px-3 py-2">
+                        <span className="text-xs text-muted-foreground">
                           {formatTime(feed.lastUpdate)}
                         </span>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-2 py-2">
                         <Link href={feedHref}>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                            className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
                           >
-                            <ExternalLink className="h-4 w-4" />
+                            <ExternalLink className="h-3.5 w-3.5" />
                           </Button>
                         </Link>
                       </TableCell>

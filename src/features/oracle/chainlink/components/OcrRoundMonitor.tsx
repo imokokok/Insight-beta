@@ -10,8 +10,10 @@ import { Badge } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { formatTime } from '@/shared/utils';
+import { formatTime, cn } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
+
+import { formatNumber } from './dashboard/formatters';
 
 import type { OcrRound, NodeContribution } from '../types';
 
@@ -31,8 +33,8 @@ export function OcrRoundMonitor({ className }: OcrRoundMonitorProps) {
     setError(null);
 
     try {
-      const data = await fetchApiData<OcrRound[]>('/api/oracle/chainlink/ocr');
-      setRounds(data);
+      const data = await fetchApiData<{ rounds: OcrRound[] }>('/api/oracle/chainlink/ocr');
+      setRounds(data.rounds ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch OCR rounds');
       setRounds([]);
@@ -48,7 +50,7 @@ export function OcrRoundMonitor({ className }: OcrRoundMonitorProps) {
   const formatAnswer = (answer: string) => {
     const num = parseFloat(answer);
     if (isNaN(num)) return answer;
-    if (num >= 1000) return num.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    if (num >= 1000) return formatNumber(num, 2);
     if (num >= 1) return num.toFixed(4);
     return num.toFixed(8);
   };
@@ -67,35 +69,36 @@ export function OcrRoundMonitor({ className }: OcrRoundMonitorProps) {
 
   const renderNodeContributions = (contributions: NodeContribution[]) => {
     return (
-      <div className="space-y-2 bg-muted/30 p-3">
-        <div className="text-xs font-medium text-muted-foreground">
+      <div className="space-y-2 bg-muted/30 p-2.5">
+        <div className="text-[10px] font-medium text-muted-foreground">
           {t('chainlink.ocr.nodeContributions') || '节点贡献度'}
         </div>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
           {contributions.slice(0, 6).map((node, idx) => (
             <div
               key={idx}
-              className={`flex items-center justify-between rounded border p-2 text-xs ${
+              className={cn(
+                'flex items-center justify-between rounded border px-2 py-1 text-xs',
                 node.role === 'proposer'
                   ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30'
-                  : 'border-muted'
-              }`}
+                  : 'border-muted',
+              )}
             >
               <div className="flex items-center gap-1.5 overflow-hidden">
-                <span className="truncate font-medium">{node.nodeName}</span>
+                <span className="truncate text-xs font-medium">{node.nodeName}</span>
                 {node.role === 'proposer' && (
-                  <Badge variant="outline" className="h-4 px-1 py-0 text-[10px]">
+                  <Badge variant="outline" className="h-3.5 px-1 py-0 text-[9px]">
                     {t('chainlink.ocr.proposer') || '提议者'}
                   </Badge>
                 )}
               </div>
-              <span className="font-mono text-muted-foreground">
+              <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
                 {node.contributionPercentage.toFixed(1)}%
               </span>
             </div>
           ))}
           {contributions.length > 6 && (
-            <div className="text-xs text-muted-foreground">
+            <div className="text-[10px] text-muted-foreground">
               +{contributions.length - 6} {t('chainlink.ocr.moreNodes') || '更多节点'}
             </div>
           )}
@@ -163,72 +166,86 @@ export function OcrRoundMonitor({ className }: OcrRoundMonitorProps) {
       <div className="overflow-x-auto rounded-lg border">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>{t('chainlink.ocr.roundId')}</TableHead>
-              <TableHead className="text-center">
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="h-9 px-3 text-xs">{t('chainlink.ocr.roundId')}</TableHead>
+              <TableHead className="h-9 px-3 text-center text-xs">
                 <div className="flex items-center justify-center gap-1">
                   <Users className="h-3 w-3" />
                   {t('chainlink.ocr.participatingNodes')}
                 </div>
               </TableHead>
-              <TableHead className="text-center">{t('chainlink.ocr.threshold')}</TableHead>
-              <TableHead>{t('chainlink.ocr.answer')}</TableHead>
-              <TableHead>{t('chainlink.ocr.startedAt')}</TableHead>
-              <TableHead>{t('chainlink.ocr.updatedAt')}</TableHead>
+              <TableHead className="h-9 px-3 text-center text-xs">
+                {t('chainlink.ocr.threshold')}
+              </TableHead>
+              <TableHead className="h-9 px-3 text-xs">{t('chainlink.ocr.answer')}</TableHead>
+              <TableHead className="h-9 px-3 text-xs">{t('chainlink.ocr.startedAt')}</TableHead>
+              <TableHead className="h-9 px-3 text-xs">{t('chainlink.ocr.updatedAt')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rounds.map((round) => (
               <Fragment key={round.roundId}>
-                <TableRow>
-                  <TableCell>
+                <TableRow
+                  className={cn(
+                    'transition-colors',
+                    round.nodeContributions &&
+                      'cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10',
+                  )}
+                >
+                  <TableCell className="px-3 py-2">
                     <button
                       onClick={() => round.nodeContributions && toggleRound(round.roundId)}
-                      className={`flex items-center gap-2 font-mono font-medium ${
+                      className={cn(
+                        'flex items-center gap-1.5 font-mono text-sm font-medium',
                         round.nodeContributions
                           ? 'cursor-pointer hover:text-primary'
-                          : 'cursor-default'
-                      }`}
+                          : 'cursor-default',
+                      )}
                       disabled={!round.nodeContributions}
                     >
                       {round.nodeContributions ? (
                         expandedRounds.has(round.roundId) ? (
-                          <ChevronDown className="h-4 w-4" />
+                          <ChevronDown className="h-3.5 w-3.5" />
                         ) : (
-                          <ChevronRight className="h-4 w-4" />
+                          <ChevronRight className="h-3.5 w-3.5" />
                         )
                       ) : null}
                       {round.roundId}
                     </button>
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="px-3 py-2 text-center">
                     <Badge
                       variant={round.participatingNodes >= 3 ? 'success' : 'warning'}
                       size="sm"
+                      className="px-1.5 text-[10px]"
                     >
                       {round.participatingNodes}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-center">
-                    <span className="font-mono text-sm">{round.aggregationThreshold}</span>
+                  <TableCell className="px-3 py-2 text-center">
+                    <span className="font-mono text-xs tabular-nums">
+                      {round.aggregationThreshold}
+                    </span>
                   </TableCell>
-                  <TableCell>
-                    <span className="font-mono font-medium">{formatAnswer(round.answer)}</span>
+                  <TableCell className="px-3 py-2">
+                    <span className="font-mono text-sm font-medium tabular-nums">
+                      {formatAnswer(round.answer)}
+                    </span>
                   </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted-foreground">
+                  <TableCell className="px-3 py-2">
+                    <span className="text-xs text-muted-foreground">
                       {formatTime(round.startedAt)}
                     </span>
                   </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted-foreground">
+                  <TableCell className="px-3 py-2">
+                    <span className="text-xs text-muted-foreground">
                       {formatTime(round.updatedAt)}
                     </span>
                   </TableCell>
                 </TableRow>
                 {round.nodeContributions && expandedRounds.has(round.roundId) && (
-                  <TableRow>
-                    <TableCell colSpan={6}>
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={6} className="p-0">
                       {renderNodeContributions(round.nodeContributions)}
                     </TableCell>
                   </TableRow>

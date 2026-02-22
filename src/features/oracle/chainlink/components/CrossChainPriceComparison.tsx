@@ -54,11 +54,39 @@ const generateMockData = (symbol: string, chains: string[]) => {
   return { symbol, prices, stats };
 };
 
-export function CrossChainPriceComparison() {
+interface CrossChainPriceComparisonProps {
+  collapsible?: boolean;
+  className?: string;
+}
+
+export function CrossChainPriceComparison({
+  collapsible = false,
+  className,
+}: CrossChainPriceComparisonProps) {
   const fetchData = useCallback(async (symbol: string, chains: string[]) => {
     await new Promise((resolve) => setTimeout(resolve, 600));
     return generateMockData(symbol, chains);
   }, []);
+
+  if (collapsible) {
+    return (
+      <div className={className}>
+        <OracleCrossChainComparison
+          protocol="chainlink"
+          availableSymbols={CHAINLINK_SYMBOLS}
+          supportedChains={CHAINLINK_SUPPORTED_CHAINS}
+          chainDisplayNames={CHAIN_DISPLAY_NAMES}
+          chainColors={CHAIN_COLORS}
+          fetchData={fetchData}
+          showConfidence={false}
+          showStatus={true}
+          showConsistencyScore={true}
+          title=""
+          description=""
+        />
+      </div>
+    );
+  }
 
   return (
     <OracleCrossChainComparison
@@ -71,6 +99,7 @@ export function CrossChainPriceComparison() {
       showConfidence={false}
       showStatus={true}
       showConsistencyScore={true}
+      className={className}
     />
   );
 }

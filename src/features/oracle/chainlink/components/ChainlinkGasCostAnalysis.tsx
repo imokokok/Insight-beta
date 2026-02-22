@@ -37,6 +37,7 @@ interface ChainlinkGasCostAnalysisProps {
   chain?: string;
   feedName?: string;
   timeRange?: '1h' | '24h' | '7d' | '30d';
+  collapsible?: boolean;
   className?: string;
 }
 
@@ -171,100 +172,88 @@ function GasCostTrendChart({ trend, className }: TrendChartProps) {
   const DataComponent = getDataComponent();
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <RefreshCw className="h-5 w-5 text-primary" />
-              {t('chainlink.gas.trendTitle') || 'Gas 成本趋势'}
-            </CardTitle>
-            <CardDescription>
-              {t('chainlink.gas.trendDescription') || 'Gas 消耗和成本的时间序列分析'}
-            </CardDescription>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Tabs
-              value={metricType}
-              onValueChange={(v) => setMetricType(v as 'gas' | 'cost' | 'transactions')}
-            >
-              <TabsList>
-                <TabsTrigger value="cost">成本</TabsTrigger>
-                <TabsTrigger value="gas">Gas</TabsTrigger>
-                <TabsTrigger value="transactions">交易</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <Tabs
-              value={chartType}
-              onValueChange={(v) => setChartType(v as 'line' | 'area' | 'bar')}
-            >
-              <TabsList>
-                <TabsTrigger value="line">折线</TabsTrigger>
-                <TabsTrigger value="area">面积</TabsTrigger>
-                <TabsTrigger value="bar">柱状</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
+    <div className={cn('rounded-lg border border-border/30 bg-muted/20 p-4', className)}>
+      <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <RefreshCw className="h-5 w-5 text-primary" />
+          <span className="font-medium">{t('chainlink.gas.trendTitle') || 'Gas 成本趋势'}</span>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <ChartComponent data={chartData}>
-              {chartType === 'area' && (
-                <defs>
-                  <linearGradient id="gasGradientChainlink" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={getColor()} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={getColor()} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-              )}
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis
-                dataKey="time"
-                tick={{ fontSize: isMobile ? 9 : 11 }}
-                interval="preserveStartEnd"
-                className="text-muted-foreground"
-              />
-              <YAxis
-                tick={{ fontSize: isMobile ? 10 : 12 }}
-                className="text-muted-foreground"
-                unit={getYAxisUnit()}
-                width={isMobile ? 40 : 50}
-                tickFormatter={(value) => {
-                  if (metricType === 'gas') {
-                    return value >= 1000000
-                      ? `${(value / 1000000).toFixed(1)}M`
-                      : value >= 1000
-                        ? `${(value / 1000).toFixed(0)}K`
-                        : value;
-                  }
-                  return value;
-                }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <DataComponent
-                type="monotone"
-                dataKey={getDataKey()}
-                name={getName()}
-                stroke={getColor()}
-                strokeWidth={2}
-                fill={
-                  chartType === 'area'
-                    ? 'url(#gasGradientChainlink)'
-                    : chartType === 'bar'
-                      ? getColor()
-                      : 'none'
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Tabs
+            value={metricType}
+            onValueChange={(v) => setMetricType(v as 'gas' | 'cost' | 'transactions')}
+          >
+            <TabsList>
+              <TabsTrigger value="cost">成本</TabsTrigger>
+              <TabsTrigger value="gas">Gas</TabsTrigger>
+              <TabsTrigger value="transactions">交易</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Tabs value={chartType} onValueChange={(v) => setChartType(v as 'line' | 'area' | 'bar')}>
+            <TabsList>
+              <TabsTrigger value="line">折线</TabsTrigger>
+              <TabsTrigger value="area">面积</TabsTrigger>
+              <TabsTrigger value="bar">柱状</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </div>
+      <div className="h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <ChartComponent data={chartData}>
+            {chartType === 'area' && (
+              <defs>
+                <linearGradient id="gasGradientChainlink" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={getColor()} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={getColor()} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+            )}
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <XAxis
+              dataKey="time"
+              tick={{ fontSize: isMobile ? 9 : 11 }}
+              interval="preserveStartEnd"
+              className="text-muted-foreground"
+            />
+            <YAxis
+              tick={{ fontSize: isMobile ? 10 : 12 }}
+              className="text-muted-foreground"
+              unit={getYAxisUnit()}
+              width={isMobile ? 40 : 50}
+              tickFormatter={(value) => {
+                if (metricType === 'gas') {
+                  return value >= 1000000
+                    ? `${(value / 1000000).toFixed(1)}M`
+                    : value >= 1000
+                      ? `${(value / 1000).toFixed(0)}K`
+                      : value;
                 }
-                dot={chartType === 'line' ? false : undefined}
-                activeDot={{ r: 5 }}
-              />
-            </ChartComponent>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+                return value;
+              }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend />
+            <DataComponent
+              type="monotone"
+              dataKey={getDataKey()}
+              name={getName()}
+              stroke={getColor()}
+              strokeWidth={2}
+              fill={
+                chartType === 'area'
+                  ? 'url(#gasGradientChainlink)'
+                  : chartType === 'bar'
+                    ? getColor()
+                    : 'none'
+              }
+              dot={chartType === 'line' ? false : undefined}
+              activeDot={{ r: 5 }}
+            />
+          </ChartComponent>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 }
 
@@ -272,6 +261,7 @@ export function ChainlinkGasCostAnalysis({
   chain,
   feedName,
   timeRange: initialTimeRange = '24h',
+  collapsible = false,
   className,
 }: ChainlinkGasCostAnalysisProps) {
   const { t } = useI18n();
@@ -342,24 +332,16 @@ export function ChainlinkGasCostAnalysis({
 
   if (isLoading) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Fuel className="h-5 w-5 text-primary" />
-            {t('chainlink.gas.title') || 'Gas 成本分析'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SkeletonList count={3} />
-        </CardContent>
-      </Card>
+      <div className={className}>
+        <SkeletonList count={3} />
+      </div>
     );
   }
 
   if (error || !data) {
     return (
-      <Card className={className}>
-        <CardContent className="flex flex-col items-center justify-center gap-4 py-12">
+      <div className={className}>
+        <div className="flex flex-col items-center justify-center gap-4 py-12">
           <Fuel className="h-12 w-12 text-amber-500" />
           <div className="text-center">
             <p className="font-medium text-foreground">加载数据失败</p>
@@ -369,22 +351,223 @@ export function ChainlinkGasCostAnalysis({
             <RefreshCw className="mr-2 h-4 w-4" />
             重试
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   if (data.byFeed.length === 0 && data.byChain.length === 0) {
     return (
-      <Card className={className}>
-        <CardContent className="flex flex-col items-center justify-center gap-4 py-12">
+      <div className={className}>
+        <div className="flex flex-col items-center justify-center gap-4 py-12">
           <Fuel className="h-12 w-12 text-muted-foreground" />
           <div className="text-center">
             <p className="font-medium text-foreground">暂无数据</p>
             <p className="text-sm text-muted-foreground">当前筛选条件下没有 Gas 成本数据</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+    );
+  }
+
+  const renderTimeRangeSelector = () => (
+    <div className="flex items-center gap-2">
+      <div className="flex rounded-lg border p-1">
+        {TIME_RANGE_OPTIONS.map((option) => (
+          <button
+            key={option.value}
+            onClick={() => setTimeRange(option.value)}
+            className={cn(
+              'rounded-md px-3 py-1 text-xs font-medium transition-colors',
+              timeRange === option.value ? 'text-primary-foreground bg-primary' : 'hover:bg-muted',
+            )}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+      <Button variant="outline" size="icon" onClick={handleRefresh}>
+        <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+      </Button>
+    </div>
+  );
+
+  const renderStats = () => (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-muted-foreground">总 Gas 消耗</span>
+          <Fuel className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div className="mt-2 text-2xl font-bold">{formatGas(data.totalGasUsed)}</div>
+      </div>
+      <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-muted-foreground">ETH 成本</span>
+          <span className="text-sm text-muted-foreground">Ξ</span>
+        </div>
+        <div className="mt-2 text-2xl font-bold text-blue-600">{formatEth(data.totalCostEth)}</div>
+      </div>
+      <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-muted-foreground">USD 成本</span>
+          <span className="text-sm text-muted-foreground">$</span>
+        </div>
+        <div className="mt-2 text-2xl font-bold text-green-600">{formatUsd(data.totalCostUsd)}</div>
+      </div>
+      <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-muted-foreground">交易数量</span>
+          <span className="text-sm text-muted-foreground">Tx</span>
+        </div>
+        <div className="mt-2 text-2xl font-bold text-purple-600">
+          {data.totalTransactions.toLocaleString()}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderTableView = () => (
+    <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <span className="font-medium">
+          {view === 'feeds'
+            ? t('chainlink.gas.byFeed') || '按 Feed 统计'
+            : t('chainlink.gas.byChain') || '按链统计'}
+        </span>
+        <div className="flex rounded-lg border p-0.5">
+          <button
+            onClick={() => setView('feeds')}
+            className={cn(
+              'rounded-md px-2.5 py-0.5 text-xs font-medium transition-colors',
+              view === 'feeds' ? 'text-primary-foreground bg-primary' : 'hover:bg-muted',
+            )}
+          >
+            {t('chainlink.gas.feeds') || 'Feeds'}
+          </button>
+          <button
+            onClick={() => setView('chains')}
+            className={cn(
+              'rounded-md px-2.5 py-0.5 text-xs font-medium transition-colors',
+              view === 'chains' ? 'text-primary-foreground bg-primary' : 'hover:bg-muted',
+            )}
+          >
+            {t('chainlink.gas.chains') || 'Chains'}
+          </button>
+        </div>
+      </div>
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="h-9 px-3 text-xs">
+                {view === 'feeds'
+                  ? t('chainlink.gas.feedName') || 'Feed 名称'
+                  : t('chainlink.gas.chain') || '链'}
+              </TableHead>
+              {view === 'feeds' && (
+                <TableHead className="h-9 px-3 text-xs">
+                  {t('chainlink.gas.chain') || '链'}
+                </TableHead>
+              )}
+              <TableHead className="h-9 px-3 text-xs">
+                {t('chainlink.gas.gasUsed') || 'Gas 消耗'}
+              </TableHead>
+              <TableHead className="h-9 px-3 text-xs">
+                {t('chainlink.gas.costEth') || 'ETH 成本'}
+              </TableHead>
+              <TableHead className="h-9 px-3 text-xs">
+                {t('chainlink.gas.costUsd') || 'USD 成本'}
+              </TableHead>
+              <TableHead className="h-9 px-3 text-xs">
+                {t('chainlink.gas.transactions') || '交易数'}
+              </TableHead>
+              {view === 'feeds' && (
+                <TableHead className="h-9 px-3 text-xs">
+                  {t('chainlink.gas.avgGas') || '平均 Gas'}
+                </TableHead>
+              )}
+              {view === 'chains' && (
+                <TableHead className="h-9 px-3 text-xs">
+                  {t('chainlink.gas.feedCount') || 'Feed 数量'}
+                </TableHead>
+              )}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {view === 'feeds'
+              ? data.byFeed.map((feed) => (
+                  <TableRow
+                    key={feed.feedName}
+                    className="transition-colors hover:bg-primary/5 dark:hover:bg-primary/10"
+                  >
+                    <TableCell className="px-3 py-2 text-sm font-semibold">
+                      {feed.feedName}
+                    </TableCell>
+                    <TableCell className="px-3 py-2">
+                      <Badge variant="secondary" className="px-1.5 text-[10px] capitalize">
+                        {feed.chain}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-3 py-2 font-mono text-xs tabular-nums">
+                      {formatGas(feed.totalGasUsed)}
+                    </TableCell>
+                    <TableCell className="px-3 py-2 font-mono text-xs tabular-nums text-blue-600">
+                      {formatEth(feed.totalCostEth)}
+                    </TableCell>
+                    <TableCell className="px-3 py-2 font-mono text-xs tabular-nums text-green-600">
+                      {formatUsd(feed.totalCostUsd)}
+                    </TableCell>
+                    <TableCell className="px-3 py-2 font-mono text-xs tabular-nums">
+                      {feed.transactionCount.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="px-3 py-2 font-mono text-xs tabular-nums">
+                      {formatGas(feed.avgGasPerTransaction)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              : data.byChain.map((chainItem) => (
+                  <TableRow
+                    key={chainItem.chain}
+                    className="transition-colors hover:bg-primary/5 dark:hover:bg-primary/10"
+                  >
+                    <TableCell className="px-3 py-2 font-semibold">
+                      <Badge variant="secondary" className="px-1.5 text-[10px] capitalize">
+                        {chainItem.chain}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-3 py-2 font-mono text-xs tabular-nums">
+                      {formatGas(chainItem.totalGasUsed)}
+                    </TableCell>
+                    <TableCell className="px-3 py-2 font-mono text-xs tabular-nums text-blue-600">
+                      {formatEth(chainItem.totalCostEth)}
+                    </TableCell>
+                    <TableCell className="px-3 py-2 font-mono text-xs tabular-nums text-green-600">
+                      {formatUsd(chainItem.totalCostUsd)}
+                    </TableCell>
+                    <TableCell className="px-3 py-2 font-mono text-xs tabular-nums">
+                      {chainItem.transactionCount.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="px-3 py-2 font-mono text-xs tabular-nums">
+                      {chainItem.feedCount}
+                    </TableCell>
+                  </TableRow>
+                ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+
+  if (collapsible) {
+    return (
+      <div className={cn('space-y-6', className)}>
+        <div className="flex items-center justify-end">{renderTimeRangeSelector()}</div>
+
+        {renderStats()}
+        <GasCostTrendChart trend={data.trend} />
+        {renderTableView()}
+      </div>
     );
   }
 
@@ -475,18 +658,18 @@ export function ChainlinkGasCostAnalysis({
       <GasCostTrendChart trend={data.trend} />
 
       <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-lg">
+        <CardHeader className="py-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="text-base">
               {view === 'feeds'
                 ? t('chainlink.gas.byFeed') || '按 Feed 统计'
                 : t('chainlink.gas.byChain') || '按链统计'}
             </CardTitle>
-            <div className="flex rounded-lg border p-1">
+            <div className="flex rounded-lg border p-0.5">
               <button
                 onClick={() => setView('feeds')}
                 className={cn(
-                  'rounded-md px-3 py-1 text-xs font-medium transition-colors',
+                  'rounded-md px-2.5 py-0.5 text-xs font-medium transition-colors',
                   view === 'feeds' ? 'text-primary-foreground bg-primary' : 'hover:bg-muted',
                 )}
               >
@@ -495,7 +678,7 @@ export function ChainlinkGasCostAnalysis({
               <button
                 onClick={() => setView('chains')}
                 className={cn(
-                  'rounded-md px-3 py-1 text-xs font-medium transition-colors',
+                  'rounded-md px-2.5 py-0.5 text-xs font-medium transition-colors',
                   view === 'chains' ? 'text-primary-foreground bg-primary' : 'hover:bg-muted',
                 )}
               >
@@ -504,70 +687,102 @@ export function ChainlinkGasCostAnalysis({
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="rounded-lg border">
+        <CardContent className="p-0">
+          <div className="rounded-lg border-0">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="h-9 px-3 text-xs">
                     {view === 'feeds'
                       ? t('chainlink.gas.feedName') || 'Feed 名称'
                       : t('chainlink.gas.chain') || '链'}
                   </TableHead>
-                  {view === 'feeds' && <TableHead>{t('chainlink.gas.chain') || '链'}</TableHead>}
-                  <TableHead>{t('chainlink.gas.gasUsed') || 'Gas 消耗'}</TableHead>
-                  <TableHead>{t('chainlink.gas.costEth') || 'ETH 成本'}</TableHead>
-                  <TableHead>{t('chainlink.gas.costUsd') || 'USD 成本'}</TableHead>
-                  <TableHead>{t('chainlink.gas.transactions') || '交易数'}</TableHead>
                   {view === 'feeds' && (
-                    <TableHead>{t('chainlink.gas.avgGas') || '平均 Gas'}</TableHead>
+                    <TableHead className="h-9 px-3 text-xs">
+                      {t('chainlink.gas.chain') || '链'}
+                    </TableHead>
+                  )}
+                  <TableHead className="h-9 px-3 text-xs">
+                    {t('chainlink.gas.gasUsed') || 'Gas 消耗'}
+                  </TableHead>
+                  <TableHead className="h-9 px-3 text-xs">
+                    {t('chainlink.gas.costEth') || 'ETH 成本'}
+                  </TableHead>
+                  <TableHead className="h-9 px-3 text-xs">
+                    {t('chainlink.gas.costUsd') || 'USD 成本'}
+                  </TableHead>
+                  <TableHead className="h-9 px-3 text-xs">
+                    {t('chainlink.gas.transactions') || '交易数'}
+                  </TableHead>
+                  {view === 'feeds' && (
+                    <TableHead className="h-9 px-3 text-xs">
+                      {t('chainlink.gas.avgGas') || '平均 Gas'}
+                    </TableHead>
                   )}
                   {view === 'chains' && (
-                    <TableHead>{t('chainlink.gas.feedCount') || 'Feed 数量'}</TableHead>
+                    <TableHead className="h-9 px-3 text-xs">
+                      {t('chainlink.gas.feedCount') || 'Feed 数量'}
+                    </TableHead>
                   )}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {view === 'feeds'
                   ? data.byFeed.map((feed) => (
-                      <TableRow key={feed.feedName}>
-                        <TableCell className="font-semibold">{feed.feedName}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="capitalize">
+                      <TableRow
+                        key={feed.feedName}
+                        className="transition-colors hover:bg-primary/5 dark:hover:bg-primary/10"
+                      >
+                        <TableCell className="px-3 py-2 text-sm font-semibold">
+                          {feed.feedName}
+                        </TableCell>
+                        <TableCell className="px-3 py-2">
+                          <Badge variant="secondary" className="px-1.5 text-[10px] capitalize">
                             {feed.chain}
                           </Badge>
                         </TableCell>
-                        <TableCell className="font-mono">{formatGas(feed.totalGasUsed)}</TableCell>
-                        <TableCell className="font-mono">{formatEth(feed.totalCostEth)}</TableCell>
-                        <TableCell className="font-mono">{formatUsd(feed.totalCostUsd)}</TableCell>
-                        <TableCell className="font-mono">
+                        <TableCell className="px-3 py-2 font-mono text-xs tabular-nums">
+                          {formatGas(feed.totalGasUsed)}
+                        </TableCell>
+                        <TableCell className="px-3 py-2 font-mono text-xs tabular-nums text-blue-600">
+                          {formatEth(feed.totalCostEth)}
+                        </TableCell>
+                        <TableCell className="px-3 py-2 font-mono text-xs tabular-nums text-green-600">
+                          {formatUsd(feed.totalCostUsd)}
+                        </TableCell>
+                        <TableCell className="px-3 py-2 font-mono text-xs tabular-nums">
                           {feed.transactionCount.toLocaleString()}
                         </TableCell>
-                        <TableCell className="font-mono">
+                        <TableCell className="px-3 py-2 font-mono text-xs tabular-nums">
                           {formatGas(feed.avgGasPerTransaction)}
                         </TableCell>
                       </TableRow>
                     ))
                   : data.byChain.map((chainItem) => (
-                      <TableRow key={chainItem.chain}>
-                        <TableCell className="font-semibold">
-                          <Badge variant="secondary" className="capitalize">
+                      <TableRow
+                        key={chainItem.chain}
+                        className="transition-colors hover:bg-primary/5 dark:hover:bg-primary/10"
+                      >
+                        <TableCell className="px-3 py-2 font-semibold">
+                          <Badge variant="secondary" className="px-1.5 text-[10px] capitalize">
                             {chainItem.chain}
                           </Badge>
                         </TableCell>
-                        <TableCell className="font-mono">
+                        <TableCell className="px-3 py-2 font-mono text-xs tabular-nums">
                           {formatGas(chainItem.totalGasUsed)}
                         </TableCell>
-                        <TableCell className="font-mono">
+                        <TableCell className="px-3 py-2 font-mono text-xs tabular-nums text-blue-600">
                           {formatEth(chainItem.totalCostEth)}
                         </TableCell>
-                        <TableCell className="font-mono">
+                        <TableCell className="px-3 py-2 font-mono text-xs tabular-nums text-green-600">
                           {formatUsd(chainItem.totalCostUsd)}
                         </TableCell>
-                        <TableCell className="font-mono">
+                        <TableCell className="px-3 py-2 font-mono text-xs tabular-nums">
                           {chainItem.transactionCount.toLocaleString()}
                         </TableCell>
-                        <TableCell className="font-mono">{chainItem.feedCount}</TableCell>
+                        <TableCell className="px-3 py-2 font-mono text-xs tabular-nums">
+                          {chainItem.feedCount}
+                        </TableCell>
                       </TableRow>
                     ))}
               </TableBody>

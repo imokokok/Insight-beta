@@ -63,17 +63,17 @@ export function ContentSection({
   ...props
 }: ContentSectionProps) {
   return (
-    <section className={cn('mb-6', className)} {...props}>
+    <section className={cn('mb-4', className)} {...props}>
       {(title || description || action) && (
-        <div className="mb-4 flex items-start justify-between">
+        <div className="mb-2 flex items-start justify-between">
           <div>
             {title && typeof title === 'string' ? (
-              <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+              <h2 className="text-base font-semibold text-foreground">{title}</h2>
             ) : (
               title
             )}
             {description && typeof description === 'string' ? (
-              <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
             ) : (
               description
             )}
@@ -101,10 +101,10 @@ export function ContentGrid({
 }: ContentGridProps) {
   const columnClasses = {
     1: 'grid-cols-1',
-    2: 'grid-cols-1 sm:grid-cols-2',
-    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
-    6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
+    2: 'grid-cols-1 md:grid-cols-2',
+    3: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
+    4: 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4',
+    6: 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-6',
   };
 
   const gapClasses = {

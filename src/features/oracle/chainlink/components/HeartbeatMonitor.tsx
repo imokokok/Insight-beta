@@ -94,7 +94,12 @@ function sortAlertsBySeverity(alerts: HeartbeatAlert[]): HeartbeatAlert[] {
   return [...alerts].sort((a, b) => severityOrder[a.status] - severityOrder[b.status]);
 }
 
-export function HeartbeatMonitor() {
+interface HeartbeatMonitorProps {
+  collapsible?: boolean;
+  className?: string;
+}
+
+export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMonitorProps) {
   const { t } = useI18n();
   const [stats, setStats] = useState<HeartbeatStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -126,7 +131,7 @@ export function HeartbeatMonitor() {
 
   if (isLoading) {
     return (
-      <ContentSection>
+      <div className={className}>
         <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
@@ -135,13 +140,13 @@ export function HeartbeatMonitor() {
           </div>
           <Skeleton className="h-64 w-full" />
         </div>
-      </ContentSection>
+      </div>
     );
   }
 
   if (error || !stats) {
     return (
-      <ContentSection>
+      <div className={className}>
         <div className="flex flex-col items-center justify-center gap-4 py-12">
           <AlertTriangle className="h-12 w-12 text-amber-500" />
           <div className="text-center">
@@ -153,12 +158,134 @@ export function HeartbeatMonitor() {
             {t('common.retry') || '重试'}
           </Button>
         </div>
-      </ContentSection>
+      </div>
+    );
+  }
+
+  const renderStats = () => (
+    <ContentGrid columns={4}>
+      <StatItem
+        title={t('chainlink.heartbeat.stats.totalFeeds') || '总 Feed 数'}
+        value={stats.totalFeeds}
+        icon={<Activity className="h-6 w-6 text-blue-600" />}
+        colorClass="bg-blue-100 dark:bg-blue-900"
+      />
+      <StatItem
+        title={t('chainlink.heartbeat.stats.activeFeeds') || '活跃数'}
+        value={stats.activeFeeds}
+        icon={<CheckCircle className="h-6 w-6 text-green-600" />}
+        colorClass="bg-green-100 dark:bg-green-900"
+      />
+      <StatItem
+        title={t('chainlink.heartbeat.stats.timeoutFeeds') || '超时数'}
+        value={stats.timeoutFeeds}
+        icon={<Timer className="h-6 w-6 text-yellow-600" />}
+        colorClass="bg-yellow-100 dark:bg-yellow-900"
+      />
+      <StatItem
+        title={t('chainlink.heartbeat.stats.criticalFeeds') || '严重超时数'}
+        value={stats.criticalFeeds}
+        icon={<XCircle className="h-6 w-6 text-red-600" />}
+        colorClass="bg-red-100 dark:bg-red-900"
+      />
+    </ContentGrid>
+  );
+
+  const renderAlerts = () => {
+    if (sortedAlerts.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
+          <CheckCircle className="h-12 w-12 text-green-500" />
+          <p>{t('chainlink.heartbeat.noAlerts') || '暂无告警，所有 Feed 正常运行'}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t('chainlink.heartbeat.feedName') || 'Feed 名称'}</TableHead>
+              <TableHead>{t('chainlink.heartbeat.chain') || '链'}</TableHead>
+              <TableHead>{t('chainlink.heartbeat.heartbeat') || '心跳间隔'}</TableHead>
+              <TableHead>{t('chainlink.heartbeat.lastUpdate') || '最后更新'}</TableHead>
+              <TableHead>{t('chainlink.heartbeat.timeoutDuration') || '超时时长'}</TableHead>
+              <TableHead>{t('chainlink.heartbeat.status') || '状态'}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sortedAlerts.map((alert, index) => {
+              const timeoutDuration = calculateTimeoutDuration(alert.lastUpdate);
+              return (
+                <TableRow key={`${alert.feedName}-${alert.chain}-${index}`}>
+                  <TableCell className="font-medium">
+                    <div>
+                      <div>{alert.feedName}</div>
+                      <div className="text-xs text-muted-foreground">{alert.pair}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{alert.chain || '-'}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      {alert.heartbeat}s
+                    </div>
+                  </TableCell>
+                  <TableCell>{formatTime(alert.lastUpdate)}</TableCell>
+                  <TableCell>
+                    <span
+                      className={cn(
+                        'font-mono',
+                        alert.status === 'critical' && 'text-red-600 dark:text-red-400',
+                        alert.status === 'timeout' && 'text-yellow-600 dark:text-yellow-400',
+                      )}
+                    >
+                      {formatDuration(timeoutDuration)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusBadgeVariant(alert.status)}>
+                      {getStatusLabel(alert.status, t)}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  };
+
+  if (collapsible) {
+    return (
+      <div className={`space-y-6 ${className || ''}`}>
+        <div className="flex items-center justify-end gap-2">
+          <span className="text-xs text-muted-foreground">
+            {t('common.lastUpdated') || '最后更新'}: {formatTime(stats.generatedAt)}
+          </span>
+          <Button variant="outline" size="sm" onClick={fetchData}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            {t('common.refresh') || '刷新'}
+          </Button>
+        </div>
+
+        {renderStats()}
+
+        <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-amber-600" />
+            <span className="font-medium">{t('chainlink.heartbeat.alerts') || '告警列表'}</span>
+          </div>
+          {renderAlerts()}
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${className || ''}`}>
       <ContentSection
         title={t('chainlink.heartbeat.title') || '心跳监控'}
         description={t('chainlink.heartbeat.description') || '监控 Chainlink 数据 Feed 的心跳状态'}
