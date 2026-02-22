@@ -21,3 +21,11 @@ export { CrossChainMetrics } from './CrossChainMetrics';
 export { CrossProtocolComparison } from './CrossProtocolComparison';
 export { AirnodeDetail } from './AirnodeDetail';
 export { AlertConfigPanel } from './AlertConfigPanel';
+
+export {
+  Api3TopStatusBar,
+  Api3KpiOverview,
+  type NetworkHealthStatus,
+  type TrendDirection,
+  type Api3KpiStats,
+} from './dashboard';

@@ -15,3 +15,10 @@ export { BridgeTrendChart } from './BridgeTrendChart';
 export { PriceTrendTab } from './PriceTrendTab';
 export { QualityAnalysisTab } from './QualityAnalysisTab';
 export { PriceComparisonTab } from './PriceComparisonTab';
+export {
+  BandKpiOverview,
+  BandTopStatusBar,
+  type BandKpiStats,
+  type NetworkHealthStatus,
+  type TrendDirection,
+} from './dashboard';
