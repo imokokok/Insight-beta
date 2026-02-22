@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Gavel, Calendar } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
@@ -20,6 +21,12 @@ import { ProtocolChainFilter } from './filters';
 import { SummaryStats } from './SummaryStats';
 
 import type { TimeRangePreset } from '../hooks/useDisputeAnalytics';
+
+const tabContentVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -10 },
+};
 
 interface DisputeContentProps {
   report: DisputeReport | null;
@@ -127,114 +134,155 @@ export function DisputeContent({
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:w-auto">
-          <TabsTrigger value="overview">
-            <Activity className="mr-2 h-4 w-4" />
-            {t('analytics:disputes.tabs.overview')}
-          </TabsTrigger>
-          <TabsTrigger value="disputes">
-            <Gavel className="mr-2 h-4 w-4" />
-            {t('analytics:disputes.tabs.disputes')} ({filteredDisputes.length})
-          </TabsTrigger>
-        </TabsList>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="rounded-xl border border-border/30 bg-muted/50 p-1.5 backdrop-blur-sm"
+        >
+          <TabsList className="grid w-full grid-cols-2 gap-1 bg-transparent lg:inline-grid lg:w-auto">
+            <TabsTrigger
+              value="overview"
+              className="h-10 text-sm transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              <Activity className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
+              {t('analytics:disputes.tabs.overview')}
+            </TabsTrigger>
+            <TabsTrigger
+              value="disputes"
+              className="h-10 text-sm transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              <Gavel className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
+              {t('analytics:disputes.tabs.disputes')} ({filteredDisputes.length})
+            </TabsTrigger>
+          </TabsList>
+        </motion.div>
 
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
-            {loading && !report ? (
-              <>
-                <ChartSkeleton />
-                <ChartSkeleton />
-              </>
-            ) : report ? (
-              <>
-                <DisputeTrendChart trends={filteredTrends} />
-                <DisputeResultChart disputes={filteredDisputes} />
-              </>
-            ) : null}
-          </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            variants={tabContentVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ duration: 0.2 }}
+          >
+            {activeTab === 'overview' && (
+              <TabsContent value="overview" className="mt-0 space-y-6">
+                <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                  {loading && !report ? (
+                    <>
+                      <ChartSkeleton />
+                      <ChartSkeleton />
+                    </>
+                  ) : report ? (
+                    <>
+                      <div className="rounded-xl transition-all duration-200 hover:border-border/50 hover:shadow-lg">
+                        <DisputeTrendChart trends={filteredTrends} />
+                      </div>
+                      <div className="rounded-xl transition-all duration-200 hover:border-border/50 hover:shadow-lg">
+                        <DisputeResultChart disputes={filteredDisputes} />
+                      </div>
+                    </>
+                  ) : null}
+                </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            {loading && !report ? (
-              <>
-                <ChartSkeleton />
-                <CardSkeleton />
-              </>
-            ) : report ? (
-              <>
-                <BondDistributionChart disputes={filteredDisputes} trends={filteredTrends} />
-                <Card>
+                <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                  {loading && !report ? (
+                    <>
+                      <ChartSkeleton />
+                      <CardSkeleton />
+                    </>
+                  ) : report ? (
+                    <>
+                      <div className="rounded-xl transition-all duration-200 hover:border-border/50 hover:shadow-lg">
+                        <BondDistributionChart
+                          disputes={filteredDisputes}
+                          trends={filteredTrends}
+                        />
+                      </div>
+                      <Card className="transition-all duration-200 hover:border-border/50 hover:shadow-lg">
+                        <CardHeader>
+                          <CardTitle>{t('analytics:disputes.disputes.title')}</CardTitle>
+                          <CardDescription>
+                            {t('analytics:disputes.disputes.showing', {
+                              count: Math.min(5, filteredDisputes.length),
+                              total: filteredDisputes.length,
+                            })}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {loading ? (
+                            <SkeletonList count={5} />
+                          ) : (
+                            <DisputeList
+                              disputes={filteredDisputes.slice(0, 5)}
+                              isLoading={loading}
+                              onSelect={handleSelectDispute}
+                            />
+                          )}
+                        </CardContent>
+                      </Card>
+                    </>
+                  ) : null}
+                </div>
+              </TabsContent>
+            )}
+
+            {activeTab === 'disputes' && (
+              <TabsContent value="disputes" className="mt-0 space-y-6">
+                <Card className="transition-all duration-200 hover:shadow-md">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                      <div className="relative flex-1">
+                        <Activity className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          placeholder={t('analytics:disputes.searchPlaceholder')}
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-9 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                        />
+                      </div>
+                      <select
+                        value={filterStatus}
+                        onChange={(e) =>
+                          setFilterStatus(e.target.value as 'All' | 'Active' | 'Resolved')
+                        }
+                        className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      >
+                        <option value="All">{t('oracle.filters.allStatus')}</option>
+                        <option value="Active">
+                          {t('analytics:disputes.disputes.statusActive')}
+                        </option>
+                        <option value="Resolved">
+                          {t('analytics:disputes.disputes.statusResolved')}
+                        </option>
+                      </select>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="transition-all duration-200 hover:border-border/50 hover:shadow-lg">
                   <CardHeader>
                     <CardTitle>{t('analytics:disputes.disputes.title')}</CardTitle>
                     <CardDescription>
                       {t('analytics:disputes.disputes.showing', {
-                        count: Math.min(5, filteredDisputes.length),
-                        total: filteredDisputes.length,
+                        count: filteredDisputes.length,
+                        total: report?.disputes.length || 0,
                       })}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {loading ? (
-                      <SkeletonList count={5} />
-                    ) : (
-                      <DisputeList
-                        disputes={filteredDisputes.slice(0, 5)}
-                        isLoading={loading}
-                        onSelect={handleSelectDispute}
-                      />
-                    )}
+                    <DisputeList
+                      disputes={filteredDisputes}
+                      isLoading={loading}
+                      onSelect={handleSelectDispute}
+                    />
                   </CardContent>
                 </Card>
-              </>
-            ) : null}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="disputes" className="space-y-6">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center">
-                <div className="relative flex-1">
-                  <Activity className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder={t('analytics:disputes.searchPlaceholder')}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value as 'All' | 'Active' | 'Resolved')}
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                >
-                  <option value="All">{t('oracle.filters.allStatus')}</option>
-                  <option value="Active">{t('analytics:disputes.disputes.statusActive')}</option>
-                  <option value="Resolved">
-                    {t('analytics:disputes.disputes.statusResolved')}
-                  </option>
-                </select>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('analytics:disputes.disputes.title')}</CardTitle>
-              <CardDescription>
-                {t('analytics:disputes.disputes.showing', {
-                  count: filteredDisputes.length,
-                  total: report?.disputes.length || 0,
-                })}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DisputeList
-                disputes={filteredDisputes}
-                isLoading={loading}
-                onSelect={handleSelectDispute}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </TabsContent>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </Tabs>
 
       <DisputeDetailPanel

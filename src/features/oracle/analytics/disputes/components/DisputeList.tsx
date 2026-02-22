@@ -15,6 +15,19 @@ interface DisputeListProps {
   onSelect?: (dispute: Dispute) => void;
 }
 
+function getStatusColor(status: Dispute['status']): string {
+  const colorMap: Record<string, string> = {
+    active: '#f97316',
+    disputed: '#f97316',
+    resolved: '#22c55e',
+    settled: '#22c55e',
+    accepted: '#22c55e',
+    expired: '#6b7280',
+    rejected: '#dc2626',
+  };
+  return colorMap[status] ?? '#6b7280';
+}
+
 function StatusBadge({ status }: { status: Dispute['status'] }) {
   const { t } = useI18n();
 
@@ -97,23 +110,29 @@ export function DisputeList({ disputes, isLoading, onSelect }: DisputeListProps)
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {disputes.map((dispute) => (
         <Card
           key={dispute.id}
           className={cn(
-            'cursor-pointer transition-all hover:shadow-md',
-            onSelect && 'hover:border-primary',
+            'group relative cursor-pointer overflow-hidden transition-all duration-200',
+            'hover:border-primary hover:shadow-md',
           )}
           onClick={() => onSelect?.(dispute)}
         >
-          <CardHeader className="pb-3">
+          <div
+            className="absolute left-0 top-0 h-full w-1 rounded-l-lg"
+            style={{ backgroundColor: getStatusColor(dispute.status) }}
+          />
+          <CardHeader className="pb-3 pl-5">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <CardTitle className="truncate text-sm font-medium">{dispute.claim}</CardTitle>
-                <CardDescription className="mt-1 flex items-center gap-2 text-xs">
+                <CardTitle className="truncate text-base font-medium leading-tight">
+                  {dispute.claim}
+                </CardTitle>
+                <CardDescription className="mt-2 flex items-center gap-2 text-xs">
                   <span className="font-mono">{truncateAddress(dispute.asserter)}</span>
-                  <span>→</span>
+                  <span className="text-gray-400">→</span>
                   <span className="font-mono">{truncateAddress(dispute.disputer)}</span>
                 </CardDescription>
               </div>
@@ -127,38 +146,48 @@ export function DisputeList({ disputes, isLoading, onSelect }: DisputeListProps)
               </div>
             </div>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
-              <div className="flex items-center gap-1">
-                <span className="font-medium">{t('analytics:disputes.disputes.bond')}:</span>
+          <CardContent className="pl-5 pt-0">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500">
+              <div className="flex items-center gap-1.5">
+                <span className="font-medium text-gray-600">
+                  {t('analytics:disputes.disputes.bond')}:
+                </span>
                 <span>
                   {dispute.bond.toFixed(0)} {dispute.currency}
                 </span>
               </div>
-              <div className="flex items-center gap-1">
-                <span className="font-medium">{t('analytics:disputes.disputes.disputeBond')}:</span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-medium text-gray-600">
+                  {t('analytics:disputes.disputes.disputeBond')}:
+                </span>
                 <span>
                   {dispute.disputeBond.toFixed(0)} {dispute.currency}
                 </span>
               </div>
-              <div className="flex items-center gap-1">
-                <span className="font-medium">{t('analytics:disputes.disputes.disputedAt')}:</span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-medium text-gray-600">
+                  {t('analytics:disputes.disputes.disputedAt')}:
+                </span>
                 <span>{formatTime(dispute.disputedAt)}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <span className="uppercase">{dispute.protocol}</span>
-                <span>•</span>
-                <span className="uppercase">{dispute.chain}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium uppercase">
+                  {dispute.protocol}
+                </span>
+                <span className="text-gray-300">•</span>
+                <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium uppercase">
+                  {dispute.chain}
+                </span>
               </div>
               <a
                 href={`https://etherscan.io/tx/${dispute.txHash}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1 text-primary hover:underline"
+                className="ml-auto flex items-center gap-1 text-primary transition-colors hover:underline"
               >
-                <ExternalLink className="h-3 w-3" />
-                View
+                <ExternalLink className="h-3.5 w-3.5" />
+                <span>View</span>
               </a>
             </div>
           </CardContent>

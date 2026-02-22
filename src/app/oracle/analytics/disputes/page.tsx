@@ -2,10 +2,10 @@
 
 import { RefreshCw, Gavel, Clock, DollarSign, AlertCircle } from 'lucide-react';
 
-import { StatsBar } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
+import { UnifiedStatsPanel } from '@/components/common/StatCard';
 import { Button } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { RefreshIndicator } from '@/components/ui';
@@ -72,8 +72,8 @@ export default function DisputeAnalyticsPage() {
       <WelcomeGuide />
       <ToastContainer toasts={toasts} onRemove={removeToast} />
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex-1">
           <h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl">
             <Gavel className="h-6 w-6 text-purple-600" />
             <span>{t('analytics:disputes.pageName')}</span>
@@ -82,7 +82,7 @@ export default function DisputeAnalyticsPage() {
             {t('analytics:disputes.pageDescription')}
           </p>
         </div>
-        <div className="flex flex-col items-start gap-2 sm:items-end">
+        <div className="flex flex-col gap-3 lg:items-end">
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => refresh()} disabled={loading}>
               <RefreshCw className={`mr-2 h-4 w-4 ${loading && 'animate-spin'}`} />
@@ -102,34 +102,44 @@ export default function DisputeAnalyticsPage() {
       </div>
 
       {report && (
-        <StatsBar
-          title="争议统计概览"
-          items={[
-            {
-              label: t('analytics:disputes.insights.activeDisputes'),
-              value: report.summary.activeDisputes,
-              trend: report.summary.activeDisputes > 3 ? 'up' : 'neutral',
-              status: report.summary.activeDisputes > 5 ? 'warning' : 'healthy',
-              icon: <AlertCircle className="h-4 w-4" />,
-            },
-            {
-              label: t('analytics:disputes.insights.pendingBonds'),
-              value: `${(report.summary.totalBonded / 1000).toFixed(1)}K`,
-              icon: <DollarSign className="h-4 w-4" />,
-            },
-            {
-              label: t('analytics:disputes.insights.todayDisputes'),
-              value: report.recentActivity.length,
-              trend: 'up',
-              icon: <Gavel className="h-4 w-4" />,
-            },
-            {
-              label: t('analytics:disputes.insights.avgResolution'),
-              value: `${report.summary.avgResolutionTimeHours}h`,
-              icon: <Clock className="h-4 w-4" />,
-            },
-          ]}
-        />
+        <div className="rounded-xl border border-border/30 bg-card/30 p-4">
+          <UnifiedStatsPanel
+            title="争议统计概览"
+            icon={<Gavel className="h-4 w-4" />}
+            items={[
+              {
+                title: t('analytics:disputes.insights.activeDisputes'),
+                value: report.summary.activeDisputes,
+                icon: <AlertCircle className="h-4 w-4" />,
+                status: report.summary.activeDisputes > 5 ? 'warning' : 'healthy',
+                trend:
+                  report.summary.activeDisputes > 3
+                    ? { value: report.summary.activeDisputes, isPositive: false, label: '活跃' }
+                    : undefined,
+              },
+              {
+                title: t('analytics:disputes.insights.pendingBonds'),
+                value: `${(report.summary.totalBonded / 1000).toFixed(1)}K`,
+                icon: <DollarSign className="h-4 w-4" />,
+                color: 'blue',
+              },
+              {
+                title: t('analytics:disputes.insights.todayDisputes'),
+                value: report.recentActivity.length,
+                icon: <Gavel className="h-4 w-4" />,
+                color: 'purple',
+                trend: { value: report.recentActivity.length, isPositive: true, label: '今日' },
+              },
+              {
+                title: t('analytics:disputes.insights.avgResolution'),
+                value: `${report.summary.avgResolutionTimeHours}h`,
+                icon: <Clock className="h-4 w-4" />,
+                color: 'cyan',
+              },
+            ]}
+            columns={4}
+          />
+        </div>
       )}
 
       <TVLOverviewCard />

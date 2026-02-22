@@ -264,12 +264,16 @@ export function AnomalyList({ anomalies, isLoading, onSelect }: AnomalyListProps
           return (
             <div
               key={key}
-              className="rounded-lg border transition-all hover:border-orange-500 hover:shadow-md"
+              className="relative rounded-lg border transition-all duration-200 hover:border-orange-500 hover:shadow-md"
             >
+              <div
+                className="absolute bottom-3 left-0 top-3 w-1 rounded-r"
+                style={{ backgroundColor: deviationColor }}
+              />
               <button
                 type="button"
                 onClick={() => handleAnomalyClick(anomaly)}
-                className="group w-full cursor-pointer p-3 text-left sm:p-4"
+                className="group w-full cursor-pointer p-3 pl-5 text-left sm:p-4 sm:pl-6"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1 space-y-1">
@@ -304,7 +308,7 @@ export function AnomalyList({ anomalies, isLoading, onSelect }: AnomalyListProps
                 </div>
               </button>
 
-              <div className="border-t px-3 pb-2 sm:px-4">
+              <div className="border-t px-3 pb-2 pl-5 sm:px-4 sm:pl-6">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -326,7 +330,7 @@ export function AnomalyList({ anomalies, isLoading, onSelect }: AnomalyListProps
               </div>
 
               {isExpanded && (
-                <div className="border-t bg-gray-50/50 px-3 pb-4 sm:px-4">
+                <div className="border-t bg-gray-50/50 px-3 pb-4 pl-5 sm:px-4 sm:pl-6">
                   <div className="mt-3 space-y-3">
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                       <div className="rounded bg-white p-2">

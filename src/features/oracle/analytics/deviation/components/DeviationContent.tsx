@@ -18,14 +18,14 @@ import {
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
-import { StatCard, StatCardGroup, DashboardStatsSection } from '@/components/common/StatCard';
+import { UnifiedStatsPanel, StatCardSkeleton } from '@/components/common/StatCard';
 import { Button } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { RefreshIndicator } from '@/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Input } from '@/components/ui';
-import { StatCardSkeleton, ChartSkeleton, CardSkeleton, SkeletonList } from '@/components/ui';
+import { ChartSkeleton, CardSkeleton, SkeletonList } from '@/components/ui';
 import {
   TrendList,
   AnomalyList,
@@ -165,8 +165,8 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
       <WelcomeGuide />
       <ToastContainer toasts={toasts} onRemove={removeToast} />
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex-1">
           <h1 className="flex items-center gap-2 text-lg font-bold sm:gap-3 sm:text-xl lg:text-2xl xl:text-3xl">
             <span className="text-orange-600">{t('analytics.deviation.pageName')}</span>
             <HelpTooltip content={t('analytics.deviation.help.pageOverview')} side="right" />
@@ -175,12 +175,12 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
             {t('analytics.deviation.pageDescription')}
           </p>
         </div>
-        <div className="flex flex-col items-start gap-2 sm:items-end">
+        <div className="flex flex-col gap-3 lg:items-end">
           <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="h-10 sm:h-9"
+              className="h-9"
               onClick={() => handleRefresh()}
               disabled={loading}
             >
@@ -204,7 +204,7 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
         </div>
       </div>
 
-      <Card className="border-border/50 bg-gradient-to-r from-card to-muted/20">
+      <Card className="border-border/50">
         <CardContent className="p-3 sm:p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:gap-4">
             <TimeRangeSelector
@@ -225,67 +225,66 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
         </CardContent>
       </Card>
 
-      <DashboardStatsSection
-        title={t('analytics.deviation.summary.title')}
-        icon={<BarChart3 className="h-4 w-4" />}
-        color="blue"
-        className="overflow-hidden"
-      >
-        {loading && !report ? (
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-          </div>
-        ) : (
-          <StatCardGroup columns={isMobile ? 2 : 4} gap="md">
-            {enhancedStats.map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.3 }}
-              >
-                <StatCard
-                  title={stat.title}
-                  value={stat.value}
-                  icon={stat.icon}
-                  color={stat.color}
-                  tooltip={stat.tooltip}
-                  variant="detailed"
-                />
-              </motion.div>
-            ))}
-          </StatCardGroup>
-        )}
-      </DashboardStatsSection>
+      <Card className="border-border/30 bg-card/30">
+        <CardContent className="p-4">
+          {loading && !report ? (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </div>
+          ) : (
+            <UnifiedStatsPanel
+              title={t('analytics.deviation.summary.title')}
+              icon={<BarChart3 className="h-4 w-4" />}
+              items={enhancedStats.map((stat) => ({
+                title: stat.title,
+                value: stat.value,
+                icon: stat.icon,
+                color: stat.color,
+              }))}
+              columns={isMobile ? 2 : 4}
+            />
+          )}
+        </CardContent>
+      </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="rounded-lg bg-muted/30 p-1"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="rounded-xl border border-border/30 bg-muted/50 p-1.5 backdrop-blur-sm"
         >
-          <TabsList className="grid w-full grid-cols-4 bg-transparent">
-            <TabsTrigger value="overview" className="h-11 text-xs sm:h-10 sm:text-sm">
-              <Activity className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+          <TabsList className="grid w-full grid-cols-4 gap-1 bg-transparent">
+            <TabsTrigger
+              value="overview"
+              className="h-11 text-xs transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:h-10 sm:text-sm"
+            >
+              <Activity className="mr-1 h-3 w-3 transition-transform duration-200 group-hover:scale-110 sm:mr-2 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">{t('analytics.deviation.tabs.overview')}</span>
               <span className="sm:hidden">
                 {t('analytics.deviation.tabs.overviewShort') ||
                   t('analytics.deviation.tabs.overview')}
               </span>
             </TabsTrigger>
-            <TabsTrigger value="trends" className="h-11 text-xs sm:h-10 sm:text-sm">
-              <TrendingUp className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+            <TabsTrigger
+              value="trends"
+              className="h-11 text-xs transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:h-10 sm:text-sm"
+            >
+              <TrendingUp className="mr-1 h-3 w-3 transition-transform duration-200 group-hover:scale-110 sm:mr-2 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">{t('analytics.deviation.tabs.trends')}</span>
               <span className="sm:hidden">
                 {t('analytics.deviation.tabs.trendsShort') || t('analytics.deviation.tabs.trends')}
               </span>
               <span className="ml-1">({filteredTrends.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="anomalies" className="h-11 text-xs sm:h-10 sm:text-sm">
-              <AlertTriangle className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+            <TabsTrigger
+              value="anomalies"
+              className="h-11 text-xs transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:h-10 sm:text-sm"
+            >
+              <AlertTriangle className="mr-1 h-3 w-3 transition-transform duration-200 group-hover:scale-110 sm:mr-2 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">{t('analytics.deviation.tabs.anomalies')}</span>
               <span className="sm:hidden">
                 {t('analytics.deviation.tabs.anomaliesShort') ||
@@ -293,8 +292,11 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
               </span>
               <span className="ml-1">({report?.anomalies.length || 0})</span>
             </TabsTrigger>
-            <TabsTrigger value="history" className="h-11 text-xs sm:h-10 sm:text-sm">
-              <History className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+            <TabsTrigger
+              value="history"
+              className="h-11 text-xs transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:h-10 sm:text-sm"
+            >
+              <History className="mr-1 h-3 w-3 transition-transform duration-200 group-hover:scale-110 sm:mr-2 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">{t('analytics.deviation.tabs.history')}</span>
               <span className="sm:hidden">
                 {t('analytics.deviation.tabs.historyShort') ||
@@ -323,17 +325,23 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
                     </>
                   ) : (
                     <>
-                      <DeviationDistributionChart trends={filteredTrends} />
-                      <AnalysisPeriodCard report={report} />
+                      <div className="rounded-xl transition-all duration-200 hover:border-border/50 hover:shadow-lg">
+                        <DeviationDistributionChart trends={filteredTrends} />
+                      </div>
+                      <div className="rounded-xl transition-all duration-200 hover:border-border/50 hover:shadow-lg">
+                        <AnalysisPeriodCard report={report} />
+                      </div>
                     </>
                   )}
                 </div>
                 {loading && !report ? (
                   <ChartSkeleton />
                 ) : (
-                  <DeviationHeatmap trends={filteredTrends} anomalies={report?.anomalies} />
+                  <div className="rounded-xl transition-all duration-200 hover:border-border/50 hover:shadow-lg">
+                    <DeviationHeatmap trends={filteredTrends} anomalies={report?.anomalies} />
+                  </div>
                 )}
-                <Card>
+                <Card className="transition-all duration-200 hover:border-border/50 hover:shadow-lg">
                   <CardHeader className="p-4 sm:p-6">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base sm:text-lg">
@@ -342,7 +350,7 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-10 sm:h-9"
+                        className="h-10 transition-all duration-200 hover:bg-muted sm:h-9"
                         onClick={() => setActiveTab('anomalies')}
                       >
                         {t('analytics.deviation.anomalies.viewAll')}
@@ -370,7 +378,7 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
 
             {activeTab === 'trends' && (
               <TabsContent value="trends" className="mt-0 space-y-4 sm:space-y-6">
-                <Card>
+                <Card className="transition-all duration-200 hover:shadow-md">
                   <CardContent className="p-3 sm:p-4">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -378,13 +386,13 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
                         placeholder={t('analytics.deviation.searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="h-11 pl-9 sm:h-10"
+                        className="h-11 pl-9 transition-all duration-200 focus:ring-2 focus:ring-primary/20 sm:h-10"
                       />
                     </div>
                   </CardContent>
                 </Card>
                 <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                  <Card>
+                  <Card className="transition-all duration-200 hover:border-border/50 hover:shadow-lg">
                     <CardHeader className="p-4 sm:p-6">
                       <CardTitle className="text-base sm:text-lg">
                         {t('analytics.deviation.trends.title')}
@@ -407,8 +415,12 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
                     </CardContent>
                   </Card>
                   <div className="space-y-4 sm:space-y-6">
-                    <TrendDetails selectedTrend={selectedTrend} symbolData={symbolData} />
-                    <ProtocolPriceComparison dataPoint={selectedAnomaly} />
+                    <div className="rounded-xl transition-all duration-200 hover:border-border/50 hover:shadow-lg">
+                      <TrendDetails selectedTrend={selectedTrend} symbolData={symbolData} />
+                    </div>
+                    <div className="rounded-xl transition-all duration-200 hover:border-border/50 hover:shadow-lg">
+                      <ProtocolPriceComparison dataPoint={selectedAnomaly} />
+                    </div>
                   </div>
                 </div>
               </TabsContent>
@@ -417,7 +429,7 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
             {activeTab === 'anomalies' && (
               <TabsContent value="anomalies" className="mt-0 space-y-4 sm:space-y-6">
                 <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                  <Card>
+                  <Card className="transition-all duration-200 hover:border-border/50 hover:shadow-lg">
                     <CardHeader className="p-4 sm:p-6">
                       <CardTitle className="text-base sm:text-lg">
                         {t('analytics.deviation.anomalies.title')}
@@ -434,7 +446,9 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
                       />
                     </CardContent>
                   </Card>
-                  <ProtocolPriceComparison dataPoint={selectedAnomaly} />
+                  <div className="rounded-xl transition-all duration-200 hover:border-border/50 hover:shadow-lg">
+                    <ProtocolPriceComparison dataPoint={selectedAnomaly} />
+                  </div>
                 </div>
               </TabsContent>
             )}
