@@ -5,3 +5,4 @@
  */
 
 export * from './oracle';
+export * from './kpi';

@@ -106,3 +106,22 @@ export function formatDurationMinutes(totalMinutes: number): string {
   if (minutes === 0) return `${hours}h`;
   return `${hours}h ${minutes}m`;
 }
+
+export function formatDateIntl(
+  value: Date | number | string,
+  locale: string = 'en-US',
+  options?: Intl.DateTimeFormatOptions,
+): string {
+  const date = value instanceof Date ? value : new Date(value);
+  if (!Number.isFinite(date.getTime())) return '—';
+  return new Intl.DateTimeFormat(locale, options).format(date);
+}
+
+export function formatRelativeTimeIntl(
+  value: number,
+  unit: Intl.RelativeTimeFormatUnit,
+  locale: string = 'en-US',
+  options?: Intl.RelativeTimeFormatOptions,
+): string {
+  return new Intl.RelativeTimeFormat(locale, options).format(value, unit);
+}

@@ -76,6 +76,34 @@ export function ok<T>(data: T, meta?: ApiOk<T>['meta']): NextResponse {
   });
 }
 
+export function apiSuccess<T>(data: T, status: number = 200): NextResponse {
+  return NextResponse.json({ success: true, data } as ApiOk<T>, { status });
+}
+
+export function apiError(
+  code: string,
+  message: string,
+  status: number = 500,
+  details?: unknown,
+): NextResponse {
+  return NextResponse.json(
+    {
+      success: false,
+      error: { code, message, details },
+    } as ApiErrorPayload,
+    { status },
+  );
+}
+
+export function getQueryParam(
+  request: NextRequest,
+  name: string,
+  defaultValue?: string,
+): string | null {
+  const value = request.nextUrl.searchParams.get(name);
+  return value ?? defaultValue ?? null;
+}
+
 export async function handleApi(
   _request: Request,
   handler: () => Promise<Response>,

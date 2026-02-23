@@ -2,7 +2,6 @@
  * Shared Utils - 工具函数统一导出
  */
 
-export * from './apiHandler';
 export * from './blockchain';
 export * from './common';
 export * from './export';
@@ -32,3 +31,15 @@ export { ApiClientError, fetchApiData, getErrorCode, normalizeListResponse } fro
 
 // 从 format/index.ts 导出（向后兼容）
 export { copyToClipboard } from './format/index';
+
+// API 响应工具（从 lib/api/apiResponse 重新导出）
+export {
+  ok,
+  error,
+  apiSuccess,
+  apiError,
+  getQueryParam,
+  type ApiOk,
+  type ApiErrorPayload,
+  type ApiResponse,
+} from '@/lib/api/apiResponse';

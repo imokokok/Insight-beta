@@ -1,3 +1,10 @@
+import {
+  formatDateIntl,
+  formatNumberIntl,
+  formatCurrencyIntl,
+  formatRelativeTimeIntl,
+} from '@/shared/utils/format';
+
 import type { InterpolationValues, Lang, PluralOptions, PluralRule } from './types';
 
 const PLURAL_RULES: Record<Lang, Intl.PluralRules> = {} as Record<Lang, Intl.PluralRules>;
@@ -37,8 +44,7 @@ export function formatDate(
   lang: Lang,
   options?: Intl.DateTimeFormatOptions,
 ): string {
-  const date = value instanceof Date ? value : new Date(value);
-  return new Intl.DateTimeFormat(localeMap[lang], options).format(date);
+  return formatDateIntl(value, localeMap[lang], options);
 }
 
 export function formatNumber(
@@ -46,7 +52,7 @@ export function formatNumber(
   lang: Lang,
   options?: Intl.NumberFormatOptions,
 ): string {
-  return new Intl.NumberFormat(localeMap[lang], options).format(value);
+  return formatNumberIntl(value, localeMap[lang], options);
 }
 
 export function formatCurrency(
@@ -55,11 +61,7 @@ export function formatCurrency(
   currency: string,
   options?: Intl.NumberFormatOptions,
 ): string {
-  return new Intl.NumberFormat(localeMap[lang], {
-    style: 'currency',
-    currency,
-    ...options,
-  }).format(value);
+  return formatCurrencyIntl(value, localeMap[lang], currency, options);
 }
 
 export function formatRelativeTime(
@@ -68,7 +70,7 @@ export function formatRelativeTime(
   lang: Lang,
   options?: Intl.RelativeTimeFormatOptions,
 ): string {
-  return new Intl.RelativeTimeFormat(localeMap[lang], options).format(value, unit);
+  return formatRelativeTimeIntl(value, unit, localeMap[lang], options);
 }
 
 export function getNestedValue(obj: unknown, path: string): unknown {

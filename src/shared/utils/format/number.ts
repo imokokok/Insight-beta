@@ -4,16 +4,49 @@
  * 数字格式化工具函数
  */
 
-export function formatNumber(value: number, decimals: number = 2): string {
+export interface FormatNumberOptions {
+  decimals?: number;
+  locale?: string;
+  notation?: 'standard' | 'compact';
+}
+
+export function formatNumber(
+  value: number,
+  decimals: number = 2,
+  locale: string = 'en-US',
+): string {
   if (!Number.isFinite(value)) return '—';
   const absValue = Math.abs(value);
   if (absValue >= 1e9) return (value / 1e9).toFixed(decimals) + 'B';
   if (absValue >= 1e6) return (value / 1e6).toFixed(decimals) + 'M';
   if (absValue >= 1e3) return (value / 1e3).toFixed(decimals) + 'K';
-  return value.toLocaleString('en-US', {
+  return value.toLocaleString(locale, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });
+}
+
+export function formatNumberIntl(
+  value: number,
+  locale: string = 'en-US',
+  options?: Intl.NumberFormatOptions,
+): string {
+  if (!Number.isFinite(value)) return '—';
+  return new Intl.NumberFormat(locale, options).format(value);
+}
+
+export function formatCurrencyIntl(
+  value: number,
+  locale: string = 'en-US',
+  currency: string = 'USD',
+  options?: Intl.NumberFormatOptions,
+): string {
+  if (!Number.isFinite(value)) return '—';
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    ...options,
+  }).format(value);
 }
 
 export function formatPrice(price: number): string {

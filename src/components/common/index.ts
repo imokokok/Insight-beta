@@ -192,3 +192,8 @@ export { DensityProvider, useDensity } from './DensityProvider';
 export type { DensityMode, DensityConfig, DensityProviderProps } from './DensityProvider';
 export { DensityToggle } from './DensityToggle';
 export type { DensityToggleProps } from './DensityToggle';
+
+// ==================== KPI 卡片 ====================
+export { KpiCard, KpiGrid } from './KpiCard';
+export { DEFAULT_KPI_DATA, TREND_COLORS, STATUS_COLORS } from './KpiCard';
+export type { KpiCardData, TrendDirection, KpiStatus } from './KpiCard';

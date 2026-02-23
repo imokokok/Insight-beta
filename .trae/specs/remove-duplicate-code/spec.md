@@ -1,79 +1,135 @@
-# 删除重复无用代码规范
+# 删除重复无用代码 Spec
 
 ## Why
 
-项目中存在大量重复和无用的代码，包括重复的API响应格式、组件内重复定义的工具函数、重复的类型定义等。这些重复代码增加了维护成本，降低了代码可读性，并可能导致不一致的行为。
+项目中存在大量重复代码，包括工具函数、类型定义、组件和 API 模式。这些重复代码增加了维护成本，容易导致行为不一致，并使代码库膨胀。
 
 ## What Changes
 
-- **统一API响应格式**: 将所有直接使用 `NextResponse.json()` 的路由改为使用 `ok()/error()` 辅助函数
-- **删除组件内重复的工具函数**: 删除组件内重新定义的 `formatPrice`、`formatLatency` 等函数，统一使用共享实现
-- **合并重复类型定义**: 合并 `DashboardStats` 等重复定义的类型
-- **统一Mock数据管理**: 创建集中的 mock 数据服务
-- **简化工具函数导出链**: 删除中间层重新导出文件
-- **合并功能重叠的Hooks**: 统一数据获取方式
+- 统一重复的格式化工具函数（`formatPrice`、`formatNumber`、`formatEth`、`escapeCSV` 等）
+
+- 合并重复的类型定义（`GasCostByChain` 等）
+
+- 整合重复的导出组件
+
+- 统一 API 路由中的查询参数解析和错误处理模式
+
+- 删除未使用的导入和冗余导出
 
 ## Impact
 
-- Affected specs: API路由、组件、类型系统、工具函数
+- Affected specs: 格式化工具、类型系统、导出功能、API 路由
+
 - Affected code:
-  - `src/app/api/` 目录下多个路由文件
-  - `src/features/oracle/*/components/` 目录下多个组件
-  - `src/features/alerts/hooks/` 目录下的hooks
-  - `src/shared/utils/format/` 相关文件
-  - `src/types/` 和 `src/features/*/types/` 目录下的类型文件
+  - `src/shared/utils/format/` - 格式化工具
+
+  - `src/features/oracle/*/types/` - Oracle 类型定义
+
+  - `src/components/common/ExportButton.tsx` - 导出组件
+
+  - `src/app/api/` - API 路由
+
+  - `src/features/*/utils/format.ts` - 各模块格式化工具
 
 ## ADDED Requirements
 
-### Requirement: 统一API响应格式
+### Requirement: 统一格式化工具函数
 
-系统 SHALL 在所有API路由中使用统一的响应格式辅助函数 `ok()` 和 `error()`。
+系统 SHALL 在 `src/shared/utils/format/` 目录下提供统一的格式化工具函数，各 feature 模块应从该目录导入而非重复定义。
 
-#### Scenario: API响应格式统一
+#### Scenario: formatPrice 函数统一
 
-- **WHEN** API路由返回成功响应
-- **THEN** 使用 `ok(data)` 函数返回统一格式的响应
-- **WHEN** API路由返回错误响应
-- **THEN** 使用 `error(code, message, status)` 函数返回统一格式的错误响应
+- **WHEN** 开发者需要格式化价格
 
-### Requirement: 集中管理工具函数
+- **THEN** 应使用 `src/shared/utils/format/number.ts` 中的 `formatPrice` 函数
 
-系统 SHALL 在共享位置集中定义和导出工具函数，组件 SHALL 直接从共享位置导入使用。
+- **AND** 删除 `features/oracle/chainlink/components/dashboard/formatters.ts` 中的重复定义
 
-#### Scenario: 工具函数使用
+#### Scenario: escapeCSV 函数统一
 
-- **WHEN** 组件需要使用 `formatPrice` 或 `formatLatency` 函数
-- **THEN** 从 `@/shared/utils/format` 导入，而非在组件内重新定义
+- **WHEN** 开发者需要 CSV 转义功能
 
-### Requirement: 类型定义去重
+- **THEN** 应使用 `src/utils/chartExport.ts` 中的 `escapeCSV` 函数
 
-系统 SHALL 避免重复定义相同的类型接口。
+- **AND** 删除 `components/common/ExportButton.tsx` 中的重复定义
 
-#### Scenario: 类型定义
+### Requirement: 合并重复类型定义
 
-- **WHEN** 定义新的类型接口
-- **THEN** 检查是否已存在相同或相似的类型定义
-- **IF** 存在相似类型
-- **THEN** 使用继承或组合扩展，而非重新定义
+系统 SHALL 在 `src/types/shared.ts` 中定义共享的 Oracle 类型，各协议特定类型应继承或复用这些基础类型。
+
+#### Scenario: GasCostByChain 类型统一
+
+- **WHEN** 定义 Gas 成本分析类型
+
+- **THEN** 应使用 `src/types/shared.ts` 中的基础类型
+
+- **AND** API3 和 Chainlink 的特定类型应继承基础类型
+
+### Requirement: 统一导出组件
+
+系统 SHALL 提供通用的 `ExportButton` 组件，各 feature 模块应通过配置复用该组件。
+
+#### Scenario: Oracle 导出按钮统一
+
+- **WHEN** 需要为特定 Oracle 协议提供导出功能
+
+- **THEN** 应使用 `src/components/common/ExportButton.tsx` 并传入配置
+
+- **AND** 删除各 feature 模块下的重复 ExportButton 组件
+
+### Requirement: 统一 API 工具函数
+
+系统 SHALL 提供统一的 API 工具函数用于查询参数解析和错误处理。
+
+#### Scenario: 查询参数解析统一
+
+- **WHEN** API 路由需要解析查询参数
+
+- **THEN** 应使用 `src/lib/api/` 中的统一工具函数
+
+- **AND** 删除各路由中的 `parseQueryParams` 重复定义
 
 ## MODIFIED Requirements
 
-### Requirement: Mock数据管理
+### Requirement: 格式化工具导出
 
-原有的分散Mock数据函数 SHALL 被集中的Mock数据服务替代。
+`src/shared/utils/format/index.ts` SHALL 导出所有格式化工具函数，供各模块统一导入使用。
 
-### Requirement: Hooks数据获取
+### Requirement: 类型导出
 
-功能重叠的Hooks SHALL 被合并为统一的实现。
+`src/types/shared.ts` SHALL 导出所有共享类型定义，包括 `GasCostAnalysisDataBase`、`GasCostByChainBase` 等。
 
 ## REMOVED Requirements
 
-### Requirement: 组件内工具函数定义
+### Requirement: 删除重复的格式化函数
 
-**Reason**: 工具函数应在共享位置统一定义，避免重复和维护困难
-**Migration**: 删除组件内的工具函数定义，改为从共享位置导入
+**Reason**: 已统一到 `src/shared/utils/format/`
+**Migration**:
 
-### Requirement: 重复的类型定义
+- 删除 `features/oracle/chainlink/components/dashboard/formatters.ts` 中的 `formatPrice`、`formatNumber`
 
-**Reason**: 相同类型应只定义一次，避免不一致
-**Migration**: 删除重复定义，保留最完整的版本
+- 删除 `features/cross-chain/utils/format.ts` 中的 `formatEth`、`formatPrice`（改为从 shared 导入）
+
+- 删除 `components/common/ExportButton.tsx` 中的 `escapeCSV`、`escapeXML`（改为从 chartExport 导入）
+
+### Requirement: 删除重复的 ExportButton 组件
+
+**Reason**: 已有通用组件
+**Migration**:
+
+- 删除 `features/oracle/api3/components/export/ExportButton.tsx`
+
+- 删除 `features/oracle/band/components/export/ExportButton.tsx`
+
+- 删除 `features/oracle/analytics/deviation/components/export/ExportButton.tsx`
+
+- 删除 `features/oracle/analytics/disputes/components/export/ExportButton.tsx`
+
+### Requirement: 删除重复的类型定义
+
+**Reason**: 已统一到共享类型文件
+**Migration**:
+
+- 删除 `features/oracle/api3/types/api3.ts` 中的 `GasCostByChain`
+
+- 删除 `features/oracle/chainlink/types/chainlink.ts` 中的 `GasCostByChain`

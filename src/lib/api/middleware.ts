@@ -12,9 +12,9 @@ import type { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 import { RATE_LIMIT_CONFIG } from '@/config/constants';
+import { error as apiError } from '@/lib/api/apiResponse';
 import { rateLimit as checkRateLimit } from '@/lib/security/rateLimit';
 import { logger } from '@/shared/logger';
-import { apiError } from '@/shared/utils/apiHandler';
 
 const SENSITIVE_PARAMS = ['api_key', 'token', 'secret', 'password', 'key', 'auth', 'credential'];
 
@@ -125,7 +125,10 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
 
       try {
         if (options.validate?.allowedMethods && !options.validate.allowedMethods.includes(method)) {
-          return apiError('METHOD_NOT_ALLOWED', `Method ${method} not allowed`, 405);
+          return apiError(
+            { code: 'METHOD_NOT_ALLOWED', message: `Method ${method} not allowed` },
+            405,
+          );
         }
 
         let rateLimitRemaining = -1;
@@ -135,9 +138,14 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
           rateLimitRemaining = result.remaining;
           if (!result.allowed) {
             const retryAfter = Math.ceil((result.resetTime - Date.now()) / 1000);
-            const response = apiError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded', 429, {
-              retryAfter,
-            });
+            const response = apiError(
+              {
+                code: 'RATE_LIMIT_EXCEEDED',
+                message: 'Rate limit exceeded',
+                details: { retryAfter },
+              },
+              429,
+            );
             response.headers.set('X-RateLimit-Remaining', '0');
             response.headers.set('Retry-After', String(retryAfter));
             return response;
@@ -147,12 +155,15 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
         if (options.auth?.required) {
           const token = request.headers.get(options.auth.header || 'authorization');
           if (!token) {
-            return apiError('AUTHENTICATION_REQUIRED', 'Authentication required', 401);
+            return apiError(
+              { code: 'AUTHENTICATION_REQUIRED', message: 'Authentication required' },
+              401,
+            );
           }
           if (options.auth.validateToken) {
             const valid = await options.auth.validateToken(token);
             if (!valid) {
-              return apiError('INVALID_TOKEN', 'Invalid token', 401);
+              return apiError({ code: 'INVALID_TOKEN', message: 'Invalid token' }, 401);
             }
           }
         }
@@ -160,7 +171,10 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
         if (options.validate?.custom) {
           const validation = await options.validate.custom(request);
           if (!validation.valid) {
-            return apiError('VALIDATION_ERROR', validation.error || 'Validation failed', 400);
+            return apiError(
+              { code: 'VALIDATION_ERROR', message: validation.error || 'Validation failed' },
+              400,
+            );
           }
         }
 
@@ -193,10 +207,12 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
         });
 
         return apiError(
-          'INTERNAL_ERROR',
-          error instanceof Error ? error.message : 'Internal server error',
+          {
+            code: 'INTERNAL_ERROR',
+            message: error instanceof Error ? error.message : 'Internal server error',
+            details: { requestId },
+          },
           500,
-          { requestId },
         );
       }
     };
