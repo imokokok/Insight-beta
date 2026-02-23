@@ -17,20 +17,11 @@ import {
 import { ContentSection } from '@/components/common';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { CHAIN_COLORS, type ChainId } from '@/config/chains';
 import { cn } from '@/shared/utils';
 import { formatTime } from '@/shared/utils/format/date';
 
 import type { ChainStatusResponse } from '../types';
-
-const CHAIN_COLORS: Record<string, string> = {
-  ethereum: '#627eea',
-  bsc: '#f0b90b',
-  polygon: '#8247e5',
-  avalanche: '#e84142',
-  arbitrum: '#28a0f0',
-  optimism: '#ff0420',
-  base: '#0052ff',
-};
 
 interface ChainStatusOverviewProps {
   data?: ChainStatusResponse;
@@ -58,7 +49,7 @@ export const ChainStatusOverview = memo(function ChainStatusOverview({
         responseTimeMs: chain.responseTimeMs,
         staleMinutes: chain.staleMinutes,
         status: chain.status,
-        color: CHAIN_COLORS[chain.chain] || '#94a3b8',
+        color: CHAIN_COLORS[chain.chain as ChainId] || '#94a3b8',
       }));
   }, [data]);
 

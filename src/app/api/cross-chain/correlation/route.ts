@@ -1,5 +1,5 @@
+import { apiSuccess } from '@/lib/api/apiResponse';
 import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
-import { apiSuccess } from '@/shared/utils';
 
 interface CorrelationData {
   chain1: string;

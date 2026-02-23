@@ -18,21 +18,17 @@ import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
+import { CHAIN_DISPLAY_NAMES } from '@/config/chains';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 import { formatLatency, getLatencyColor } from '@/shared/utils/format';
 
+import { getTransferStatusConfig } from '../utils/statusConfig';
+
 import type { Transfer } from '../types';
 
-interface TransferHistoryProps {
-  bridgeId?: string;
-  chain?: string;
-  limit?: number;
-  className?: string;
-}
-
-const CHAIN_DISPLAY_NAMES: Record<string, string> = {
-  ethereum: 'Ethereum',
+const EXTENDED_CHAIN_DISPLAY_NAMES: Record<string, string> = {
+  ...CHAIN_DISPLAY_NAMES,
   cosmos: 'Cosmos Hub',
   osmosis: 'Osmosis',
   juno: 'Juno',
@@ -44,13 +40,17 @@ const CHAIN_DISPLAY_NAMES: Record<string, string> = {
   kujira: 'Kujira',
 };
 
-const getStatusConfig = (status: Transfer['status']) => {
-  const configs = {
-    pending: { status: 'warning' as const, label: 'Pending', icon: Loader2 },
-    completed: { status: 'active' as const, label: 'Completed', icon: CheckCircle },
-    failed: { status: 'offline' as const, label: 'Failed', icon: XCircle },
-  };
-  return configs[status] ?? configs.pending;
+interface TransferHistoryProps {
+  bridgeId?: string;
+  chain?: string;
+  limit?: number;
+  className?: string;
+}
+
+const STATUS_ICONS: Record<string, typeof Loader2> = {
+  Loader2,
+  CheckCircle,
+  XCircle,
 };
 
 const truncateHash = (hash: string): string => {
@@ -211,19 +211,20 @@ export function TransferHistory({ bridgeId, chain, limit = 20, className }: Tran
             </TableHeader>
             <TableBody>
               {transfers.map((transfer) => {
-                const statusConfig = getStatusConfig(transfer.status);
-                const StatusIcon = statusConfig.icon;
+                const statusConfig = getTransferStatusConfig(transfer.status);
+                const StatusIcon = STATUS_ICONS[statusConfig.icon] ?? Loader2;
 
                 return (
                   <TableRow key={transfer.transferId} className="group">
                     <TableCell>
                       <div className="flex items-center gap-1.5">
                         <span className="text-sm">
-                          {CHAIN_DISPLAY_NAMES[transfer.sourceChain] ?? transfer.sourceChain}
+                          {EXTENDED_CHAIN_DISPLAY_NAMES[transfer.sourceChain] ??
+                            transfer.sourceChain}
                         </span>
                         <ArrowRight className="h-3 w-3 text-muted-foreground" />
                         <span className="text-sm">
-                          {CHAIN_DISPLAY_NAMES[transfer.destinationChain] ??
+                          {EXTENDED_CHAIN_DISPLAY_NAMES[transfer.destinationChain] ??
                             transfer.destinationChain}
                         </span>
                       </div>

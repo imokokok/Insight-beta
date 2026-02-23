@@ -1,6 +1,6 @@
 import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
+import { apiSuccess } from '@/lib/api/apiResponse';
 import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
-import { apiSuccess } from '@/shared/utils';
 
 async function handleGet() {
   const dashboard = await crossChainAnalysisService.getDashboardData();

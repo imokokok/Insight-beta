@@ -88,7 +88,7 @@ export default function DisputeAnalyticsPage() {
               <RefreshCw className={`mr-2 h-4 w-4 ${loading && 'animate-spin'}`} />
               {t('common.refresh')}
             </Button>
-            <ExportButton report={report} disabled={loading} />
+            <ExportButton data={report} disabled={loading} />
             <AutoRefreshControl
               isEnabled={autoRefreshEnabled}
               onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}

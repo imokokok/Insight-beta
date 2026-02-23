@@ -19,6 +19,7 @@ export type {
   ChartExportButtonProps,
   DataExportButtonProps,
 } from './ExportButton';
+export { createExportButton, type CreateExportButtonOptions } from './ExportButtonFactory';
 
 // ==================== 数据展示 ====================
 export { StatCard, StatCardSkeleton, StatCardGroup, DashboardStatsSection } from './StatCard';

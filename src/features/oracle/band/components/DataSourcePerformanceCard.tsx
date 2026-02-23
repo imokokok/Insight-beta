@@ -4,7 +4,7 @@ import { Clock, Zap, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-reac
 
 import { Badge } from '@/components/ui';
 import { cn } from '@/shared/utils';
-import { formatLatency } from '@/shared/utils/format';
+import { formatLatency, getLatencyStatus } from '@/shared/utils/format';
 
 import type { DataSource } from '../types';
 
@@ -20,11 +20,18 @@ const getReliabilityColor = (score: number) => {
   return { bg: 'bg-red-500', text: 'text-red-500', bar: 'bg-red-500' };
 };
 
-const getLatencyStatus = (latencyMs: number) => {
-  if (latencyMs <= 100) return { label: '优秀', color: 'text-emerald-500' };
-  if (latencyMs <= 500) return { label: '良好', color: 'text-amber-500' };
-  if (latencyMs <= 1000) return { label: '一般', color: 'text-orange-500' };
-  return { label: '较慢', color: 'text-red-500' };
+const getLatencyStatusDisplay = (latencyMs: number) => {
+  const status = getLatencyStatus(latencyMs);
+  switch (status) {
+    case 'excellent':
+      return { label: '优秀', color: 'text-emerald-500' };
+    case 'good':
+      return { label: '良好', color: 'text-emerald-500' };
+    case 'fair':
+      return { label: '一般', color: 'text-amber-500' };
+    case 'poor':
+      return { label: '较慢', color: 'text-red-500' };
+  }
 };
 
 const formatFrequency = (seconds: number): string => {
@@ -35,7 +42,7 @@ const formatFrequency = (seconds: number): string => {
 
 export function DataSourcePerformanceCard({ source, className }: DataSourcePerformanceCardProps) {
   const colors = getReliabilityColor(source.reliabilityScore);
-  const latencyStatus = getLatencyStatus(source.lastUpdateLatency);
+  const latencyStatus = getLatencyStatusDisplay(source.lastUpdateLatency);
   const trendData = source.historicalReliability;
   const avgReliability =
     trendData.length > 0

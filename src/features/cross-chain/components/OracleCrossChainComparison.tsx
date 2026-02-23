@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import { CHAIN_COLORS, CHAIN_DISPLAY_NAMES } from '@/config/chains';
 import {
   formatPrice,
   formatDeviation,
@@ -63,28 +64,6 @@ export interface OracleCrossChainComparisonProps {
   className?: string;
 }
 
-const DEFAULT_CHAIN_COLORS: Record<string, string> = {
-  ethereum: '#627eea',
-  polygon: '#8247e5',
-  arbitrum: '#28a0f0',
-  optimism: '#ff0420',
-  base: '#0052ff',
-  avalanche: '#e84142',
-  bsc: '#f0b90b',
-  fantom: '#1969ff',
-};
-
-const DEFAULT_CHAIN_DISPLAY_NAMES: Record<string, string> = {
-  ethereum: 'Ethereum',
-  polygon: 'Polygon',
-  arbitrum: 'Arbitrum',
-  optimism: 'Optimism',
-  base: 'Base',
-  avalanche: 'Avalanche',
-  bsc: 'BSC',
-  fantom: 'Fantom',
-};
-
 function LoadingSkeleton() {
   return (
     <div className="space-y-4">
@@ -104,8 +83,8 @@ export function OracleCrossChainComparison({
   description,
   availableSymbols,
   supportedChains,
-  chainDisplayNames = DEFAULT_CHAIN_DISPLAY_NAMES,
-  chainColors = DEFAULT_CHAIN_COLORS,
+  chainDisplayNames = CHAIN_DISPLAY_NAMES,
+  chainColors = CHAIN_COLORS,
   fetchData,
   isLoading: externalLoading = false,
   showConfidence = false,

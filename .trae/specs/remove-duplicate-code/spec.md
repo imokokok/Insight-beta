@@ -2,82 +2,88 @@
 
 ## Why
 
-代码库中存在大量重复代码（约1700行），包括重复的类型定义、工具函数、组件和配置文件。这些重复代码降低了代码可维护性，增加了维护成本，容易导致不一致性问题。
+代码库中存在大量重复的组件、函数、类型和常量定义，导致代码维护困难、容易产生不一致行为，并增加了代码体积。清理这些重复代码可以提高代码可维护性和一致性。
 
 ## What Changes
 
-- 删除重复的类型定义，统一到 `@/types` 目录
-- 删除重复的工具函数，统一到 `@/shared/utils` 目录
-- 删除重复的组件，使用通用基础组件
-- 删除重复的配置文件
-- **BREAKING** 部分导入路径将改变
+- 删除重复的 ExportButton 组件（6个文件合并为通用方案）
+- 删除重复的 CHAIN_DISPLAY_NAMES 常量定义（5处合并为1处）
+- 删除重复的 CHAIN_COLORS 常量定义（4处合并为1处）
+- 统一 getLatencyColor 函数（3处合并为1处）
+- 统一 getLatencyStatus 函数（3处合并为1处）
+- 统一 formatRelativeTime 函数（4处合并为1处）
+- 统一 getStatusConfig 函数（2处合并为1处）
+- 清理页面内局部重复的类型定义
 
 ## Impact
 
-- Affected specs: 类型系统、工具函数、组件库
+- Affected specs: 无破坏性变更，所有功能保持不变
 - Affected code:
-  - `src/types/` - 类型定义整理
-  - `src/shared/utils/` - 工具函数统一
-  - `src/features/oracle/*/components/` - 组件重构
-  - `src/app/api/alerts/` - API 路由重构
+  - `src/features/oracle/*/components/export/ExportButton.tsx` (6个文件)
+  - `src/app/oracle/band/page.tsx`
+  - `src/features/oracle/band/components/*.tsx`
+  - `src/features/cross-chain/components/*.tsx`
+  - `src/shared/utils/format/time.ts`
+  - `src/shared/utils/format/date.ts`
+  - `src/config/chains.ts`
 
 ## ADDED Requirements
 
-### Requirement: 统一类型定义
+### Requirement: 统一链相关常量
 
-系统 SHALL 将所有重复的类型定义统一到 `@/types` 目录下的相应文件中。
+系统 SHALL 从 `src/config/chains.ts` 统一导出 `CHAIN_DISPLAY_NAMES` 和 `CHAIN_COLORS`，其他文件 SHALL 导入使用而非重复定义。
 
-#### Scenario: AlertRuleRow 类型统一
+#### Scenario: 链名称显示一致性
 
-- **WHEN** 需要使用 AlertRuleRow 类型时
-- **THEN** 从 `@/types/database/alert` 导入
+- **WHEN** 任何组件需要显示链名称
+- **THEN** 使用 `CHAIN_DISPLAY_NAMES` 从 `@/config/chains` 导入
 
-#### Scenario: AlertSeverity/AlertStatus 类型统一
+### Requirement: 统一延迟相关工具函数
 
-- **WHEN** 需要使用告警严重程度或状态类型时
-- **THEN** 从 `@/types/common/status` 导入
+系统 SHALL 在 `src/shared/utils/format/time.ts` 中维护 `getLatencyColor` 和 `getLatencyStatus` 函数，其他位置 SHALL 导入使用。
 
-### Requirement: 统一工具函数
+#### Scenario: 延迟颜色显示一致性
 
-系统 SHALL 将所有重复的工具函数统一到 `@/shared/utils` 目录下。
+- **WHEN** 任何组件需要显示延迟状态颜色
+- **THEN** 使用 `getLatencyColor` 从 `@/shared/utils/format/time` 导入
 
-#### Scenario: 地址截断函数统一
+### Requirement: 统一时间格式化函数
 
-- **WHEN** 需要截断区块链地址时
-- **THEN** 使用 `truncateAddress` 函数从 `@/shared/utils/format/number` 导入
+系统 SHALL 在 `src/shared/utils/format/date.ts` 中维护 `formatRelativeTime` 函数。
 
-#### Scenario: 格式化函数统一
+#### Scenario: 相对时间显示一致性
 
-- **WHEN** 需要格式化日期或数字时
-- **THEN** 从 `@/shared/utils/format` 导入相应函数
+- **WHEN** 任何组件需要显示相对时间
+- **THEN** 使用 `formatRelativeTime` 从 `@/shared/utils/format/date` 导入
 
-### Requirement: 组件复用
+### Requirement: 创建通用 ExportButton 工厂函数
 
-系统 SHALL 使用通用基础组件替代重复的特定组件。
+系统 SHALL 提供一个通用的 ExportButton 工厂函数或泛型组件，支持不同协议的导出配置。
 
-#### Scenario: ExportButton 组件统一
+#### Scenario: 协议导出按钮创建
 
-- **WHEN** 需要导出功能时
-- **THEN** 使用通用的 `ExportButton` 组件配合配置对象
+- **WHEN** 需要为新协议创建导出按钮
+- **THEN** 使用工厂函数创建，无需创建新文件
 
-#### Scenario: KpiOverview 组件统一
+## MODIFIED Requirements
 
-- **WHEN** 需要显示协议 KPI 概览时
-- **THEN** 使用通用的 `ProtocolKpiOverview` 组件
+### Requirement: Band 模块状态配置
+
+Band 模块的状态配置函数 SHALL 统一提取到 `src/features/oracle/band/utils/statusConfig.ts`。
 
 ## REMOVED Requirements
 
-### Requirement: 删除 shortenAddress 函数
+### Requirement: 删除重复的 ExportButton 组件文件
 
-**Reason**: 与 truncateAddress 功能完全相同
-**Migration**: 将所有 `shortenAddress` 调用替换为 `truncateAddress`
+**Reason**: 6个几乎相同的 ExportButton 组件文件可以合并为一个通用方案
+**Migration**: 创建工厂函数后，更新导入路径
 
-### Requirement: 删除重复的 exportConfig 文件
+### Requirement: 删除局部定义的链常量
 
-**Reason**: 与 ExportButton 组件中的代码重复
-**Migration**: 保留 ExportButton 组件中的实现，删除独立的 exportConfig.ts 文件
+**Reason**: `CHAIN_DISPLAY_NAMES` 和 `CHAIN_COLORS` 在多处重复定义
+**Migration**: 从 `@/config/chains` 导入
 
-### Requirement: 删除重复的 AlertRuleRow 定义
+### Requirement: 删除重复的工具函数定义
 
-**Reason**: 在多个 API 路由文件中重复定义
-**Migration**: 提取到共享模块 `@/types/database/alert`
+**Reason**: `getLatencyColor`、`getLatencyStatus`、`formatRelativeTime` 在多处重复定义
+**Migration**: 从 shared/utils 导入

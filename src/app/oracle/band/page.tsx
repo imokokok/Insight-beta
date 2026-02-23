@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import { CHAIN_DISPLAY_NAMES } from '@/config/chains';
 import {
   BridgeStatusCard,
   DataSourceList,
@@ -57,6 +58,34 @@ import {
 } from '@/features/oracle/chainlink/components/dashboard';
 import { useI18n } from '@/i18n';
 import { fetchApiData, cn } from '@/shared/utils';
+
+const EXTENDED_CHAIN_DISPLAY_NAMES: Record<string, string> = {
+  ...CHAIN_DISPLAY_NAMES,
+  cosmos: 'Cosmos Hub',
+  osmosis: 'Osmosis',
+  juno: 'Juno',
+};
+
+const SUPPORTED_CHAINS = [
+  'ethereum',
+  'polygon',
+  'arbitrum',
+  'optimism',
+  'avalanche',
+  'bsc',
+  'fantom',
+  'cosmos',
+  'osmosis',
+  'juno',
+];
+
+const TABS: TabItem[] = [
+  { id: 'overview', label: '概览', icon: <LayoutDashboard className="h-4 w-4" /> },
+  { id: 'bridges', label: '数据桥', icon: <GitBranch className="h-4 w-4" /> },
+  { id: 'sources', label: '数据源', icon: <Database className="h-4 w-4" /> },
+  { id: 'cosmos', label: 'Cosmos', icon: <Globe className="h-4 w-4" /> },
+  { id: 'analysis', label: '数据分析', icon: <BarChart3 className="h-4 w-4" /> },
+];
 
 interface BridgesResponse {
   bridges: Bridge[];
@@ -124,40 +153,6 @@ interface BandDashboardState {
   refreshInterval: number;
   timeUntilRefresh: number;
 }
-
-const CHAIN_DISPLAY_NAMES: Record<string, string> = {
-  ethereum: 'Ethereum',
-  polygon: 'Polygon',
-  arbitrum: 'Arbitrum',
-  optimism: 'Optimism',
-  avalanche: 'Avalanche',
-  bsc: 'BSC',
-  fantom: 'Fantom',
-  cosmos: 'Cosmos Hub',
-  osmosis: 'Osmosis',
-  juno: 'Juno',
-};
-
-const SUPPORTED_CHAINS = [
-  'ethereum',
-  'polygon',
-  'arbitrum',
-  'optimism',
-  'avalanche',
-  'bsc',
-  'fantom',
-  'cosmos',
-  'osmosis',
-  'juno',
-];
-
-const TABS: TabItem[] = [
-  { id: 'overview', label: '概览', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { id: 'bridges', label: '数据桥', icon: <GitBranch className="h-4 w-4" /> },
-  { id: 'sources', label: '数据源', icon: <Database className="h-4 w-4" /> },
-  { id: 'cosmos', label: 'Cosmos', icon: <Globe className="h-4 w-4" /> },
-  { id: 'analysis', label: '数据分析', icon: <BarChart3 className="h-4 w-4" /> },
-];
 
 export default function BandProtocolPage() {
   const { t } = useI18n();
@@ -678,7 +673,7 @@ export default function BandProtocolPage() {
                     {selectedBridge && (
                       <BridgeTrendChart
                         bridgeId={selectedBridge.bridgeId}
-                        bridgeName={`${CHAIN_DISPLAY_NAMES[selectedBridge.sourceChain] ?? selectedBridge.sourceChain} → ${CHAIN_DISPLAY_NAMES[selectedBridge.destinationChain] ?? selectedBridge.destinationChain}`}
+                        bridgeName={`${EXTENDED_CHAIN_DISPLAY_NAMES[selectedBridge.sourceChain] ?? selectedBridge.sourceChain} → ${EXTENDED_CHAIN_DISPLAY_NAMES[selectedBridge.destinationChain] ?? selectedBridge.destinationChain}`}
                       />
                     )}
 

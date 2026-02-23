@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { useFavoritesContext, type FavoriteItem } from '@/shared/contexts/FavoritesContext';
 import { cn } from '@/shared/utils';
+import { formatRelativeTime } from '@/shared/utils/format/date';
 
 interface FavoritesPanelProps {
   className?: string;
@@ -48,19 +49,6 @@ function groupByType(favorites: FavoriteItem[]): Record<string, FavoriteItem[]> 
     },
     {} as Record<string, FavoriteItem[]>,
   );
-}
-
-function formatRelativeTime(timestamp: number): string {
-  const now = Date.now();
-  const diff = now - timestamp;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (days > 0) return `${days}d`;
-  if (hours > 0) return `${hours}h`;
-  if (minutes > 0) return `${minutes}m`;
-  return 'now';
 }
 
 export function FavoritesPanel({ className, onItemClick }: FavoritesPanelProps) {
@@ -136,7 +124,7 @@ export function FavoritesPanel({ className, onItemClick }: FavoritesPanelProps) 
                               {item.name}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {formatRelativeTime(item.addedAt)}
+                              {formatRelativeTime(Math.floor((Date.now() - item.addedAt) / 1000))}
                             </p>
                           </div>
                           <Button

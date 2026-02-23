@@ -4,20 +4,17 @@ import { ArrowRight, Clock, Activity, TrendingUp, AlertCircle } from 'lucide-rea
 
 import { ContentGrid } from '@/components/common';
 import { StatusBadge } from '@/components/ui';
+import { CHAIN_DISPLAY_NAMES } from '@/config/chains';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
 import { formatLatency, getLatencyColor } from '@/shared/utils/format';
 
+import { getBridgeStatusConfig } from '../utils/statusConfig';
+
 import type { Bridge } from '../types/band';
 
-interface BridgeStatusCardProps {
-  bridge: Bridge;
-  onClick?: (bridge: Bridge) => void;
-  className?: string;
-}
-
-const CHAIN_DISPLAY_NAMES: Record<string, string> = {
-  ethereum: 'Ethereum',
+const EXTENDED_CHAIN_DISPLAY_NAMES: Record<string, string> = {
+  ...CHAIN_DISPLAY_NAMES,
   cosmos: 'Cosmos Hub',
   osmosis: 'Osmosis',
   juno: 'Juno',
@@ -29,14 +26,11 @@ const CHAIN_DISPLAY_NAMES: Record<string, string> = {
   kujira: 'Kujira',
 };
 
-const getStatusConfig = (status: Bridge['status']) => {
-  const configs = {
-    active: { status: 'active' as const, label: 'Active' },
-    inactive: { status: 'offline' as const, label: 'Inactive' },
-    degraded: { status: 'warning' as const, label: 'Degraded' },
-  };
-  return configs[status] ?? configs.inactive;
-};
+interface BridgeStatusCardProps {
+  bridge: Bridge;
+  onClick?: (bridge: Bridge) => void;
+  className?: string;
+}
 
 const getSuccessRateColor = (rate: number): string => {
   if (rate >= 99) return 'text-emerald-500';
@@ -46,7 +40,7 @@ const getSuccessRateColor = (rate: number): string => {
 
 export function BridgeStatusCard({ bridge, onClick, className }: BridgeStatusCardProps) {
   const { t } = useI18n();
-  const statusConfig = getStatusConfig(bridge.status);
+  const statusConfig = getBridgeStatusConfig(bridge.status);
 
   const formatVolume = (volume: number): string => {
     if (volume >= 1_000_000) {
@@ -69,11 +63,11 @@ export function BridgeStatusCard({ bridge, onClick, className }: BridgeStatusCar
       <div className="flex items-start justify-between border-b border-border/30 p-4">
         <div className="flex items-center gap-2">
           <span className="text-base font-semibold">
-            {CHAIN_DISPLAY_NAMES[bridge.sourceChain] ?? bridge.sourceChain}
+            {EXTENDED_CHAIN_DISPLAY_NAMES[bridge.sourceChain] ?? bridge.sourceChain}
           </span>
           <ArrowRight className="h-4 w-4 text-muted-foreground" />
           <span className="text-base font-semibold">
-            {CHAIN_DISPLAY_NAMES[bridge.destinationChain] ?? bridge.destinationChain}
+            {EXTENDED_CHAIN_DISPLAY_NAMES[bridge.destinationChain] ?? bridge.destinationChain}
           </span>
         </div>
         <StatusBadge status={statusConfig.status} text={statusConfig.label} size="sm" />

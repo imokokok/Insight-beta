@@ -3,10 +3,10 @@ import type { NextRequest } from 'next/server';
 import { isSupportedChain, type ChainId } from '@/config/chains';
 import { VALID_SYMBOLS } from '@/config/constants';
 import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
+import { apiSuccess, apiError, getQueryParam } from '@/lib/api/apiResponse';
 import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { validateSymbol } from '@/lib/api/validation';
 import { logger } from '@/shared/logger';
-import { apiSuccess, apiError, getQueryParam } from '@/shared/utils';
 
 function validateChains(chainsParam: string | null): ChainId[] | null {
   if (!chainsParam) return null;

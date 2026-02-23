@@ -7,10 +7,10 @@
 
 import type { NextRequest } from 'next/server';
 
+import { apiSuccess, getQueryParam } from '@/lib/api/apiResponse';
 import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
-import { apiSuccess, getQueryParam } from '@/shared/utils';
 
 interface LatencyRow {
   protocol: string;

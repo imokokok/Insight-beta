@@ -32,14 +32,5 @@ export { ApiClientError, fetchApiData, getErrorCode, normalizeListResponse } fro
 // 从 format/index.ts 导出（向后兼容）
 export { copyToClipboard } from './format/index';
 
-// API 响应工具（从 lib/api/apiResponse 重新导出）
-export {
-  ok,
-  error,
-  apiSuccess,
-  apiError,
-  getQueryParam,
-  type ApiOk,
-  type ApiErrorPayload,
-  type ApiResponse,
-} from '@/lib/api/apiResponse';
+// 注意：不在这里重新导出 lib/api/apiResponse 中的服务器端工具
+// 这些工具只应该在 API 路由（服务器端）中使用

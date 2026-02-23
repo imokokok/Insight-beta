@@ -5,8 +5,8 @@ import type {
   LiquiditySummary,
   LiquidityResponse,
 } from '@/features/cross-chain/types';
+import { apiSuccess, apiError } from '@/lib/api/apiResponse';
 import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
-import { apiSuccess, apiError } from '@/shared/utils';
 
 const LiquidityQuerySchema = z.object({
   symbol: z.string().optional(),

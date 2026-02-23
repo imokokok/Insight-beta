@@ -125,3 +125,18 @@ export function formatRelativeTimeIntl(
 ): string {
   return new Intl.RelativeTimeFormat(locale, options).format(value, unit);
 }
+
+export function formatRelativeTime(seconds: number): string {
+  if (seconds < 60) return `${seconds}秒前`;
+  if (seconds < 3600) {
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes}分钟前`;
+  }
+  const hours = Math.floor(seconds / 3600);
+  const remainingMinutes = Math.floor((seconds % 3600) / 60);
+  if (hours < 24) {
+    return remainingMinutes > 0 ? `${hours}小时${remainingMinutes}分钟前` : `${hours}小时前`;
+  }
+  const days = Math.floor(hours / 24);
+  return `${days}天前`;
+}

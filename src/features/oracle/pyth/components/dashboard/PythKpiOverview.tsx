@@ -4,7 +4,7 @@ import {
   type KpiCardData,
   type TrendDirection,
 } from '@/components/common';
-import { formatLatency } from '@/shared/utils/format';
+import { formatLatency, getLatencyStatus } from '@/shared/utils/format';
 
 interface PythKpiStats {
   totalPublishers: number;
@@ -20,18 +20,26 @@ interface PythKpiOverviewProps {
   compact?: boolean;
 }
 
+const mapLatencyStatusToKpi = (
+  status: ReturnType<typeof getLatencyStatus>,
+): 'success' | 'warning' | 'error' => {
+  switch (status) {
+    case 'excellent':
+    case 'good':
+      return 'success';
+    case 'fair':
+      return 'warning';
+    case 'poor':
+      return 'error';
+  }
+};
+
 export function PythKpiOverview({
   stats,
   loading = false,
   className,
   compact = false,
 }: PythKpiOverviewProps) {
-  const getLatencyStatus = (ms: number): 'success' | 'warning' | 'error' => {
-    if (ms < 200) return 'success';
-    if (ms < 500) return 'warning';
-    return 'error';
-  };
-
   const kpis: KpiCardData[] = stats
     ? [
         {
@@ -55,7 +63,7 @@ export function PythKpiOverview({
           value: formatLatency(stats.avgLatency),
           label: '平均延迟',
           trend: 'down' as TrendDirection,
-          status: getLatencyStatus(stats.avgLatency),
+          status: mapLatencyStatusToKpi(getLatencyStatus(stats.avgLatency)),
         },
       ]
     : [

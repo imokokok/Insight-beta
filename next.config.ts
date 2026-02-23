@@ -243,18 +243,28 @@ const nextConfig: NextConfig = {
       buffer: false,
       string_decoder: false,
       process: false,
+      dns: false,
+      child_process: false,
+      assert: false,
+      constants: false,
+      module: false,
+      vm: false,
+      async_hooks: false,
+      perf_hooks: false,
     };
 
     // 客户端打包时排除服务器端专用库
     if (!isServer) {
-      config.externals = [...(config.externals || []), 'pg', 'pg-native'];
+      config.externals = [...(config.externals || []), 'pg', 'pg-native', 'ioredis'];
     }
 
-    // 添加 alias 避免重复模块
+    // 添加 alias 避免重复模块和阻止服务器端库被打包到客户端
     config.resolve.alias = {
       ...config.resolve.alias,
       // 避免 Solana 库被打包到客户端
       '@solana/web3.js': false,
+      // 阻止 ioredis 被打包到客户端
+      ioredis: false,
     };
 
     // Tree-shaking 和代码分割优化
