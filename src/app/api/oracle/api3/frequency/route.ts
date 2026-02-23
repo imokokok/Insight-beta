@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 
 import type {
-  UpdateFrequencyStats,
+  Api3UpdateFrequencyStats,
   UpdateIntervalPoint,
   UpdateFrequencyResponse,
 } from '@/features/oracle/api3/types/api3';
@@ -162,7 +162,7 @@ async function getFrequencyStats(
     }
   }
 
-  const stats: UpdateFrequencyStats = {
+  const stats: Api3UpdateFrequencyStats = {
     dapiName: targetDapiName || 'unknown',
     chain: targetChain || 'unknown',
     avgUpdateIntervalMs: Math.round(avgIntervalMs),
@@ -222,7 +222,7 @@ function generateMockFrequencyData(params: FrequencyQueryParams): UpdateFrequenc
   const minIntervalMs = Math.min(...intervalValues);
   const maxIntervalMs = Math.max(...intervalValues);
 
-  const stats: UpdateFrequencyStats = {
+  const stats: Api3UpdateFrequencyStats = {
     dapiName,
     chain,
     avgUpdateIntervalMs: Math.round(avgIntervalMs),

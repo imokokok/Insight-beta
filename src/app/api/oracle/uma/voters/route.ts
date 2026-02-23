@@ -4,20 +4,9 @@ import { error, ok } from '@/lib/api/apiResponse';
 import { query } from '@/lib/database';
 import { AppError } from '@/lib/errors';
 import { logger } from '@/shared/logger';
+import type { VoterStats } from '@/types/stats';
 
-export interface VoterStats {
-  address: string;
-  totalVotes: number;
-  correctVotes: number;
-  accuracy: number;
-  totalWeight: number;
-  avgWeight: number;
-  totalRewards: number;
-  claimedRewards: number;
-  pendingRewards: number;
-  firstVoteAt: string | null;
-  lastVoteAt: string | null;
-}
+export type { VoterStats };
 
 export interface VoterSummary {
   totalVoters: number;
@@ -134,26 +123,28 @@ function generateMockVoterStats(): VoterStats[] {
     '0xcccccccccccccccccccccccccccccccccccccccc',
   ];
 
-  return voters.map((voter) => {
-    const totalVotes = Math.floor(Math.random() * 50) + 10;
-    const correctVotes = Math.floor(totalVotes * (Math.random() * 0.4 + 0.6));
-    const totalWeight = Math.floor(Math.random() * 100000) + 10000;
-    const totalRewards = Math.floor(Math.random() * 5000) + 100;
+  return voters
+    .map((voter) => {
+      const totalVotes = Math.floor(Math.random() * 50) + 10;
+      const correctVotes = Math.floor(totalVotes * (Math.random() * 0.4 + 0.6));
+      const totalWeight = Math.floor(Math.random() * 100000) + 10000;
+      const totalRewards = Math.floor(Math.random() * 5000) + 100;
 
-    return {
-      address: voter,
-      totalVotes,
-      correctVotes,
-      accuracy: (correctVotes / totalVotes) * 100,
-      totalWeight,
-      avgWeight: totalWeight / totalVotes,
-      totalRewards,
-      claimedRewards: Math.floor(totalRewards * 0.6),
-      pendingRewards: Math.floor(totalRewards * 0.4),
-      firstVoteAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-      lastVoteAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-    };
-  }).sort((a, b) => b.totalWeight - a.totalWeight);
+      return {
+        address: voter,
+        totalVotes,
+        correctVotes,
+        accuracy: (correctVotes / totalVotes) * 100,
+        totalWeight,
+        avgWeight: totalWeight / totalVotes,
+        totalRewards,
+        claimedRewards: Math.floor(totalRewards * 0.6),
+        pendingRewards: Math.floor(totalRewards * 0.4),
+        firstVoteAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        lastVoteAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+      };
+    })
+    .sort((a, b) => b.totalWeight - a.totalWeight);
 }
 
 function generateMockSummary(): VoterSummary {
@@ -162,9 +153,9 @@ function generateMockSummary(): VoterSummary {
     totalVoters: stats.length,
     totalVotes: stats.reduce((sum, s) => sum + s.totalVotes, 0),
     totalWeight: stats.reduce((sum, s) => sum + s.totalWeight, 0),
-    totalRewards: stats.reduce((sum, s) => sum + s.totalRewards, 0),
-    claimedRewards: stats.reduce((sum, s) => sum + s.claimedRewards, 0),
-    pendingRewards: stats.reduce((sum, s) => sum + s.pendingRewards, 0),
+    totalRewards: stats.reduce((sum, s) => sum + (s.totalRewards ?? 0), 0),
+    claimedRewards: stats.reduce((sum, s) => sum + (s.claimedRewards ?? 0), 0),
+    pendingRewards: stats.reduce((sum, s) => sum + (s.pendingRewards ?? 0), 0),
   };
 }
 
@@ -184,10 +175,7 @@ export async function GET(request: NextRequest) {
       summary = generateMockSummary();
     } else {
       try {
-        [voterStats, summary] = await Promise.all([
-          fetchVoterStats(),
-          fetchVoterSummary(),
-        ]);
+        [voterStats, summary] = await Promise.all([fetchVoterStats(), fetchVoterSummary()]);
       } catch {
         voterStats = generateMockVoterStats();
         summary = generateMockSummary();

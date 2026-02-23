@@ -1,4 +1,7 @@
 import { ok, error } from '@/lib/api/apiResponse';
+import type { VoterStats } from '@/types/stats';
+
+export type { VoterStats };
 
 export interface Vote {
   id: string;
@@ -9,17 +12,6 @@ export interface Vote {
   txHash: string;
   timestamp: string;
   blockNumber: number;
-}
-
-export interface VoterStats {
-  address: string;
-  totalVotes: number;
-  correctVotes: number;
-  accuracy: number;
-  totalWeight: number;
-  avgWeight: number;
-  firstVoteAt: string;
-  lastVoteAt: string;
 }
 
 export interface VoteSummary {

@@ -1,2 +1,2 @@
-export { BandKpiOverview, type BandKpiStats, type TrendDirection } from './BandKpiOverview';
+export { BandKpiOverview, type BandKpiStats } from './BandKpiOverview';
 export { BandTopStatusBar, type NetworkHealthStatus } from './BandTopStatusBar';

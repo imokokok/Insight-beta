@@ -1,8 +1,9 @@
 import React from 'react';
 
 import { cn } from '@/shared/utils';
+import type { BandStats } from '@/types/stats';
 
-export type TrendDirection = 'up' | 'down' | 'neutral';
+type TrendDirection = 'up' | 'down' | 'neutral';
 
 interface KpiCardData {
   value: string | number;
@@ -12,12 +13,12 @@ interface KpiCardData {
   status?: 'success' | 'warning' | 'error' | 'neutral';
 }
 
-export interface BandKpiStats {
-  activeBridges: number;
-  totalTransfers: number;
-  totalSources: number;
+export type BandKpiStats = Pick<
+  BandStats,
+  'activeBridges' | 'totalTransfers' | 'totalSources' | 'avgLatency'
+> & {
   avgLatency: number;
-}
+};
 
 interface BandKpiOverviewProps {
   stats: BandKpiStats | null;

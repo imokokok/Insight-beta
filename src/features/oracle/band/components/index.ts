@@ -20,5 +20,4 @@ export {
   BandTopStatusBar,
   type BandKpiStats,
   type NetworkHealthStatus,
-  type TrendDirection,
 } from './dashboard';

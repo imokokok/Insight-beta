@@ -7,6 +7,9 @@
 // 共享类型（基础类型）
 export * from './shared';
 
+// 统计类型（Stats 相关）
+export * from './stats';
+
 // 领域类型（核心领域模型）- 优先级最高
 export * from './domain';
 
@@ -40,7 +43,3 @@ export type {
   DisputeTrend,
   DisputeReport,
 } from './oracle/dispute';
-
-// 通用类型
-export type { PaginationParams } from './common/pagination';
-export type { HealthStatus as CommonHealthStatus } from './common/status';

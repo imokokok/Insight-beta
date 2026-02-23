@@ -15,6 +15,7 @@ import {
   PROTOCOL_DISPLAY_NAMES,
   type OracleProtocol,
 } from '@/types/oracle/protocol';
+import type { ProtocolStats } from '@/types/stats';
 
 interface ProtocolFeed {
   id: string;
@@ -38,18 +39,6 @@ interface ProtocolNode {
   lastUpdate: string;
   totalSubmissions: number;
   accuracy: number;
-}
-
-interface ProtocolStats {
-  totalFeeds: number;
-  activeFeeds: number;
-  staleFeeds: number;
-  totalNodes?: number;
-  avgUpdateLatency: number;
-  networkUptime: number;
-  totalSubmissions?: number;
-  totalPublishers?: number;
-  avgConfidence?: number;
 }
 
 interface ProtocolDetailResponse {
@@ -175,8 +164,8 @@ async function getProtocolDetails(protocol: OracleProtocol): Promise<ProtocolDet
     stats,
     tvl,
     tvlChange24h,
-    avgLatency: stats.avgUpdateLatency,
-    uptime: stats.networkUptime,
+    avgLatency: stats.avgUpdateLatency ?? 0,
+    uptime: stats.networkUptime ?? 0,
     priceFeeds: stats.totalFeeds,
     lastUpdate: new Date().toISOString(),
     usageCount: Math.floor(Math.random() * 100000) + 10000,

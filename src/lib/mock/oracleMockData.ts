@@ -2,20 +2,9 @@ import type { ChainId } from '@/config/chains';
 import type { Operator } from '@/features/oracle/chainlink/types/chainlink';
 import { calculateReliabilityScore } from '@/features/oracle/chainlink/utils/reliabilityScore';
 import { POPULAR_FEEDS } from '@/lib/blockchain/chainlinkDataFeeds';
+import type { ChainlinkStats, PythStats } from '@/types/stats';
 
-export interface ChainlinkStats {
-  totalFeeds: number;
-  activeNodes: number;
-  ocrRounds: number;
-  avgLatency: number;
-}
-
-export interface PythStats {
-  totalPublishers: number;
-  activePublishers: number;
-  activePriceFeeds: number;
-  avgLatency: number;
-}
+export type { ChainlinkStats, PythStats };
 
 export interface Feed {
   symbol: string;
@@ -293,18 +282,23 @@ const HERMES_SERVICES_DATA: HermesService[] = [
 export function getChainlinkMockStats(): ChainlinkStats {
   return {
     totalFeeds: 1247,
+    activeFeeds: 1200,
     activeNodes: 42,
     ocrRounds: 156832,
     avgLatency: 245,
+    generatedAt: new Date().toISOString(),
   };
 }
 
 export function getPythMockStats(): PythStats {
   return {
+    totalFeeds: 356,
+    activeFeeds: 350,
     totalPublishers: 28,
     activePublishers: 24,
     activePriceFeeds: 356,
     avgLatency: 245,
+    generatedAt: new Date().toISOString(),
   };
 }
 

@@ -24,7 +24,7 @@ import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 import type {
-  UpdateFrequencyStats,
+  Api3UpdateFrequencyStats,
   UpdateIntervalPoint,
   UpdateFrequencyResponse,
 } from '../types/api3';
@@ -81,7 +81,7 @@ const generateMockData = (timeRange: string): UpdateFrequencyResponse => {
   const minIntervalMs = Math.min(...intervalValues);
   const maxIntervalMs = Math.max(...intervalValues);
 
-  const stats: UpdateFrequencyStats = {
+  const stats: Api3UpdateFrequencyStats = {
     dapiName: 'ETH/USD',
     chain: 'ethereum',
     avgUpdateIntervalMs: Math.round(avgIntervalMs),

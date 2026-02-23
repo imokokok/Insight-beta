@@ -1,6 +1,8 @@
 import type { DisputeStatus } from '@/types/common/status';
+import type { DisputerStats as DisputerStatsBase } from '@/types/stats';
 
 export type { DisputeStatus };
+export type { DisputerStatsBase as DisputerStats };
 
 export interface Dispute {
   id: string;
@@ -20,17 +22,6 @@ export interface Dispute {
   settledAt?: string;
   txHash: string;
   blockNumber: number;
-}
-
-export interface DisputerStats {
-  address: string;
-  totalDisputes: number;
-  successfulDisputes: number;
-  winRate: number;
-  totalBonded: number;
-  totalRewards: number;
-  firstDisputeAt: string;
-  lastDisputeAt: string;
 }
 
 export interface DisputeTrend {
@@ -58,6 +49,6 @@ export interface DisputeReport {
   };
   disputes: Dispute[];
   trends: DisputeTrend[];
-  topDisputers: DisputerStats[];
+  topDisputers: DisputerStatsBase[];
   recentActivity: Dispute[];
 }

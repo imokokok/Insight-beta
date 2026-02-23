@@ -4,8 +4,13 @@ import type {
   GasCostByChainBase,
   ReliabilityScoreBase,
 } from '@/types/shared';
+import type {
+  HeartbeatStats as HeartbeatStatsBase,
+  DeviationStats as DeviationStatsBase,
+} from '@/types/stats';
 
 export type { GasCostTrendPoint };
+export type { HeartbeatStatsBase as HeartbeatStats, DeviationStatsBase as DeviationStats };
 
 export interface OcrRound {
   roundId: string;
@@ -79,11 +84,7 @@ export interface HeartbeatAlert {
   chain?: string;
 }
 
-export interface HeartbeatStats {
-  totalFeeds: number;
-  activeFeeds: number;
-  timeoutFeeds: number;
-  criticalFeeds: number;
+export interface ChainlinkHeartbeatStats extends HeartbeatStatsBase {
   alerts: HeartbeatAlert[];
   generatedAt: string;
 }
@@ -99,10 +100,8 @@ export interface DeviationTrigger {
   lastTriggeredAt: string | null;
 }
 
-export interface DeviationStats {
-  timeRange: '24h' | '7d' | '30d';
+export interface ChainlinkDeviationStats extends DeviationStatsBase {
   triggers: DeviationTrigger[];
-  totalTriggers: number;
   mostActiveFeeds: DeviationTrigger[];
   generatedAt: string;
 }

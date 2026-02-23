@@ -1,14 +1,6 @@
-export interface DashboardStats {
-  totalProtocols: number;
-  totalPriceFeeds: number;
-  activeAlerts: number;
-  avgLatency: number;
-  totalValueSecured: string;
-  priceUpdates24h: number;
-  networkUptime?: number;
-  staleFeeds?: number;
-  activeNodes?: number;
-}
+import type { DashboardStats as DashboardStatsBase } from '@/types/stats';
+
+export type { DashboardStatsBase as DashboardStats };
 
 export interface ChartDataPoint {
   timestamp: string;

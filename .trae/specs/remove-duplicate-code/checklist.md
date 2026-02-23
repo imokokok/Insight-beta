@@ -34,7 +34,20 @@
 
 - [x] DashboardStats 类型只在一个文件中定义
 - [x] 所有引用 DashboardStats 的文件使用正确的导入路径
-- [ ] Stats 类型体系使用继承或组合扩展（低优先级，未执行）
+- [x] Stats 类型体系使用继承或组合扩展
+  - [x] 创建 `src/types/stats.ts` 基础类型文件
+  - [x] ChainlinkStats、PythStats、BandStats、Api3Stats、UMAStats 等继承基础类型
+  - [x] DashboardStats 使用统一类型
+
+## 未使用导出清理
+
+- [x] `src/config/env.ts` 删除未使用的函数（isDevelopment、isProduction、isTest、isDemoMode、getLogLevel、hasAlertConfig）
+- [x] `src/config/constants.ts` 删除未使用的导出（DATABASE_CONFIG、LAYER2_CHAINS、AlertSeverityThreshold、AlertCrossChainThreshold）
+- [x] `src/config/chains.ts` 删除未使用的导出（DEFAULT_AVAILABLE_CHAINS、getChainColor）
+- [x] `src/config/pythPriceFeeds.ts` 删除未使用的导出（PythPriceFeedId、getPythPriceFeedId）
+- [x] `src/lib/protocol-config.ts` 删除未使用的导出（PROTOCOL_ICONS）
+- [x] `src/types/protocol.ts` 删除未使用的类型（ChainlinkFeed、PythFeed、BandFeed、API3Feed、ProtocolData）
+- [x] `src/types/index.ts` 删除未使用的类型导出（PaginationParams、CommonHealthStatus）
 
 ## Mock数据管理
 
@@ -56,5 +69,6 @@
 ## 验证
 
 - [x] TypeScript 编译无错误
+- [x] ESLint 检查通过（仅剩预先存在的 React Hook 依赖警告）
 - [ ] 所有测试通过（需要运行测试验证）
 - [ ] 应用正常运行（需要手动验证）

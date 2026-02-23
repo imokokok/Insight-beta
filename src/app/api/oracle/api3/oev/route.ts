@@ -26,7 +26,7 @@ interface PriceUpdateEvent {
   status: 'normal' | 'warning' | 'critical';
 }
 
-interface UpdateFrequencyStats {
+interface OevFrequencyStats {
   dapiName: string;
   updatesPerMinute: number;
   avgDelayMs: number;
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     const chainsToQuery = chain ? [chain] : supportedChains.slice(0, 3);
     const symbolsToQuery = dapi_name ? [dapi_name] : availableSymbols.slice(0, 10);
     const priceUpdateEvents: PriceUpdateEvent[] = [];
-    const frequencyStats: UpdateFrequencyStats[] = [];
+    const frequencyStats: OevFrequencyStats[] = [];
     const errors: Array<{ chain: string; dapiName: string; error: string }> = [];
     const timeRangeMs = getTimeRangeMs(timeRange);
     const cutoffTime = new Date(Date.now() - timeRangeMs);

@@ -57,13 +57,13 @@
 
 ## 低优先级任务
 
-- [ ] Task 8: 统一 Stats 类型体系
-  - [ ] SubTask 8.1: 创建基础 Stats 类型
-  - [ ] SubTask 8.2: 重构各协议特定类型继承基础类型
+- [x] Task 8: 统一 Stats 类型体系
+  - [x] SubTask 8.1: 创建基础 Stats 类型
+  - [x] SubTask 8.2: 重构各协议特定类型继承基础类型
 
-- [ ] Task 9: 检测并删除未使用的导出
-  - [ ] SubTask 9.1: 使用 TypeScript 编译器检测未使用的导出
-  - [ ] SubTask 9.2: 删除确认未使用的类型和函数
+- [x] Task 9: 检测并删除未使用的导出
+  - [x] SubTask 9.1: 使用 TypeScript 编译器检测未使用的导出
+  - [x] SubTask 9.2: 删除确认未使用的类型和函数
 
 # Task Dependencies
 

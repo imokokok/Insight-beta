@@ -2,9 +2,16 @@
  * Protocol Types - 协议相关的统一类型定义
  */
 
-import { type OracleProtocol } from './oracle';
+import {
+  type BaseProtocolStats,
+  type UMAStats as UMAStatsBase,
+  type ChainlinkStats,
+  type PythStats,
+  type BandStats,
+  type Api3Stats,
+} from './stats';
 
-// ==================== 基础协议类型 ====================
+export type { BaseProtocolStats, ChainlinkStats, PythStats, BandStats, Api3Stats };
 
 export interface BaseProtocolFeed {
   id: string;
@@ -17,15 +24,6 @@ export interface BaseProtocolFeed {
   chain: string;
 }
 
-export interface BaseProtocolStats {
-  totalFeeds: number;
-  activeFeeds: number;
-  staleFeeds: number;
-  totalNodes: number;
-  avgUpdateLatency: number;
-  networkUptime: number;
-}
-
 export interface BaseProtocolNode {
   id: string;
   name: string;
@@ -34,24 +32,6 @@ export interface BaseProtocolNode {
   lastUpdate: string;
   totalSubmissions: number;
   accuracy: number;
-}
-
-// ==================== Chainlink 特定类型 ====================
-
-export interface ChainlinkFeed extends BaseProtocolFeed {
-  roundId: string;
-  answeredInRound: string;
-  contractAddress: string;
-  heartbeat: number;
-  deviationThreshold: number;
-}
-
-// ==================== Pyth 特定类型 ====================
-
-export interface PythFeed extends BaseProtocolFeed {
-  confidence: number;
-  sources: number;
-  publishTime: string;
 }
 
 // ==================== UMA 特定类型 ====================
@@ -128,40 +108,8 @@ export interface UMAConfig {
   enabled: boolean;
 }
 
-export interface UMAStats {
-  totalAssertions: number;
-  proposedAssertions: number;
-  disputedAssertions: number;
-  settledAssertions: number;
-  totalDisputes: number;
-  activeDisputes: number;
+export interface UMAStats extends UMAStatsBase {
   totalVolume: number;
-}
-
-// ==================== Band 特定类型 ====================
-
-export interface BandFeed extends BaseProtocolFeed {
-  requestId: string;
-  blockHeight: number;
-  validatorCount: number;
-}
-
-// ==================== API3 特定类型 ====================
-
-export interface API3Feed extends BaseProtocolFeed {
-  dapiName: string;
-  beaconCount: number;
-  updateThreshold: number;
-}
-
-// ==================== 通用协议数据类型 ====================
-
-export interface ProtocolData {
-  protocol: OracleProtocol;
-  feeds?: BaseProtocolFeed[];
-  nodes?: BaseProtocolNode[];
-  stats?: BaseProtocolStats;
-  lastUpdated: string;
 }
 
 // ==================== 支持的链 ====================

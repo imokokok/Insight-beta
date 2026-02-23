@@ -4,11 +4,13 @@ import useSWR from 'swr';
 
 import { buildApiUrl } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
+import type { AlertHistoryStats as AlertHistoryStatsBase, TrendDirection } from '@/types/stats';
 
 import type { AlertSource, AlertSeverity, UnifiedAlert } from '../types';
 
 export type TimeRange = '1h' | '6h' | '24h' | '7d' | '30d';
 export type GroupBy = 'severity' | 'source' | 'none';
+export type { TrendDirection };
 
 export interface AlertHistoryPoint {
   timestamp: string;
@@ -30,13 +32,8 @@ export interface AlertHeatmapCell {
   severity: AlertSeverity;
 }
 
-export interface AlertHistoryStats {
-  totalAlerts: number;
-  avgPerHour: number;
-  peakHour: number;
-  peakCount: number;
+export interface AlertHistoryStats extends AlertHistoryStatsBase {
   trend: 'increasing' | 'decreasing' | 'stable';
-  trendPercent: number;
 }
 
 export interface AlertHistoryData {

@@ -273,89 +273,28 @@ export type Env = z.infer<typeof envSchema>;
 // 便捷访问函数
 // ============================================================================
 
-/**
- * 获取 RPC URL 的优先级：
- * 1. 直接配置的 RPC_URL
- * 2. Alchemy URL
- * 3. Infura URL
- * 4. QuickNode URL
- */
 export function getRpcUrl(chain: string): string | undefined {
   const upperChain = chain.toUpperCase();
 
-  // 1. 直接配置
   const directUrl = env[`${upperChain}_RPC_URL` as keyof typeof env];
   if (directUrl) return directUrl as string;
 
-  // 2. Alchemy
   if (env.ALCHEMY_API_KEY) {
     const alchemyUrl = env[`ALCHEMY_${upperChain}_URL` as keyof typeof env];
     if (alchemyUrl) return alchemyUrl as string;
   }
 
-  // 3. Infura
   if (env.INFURA_API_KEY) {
     const infuraUrl = env[`INFURA_${upperChain}_URL` as keyof typeof env];
     if (infuraUrl) return infuraUrl as string;
   }
 
-  // 4. QuickNode
   const quicknodeUrl = env[`QUICKNODE_${upperChain}_URL` as keyof typeof env];
   if (quicknodeUrl) return quicknodeUrl as string;
 
   return undefined;
 }
 
-/**
- * 检查是否处于开发环境
- */
-export function isDevelopment(): boolean {
-  return env.NODE_ENV === 'development';
-}
-
-/**
- * 检查是否处于生产环境
- */
-export function isProduction(): boolean {
-  return env.NODE_ENV === 'production';
-}
-
-/**
- * 检查是否处于测试环境
- */
-export function isTest(): boolean {
-  return env.NODE_ENV === 'test';
-}
-
-/**
- * 检查是否启用了演示模式
- */
-export function isDemoMode(): boolean {
-  return env.INSIGHT_DEMO_MODE;
-}
-
-/**
- * 获取日志级别
- */
-export function getLogLevel(): typeof env.LOG_LEVEL {
-  return env.LOG_LEVEL;
-}
-
-/**
- * 检查是否配置了告警通知
- */
-export function hasAlertConfig(): boolean {
-  return !!(
-    env.INSIGHT_SLACK_WEBHOOK_URL ||
-    env.INSIGHT_TELEGRAM_BOT_TOKEN ||
-    env.INSIGHT_WEBHOOK_URL ||
-    env.INSIGHT_SMTP_HOST
-  );
-}
-
-/**
- * 获取环境变量报告
- */
 export function getEnvReport(): Record<string, string> {
   return {
     NODE_ENV: env.NODE_ENV,

@@ -126,17 +126,6 @@ export const DB_POOL_CONFIG = {
   CONNECTION_TIMEOUT_MS: parseInt(process.env.DB_CONNECTION_TIMEOUT ?? '10000', 10),
 } as const;
 
-export const DATABASE_CONFIG = {
-  /** 默认连接池大小 */
-  DEFAULT_POOL_SIZE: 10,
-  /** 默认空闲超时（毫秒） */
-  DEFAULT_IDLE_TIMEOUT: 30000,
-  /** 默认连接超时（毫秒） */
-  DEFAULT_CONNECTION_TIMEOUT: 5000,
-  /** 默认最大使用次数 */
-  DEFAULT_MAX_USES: 7500,
-} as const;
-
 // ============================================================================
 // 默认回退价格配置
 // ============================================================================
@@ -235,10 +224,6 @@ export const SUPPORTED_CHAIN_IDS = Object.freeze(
   ),
 );
 
-export const LAYER2_CHAINS = Object.freeze(
-  SUPPORTED_CHAINS.filter((chain) => chain.category === 'layer2').map((chain) => chain.id),
-);
-
 export type SupportedChain = (typeof SUPPORTED_CHAINS)[number]['id'];
 
 // ============================================================================
@@ -270,9 +255,6 @@ export const ALERT_THRESHOLDS = Object.freeze({
     warning: 60,
   },
 } as const);
-
-export type AlertSeverityThreshold = typeof ALERT_THRESHOLDS.severity;
-export type AlertCrossChainThreshold = typeof ALERT_THRESHOLDS.crossChain;
 
 export const TIME_RANGE_OPTIONS = [
   { value: '1h', label: '1H' },

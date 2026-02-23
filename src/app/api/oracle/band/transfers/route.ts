@@ -2,7 +2,10 @@ import type { NextRequest } from 'next/server';
 
 import { ok, error } from '@/lib/api/apiResponse';
 import { BAND_CONTRACT_ADDRESSES, BAND_CHAIN_REST_URLS } from '@/lib/blockchain/bandOracle';
+import type { TransferStats } from '@/types/stats';
 import type { SupportedChain } from '@/types/unifiedOracleTypes';
+
+export type { TransferStats };
 
 interface TransferQueryParams {
   bridgeId?: string;
@@ -23,15 +26,6 @@ interface TransferRecord {
   status: 'pending' | 'completed' | 'failed';
   txHash?: string;
   blockHeight: number;
-}
-
-interface TransferStats {
-  totalTransfers: number;
-  successfulTransfers: number;
-  failedTransfers: number;
-  pendingTransfers: number;
-  avgLatencyMs: number;
-  totalVolume: number;
 }
 
 function parseQueryParams(request: NextRequest): TransferQueryParams {

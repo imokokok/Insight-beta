@@ -3,8 +3,10 @@ import type {
   GasCostAnalysisDataBase,
   GasCostByChainBase,
 } from '@/types/shared';
+import type { PriceUpdateStats, UpdateFrequencyStats } from '@/types/stats';
 
 export type { GasCostTrendPointBase as GasCostTrendPoint };
+export type { PriceUpdateStats, UpdateFrequencyStats };
 
 export interface Airnode {
   airnodeAddress: string;
@@ -76,11 +78,7 @@ export interface PriceUpdateEvent {
   status: 'normal' | 'warning' | 'critical';
 }
 
-export interface PriceUpdateStats {
-  totalUpdates: number;
-  avgDelayMs: number;
-  warningCount: number;
-  criticalCount: number;
+export interface Api3PriceUpdateStats extends PriceUpdateStats {
   uniqueDapis: number;
   uniqueChains: number;
 }
@@ -111,16 +109,10 @@ export interface Api3PriceData {
   emaPrice: number;
 }
 
-export interface UpdateFrequencyStats {
+export interface Api3UpdateFrequencyStats extends UpdateFrequencyStats {
   dapiName: string;
   chain: string;
-  avgUpdateIntervalMs: number;
-  minUpdateIntervalMs: number;
-  maxUpdateIntervalMs: number;
-  updateCount: number;
   lastUpdateTime: string;
-  anomalyDetected: boolean;
-  anomalyReason?: string;
 }
 
 export interface UpdateIntervalPoint {
@@ -130,7 +122,7 @@ export interface UpdateIntervalPoint {
 }
 
 export interface UpdateFrequencyResponse {
-  stats: UpdateFrequencyStats;
+  stats: Api3UpdateFrequencyStats;
   intervals: UpdateIntervalPoint[];
   timeRange: string;
 }

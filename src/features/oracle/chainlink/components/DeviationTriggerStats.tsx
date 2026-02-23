@@ -14,7 +14,7 @@ import { useI18n } from '@/i18n';
 import { fetchApiData, formatTime } from '@/shared/utils';
 import { cn } from '@/shared/utils';
 
-import type { DeviationStats } from '../types/chainlink';
+import type { ChainlinkDeviationStats } from '../types/chainlink';
 
 interface StatCardProps {
   title: string;
@@ -72,7 +72,7 @@ export function DeviationTriggerStats({
 }: DeviationTriggerStatsProps) {
   const { t } = useI18n();
   const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d'>('24h');
-  const [stats, setStats] = useState<DeviationStats | null>(null);
+  const [stats, setStats] = useState<ChainlinkDeviationStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,7 +86,7 @@ export function DeviationTriggerStats({
       const params = new URLSearchParams();
       params.set('timeRange', timeRange);
 
-      const data = await fetchApiData<DeviationStats>(
+      const data = await fetchApiData<ChainlinkDeviationStats>(
         `/api/oracle/chainlink/deviation?${params.toString()}`,
       );
       setStats(data);

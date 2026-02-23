@@ -20,7 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useI18n } from '@/i18n';
 import { formatTime, cn, fetchApiData } from '@/shared/utils';
 
-import type { HeartbeatStats, HeartbeatAlert } from '../types/chainlink';
+import type { ChainlinkHeartbeatStats, HeartbeatAlert } from '../types/chainlink';
 
 interface StatItemProps {
   title: string;
@@ -101,7 +101,7 @@ interface HeartbeatMonitorProps {
 
 export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMonitorProps) {
   const { t } = useI18n();
-  const [stats, setStats] = useState<HeartbeatStats | null>(null);
+  const [stats, setStats] = useState<ChainlinkHeartbeatStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,7 +110,7 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
     setError(null);
 
     try {
-      const data = await fetchApiData<HeartbeatStats>('/api/oracle/chainlink/heartbeat');
+      const data = await fetchApiData<ChainlinkHeartbeatStats>('/api/oracle/chainlink/heartbeat');
       setStats(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch heartbeat data');
@@ -178,13 +178,13 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
       />
       <StatItem
         title={t('chainlink.heartbeat.stats.timeoutFeeds') || '超时数'}
-        value={stats.timeoutFeeds}
+        value={stats.timeoutFeeds ?? 0}
         icon={<Timer className="h-6 w-6 text-yellow-600" />}
         colorClass="bg-yellow-100 dark:bg-yellow-900"
       />
       <StatItem
         title={t('chainlink.heartbeat.stats.criticalFeeds') || '严重超时数'}
-        value={stats.criticalFeeds}
+        value={stats.criticalFeeds ?? 0}
         icon={<XCircle className="h-6 w-6 text-red-600" />}
         colorClass="bg-red-100 dark:bg-red-900"
       />
@@ -316,13 +316,13 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
           />
           <StatItem
             title={t('chainlink.heartbeat.stats.timeoutFeeds') || '超时数'}
-            value={stats.timeoutFeeds}
+            value={stats.timeoutFeeds ?? 0}
             icon={<Timer className="h-6 w-6 text-yellow-600" />}
             colorClass="bg-yellow-100 dark:bg-yellow-900"
           />
           <StatItem
             title={t('chainlink.heartbeat.stats.criticalFeeds') || '严重超时数'}
-            value={stats.criticalFeeds}
+            value={stats.criticalFeeds ?? 0}
             icon={<XCircle className="h-6 w-6 text-red-600" />}
             colorClass="bg-red-100 dark:bg-red-900"
           />

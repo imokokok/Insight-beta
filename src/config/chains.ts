@@ -110,14 +110,6 @@ export const CHAIN_COLORS_TAILWIND: Record<ChainId, { bg: string; border: string
     local: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-500' },
   };
 
-export const DEFAULT_AVAILABLE_CHAINS: ChainId[] = [
-  'ethereum',
-  'polygon',
-  'arbitrum',
-  'optimism',
-  'base',
-];
-
 export const PYTH_SUPPORTED_CHAINS: ChainId[] = [
   'ethereum',
   'polygon',
@@ -146,10 +138,6 @@ export const CHAINLINK_SUPPORTED_CHAINS: ChainId[] = [
 
 export function getChainDisplayName(chain: ChainId): string {
   return CHAIN_DISPLAY_NAMES[chain] ?? chain;
-}
-
-export function getChainColor(chain: ChainId): string {
-  return CHAIN_COLORS[chain] ?? CHAIN_COLORS.ethereum;
 }
 
 export function getChainColorTailwind(chain: ChainId): {

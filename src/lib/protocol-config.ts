@@ -28,16 +28,6 @@ export interface ProtocolConfig {
   };
 }
 
-// 协议图标映射
-export const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
-  chainlink: '🔗',
-  pyth: '🐍',
-  redstone: '💎',
-  uma: '⚖️',
-  api3: '🔮',
-  band: '🎸',
-};
-
 // Chainlink 配置
 const chainlinkConfig: ProtocolConfig = {
   id: 'chainlink',
