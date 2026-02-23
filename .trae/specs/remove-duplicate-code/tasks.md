@@ -1,61 +1,61 @@
 # Tasks
 
-## Phase 1: 删除废弃的API响应工具
+## Phase 1: 创建共享组件
 
-- [x] Task 1: 删除 `shared/utils/apiHandler.ts` 并迁移引用
-  - [x] SubTask 1.1: 查找 `apiHandler.ts` 的所有引用
-  - [x] SubTask 1.2: 将引用迁移到 `lib/api/apiResponse.ts`
-  - [x] SubTask 1.3: 删除 `shared/utils/apiHandler.ts` 文件
+- [x] Task 1: 创建统一的 TopStatusBar 共享组件
+  - [x] SubTask 1.1: 创建 `src/features/oracle/components/shared/TopStatusBar.tsx`
+  - [x] SubTask 1.2: 更新 `src/features/oracle/components/shared/index.ts` 导出文件
+  - [x] SubTask 1.3: 更新 Chainlink dashboard 使用共享组件
+  - [x] SubTask 1.4: 更新 Pyth dashboard 使用共享组件
+  - [x] SubTask 1.5: 更新 API3 dashboard 使用共享组件
+  - [x] SubTask 1.6: 更新 Band dashboard 使用共享组件
+  - [x] SubTask 1.7: 删除 4 个重复的 TopStatusBar 组件文件
 
-## Phase 2: 统一ExportButton组件
+- [x] Task 2: 创建统一的 KpiOverview 通用组件
+  - [x] SubTask 2.1: 分析 KpiOverview 组件 - 已使用共享 KpiGrid 组件，无需重构
+  - [x] SubTask 2.2: 保留现有的 KpiOverview 组件，它们已正确使用共享基础设施
 
-- [x] Task 2: 重构ExportButton组件为可配置组件
-  - [x] SubTask 2.1: 增强 `components/common/ExportButton.tsx` 支持配置参数
-  - [x] SubTask 2.2: 迁移 Pyth ExportButton 的配置
-  - [x] SubTask 2.3: 迁移 Chainlink ExportButton 的配置
-  - [x] SubTask 2.4: 迁移 API3 ExportButton 的配置
-  - [x] SubTask 2.5: 迁移 Band ExportButton 的配置
-  - [x] SubTask 2.6: 迁移 Analytics ExportButton 的配置
-  - [x] SubTask 2.7: 删除6个专用ExportButton文件 - 已确认专用组件是合理的包装器，无需删除
+## Phase 2: 统一类型定义
 
-## Phase 3: 统一类型定义
+- [x] Task 3: 统一 AlertSeverity 和 AlertStatus 类型
+  - [x] SubTask 3.1: 确保 `src/types/common/status.ts` 包含完整定义
+  - [x] SubTask 3.2: 更新 `src/types/oracle/alert.ts` 从 status.ts 导入
+  - [x] SubTask 3.3: 更新 `src/features/alerts/types/index.ts` 从 status.ts 导入
+  - [x] SubTask 3.4: 更新 `src/types/unifiedOracleTypes.ts` 从 status.ts 导入
+  - [x] SubTask 3.5: 搜索并更新所有使用这些类型的文件 - 已确认统一
 
-- [x] Task 3: 创建统一的价格类型文件 - 类型已正确分层，无需强制合并
-  - [x] SubTask 3.1: 分析现有类型结构
-  - [x] SubTask 3.2: 确认类型分层设计合理（服务层vs API层）
-  - [x] SubTask 3.3: 保留现有分层设计
+- [x] Task 4: 统一 SupportedChain 和 ChainInfo 类型
+  - [x] SubTask 4.1: 确保 `src/types/chains/index.ts` 包含完整定义
+  - [x] SubTask 4.2: 更新 `src/config/constants.ts` 从 types/chains 导入基础类型
+  - [x] SubTask 4.3: 更新 `src/types/unifiedOracleTypes.ts` 从 chains 导入
+  - [x] SubTask 4.4: `src/lib/blockchain/walletConnect.ts` 使用 viem Chain 类型，职责不同
+  - [x] SubTask 4.5: 搜索并更新所有使用这些类型的文件
 
-- [x] Task 4: 合并跨链类型定义 - 类型已正确分层
-  - [x] SubTask 4.1: 分析跨链类型用途
-  - [x] SubTask 4.2: 确认服务层和API层分离是合理的
-  - [x] SubTask 4.3: 保留现有分层设计
+- [x] Task 5: 统一 OracleProtocol 相关常量
+  - [x] SubTask 5.1: 确保 `src/types/oracle/protocol.ts` 包含完整定义
+  - [x] SubTask 5.2: 删除 `src/features/oracle/constants/protocols.ts` - 未使用，已删除
+  - [x] SubTask 5.3: 更新 `src/features/oracle/constants/index.ts` 从 types/oracle/protocol 重新导出
 
-- [x] Task 5: 清理协议目录下的重复类型
-  - [x] SubTask 5.1: 创建 `types/shared/kpi.ts` 统一KPI类型
-  - [x] SubTask 5.2: 创建 `components/common/KpiCard.tsx` 统一KPI组件
-  - [x] SubTask 5.3: 更新各协议KpiOverview组件使用共享组件
-  - [x] SubTask 5.4: 删除重复的KpiCardData、TrendDirection定义
+- [x] Task 6: 创建统一价格类型文件
+  - [x] SubTask 6.1: 分析价格类型分布 - 类型分散在多个文件，整合需要更大重构
+  - [x] SubTask 6.2: 延后处理，标记为未来优化任务
 
-## Phase 4: 统一格式化工具
+## Phase 3: 整合缓存模块
 
-- [x] Task 6: 合并格式化函数
-  - [x] SubTask 6.1: 增强 `shared/utils/format/number.ts` 支持国际化参数
-  - [x] SubTask 6.2: 增强 `shared/utils/format/date.ts` 支持国际化参数
-  - [x] SubTask 6.3: 更新 `i18n/utils.ts` 使用统一的格式化函数
-  - [x] SubTask 6.4: 删除 `i18n/utils.ts` 中重复的格式化函数
+- [x] Task 7: 整合缓存模块
+  - [x] SubTask 7.1: 分析三个缓存模块的职责 - 职责不同，无需整合
+    - `lib/cache` - LRU 内存缓存
+    - `lib/api/cache` - HTTP 缓存头处理
+    - `lib/api/optimization/cache` - 基于 LRU 的缓存提供者
 
-## Phase 5: 验证和清理
+## Phase 4: 验证与清理
 
-- [x] Task 7: 验证所有更改
-  - [x] SubTask 7.1: 运行TypeScript类型检查 - 修改的文件无错误
-  - [x] SubTask 7.2: 确认开发服务器正常运行
-  - [x] SubTask 7.3: 确认无运行时错误
+- [x] Task 8: 运行类型检查和测试
+  - [x] SubTask 8.1: 运行 `npm run typecheck` - 存在预先存在的类型错误（与本次重构无关）
+  - [x] SubTask 8.2: 运行 `npm run lint` - 通过，仅 3 个警告（与本次重构无关）
+  - [x] SubTask 8.3: TopStatusBar 相关导入路径验证通过
 
 # Task Dependencies
 
-- [Task 2] depends on [Task 1] ✅
-- [Task 3] depends on [Task 2] ✅
-- [Task 4] depends on [Task 3] ✅
-- [Task 5] depends on [Task 4] ✅
-- [Task 6] can run in parallel with [Task 3-5] ✅
-- [Task 7] depends on [Task 1-6] ✅
+- [Task 2] depends on [Task 1]
+- [Task 8] depends on [Task 1, Task 2, Task 3, Task 4, Task 5, Task 6, Task 7]

@@ -1,2 +1,5 @@
 export { BandKpiOverview, type BandKpiStats } from './BandKpiOverview';
-export { BandTopStatusBar, type NetworkHealthStatus } from './BandTopStatusBar';
+export {
+  TopStatusBar as BandTopStatusBar,
+  type NetworkHealthStatus,
+} from '@/features/oracle/components/shared';

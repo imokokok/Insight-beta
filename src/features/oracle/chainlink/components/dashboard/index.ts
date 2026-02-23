@@ -4,7 +4,7 @@ export {
   MainContentSection,
   RightStatusSection,
 } from './DashboardLayout';
-export { TopStatusBar, type NetworkHealthStatus } from './TopStatusBar';
+export { TopStatusBar, type NetworkHealthStatus } from '@/features/oracle/components/shared';
 export { KpiOverview, type TrendDirection } from './KpiOverview';
 export { CollapsibleDataPanel } from './CollapsibleDataPanel';
 export { FeedStatusList, type FeedStatusListProps } from './FeedStatusList';

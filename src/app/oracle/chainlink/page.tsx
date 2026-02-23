@@ -16,7 +16,7 @@ import {
   LineChart,
 } from 'lucide-react';
 
-import { ContentSection, ContentGrid } from '@/components/common';
+import { ContentSection, ContentGrid, ExportButton } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import { Badge } from '@/components/ui';
@@ -35,13 +35,13 @@ import {
   type TabItem,
 } from '@/features/oracle/chainlink/components';
 import {
-  ChainlinkExportButton,
   ChainlinkPriceHistory,
   FeedQualityAnalysis,
   ChainlinkGasCostAnalysis,
   HeartbeatMonitor,
   DeviationTriggerStats,
   CrossChainPriceComparison,
+  chainlinkExportConfig,
 } from '@/features/oracle/chainlink/components';
 import { FeedAggregation } from '@/features/oracle/chainlink/components/FeedAggregation';
 import { OcrRoundMonitor } from '@/features/oracle/chainlink/components/OcrRoundMonitor';
@@ -367,7 +367,7 @@ export default function ChainlinkPage() {
               onIntervalChange={(interval) => updateState({ refreshInterval: interval })}
               timeUntilRefresh={state.timeUntilRefresh}
             />
-            <ChainlinkExportButton
+            <ExportButton
               data={
                 state.overviewStats || state.overviewData
                   ? {
@@ -377,6 +377,7 @@ export default function ChainlinkPage() {
                     }
                   : null
               }
+              config={chainlinkExportConfig}
               disabled={state.loading}
             />
           </div>

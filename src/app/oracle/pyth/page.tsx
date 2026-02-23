@@ -16,7 +16,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 
-import { ContentSection, ContentGrid } from '@/components/common';
+import { ContentSection, ContentGrid, ExportButton } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { Breadcrumb } from '@/components/common/Breadcrumb';
 import type { SortState } from '@/components/common/SortableTableHeader';
@@ -36,10 +36,10 @@ import {
 import {
   PythKpiOverview,
   PythTopStatusBar,
-  PythExportButton,
   ConfidenceComparisonChart,
   CrossChainPriceComparison,
   PriceHistoryChart,
+  pythExportConfig,
 } from '@/features/oracle/pyth/components';
 import type { NetworkHealthStatus } from '@/features/oracle/pyth/components';
 import { useI18n } from '@/i18n';
@@ -614,7 +614,7 @@ export default function PythPage() {
               onIntervalChange={(interval) => updateState({ refreshInterval: interval })}
               timeUntilRefresh={state.timeUntilRefresh}
             />
-            <PythExportButton
+            <ExportButton
               data={
                 state.overviewStats ||
                 state.publisherStats ||
@@ -629,6 +629,7 @@ export default function PythPage() {
                     }
                   : null
               }
+              config={pythExportConfig}
               disabled={state.loading}
             />
           </div>

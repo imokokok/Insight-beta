@@ -146,8 +146,12 @@ export const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI
 // 支持的区块链网络配置
 // ============================================================================
 
+import type { SupportedChain as SupportedChainBase } from '@/types/chains';
+
+export type SupportedChain = SupportedChainBase;
+
 export interface ChainInfo {
-  id: string;
+  id: SupportedChain;
   name: string;
   symbol: string;
   chainId: number;
@@ -220,11 +224,9 @@ export const SUPPORTED_CHAIN_IDS = Object.freeze(
       acc[chain.id] = chain.chainId;
       return acc;
     },
-    {} as Record<string, number>,
+    {} as Record<SupportedChain, number>,
   ),
 );
-
-export type SupportedChain = (typeof SUPPORTED_CHAINS)[number]['id'];
 
 // ============================================================================
 // 告警阈值配置
