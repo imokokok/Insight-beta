@@ -16,6 +16,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { formatPrice } from '@/shared/utils/format';
 
 import type { CrossChainComparisonData } from '../types/api3';
 
@@ -41,12 +42,6 @@ export function CrossChainPriceChart({ data, chainColors, className }: CrossChai
       };
     });
   }, [data.priceHistory]);
-
-  const formatPrice = (price: number) => {
-    if (price >= 1000) return `$${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-    if (price >= 1) return `$${price.toFixed(4)}`;
-    return `$${price.toFixed(6)}`;
-  };
 
   const priceRange = useMemo(() => {
     let min = Infinity;

@@ -62,13 +62,6 @@ export interface AlertsResponse {
   timestamp: string;
 }
 
-export interface UseAlertsOptions {
-  source?: AlertSource | 'all';
-  severity?: AlertSeverity | 'all';
-  status?: AlertStatus | 'all';
-  searchQuery?: string;
-}
-
 export interface ResponseTimeMetrics {
   mttr: number;
   mtta: number;

@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
 import { getAlertHistory } from '@/features/alerts/api';
 import type { TimeRange, GroupBy } from '@/features/alerts/hooks/useAlertHistory';
+import { ok, error } from '@/lib/api/apiResponse';
 import { logger } from '@/shared/logger';
 
 export async function GET(request: NextRequest) {
@@ -20,32 +20,30 @@ export async function GET(request: NextRequest) {
       severity,
     });
 
-    return NextResponse.json({
-      success: true,
-      data,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    logger.error('Failed to fetch alert history', { error });
-    return NextResponse.json(
+    return ok(data, { timestamp: new Date().toISOString() });
+  } catch (err) {
+    logger.error('Failed to fetch alert history', { error: err });
+    return error(
       {
-        success: false,
-        error: 'Failed to fetch alert history',
-        data: {
-          trend: [],
-          heatmap: [],
-          stats: {
-            totalAlerts: 0,
-            avgPerHour: 0,
-            peakHour: 0,
-            peakCount: 0,
-            trend: 'stable',
-            trendPercent: 0,
+        code: 'ALERT_HISTORY_FETCH_FAILED',
+        message: 'Failed to fetch alert history',
+        details: {
+          data: {
+            trend: [],
+            heatmap: [],
+            stats: {
+              totalAlerts: 0,
+              avgPerHour: 0,
+              peakHour: 0,
+              peakCount: 0,
+              trend: 'stable',
+              trendPercent: 0,
+            },
           },
+          timestamp: new Date().toISOString(),
         },
-        timestamp: new Date().toISOString(),
       },
-      { status: 500 },
+      500,
     );
   }
 }

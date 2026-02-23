@@ -32,6 +32,7 @@ import {
 import { useI18n } from '@/i18n';
 import { formatTime, cn, copyToClipboard } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
+import { formatPrice } from '@/shared/utils/format';
 
 interface FeedDetailData {
   feed: {
@@ -111,12 +112,6 @@ export function FeedDetail({ address }: FeedDetailProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
-  };
-
-  const formatPrice = (price: number) => {
-    if (price >= 1000) return `$${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-    if (price >= 1) return `$${price.toFixed(4)}`;
-    return `$${price.toFixed(6)}`;
   };
 
   const formatStaleness = (seconds: number): string => {

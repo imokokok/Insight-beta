@@ -25,11 +25,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { SkeletonList } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { TIME_RANGE_OPTIONS } from '@/config/constants';
-import { formatGas, formatEth, formatUsd } from '@/features/cross-chain/utils/format';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
+import { formatGas, formatEth, formatUsd } from '@/shared/utils/format';
 
 import type { GasCostAnalysisData, GasCostTrendPoint } from '../types/chainlink';
 

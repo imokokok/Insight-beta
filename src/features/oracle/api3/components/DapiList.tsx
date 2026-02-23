@@ -24,6 +24,7 @@ import { SkeletonList } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
+import { formatPrice } from '@/shared/utils/format';
 
 import { BeaconSetComposition } from './BeaconSetComposition';
 import { DataProviderInfo } from './DataProviderInfo';
@@ -79,12 +80,6 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
   const formatAddress = (address: string): string => {
     if (address.length <= 12) return address;
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-
-  const formatPrice = (price: number): string => {
-    if (price >= 1000) return `$${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-    if (price >= 1) return `$${price.toFixed(4)}`;
-    return `$${price.toFixed(6)}`;
   };
 
   const handleRefresh = () => {

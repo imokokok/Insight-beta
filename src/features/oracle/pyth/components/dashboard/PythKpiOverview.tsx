@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { cn } from '@/shared/utils';
+import { formatLatency } from '@/shared/utils/format';
 
 export type TrendDirection = 'up' | 'down' | 'neutral';
 
@@ -138,11 +139,6 @@ export function PythKpiOverview({
   className,
   compact = false,
 }: PythKpiOverviewProps) {
-  const formatLatency = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
-  };
-
   const getLatencyStatus = (ms: number): 'success' | 'warning' | 'error' => {
     if (ms < 200) return 'success';
     if (ms < 500) return 'warning';

@@ -17,6 +17,7 @@ import { Badge, StatusBadge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { cn } from '@/shared/utils';
+import { formatPrice } from '@/shared/utils/format';
 
 export interface AggregationResult {
   symbol: string;
@@ -44,16 +45,6 @@ const getDeviationBarColor = (deviation: number): string => {
   if (deviation < 0.02) return 'bg-emerald-500';
   if (deviation < 0.05) return 'bg-amber-500';
   return 'bg-red-500';
-};
-
-const formatPrice = (price: number): string => {
-  if (price >= 1000) {
-    return `$${price.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
-  }
-  if (price >= 1) {
-    return `$${price.toFixed(4)}`;
-  }
-  return `$${price.toFixed(6)}`;
 };
 
 const formatDeviation = (deviation: number): string => {

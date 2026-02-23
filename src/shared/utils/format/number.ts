@@ -45,3 +45,10 @@ export function truncateAddress(address: string): string {
   if (!address || address.length < 12) return address || '';
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
+
+export function formatUsd(usd: number): string {
+  if (!Number.isFinite(usd)) return '—';
+  if (usd >= 1000000) return `$${(usd / 1000000).toFixed(2)}M`;
+  if (usd >= 1000) return `$${(usd / 1000).toFixed(2)}K`;
+  return `$${usd.toFixed(2)}`;
+}

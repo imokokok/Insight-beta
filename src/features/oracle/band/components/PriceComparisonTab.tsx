@@ -10,9 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Progress } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
-import { formatPrice, getDeviationColor } from '@/features/cross-chain/utils/format';
 import { useI18n } from '@/i18n';
 import { fetchApiData, cn } from '@/shared/utils';
+import { formatPrice, getDeviationColor } from '@/shared/utils/format';
 
 interface PriceComparison {
   symbol: string;

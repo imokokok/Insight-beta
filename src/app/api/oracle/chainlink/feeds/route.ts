@@ -5,19 +5,7 @@ import { getRpcUrl } from '@/config/env';
 import { ok, error } from '@/lib/api/apiResponse';
 import { ChainlinkClient, getDefaultRpcUrl } from '@/lib/blockchain';
 import { POPULAR_FEEDS } from '@/lib/blockchain/chainlinkDataFeeds';
-
-interface Feed {
-  symbol: string;
-  pair: string;
-  latestPrice: string;
-  heartbeat: number;
-  deviationThreshold: string;
-  aggregatorAddress: string;
-  decimals: number;
-  lastUpdate: string;
-  isStale?: boolean;
-  stalenessSeconds?: number;
-}
+import { getChainlinkMockFeeds, type Feed } from '@/lib/mock/oracleMockData';
 
 interface FeedsQueryParams {
   chain?: ChainId;
@@ -41,68 +29,6 @@ function parseQueryParams(request: NextRequest): FeedsQueryParams {
     search: searchParams.get('search') ?? undefined,
     useRealData: searchParams.get('real') !== 'false',
   };
-}
-
-function getMockFeeds(chain?: ChainId): Feed[] {
-  const chainFeeds = chain ? POPULAR_FEEDS[chain] : POPULAR_FEEDS.ethereum;
-  const feedEntries = Object.entries(chainFeeds || {});
-
-  if (feedEntries.length === 0) {
-    const defaultFeedData = [
-      { symbol: 'ETH', pair: 'ETH/USD', price: 2345.67, decimals: 8 },
-      { symbol: 'BTC', pair: 'BTC/USD', price: 67890.12, decimals: 8 },
-      { symbol: 'LINK', pair: 'LINK/USD', price: 14.56, decimals: 8 },
-      { symbol: 'USDC', pair: 'USDC/USD', price: 1.0001, decimals: 8 },
-      { symbol: 'USDT', pair: 'USDT/USD', price: 0.9999, decimals: 8 },
-      { symbol: 'DAI', pair: 'DAI/USD', price: 1.0002, decimals: 8 },
-    ];
-
-    return defaultFeedData.map((data, index) => ({
-      symbol: data.symbol,
-      pair: data.pair,
-      latestPrice: data.price.toFixed(data.decimals),
-      heartbeat: [60000, 300000, 600000, 3600000][index % 4] ?? 60000,
-      deviationThreshold: ['0.5%', '1%', '2%', '0.25%'][index % 4] ?? '0.5%',
-      aggregatorAddress: `0x${(index + 1).toString(16).padStart(40, '0')}`,
-      decimals: data.decimals,
-      lastUpdate: new Date(Date.now() - Math.floor(Math.random() * 600000)).toISOString(),
-    }));
-  }
-
-  return feedEntries.map(([pair, address], index) => {
-    const [base = 'UNKNOWN'] = pair.split('/');
-    const mockPrice = getMockPriceForSymbol(base);
-    return {
-      symbol: base,
-      pair,
-      latestPrice: mockPrice.toFixed(8),
-      heartbeat: [60000, 300000, 600000, 3600000][index % 4] ?? 60000,
-      deviationThreshold: ['0.5%', '1%', '2%', '0.25%'][index % 4] ?? '0.5%',
-      aggregatorAddress: address as string,
-      decimals: 8,
-      lastUpdate: new Date(Date.now() - Math.floor(Math.random() * 600000)).toISOString(),
-    };
-  });
-}
-
-function getMockPriceForSymbol(symbol: string): number {
-  const mockPrices: Record<string, number> = {
-    ETH: 2345.67,
-    BTC: 67890.12,
-    LINK: 14.56,
-    USDC: 1.0001,
-    USDT: 0.9999,
-    DAI: 1.0002,
-    AAVE: 92.45,
-    UNI: 6.78,
-    MATIC: 0.89,
-    AVAX: 35.67,
-    BNB: 312.45,
-    FTM: 0.45,
-    ARB: 1.23,
-    OP: 2.45,
-  };
-  return mockPrices[symbol] ?? 1.0;
 }
 
 function getRpcUrlForChain(chain: ChainId): string | undefined {
@@ -186,11 +112,11 @@ export async function GET(request: NextRequest) {
       fetchErrors = result.errors;
 
       if (feeds.length === 0) {
-        feeds = getMockFeeds(targetChain);
+        feeds = getChainlinkMockFeeds(targetChain);
         dataSource = 'fallback';
       }
     } else {
-      feeds = getMockFeeds(targetChain);
+      feeds = getChainlinkMockFeeds(targetChain);
       dataSource = 'fallback';
     }
 

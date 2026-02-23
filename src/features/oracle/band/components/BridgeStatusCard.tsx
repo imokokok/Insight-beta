@@ -4,9 +4,9 @@ import { ArrowRight, Clock, Activity, TrendingUp, AlertCircle } from 'lucide-rea
 
 import { ContentGrid } from '@/components/common';
 import { StatusBadge } from '@/components/ui';
-import { formatLatency, getLatencyColor } from '@/features/cross-chain/utils/format';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
+import { formatLatency, getLatencyColor } from '@/shared/utils/format';
 
 import type { Bridge } from '../types/band';
 

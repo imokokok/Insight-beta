@@ -1,24 +1,9 @@
 import { ok, error } from '@/lib/api/apiResponse';
-
-interface PythStats {
-  totalPublishers: number;
-  activePublishers: number;
-  activePriceFeeds: number;
-  avgLatency: number;
-}
-
-function getMockStats(): PythStats {
-  return {
-    totalPublishers: 28,
-    activePublishers: 24,
-    activePriceFeeds: 356,
-    avgLatency: 245,
-  };
-}
+import { getPythMockStats } from '@/lib/mock/oracleMockData';
 
 export async function GET() {
   try {
-    const stats = getMockStats();
+    const stats = getPythMockStats();
 
     return ok({
       stats,

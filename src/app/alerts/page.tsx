@@ -92,7 +92,6 @@ export default function AlertsCenterPage() {
     setRefreshInterval,
     timeUntilRefresh,
     refresh,
-    fetchData,
     filteredAlerts,
     alertGroups,
     selectedAlerts,
@@ -111,7 +110,7 @@ export default function AlertsCenterPage() {
       <div className="container mx-auto p-6">
         <ErrorBanner
           error={new Error(error)}
-          onRetry={() => fetchData()}
+          onRetry={() => refresh()}
           title={t('alerts.failedToLoad')}
           isRetrying={loading}
         />

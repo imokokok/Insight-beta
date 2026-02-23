@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
+import { formatPrice } from '@/shared/utils/format';
 import type { RealtimeComparisonItem, ComparisonFilter } from '@/types/oracle/comparison';
 
 interface RealtimeComparisonProps {
@@ -25,13 +26,6 @@ export function RealtimeComparisonView({
   onRefresh,
 }: RealtimeComparisonProps) {
   const { t } = useI18n();
-
-  const formatPrice = (price: number) => {
-    return price.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 4,
-    });
-  };
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -119,7 +113,7 @@ export function RealtimeComparisonView({
                     </Badge>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium">${formatPrice(protocol.price)}</p>
+                    <p className="text-sm font-medium">{formatPrice(protocol.price)}</p>
                     <div className="flex items-center justify-end gap-1 text-xs">
                       <span
                         className={cn(
@@ -140,7 +134,7 @@ export function RealtimeComparisonView({
 
             <div className="mt-3 flex items-center justify-between border-t border-border/30 pt-2 text-xs text-muted-foreground">
               <span>
-                {t('comparison.consensus')}: ${formatPrice(item.consensus.median)}
+                {t('comparison.consensus')}: {formatPrice(item.consensus.median)}
               </span>
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />

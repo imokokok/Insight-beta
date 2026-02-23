@@ -11,14 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
-import { cn } from '@/shared/utils/ui';
-
 import {
   formatPrice,
   formatDeviation,
   getDeviationColor,
   getDeviationBadgeVariant,
-} from '../utils/format';
+} from '@/shared/utils/format';
+import { cn } from '@/shared/utils/ui';
 
 export interface ChainPriceData {
   chain: string;

@@ -1,24 +1,9 @@
 import { ok, error } from '@/lib/api/apiResponse';
-
-interface ChainlinkStats {
-  totalFeeds: number;
-  activeNodes: number;
-  ocrRounds: number;
-  avgLatency: number;
-}
-
-function getMockStats(): ChainlinkStats {
-  return {
-    totalFeeds: 1247,
-    activeNodes: 42,
-    ocrRounds: 156832,
-    avgLatency: 245,
-  };
-}
+import { getChainlinkMockStats } from '@/lib/mock/oracleMockData';
 
 export async function GET() {
   try {
-    const stats = getMockStats();
+    const stats = getChainlinkMockStats();
 
     return ok({
       stats,

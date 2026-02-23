@@ -17,6 +17,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
+import { formatPrice } from '@/shared/utils/format';
 
 import type { ProtocolPricePoint } from '../types/api3';
 
@@ -54,10 +55,6 @@ export function PriceComparisonChart({
       Pyth: point.pythPrice,
     }));
   }, [pricePoints]);
-
-  const formatPrice = (price: number): string => {
-    return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
 
   const CustomTooltip = ({
     active,

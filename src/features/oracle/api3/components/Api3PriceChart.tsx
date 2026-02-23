@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { SkeletonList } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
+import { formatPrice } from '@/shared/utils/format';
 
 import type { Api3PriceData } from '../types/api3';
 
@@ -174,13 +175,6 @@ export function Api3PriceChart({
       change7d: getChange(Math.min(168, data.length - 1)),
     };
   }, [data]);
-
-  const formatPrice = (price: number) => {
-    return `$${price.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-  };
 
   const handleRefresh = () => {
     setIsLoading(true);

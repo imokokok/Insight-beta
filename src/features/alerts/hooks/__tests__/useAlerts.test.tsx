@@ -73,6 +73,13 @@ const mockFetch = vi.fn();
 
 global.fetch = mockFetch;
 
+vi.mock('@/components/common/DashboardToast', () => ({
+  useToast: () => ({
+    success: vi.fn(),
+    error: vi.fn(),
+  }),
+}));
+
 describe('useAlerts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -98,9 +105,9 @@ describe('useAlerts', () => {
         expect(result.current.data).toBeDefined();
       });
 
-      expect(result.current.data?.data.alerts).toHaveLength(3);
-      expect(result.current.error).toBeUndefined();
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.data?.alerts).toHaveLength(3);
+      expect(result.current.error).toBeNull();
+      expect(result.current.loading).toBe(false);
     });
 
     it('should return correct data structure', async () => {
@@ -117,14 +124,12 @@ describe('useAlerts', () => {
         expect(result.current.data).toBeDefined();
       });
 
-      const response = result.current.data!;
-      expect(response.success).toBe(true);
-      expect(response.data.alerts).toBeDefined();
-      expect(response.data.summary).toBeDefined();
-      expect(response.timestamp).toBeDefined();
+      const data = result.current.data!;
+      expect(data.alerts).toBeDefined();
+      expect(data.summary).toBeDefined();
     });
 
-    it('should set isLoading to true during fetch', async () => {
+    it('should set loading to true during fetch', async () => {
       let resolvePromise: (value: unknown) => void;
       mockFetch.mockImplementation(
         () =>
@@ -137,7 +142,7 @@ describe('useAlerts', () => {
         wrapper: createWrapper(),
       });
 
-      expect(result.current.isLoading).toBe(true);
+      expect(result.current.loading).toBe(true);
 
       await act(async () => {
         resolvePromise!({
@@ -146,7 +151,7 @@ describe('useAlerts', () => {
         });
       });
 
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.loading).toBe(false);
     });
   });
 
@@ -265,10 +270,10 @@ describe('useAlerts', () => {
       });
 
       await waitFor(() => {
-        expect(result.current.error).toBeDefined();
+        expect(result.current.error).not.toBeNull();
       });
 
-      expect(result.current.error?.message).toContain('Internal Server Error');
+      expect(result.current.error).toContain('Internal Server Error');
     });
 
     it('should handle network errors', async () => {
@@ -279,10 +284,10 @@ describe('useAlerts', () => {
       });
 
       await waitFor(() => {
-        expect(result.current.error).toBeDefined();
+        expect(result.current.error).not.toBeNull();
       });
 
-      expect(result.current.error?.message).toContain('Network error');
+      expect(result.current.error).toContain('Network error');
     });
 
     it('should handle error response with code', async () => {
@@ -297,10 +302,10 @@ describe('useAlerts', () => {
       });
 
       await waitFor(() => {
-        expect(result.current.error).toBeDefined();
+        expect(result.current.error).not.toBeNull();
       });
 
-      expect(result.current.error?.message).toContain('Forbidden');
+      expect(result.current.error).toContain('Forbidden');
     });
 
     it('should handle malformed JSON response', async () => {
@@ -317,10 +322,10 @@ describe('useAlerts', () => {
       });
 
       await waitFor(() => {
-        expect(result.current.error).toBeDefined();
+        expect(result.current.error).not.toBeNull();
       });
 
-      expect(result.current.error?.message).toContain('HTTP 500');
+      expect(result.current.error).toContain('HTTP 500');
     });
   });
 
@@ -361,8 +366,66 @@ describe('useAlerts', () => {
         expect(result.current.data).toBeDefined();
       });
 
-      expect(result.current.data?.data.alerts).toHaveLength(0);
-      expect(result.current.data?.data.summary.total).toBe(0);
+      expect(result.current.data?.alerts).toHaveLength(0);
+      expect(result.current.data?.summary.total).toBe(0);
+    });
+  });
+
+  describe('auto refresh', () => {
+    it('should return auto refresh controls', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockAlertsResponse,
+      });
+
+      const { result } = renderHook(() => useAlerts(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.data).toBeDefined();
+      });
+
+      expect(result.current.autoRefreshEnabled).toBe(true);
+      expect(result.current.refreshInterval).toBe(30000);
+      expect(result.current.timeUntilRefresh).toBeDefined();
+      expect(typeof result.current.setAutoRefreshEnabled).toBe('function');
+      expect(typeof result.current.setRefreshInterval).toBe('function');
+      expect(typeof result.current.refresh).toBe('function');
+    });
+
+    it('should respect initial autoRefreshEnabled option', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockAlertsResponse,
+      });
+
+      const { result } = renderHook(() => useAlerts({ autoRefreshEnabled: false }), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.data).toBeDefined();
+      });
+
+      expect(result.current.autoRefreshEnabled).toBe(false);
+    });
+
+    it('should respect custom refresh interval', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockAlertsResponse,
+      });
+
+      const { result } = renderHook(() => useAlerts({ autoRefreshInterval: 60000 }), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.data).toBeDefined();
+      });
+
+      expect(result.current.refreshInterval).toBe(60000);
     });
   });
 });

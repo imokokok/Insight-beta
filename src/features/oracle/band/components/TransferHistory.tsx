@@ -18,9 +18,9 @@ import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
-import { formatLatency, getLatencyColor } from '@/features/cross-chain/utils/format';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
+import { formatLatency, getLatencyColor } from '@/shared/utils/format';
 
 import type { Transfer } from '../types';
 

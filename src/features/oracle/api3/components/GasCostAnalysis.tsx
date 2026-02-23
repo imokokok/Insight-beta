@@ -10,9 +10,9 @@ import { Badge } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { TIME_RANGE_OPTIONS } from '@/config/constants';
-import { formatGas, formatEth, formatUsd } from '@/features/cross-chain/utils/format';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
+import { formatGas, formatEth, formatUsd } from '@/shared/utils/format';
 
 import { GasCostTrendChart } from './GasCostTrendChart';
 

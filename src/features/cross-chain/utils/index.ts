@@ -5,4 +5,4 @@ export {
   formatDeviation,
   getDeviationColor,
   getDeviationBadgeVariant,
-} from './format';
+} from '@/shared/utils/format';

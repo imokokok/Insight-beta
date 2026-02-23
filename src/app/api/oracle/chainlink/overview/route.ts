@@ -1,77 +1,9 @@
 import { ok, error } from '@/lib/api/apiResponse';
-
-interface OverviewFeed {
-  pair: string;
-  status: string;
-  decimals: number;
-  lastUpdate: string;
-}
-
-interface ChainlinkOverviewResponse {
-  feeds: OverviewFeed[];
-  metadata: {
-    totalFeeds: number;
-    activeFeeds: number;
-    supportedChains: string[];
-  };
-}
-
-function getMockOverview(): ChainlinkOverviewResponse {
-  const supportedChains = [
-    'Ethereum',
-    'Polygon',
-    'Arbitrum',
-    'Optimism',
-    'Avalanche',
-    'BSC',
-    'Base',
-    'Fantom',
-    'Gnosis',
-    'Scroll',
-    'Mantle',
-    'Linea',
-  ];
-
-  const feedPairs = [
-    'ETH/USD',
-    'BTC/USD',
-    'LINK/USD',
-    'USDC/USD',
-    'USDT/USD',
-    'DAI/USD',
-    'AAVE/USD',
-    'UNI/USD',
-    'MATIC/USD',
-    'AVAX/USD',
-    'BNB/USD',
-    'ARB/USD',
-    'OP/USD',
-    'ATOM/USD',
-    'SOL/USD',
-  ];
-
-  const feeds: OverviewFeed[] = feedPairs.map((pair) => ({
-    pair,
-    status: Math.random() > 0.05 ? 'active' : 'inactive',
-    decimals: 8,
-    lastUpdate: new Date(Date.now() - Math.floor(Math.random() * 600000)).toISOString(),
-  }));
-
-  const activeFeeds = feeds.filter((f) => f.status === 'active').length;
-
-  return {
-    feeds,
-    metadata: {
-      totalFeeds: feeds.length,
-      activeFeeds,
-      supportedChains,
-    },
-  };
-}
+import { getChainlinkMockOverview } from '@/lib/mock/oracleMockData';
 
 export async function GET() {
   try {
-    const overview = getMockOverview();
+    const overview = getChainlinkMockOverview();
 
     return ok({
       ...overview,

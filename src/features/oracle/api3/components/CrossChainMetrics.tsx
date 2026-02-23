@@ -7,7 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
-import { formatPrice, formatInterval, formatLatency } from '@/features/cross-chain/utils/format';
+import { formatPrice, formatInterval, formatLatency } from '@/shared/utils/format';
 
 import type { CrossChainComparisonData } from '../types/api3';
 

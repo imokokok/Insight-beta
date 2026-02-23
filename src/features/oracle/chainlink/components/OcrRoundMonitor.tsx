@@ -12,8 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useI18n } from '@/i18n';
 import { formatTime, cn } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
-
-import { formatNumber } from './dashboard/formatters';
+import { formatNumber } from '@/shared/utils/format';
 
 import type { OcrRound, NodeContribution } from '../types';
 

@@ -5,8 +5,8 @@ import { useEffect } from 'react';
 import { Activity, TrendingUp, Network, Shield } from 'lucide-react';
 
 import { useAlertHistory } from '../hooks';
+import { useAlerts } from './useAlerts';
 import { useAlertsActions } from './useAlertsActions';
-import { useAlertsData } from './useAlertsData';
 import { useAlertSelection } from './useAlertSelection';
 import { useAlertsExport } from './useAlertsExport';
 import { useAlertsFilter } from './useAlertsFilter';
@@ -16,7 +16,7 @@ import type { UnifiedAlert, AlertSeverity, AlertStatus, AlertSource } from '../t
 import type { AlertTriangle } from 'lucide-react';
 
 export type { UnifiedAlert, AlertSeverity, AlertStatus, AlertSource };
-export type { AlertsData } from './useAlertsData';
+export type { AlertsData } from './useAlerts';
 
 export const sourceIcons: Record<AlertSource | 'all', typeof AlertTriangle> = {
   all: Activity,
@@ -27,10 +27,10 @@ export const sourceIcons: Record<AlertSource | 'all', typeof AlertTriangle> = {
 
 export function useAlertsPage() {
   const alertsState = useAlertsState();
-  const alertsData = useAlertsData();
+  const alertsData = useAlerts();
 
   const alertsActions = useAlertsActions({
-    onDataRefresh: () => alertsData.fetchData(false),
+    onDataRefresh: () => alertsData.refresh(),
   });
 
   const { data: historyData, isLoading: historyLoading } = useAlertHistory({
@@ -101,7 +101,6 @@ export function useAlertsPage() {
     setRefreshInterval: alertsData.setRefreshInterval,
     timeUntilRefresh: alertsData.timeUntilRefresh,
     refresh: alertsData.refresh,
-    fetchData: alertsData.fetchData,
     filteredAlerts: alertsFilter.filteredAlerts,
     alertGroups: alertsFilter.alertGroups,
     selectedAlerts: alertsSelection.selectedAlerts,

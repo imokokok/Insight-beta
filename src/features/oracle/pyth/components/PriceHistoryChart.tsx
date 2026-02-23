@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
+import { formatPrice } from '@/shared/utils/format';
 import { cn } from '@/shared/utils/ui';
 
 import type { PriceHistoryPoint, PriceHistoryResponse } from '../types/pyth';
@@ -159,19 +160,6 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
     };
   }, [chartData, selectedTimeRange]);
 
-  const formatPrice = (value: number) => {
-    if (value >= 1000) {
-      return value.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-    }
-    if (value >= 1) {
-      return value.toFixed(2);
-    }
-    return value.toFixed(4);
-  };
-
   if (loading || externalLoading) {
     return (
       <Card>
@@ -241,7 +229,7 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
                 当前价格
               </div>
               <p className="mt-1 text-lg font-semibold">
-                ${formatPrice(formattedData[formattedData.length - 1]?.price || 0)}
+                {formatPrice(formattedData[formattedData.length - 1]?.price || 0)}
               </p>
             </div>
             <div className="rounded-lg bg-muted/30 p-3">
@@ -261,11 +249,11 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
             </div>
             <div className="rounded-lg bg-muted/30 p-3">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">最高价</div>
-              <p className="mt-1 text-lg font-semibold">${formatPrice(stats.maxPrice)}</p>
+              <p className="mt-1 text-lg font-semibold">{formatPrice(stats.maxPrice)}</p>
             </div>
             <div className="rounded-lg bg-muted/30 p-3">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">最低价</div>
-              <p className="mt-1 text-lg font-semibold">${formatPrice(stats.minPrice)}</p>
+              <p className="mt-1 text-lg font-semibold">{formatPrice(stats.minPrice)}</p>
             </div>
             <div className="rounded-lg bg-muted/30 p-3">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -299,7 +287,7 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                     }}
-                    formatter={(value) => [`$${formatPrice(value as number)}`, '价格']}
+                    formatter={(value) => [formatPrice(value as number), '价格']}
                     labelFormatter={(label) => `时间: ${label}`}
                   />
                   <Legend />
@@ -318,7 +306,7 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
                       stroke="#6366f1"
                       strokeDasharray="5 5"
                       label={{
-                        value: `均值: $${formatPrice(stats.avgPrice)}`,
+                        value: `均值: ${formatPrice(stats.avgPrice)}`,
                         position: 'right',
                         fill: '#6366f1',
                         fontSize: 11,

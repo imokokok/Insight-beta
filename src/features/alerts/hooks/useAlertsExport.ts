@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 
 import type { UnifiedAlert } from '../types';
-import type { AlertsData } from './useAlertsData';
+import type { AlertsData } from './useAlerts';
 
 export interface UseAlertsExportOptions {
   data: AlertsData | null;

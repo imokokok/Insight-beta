@@ -1,13 +1,13 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
 import { getPriceHistory, getLatestPrices } from '@/features/oracle/services/priceHistoryCollector';
+import { ok, error } from '@/lib/api/apiResponse';
 import { hasDatabase } from '@/lib/database/db';
 
 export async function GET(request: NextRequest) {
   try {
     if (!hasDatabase()) {
-      return NextResponse.json({ error: 'Database not available' }, { status: 503 });
+      return error({ code: 'DATABASE_UNAVAILABLE', message: 'Database not available' }, 503);
     }
 
     const { searchParams } = new URL(request.url);
@@ -20,17 +20,13 @@ export async function GET(request: NextRequest) {
 
     if (latest) {
       const prices = await getLatestPrices(protocol ?? undefined, symbol ?? undefined);
-      return NextResponse.json({
-        success: true,
-        count: prices.length,
-        data: prices,
-      });
+      return ok(prices, { count: prices.length });
     }
 
     if (!protocol || !symbol) {
-      return NextResponse.json(
-        { error: 'Missing required parameters: protocol and symbol' },
-        { status: 400 },
+      return error(
+        { code: 'MISSING_PARAMETERS', message: 'Missing required parameters: protocol and symbol' },
+        400,
       );
     }
 
@@ -40,20 +36,15 @@ export async function GET(request: NextRequest) {
       limit,
     });
 
-    return NextResponse.json({
-      success: true,
-      protocol,
-      symbol,
-      count: history.length,
-      data: history,
-    });
-  } catch (error) {
-    return NextResponse.json(
+    return ok(history, { protocol, symbol, count: history.length });
+  } catch (err) {
+    return error(
       {
-        error: 'Failed to fetch price history',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        code: 'PRICE_HISTORY_FETCH_FAILED',
+        message: 'Failed to fetch price history',
+        details: err instanceof Error ? err.message : 'Unknown error',
       },
-      { status: 500 },
+      500,
     );
   }
 }

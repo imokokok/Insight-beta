@@ -44,6 +44,7 @@ import {
 import type { NetworkHealthStatus } from '@/features/oracle/pyth/components';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
+import { formatLatency } from '@/shared/utils/format';
 import { cn } from '@/shared/utils/ui';
 
 interface PublisherStats {
@@ -537,11 +538,6 @@ export default function PythPage() {
     }
     return filtered;
   }, [priceFeedSort, selectedCategory]);
-
-  const formatLatency = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
-  };
 
   const getLatencyColor = (ms: number) => {
     if (ms < 200) return 'text-green-500';

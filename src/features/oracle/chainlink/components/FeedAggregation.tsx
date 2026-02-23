@@ -26,8 +26,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useI18n } from '@/i18n';
 import { formatTime, cn } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
-
-import { formatPrice, formatAddress as formatAddr } from './dashboard/formatters';
+import { formatPrice, formatAddress } from '@/shared/utils/format';
 
 import type { ChainlinkFeed } from '../types/chainlink';
 import type { Route } from 'next';
@@ -159,7 +158,7 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
   };
 
   const formatAddressLocal = (address: string) => {
-    return formatAddr(address);
+    return formatAddress(address);
   };
 
   if (isLoading) {

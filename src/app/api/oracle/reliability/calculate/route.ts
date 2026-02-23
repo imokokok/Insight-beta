@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
 import { calculateAndStoreReliabilityScores } from '@/features/oracle/services/reliabilityScorer';
+import { ok, error } from '@/lib/api/apiResponse';
 import { hasDatabase } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
 import type { TimePeriod } from '@/types/oracle/reliability';
@@ -9,16 +9,16 @@ import type { TimePeriod } from '@/types/oracle/reliability';
 export async function POST(request: NextRequest) {
   try {
     if (!hasDatabase()) {
-      return NextResponse.json({ error: 'Database not available' }, { status: 503 });
+      return error({ code: 'DATABASE_UNAVAILABLE', message: 'Database not available' }, 503);
     }
 
     const body = await request.json().catch(() => ({}));
     const { period = '30d', protocols = ['chainlink', 'pyth', 'redstone'] } = body;
 
     if (!['7d', '30d', '90d'].includes(period)) {
-      return NextResponse.json(
-        { error: 'Invalid period. Must be one of: 7d, 30d, 90d' },
-        { status: 400 },
+      return error(
+        { code: 'INVALID_PERIOD', message: 'Invalid period. Must be one of: 7d, 30d, 90d' },
+        400,
       );
     }
 
@@ -29,30 +29,25 @@ export async function POST(request: NextRequest) {
       protocolsCount: results.length,
     });
 
-    return NextResponse.json({
-      success: true,
-      period,
-      timestamp: new Date().toISOString(),
-      count: results.length,
-      data: results,
-    });
-  } catch (error) {
+    return ok(results, { period, timestamp: new Date().toISOString(), count: results.length });
+  } catch (err) {
     logger.error('Reliability score calculation failed', {
-      error: error instanceof Error ? error.message : String(error),
+      error: err instanceof Error ? err.message : String(err),
     });
 
-    return NextResponse.json(
+    return error(
       {
-        error: 'Failed to calculate reliability scores',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        code: 'RELIABILITY_CALCULATION_FAILED',
+        message: 'Failed to calculate reliability scores',
+        details: err instanceof Error ? err.message : 'Unknown error',
       },
-      { status: 500 },
+      500,
     );
   }
 }
 
 export async function GET() {
-  return NextResponse.json({
+  return ok({
     message: 'Reliability Score Calculation API',
     endpoints: {
       'POST /api/oracle/reliability/calculate': {

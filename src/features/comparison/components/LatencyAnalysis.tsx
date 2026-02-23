@@ -24,6 +24,7 @@ import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { HEALTH_COLORS } from '@/lib/design-system';
 import { cn } from '@/shared/utils';
+import { formatLatency } from '@/shared/utils/format';
 import type { LatencyAnalysis, LatencyTrend } from '@/types/oracle';
 
 interface LatencyAnalysisProps {
@@ -54,11 +55,6 @@ const statusConfig = {
     ariaLabelKey: 'status.stale',
   },
 };
-
-function formatLatency(ms: number): string {
-  if (ms < 1000) return `${ms.toFixed(0)}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-}
 
 function formatFrequency(seconds: number): string {
   if (seconds < 60) return `${seconds.toFixed(0)}s`;

@@ -6,8 +6,8 @@
  */
 
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { ok, error } from '@/lib/api/apiResponse';
 import { logger } from '@/shared/logger';
 
 interface RouteParams {
@@ -29,26 +29,29 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // 验证 symbol 格式 (例如: ETH/USD)
     // 先检查长度防止 ReDoS 攻击，再使用正则验证
     if (symbol.length > 20 || !/^[A-Z]{2,10}\/[A-Z]{3}$/.test(symbol)) {
-      return NextResponse.json(
-        { error: 'Invalid symbol format. Expected format: XXX/YYY' },
-        { status: 400 },
+      return error(
+        {
+          code: 'INVALID_SYMBOL_FORMAT',
+          message: 'Invalid symbol format. Expected format: XXX/YYY',
+        },
+        400,
       );
     }
 
     // 验证并限制参数范围
     if (!Number.isFinite(hours) || hours < 1 || hours > 168) {
-      return NextResponse.json(
-        { error: 'Invalid hours parameter. Must be between 1 and 168' },
-        { status: 400 },
+      return error(
+        { code: 'INVALID_HOURS', message: 'Invalid hours parameter. Must be between 1 and 168' },
+        400,
       );
     }
     if (!Number.isFinite(page) || page < 1) {
-      return NextResponse.json({ error: 'Invalid page parameter' }, { status: 400 });
+      return error({ code: 'INVALID_PAGE', message: 'Invalid page parameter' }, 400);
     }
     if (!Number.isFinite(limit) || limit < 1 || limit > 100) {
-      return NextResponse.json(
-        { error: 'Invalid limit parameter. Must be between 1 and 100' },
-        { status: 400 },
+      return error(
+        { code: 'INVALID_LIMIT', message: 'Invalid limit parameter. Must be between 1 and 100' },
+        400,
       );
     }
 
@@ -71,32 +74,28 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       responseStats: { total: comparisons.length, returned: paginatedData.length },
     });
 
-    return NextResponse.json({
-      ok: true,
-      data: paginatedData,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestTimeMs: Math.round(requestTime),
-        page,
-        limit,
-        total: comparisons.length,
-        hasMore: end < comparisons.length,
-      },
+    return ok(paginatedData, {
+      timestamp: new Date().toISOString(),
+      requestTimeMs: Math.round(requestTime),
+      page,
+      limit,
+      total: comparisons.length,
+      hasMore: end < comparisons.length,
     });
-  } catch (error) {
+  } catch (err) {
     const requestTime = performance.now() - requestStartTime;
     logger.error('History API request failed', {
-      error,
+      error: err,
       performance: { totalRequestTimeMs: Math.round(requestTime) },
     });
 
-    return NextResponse.json(
+    return error(
       {
-        ok: false,
-        error: 'Failed to fetch history data',
-        meta: { timestamp: new Date().toISOString() },
+        code: 'HISTORY_FETCH_FAILED',
+        message: 'Failed to fetch history data',
+        details: { timestamp: new Date().toISOString() },
       },
-      { status: 500 },
+      500,
     );
   }
 }

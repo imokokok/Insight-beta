@@ -18,14 +18,14 @@ import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import type { TableRowData } from '@/features/comparison/components/VirtualTable';
+import { useI18n } from '@/i18n';
+import { cn } from '@/shared/utils';
 import {
   formatPrice,
   formatLatency,
   getDeviationColor,
   getLatencyColor,
-} from '@/features/cross-chain/utils/format';
-import { useI18n } from '@/i18n';
-import { cn } from '@/shared/utils';
+} from '@/shared/utils/format';
 import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
 
 export interface RowDetailPanelProps {

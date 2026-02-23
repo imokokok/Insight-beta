@@ -76,5 +76,17 @@ export function formatDeviation(
   deviation: number | null | undefined,
   decimals: number = 2,
 ): string {
-  return formatChangePercent(deviation, decimals, true);
+  return formatChangePercent(deviation, decimals);
+}
+
+export function getDeviationColor(percent: number): string {
+  if (percent < 0.1) return 'text-green-500';
+  if (percent < 0.5) return 'text-yellow-500';
+  return 'text-red-500';
+}
+
+export function getDeviationBadgeVariant(percent: number): 'success' | 'warning' | 'destructive' {
+  if (percent < 0.1) return 'success';
+  if (percent < 0.5) return 'warning';
+  return 'destructive';
 }

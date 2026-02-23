@@ -24,6 +24,7 @@ import { SkeletonList } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, formatTime, fetchApiData } from '@/shared/utils';
+import { formatPrice } from '@/shared/utils/format';
 
 import { ConfidenceIntervalChart } from './ConfidenceIntervalChart';
 
@@ -308,14 +309,6 @@ export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
     }
   };
 
-  const formatPrice = (price: string) => {
-    const numPrice = parseFloat(price);
-    if (numPrice >= 1000)
-      return `$${numPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-    if (numPrice >= 1) return `$${numPrice.toFixed(4)}`;
-    return `$${numPrice.toFixed(6)}`;
-  };
-
   if (isLoading) {
     return (
       <ContentSection className={className}>
@@ -471,7 +464,9 @@ export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <span className="font-mono font-medium">{formatPrice(update.price)}</span>
+                      <span className="font-mono font-medium">
+                        {formatPrice(parseFloat(update.price))}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <span className="font-mono text-xs text-muted-foreground">
@@ -480,7 +475,7 @@ export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
                     </TableCell>
                     <TableCell>
                       <span className="font-mono text-sm text-muted-foreground">
-                        {formatPrice(update.emaPrice)}
+                        {formatPrice(parseFloat(update.emaPrice))}
                       </span>
                     </TableCell>
                     <TableCell>

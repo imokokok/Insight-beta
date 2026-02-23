@@ -31,6 +31,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { fetchApiData, cn } from '@/shared/utils';
+import { formatLatency } from '@/shared/utils/format';
 
 interface ComparisonLatencyData {
   avgResponseTime: number;
@@ -161,7 +162,6 @@ export function CrossProtocolComparison({ className }: { className?: string }) {
     fetchData();
   };
 
-  const formatLatency = (ms: number) => `${ms.toFixed(1)}ms`;
   const formatPercent = (value: number) => `${value.toFixed(2)}%`;
   const formatGas = (gas: number) => gas.toLocaleString(undefined, { maximumFractionDigits: 0 });
   const formatUSD = (usd: number) => `$${usd.toFixed(4)}`;
@@ -241,7 +241,7 @@ export function CrossProtocolComparison({ className }: { className?: string }) {
               <div className="mt-4 h-48">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={latencyBarData} layout="vertical">
-                    <XAxis type="number" tickFormatter={formatLatency} />
+                    <XAxis type="number" tickFormatter={(value) => formatLatency(value)} />
                     <YAxis type="category" dataKey="name" width={80} />
                     <Tooltip formatter={(value) => formatLatency(Number(value))} />
                     <Bar dataKey="value" radius={[0, 4, 4, 0]}>
@@ -338,7 +338,7 @@ export function CrossProtocolComparison({ className }: { className?: string }) {
                       })
                     }
                   />
-                  <YAxis tickFormatter={formatLatency} />
+                  <YAxis tickFormatter={(value) => formatLatency(value)} />
                   <Tooltip formatter={(value) => formatLatency(Number(value))} />
                   <Legend />
                   <Line

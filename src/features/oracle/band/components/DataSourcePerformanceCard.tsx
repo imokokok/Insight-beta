@@ -4,6 +4,7 @@ import { Clock, Zap, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-reac
 
 import { Badge } from '@/components/ui';
 import { cn } from '@/shared/utils';
+import { formatLatency } from '@/shared/utils/format';
 
 import type { DataSource } from '../types';
 
@@ -30,11 +31,6 @@ const formatFrequency = (seconds: number): string => {
   if (seconds < 60) return `${seconds}s`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
   return `${Math.floor(seconds / 3600)}h`;
-};
-
-const formatLatency = (ms: number): string => {
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
 };
 
 export function DataSourcePerformanceCard({ source, className }: DataSourcePerformanceCardProps) {
