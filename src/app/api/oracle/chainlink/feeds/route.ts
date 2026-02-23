@@ -1,10 +1,10 @@
 import type { NextRequest } from 'next/server';
 
+import { isSupportedChain, type ChainId } from '@/config/chains';
 import { getRpcUrl } from '@/config/env';
 import { ok, error } from '@/lib/api/apiResponse';
 import { ChainlinkClient, getDefaultRpcUrl } from '@/lib/blockchain';
 import { POPULAR_FEEDS } from '@/lib/blockchain/chainlinkDataFeeds';
-import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
 interface Feed {
   symbol: string;
@@ -20,37 +20,19 @@ interface Feed {
 }
 
 interface FeedsQueryParams {
-  chain?: SupportedChain;
+  chain?: ChainId;
   status?: 'active' | 'inactive';
   search?: string;
   useRealData?: boolean;
 }
 
-const VALID_CHAINS: SupportedChain[] = [
-  'ethereum',
-  'polygon',
-  'arbitrum',
-  'optimism',
-  'base',
-  'avalanche',
-  'bsc',
-  'fantom',
-  'celo',
-  'gnosis',
-  'linea',
-  'scroll',
-  'mantle',
-  'mode',
-  'blast',
-];
-
 function parseQueryParams(request: NextRequest): FeedsQueryParams {
   const { searchParams } = new URL(request.url);
   const chainParam = searchParams.get('chain');
 
-  let chain: SupportedChain | undefined;
-  if (chainParam && VALID_CHAINS.includes(chainParam as SupportedChain)) {
-    chain = chainParam as SupportedChain;
+  let chain: ChainId | undefined;
+  if (chainParam && isSupportedChain(chainParam)) {
+    chain = chainParam;
   }
 
   return {
@@ -61,7 +43,7 @@ function parseQueryParams(request: NextRequest): FeedsQueryParams {
   };
 }
 
-function getMockFeeds(chain?: SupportedChain): Feed[] {
+function getMockFeeds(chain?: ChainId): Feed[] {
   const chainFeeds = chain ? POPULAR_FEEDS[chain] : POPULAR_FEEDS.ethereum;
   const feedEntries = Object.entries(chainFeeds || {});
 
@@ -123,13 +105,13 @@ function getMockPriceForSymbol(symbol: string): number {
   return mockPrices[symbol] ?? 1.0;
 }
 
-function getRpcUrlForChain(chain: SupportedChain): string | undefined {
+function getRpcUrlForChain(chain: ChainId): string | undefined {
   const envUrl = getRpcUrl(chain);
   if (envUrl) return envUrl;
   return getDefaultRpcUrl(chain);
 }
 
-async function fetchRealFeeds(chain: SupportedChain): Promise<{
+async function fetchRealFeeds(chain: ChainId): Promise<{
   feeds: Feed[];
   errors: string[];
   source: 'on-chain' | 'fallback';

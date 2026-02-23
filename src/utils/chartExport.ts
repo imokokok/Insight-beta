@@ -167,7 +167,7 @@ export async function exportChartAsSVG(
   downloadBlob(blob, filename);
 }
 
-function escapeCSV(value: unknown): string {
+export function escapeCSV(value: unknown): string {
   if (value === null || value === undefined) {
     return '';
   }
@@ -176,6 +176,15 @@ function escapeCSV(value: unknown): string {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
+}
+
+export function escapeXML(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 export function exportDataAsCSV(data: object[], filename: string): void {

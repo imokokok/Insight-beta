@@ -1,6 +1,7 @@
 import type {
   GasCostTrendPoint,
   GasCostAnalysisDataBase,
+  GasCostByChainBase,
   ReliabilityScoreBase,
 } from '@/types/shared';
 
@@ -58,12 +59,7 @@ export interface GasCostByFeed {
   avgGasPerTransaction: number;
 }
 
-export interface GasCostByChain {
-  chain: string;
-  totalGasUsed: number;
-  totalCostEth: number;
-  totalCostUsd: number;
-  transactionCount: number;
+export interface GasCostByChain extends GasCostByChainBase {
   feedCount: number;
 }
 

@@ -11,7 +11,8 @@ export { DynamicLoading, createLoadingComponent, type LoadingType } from './Dyna
 export { ChartCard, ChartCardSkeleton } from './ChartCard';
 export { ChartFullscreen, ChartFullscreenButton } from './ChartFullscreen';
 export type { ChartFullscreenProps } from './ChartFullscreen';
-export { ExportButton, escapeCSV, escapeXML, downloadFile } from './ExportButton';
+export { ExportButton, downloadFile } from './ExportButton';
+export { escapeCSV, escapeXML } from '@/utils/chartExport';
 export type {
   ExportButtonProps,
   ExportConfig,

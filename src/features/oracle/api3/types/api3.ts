@@ -1,6 +1,7 @@
 import type {
   GasCostTrendPoint as GasCostTrendPointBase,
   GasCostAnalysisDataBase,
+  GasCostByChainBase,
 } from '@/types/shared';
 
 export type { GasCostTrendPointBase as GasCostTrendPoint };
@@ -171,12 +172,7 @@ export interface GasCostByDapi {
   avgGasPerTransaction: number;
 }
 
-export interface GasCostByChain {
-  chain: string;
-  totalGasUsed: number;
-  totalCostEth: number;
-  totalCostUsd: number;
-  transactionCount: number;
+export interface GasCostByChain extends GasCostByChainBase {
   dapiCount: number;
 }
 

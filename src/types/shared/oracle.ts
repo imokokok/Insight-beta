@@ -22,6 +22,14 @@ export interface GasCostAnalysisDataBase {
   generatedAt: string;
 }
 
+export interface GasCostByChainBase {
+  chain: string;
+  totalGasUsed: number;
+  totalCostEth: number;
+  totalCostUsd: number;
+  transactionCount: number;
+}
+
 export interface CrossChainPriceBase {
   chain: string;
   price: number;

@@ -1,4 +1,5 @@
 import {
+  formatEth,
   formatGas,
   formatInterval,
   formatLatency,
@@ -6,13 +7,7 @@ import {
   getLatencyColor,
 } from '@/shared/utils/format';
 
-export { formatGas, formatInterval, formatLatency, formatPrice, getLatencyColor };
-
-export function formatEth(eth: number): string {
-  if (eth >= 1) return `${eth.toFixed(4)} ETH`;
-  if (eth >= 0.001) return `${(eth * 1000).toFixed(2)} mETH`;
-  return `${(eth * 1000000).toFixed(0)} gwei`;
-}
+export { formatEth, formatGas, formatInterval, formatLatency, formatPrice, getLatencyColor };
 
 export function formatUsd(usd: number): string {
   if (usd >= 1000000) return `$${(usd / 1000000).toFixed(2)}M`;

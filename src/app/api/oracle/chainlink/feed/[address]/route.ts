@@ -1,33 +1,15 @@
 import type { NextRequest } from 'next/server';
 
+import { type ChainId, CHAINLINK_SUPPORTED_CHAINS } from '@/config/chains';
 import { getRpcUrl } from '@/config/env';
 import { ok, error } from '@/lib/api/apiResponse';
 import { ChainlinkClient, getDefaultRpcUrl } from '@/lib/blockchain';
 import { POPULAR_FEEDS } from '@/lib/blockchain/chainlinkDataFeeds';
-import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
 import type { Address } from 'viem';
 
-const VALID_CHAINS: SupportedChain[] = [
-  'ethereum',
-  'polygon',
-  'arbitrum',
-  'optimism',
-  'base',
-  'avalanche',
-  'bsc',
-  'fantom',
-  'celo',
-  'gnosis',
-  'linea',
-  'scroll',
-  'mantle',
-  'mode',
-  'blast',
-];
-
-function findFeedByAddress(address: string): { chain: SupportedChain; symbol: string } | null {
-  for (const chain of VALID_CHAINS) {
+function findFeedByAddress(address: string): { chain: ChainId; symbol: string } | null {
+  for (const chain of CHAINLINK_SUPPORTED_CHAINS) {
     const feeds = POPULAR_FEEDS[chain];
     if (feeds) {
       for (const [symbol, feedAddress] of Object.entries(feeds)) {
@@ -40,7 +22,7 @@ function findFeedByAddress(address: string): { chain: SupportedChain; symbol: st
   return null;
 }
 
-function getRpcUrlForChain(chain: SupportedChain): string | undefined {
+function getRpcUrlForChain(chain: ChainId): string | undefined {
   const envUrl = getRpcUrl(chain);
   if (envUrl) return envUrl;
   return getDefaultRpcUrl(chain);

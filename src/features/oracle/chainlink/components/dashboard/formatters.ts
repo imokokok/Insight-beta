@@ -4,42 +4,15 @@ import {
   formatLatency as formatLatencyShared,
   formatGas as formatGasShared,
   getLatencyColor,
+  formatNumber,
+  formatPrice,
 } from '@/shared/utils/format';
 
-export function formatNumber(value: number, decimals: number = 2): string {
-  if (!Number.isFinite(value)) return '—';
-
-  const absValue = Math.abs(value);
-
-  if (absValue >= 1e9) {
-    return (value / 1e9).toFixed(decimals) + 'B';
-  }
-  if (absValue >= 1e6) {
-    return (value / 1e6).toFixed(decimals) + 'M';
-  }
-  if (absValue >= 1e3) {
-    return (value / 1e3).toFixed(decimals) + 'K';
-  }
-
-  return value.toLocaleString('en-US', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
-}
+export { formatNumber, formatPrice };
 
 export function formatPercent(value: number, decimals: number = 2): string {
   if (!Number.isFinite(value)) return '—';
   return formatPercentValue(value, decimals, { showSign: true });
-}
-
-export function formatPrice(price: number): string {
-  if (!Number.isFinite(price)) return '—';
-  if (price === 0) return '$0.00';
-  if (Math.abs(price) < 0.0001) return `$${price.toExponential(2)}`;
-  if (Math.abs(price) < 0.01) return `$${price.toFixed(6)}`;
-  if (Math.abs(price) < 1) return `$${price.toFixed(4)}`;
-  if (Math.abs(price) < 1000) return `$${price.toFixed(2)}`;
-  return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export function formatAddress(address: string, start: number = 6, end: number = 4): string {

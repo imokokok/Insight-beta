@@ -25,26 +25,6 @@ import {
 type ChartExportFormat = 'png' | 'svg' | 'csv' | 'json';
 type DataExportFormat = 'json' | 'csv' | 'excel';
 
-export function escapeCSV(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '';
-  }
-  const str = String(value);
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}
-
-export function escapeXML(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
 export function downloadFile(content: string, filename: string, mimeType: string): void {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
