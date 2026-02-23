@@ -1,11 +1,7 @@
 import type { ExportConfig } from '@/components/common';
 import { escapeCSV, escapeXML } from '@/components/common';
-import type {
-  Bridge,
-  DataSource,
-  OracleScript,
-  ValidatorHealthSummary,
-} from '@/features/oracle/band';
+
+import type { Bridge, DataSource, OracleScript, ValidatorHealthSummary } from './types';
 
 export interface BandExportData {
   overviewStats: {

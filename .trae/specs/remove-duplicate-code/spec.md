@@ -1,97 +1,83 @@
-# 删除重复无用代码规范
+# 删除重复无用代码 Spec
 
 ## Why
 
-代码库中存在大量重复代码，包括类型定义、组件、工具函数和常量配置，导致维护困难、代码膨胀和潜在的不一致问题。
+代码库中存在大量重复代码（约1700行），包括重复的类型定义、工具函数、组件和配置文件。这些重复代码降低了代码可维护性，增加了维护成本，容易导致不一致性问题。
 
 ## What Changes
 
-- 删除 4 个完全相同的 TopStatusBar 组件，创建统一共享组件
-- 删除 4 个相似的 KpiOverview 组件，创建通用组件
-- 统一 AlertSeverity 和 AlertStatus 类型定义（4 处重复）
-- 统一 SupportedChain 和 ChainInfo 类型定义（4 处重复）
-- 统一 OracleProtocol 相关常量（3 处重复）
-- 整合价格相关类型定义（10+ 处重复）
-- 统一 SUPPORTED_CHAINS 常量（3 处重复）
-- 整合缓存模块（3 处重叠）
-- **BREAKING** 部分导入路径将变更
+- 删除重复的类型定义，统一到 `@/types` 目录
+- 删除重复的工具函数，统一到 `@/shared/utils` 目录
+- 删除重复的组件，使用通用基础组件
+- 删除重复的配置文件
+- **BREAKING** 部分导入路径将改变
 
 ## Impact
 
-- Affected specs: 类型系统、Oracle 组件、API 路由
+- Affected specs: 类型系统、工具函数、组件库
 - Affected code:
-  - `src/features/oracle/*/components/dashboard/` - 组件重复
-  - `src/types/` - 类型重复
-  - `src/config/constants.ts` - 常量重复
-  - `src/lib/cache/` 和 `src/lib/api/` - 缓存模块重叠
+  - `src/types/` - 类型定义整理
+  - `src/shared/utils/` - 工具函数统一
+  - `src/features/oracle/*/components/` - 组件重构
+  - `src/app/api/alerts/` - API 路由重构
 
 ## ADDED Requirements
 
-### Requirement: 统一 TopStatusBar 组件
-
-系统 SHALL 提供单一的共享 TopStatusBar 组件，位于 `src/features/oracle/components/shared/TopStatusBar.tsx`。
-
-#### Scenario: 组件重构成功
-
-- **WHEN** 删除 4 个重复的 TopStatusBar 组件
-- **THEN** 所有 Oracle 协议（Chainlink、Pyth、API3、Band）使用统一的共享组件
-
-### Requirement: 统一 KpiOverview 组件
-
-系统 SHALL 提供通用的 KpiOverview 组件，接受配置对象作为 props。
-
-#### Scenario: 组件重构成功
-
-- **WHEN** 删除 4 个相似的 KpiOverview 组件
-- **THEN** 所有 Oracle 协议使用统一的通用组件
-
 ### Requirement: 统一类型定义
 
-系统 SHALL 从单一来源导出所有共享类型。
+系统 SHALL 将所有重复的类型定义统一到 `@/types` 目录下的相应文件中。
 
-#### Scenario: 类型导入统一
+#### Scenario: AlertRuleRow 类型统一
 
-- **WHEN** 重构类型导入
-- **THEN** AlertSeverity/AlertStatus 从 `@/types/common/status` 导入
-- **AND** SupportedChain/ChainInfo 从 `@/types/chains` 导入
-- **AND** OracleProtocol 相关类型从 `@/types/oracle/protocol` 导入
+- **WHEN** 需要使用 AlertRuleRow 类型时
+- **THEN** 从 `@/types/database/alert` 导入
 
-### Requirement: 统一价格类型
+#### Scenario: AlertSeverity/AlertStatus 类型统一
 
-系统 SHALL 在 `src/types/price.ts` 中定义所有价格相关类型。
+- **WHEN** 需要使用告警严重程度或状态类型时
+- **THEN** 从 `@/types/common/status` 导入
 
-#### Scenario: 价格类型整合
+### Requirement: 统一工具函数
 
-- **WHEN** 创建统一价格类型文件
-- **THEN** PricePoint、PriceHistoryRecord、PriceUpdate 等类型从该文件导入
+系统 SHALL 将所有重复的工具函数统一到 `@/shared/utils` 目录下。
 
-## MODIFIED Requirements
+#### Scenario: 地址截断函数统一
 
-### Requirement: 更新导入路径
+- **WHEN** 需要截断区块链地址时
+- **THEN** 使用 `truncateAddress` 函数从 `@/shared/utils/format/number` 导入
 
-所有受影响的文件 SHALL 更新导入路径以使用统一的类型和组件来源。
+#### Scenario: 格式化函数统一
+
+- **WHEN** 需要格式化日期或数字时
+- **THEN** 从 `@/shared/utils/format` 导入相应函数
+
+### Requirement: 组件复用
+
+系统 SHALL 使用通用基础组件替代重复的特定组件。
+
+#### Scenario: ExportButton 组件统一
+
+- **WHEN** 需要导出功能时
+- **THEN** 使用通用的 `ExportButton` 组件配合配置对象
+
+#### Scenario: KpiOverview 组件统一
+
+- **WHEN** 需要显示协议 KPI 概览时
+- **THEN** 使用通用的 `ProtocolKpiOverview` 组件
 
 ## REMOVED Requirements
 
-### Requirement: 删除重复组件
+### Requirement: 删除 shortenAddress 函数
 
-**Reason**: 代码重复，维护成本高
-**Migration**: 使用统一的共享组件替代
+**Reason**: 与 truncateAddress 功能完全相同
+**Migration**: 将所有 `shortenAddress` 调用替换为 `truncateAddress`
 
-删除以下文件：
+### Requirement: 删除重复的 exportConfig 文件
 
-- `src/features/oracle/chainlink/components/dashboard/TopStatusBar.tsx`
-- `src/features/oracle/pyth/components/dashboard/PythTopStatusBar.tsx`
-- `src/features/oracle/api3/components/dashboard/Api3TopStatusBar.tsx`
-- `src/features/oracle/band/components/dashboard/BandTopStatusBar.tsx`
+**Reason**: 与 ExportButton 组件中的代码重复
+**Migration**: 保留 ExportButton 组件中的实现，删除独立的 exportConfig.ts 文件
 
-### Requirement: 删除重复类型定义
+### Requirement: 删除重复的 AlertRuleRow 定义
 
-**Reason**: 类型重复定义导致混乱
-**Migration**: 从统一位置导入
-
-删除/修改以下文件中的重复定义：
-
-- `src/config/constants.ts` 中的 SupportedChain 和 ChainInfo
-- `src/types/unifiedOracleTypes.ts` 中的重复类型
-- `src/lib/blockchain/walletConnect.ts` 中的 SUPPORTED_CHAINS
+**Reason**: 在多个 API 路由文件中重复定义
+**Migration**: 提取到共享模块 `@/types/database/alert`

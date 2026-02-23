@@ -12,6 +12,10 @@ import type {
   AlertSeverity as AlertSeverityBase,
   OracleAlertStatus as OracleAlertStatusBase,
 } from '@/types/common/status';
+import type {
+  Incident as IncidentBase,
+  IncidentStatus as IncidentStatusBase,
+} from '@/types/oracle/alert';
 
 import {
   ORACLE_PROTOCOLS as _ORACLE_PROTOCOLS,
@@ -657,24 +661,8 @@ export type OracleAlertRule = {
   recipient?: string | null;
 };
 
-export type IncidentStatus = 'Open' | 'Mitigating' | 'Resolved';
-
-export type Incident = {
-  id: number;
-  title: string;
-  status: IncidentStatus;
-  severity: AlertSeverity;
-  owner: string | null;
-  rootCause: string | null;
-  summary: string | null;
-  runbook: string | null;
-  alertIds: number[];
-  entityType: string | null;
-  entityId: string | null;
-  createdAt: string;
-  updatedAt: string;
-  resolvedAt: string | null;
-};
+export type IncidentStatus = IncidentStatusBase;
+export type Incident = IncidentBase;
 
 export type RiskSeverity = AlertSeverity;
 

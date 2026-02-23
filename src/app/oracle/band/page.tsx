@@ -36,18 +36,18 @@ import {
   QualityAnalysisTab,
   PriceComparisonTab,
 } from '@/features/oracle/band';
-import type {
-  Bridge,
-  DataSource,
-  OracleScript,
-  ValidatorHealthSummary,
-} from '@/features/oracle/band';
 import {
   BandKpiOverview,
   BandTopStatusBar,
   type BandKpiStats,
   type NetworkHealthStatus,
 } from '@/features/oracle/band/components/dashboard';
+import type {
+  Bridge,
+  DataSource,
+  OracleScript,
+  ValidatorHealthSummary,
+} from '@/features/oracle/band/types';
 import {
   TabNavigation,
   TabContent,

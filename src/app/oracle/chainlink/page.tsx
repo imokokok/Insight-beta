@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import { chainlinkExportConfig } from '@/features/oracle/chainlink';
 import {
   TopStatusBar,
   KpiOverview,
@@ -41,7 +42,6 @@ import {
   HeartbeatMonitor,
   DeviationTriggerStats,
   CrossChainPriceComparison,
-  chainlinkExportConfig,
 } from '@/features/oracle/chainlink/components';
 import { FeedAggregation } from '@/features/oracle/chainlink/components/FeedAggregation';
 import { OcrRoundMonitor } from '@/features/oracle/chainlink/components/OcrRoundMonitor';

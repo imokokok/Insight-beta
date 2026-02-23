@@ -33,13 +33,13 @@ import {
   useTabNavigation,
   type TabItem,
 } from '@/features/oracle/chainlink/components';
+import { pythExportConfig } from '@/features/oracle/pyth';
 import {
   PythKpiOverview,
   PythTopStatusBar,
   ConfidenceComparisonChart,
   CrossChainPriceComparison,
   PriceHistoryChart,
-  pythExportConfig,
 } from '@/features/oracle/pyth/components';
 import type { NetworkHealthStatus } from '@/features/oracle/pyth/components';
 import { useI18n } from '@/i18n';

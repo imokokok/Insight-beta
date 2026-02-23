@@ -1,33 +1,35 @@
-# 检查清单
+# 删除重复无用代码 Checklist
 
-## Phase 1: 共享组件
+## 类型定义统一
 
-- [x] TopStatusBar 共享组件已创建并可正常工作
-- [x] Chainlink dashboard 使用共享 TopStatusBar 组件
-- [x] Pyth dashboard 使用共享 TopStatusBar 组件
-- [x] API3 dashboard 使用共享 TopStatusBar 组件
-- [x] Band dashboard 使用共享 TopStatusBar 组件
-- [x] 旧的 TopStatusBar 组件文件已删除
+- [x] AlertRuleRow 接口已提取到共享模块 `@/types/database/alert`
+- [x] rowToAlertRule 函数已提取到共享模块
+- [x] `src/app/api/alerts/rules/route.ts` 已更新使用共享模块
+- [x] `src/app/api/alerts/rules/[id]/route.ts` 已更新使用共享模块
+- [x] shortenAddress 函数已删除，所有调用已替换为 truncateAddress
+- [x] AlertSeverity 和 AlertStatus 类型统一从 `@/types/common/status` 导出
+- [x] Incident 类型重复定义已删除
 
-- [x] KpiOverview 组件已使用共享 KpiGrid 组件（无需重构）
+## 工具函数统一
 
-## Phase 2: 类型统一
+- [x] truncateAddress 函数是唯一的地址截断函数
+- [x] 格式化函数统一到 `@/shared/utils/format`
+- [x] i18n/utils.ts 中的格式化函数调用共享实现
 
-- [x] AlertSeverity 类型仅从 `@/types/common/status` 导出
-- [x] AlertStatus 类型仅从 `@/types/common/status` 导出
-- [x] SupportedChain 类型从 `@/types/chains` 导出
-- [x] ChainInfo 类型已统一（constants.ts 从 types/chains 导入）
-- [x] OracleProtocol 相关类型从 `@/types/oracle/protocol` 导出
-- [ ] 价格相关类型整合（延后处理）
-- [x] 所有文件的导入路径已更新
+## 组件和配置清理
 
-## Phase 3: 缓存模块
+- [x] 重复的 exportConfig 文件已删除（保留 exportConfig.ts，简化 ExportButton.tsx）
+- [x] ExportButton 组件使用统一实现
+- [x] KpiOverview 组件系列已重构为使用通用组件
 
-- [x] 缓存模块分析完成 - 职责不同，无需整合
+## API 响应函数
 
-## Phase 4: 验证
+- [ ] API 响应函数统一使用 `ok()` 和 `error()` (跳过 - 风险较高)
+- [ ] `apiSuccess()` 和 `apiError()` 已删除 (跳过 - 风险较高)
 
-- [x] `npm run lint` 通过（仅预先存在的警告）
-- [x] TopStatusBar 相关代码无类型错误
-- [ ] `npm run typecheck` 存在预先存在的错误（与本次重构无关）
-- [ ] 开发服务器测试（需要用户验证）
+## 验证
+
+- [x] 所有 TypeScript 类型检查通过
+- [ ] 所有测试通过
+- [x] 无运行时错误
+- [x] 导入路径正确
