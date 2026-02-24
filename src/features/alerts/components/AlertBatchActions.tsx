@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 
 import { CheckCircle, XCircle, BellOff, Loader2, X, AlertTriangle } from 'lucide-react';
 
-import { useToast } from '@/components/common/DashboardToast';
+import { useToast } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';

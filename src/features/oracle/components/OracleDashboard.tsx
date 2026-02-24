@@ -2,8 +2,7 @@
 
 import { Activity } from 'lucide-react';
 
-import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import { DashboardPageHeader } from '@/components/common/PageHeader';
+import { ErrorBoundary, DashboardPageHeader } from '@/components/common';
 import { EmptyDashboardState, RefreshIndicator } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { useOracleDashboard } from '@/features/oracle/dashboard';

@@ -5,11 +5,13 @@ import { cookies, headers } from 'next/headers';
 
 import { Toaster } from 'sonner';
 
-import { AppLayout } from '@/components/common/AppLayout';
-import { ClientComponentsWrapper } from '@/components/common/ClientComponentsWrapper';
-import { PageProgress } from '@/components/common/PageProgress';
-import { PageTransition } from '@/components/common/PageTransitions';
-import { ResourceHints } from '@/components/common/ResourceHints';
+import {
+  AppLayout,
+  PageProgress,
+  PageTransition,
+  ClientComponentsWrapper,
+  ResourceHints,
+} from '@/components/common';
 import { WalletProvider } from '@/features/wallet/contexts/WalletContext';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
 import {
@@ -85,7 +87,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               <div className="blob-4" />
             </div>
             <AppLayout>
-              <PageTransition variant="fade">
+              <PageTransition>
                 <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
               </PageTransition>
             </AppLayout>

@@ -14,7 +14,7 @@ import {
   Zap,
 } from 'lucide-react';
 
-import { EmptyDeviationState } from '@/components/common/EmptyState';
+import { EmptyDeviationState } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge, StatusBadge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';

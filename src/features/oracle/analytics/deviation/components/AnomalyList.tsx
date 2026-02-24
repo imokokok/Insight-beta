@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { AlertTriangle, X, ChevronDown, ChevronUp, Info } from 'lucide-react';
 
-import { EmptyDeviationState } from '@/components/common/EmptyState';
+import { EmptyDeviationState } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 import { ContentSection, ContentGrid } from '@/components/common';
-import { EmptyDeviationState } from '@/components/common/EmptyState';
+import { EmptyDeviationState } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Input } from '@/components/ui';

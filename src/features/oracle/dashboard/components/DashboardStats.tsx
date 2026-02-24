@@ -2,10 +2,13 @@
 
 import { Activity, Globe, AlertTriangle, Shield, Clock, BarChart3, Layers } from 'lucide-react';
 
-import { ContentSection } from '@/components/common';
-import { StaggerContainer, StaggerItem } from '@/components/common/AnimatedContainer';
-import { UnifiedStatsPanel } from '@/components/common/StatCard';
-import type { StatCardStatus } from '@/components/common/StatCard';
+import {
+  ContentSection,
+  StaggerContainer,
+  StaggerItem,
+  UnifiedStatsPanel,
+} from '@/components/common';
+import type { StatCardStatus } from '@/components/common';
 import { useI18n } from '@/i18n/LanguageProvider';
 
 import type { DashboardStats as DashboardStatsType } from '../types/dashboard';

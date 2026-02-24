@@ -18,7 +18,7 @@ import {
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 import { ContentSection, ContentGrid } from '@/components/common';
-import { EmptyDeviationState } from '@/components/common/EmptyState';
+import { EmptyDeviationState } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge, StatusBadge } from '@/components/ui';
 import { Input } from '@/components/ui';

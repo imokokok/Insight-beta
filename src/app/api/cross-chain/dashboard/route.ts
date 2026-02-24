@@ -1,16 +1,10 @@
-import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
+import { fetchCrossChainDashboard } from '@/features/cross-chain/api';
 import { apiSuccess } from '@/lib/api/apiResponse';
 import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 
 async function handleGet() {
-  const dashboard = await crossChainAnalysisService.getDashboardData();
-
-  return apiSuccess({
-    dashboard,
-    meta: {
-      timestamp: new Date().toISOString(),
-    },
-  });
+  const response = await fetchCrossChainDashboard();
+  return apiSuccess(response);
 }
 
 export const GET = withMiddleware({

@@ -1,59 +1,17 @@
 import type { NextRequest } from 'next/server';
 
 import {
-  getChannelById,
-  updateChannel,
-  deleteChannel,
-} from '@/features/alerts/services/notificationChannelService';
+  fetchChannelById,
+  updateExistingChannel,
+  deleteExistingChannel,
+} from '@/features/alerts/api';
 import { error, ok } from '@/lib/api/apiResponse';
 import { logger } from '@/shared/logger';
-import type { NotificationChannelType, NotificationChannelConfig } from '@/types/oracle/alert';
-
-function validateChannelConfig(
-  type: NotificationChannelType,
-  config: NotificationChannelConfig,
-): { valid: boolean; error?: string } {
-  switch (type) {
-    case 'webhook':
-      if (!config.url) {
-        return { valid: false, error: 'Webhook URL is required' };
-      }
-      try {
-        new URL(config.url);
-      } catch {
-        return { valid: false, error: 'Invalid webhook URL' };
-      }
-      break;
-    case 'email':
-      if (!config.email) {
-        return { valid: false, error: 'Email address is required' };
-      }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(config.email)) {
-        return { valid: false, error: 'Invalid email address' };
-      }
-      break;
-    case 'telegram':
-      if (!config.botToken) {
-        return { valid: false, error: 'Bot token is required' };
-      }
-      if (!config.chatId) {
-        return { valid: false, error: 'Chat ID is required' };
-      }
-      break;
-    case 'slack':
-      if (!config.url) {
-        return { valid: false, error: 'Slack webhook URL is required' };
-      }
-      break;
-  }
-  return { valid: true };
-}
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const channel = await getChannelById(id);
+    const channel = await fetchChannelById(id);
 
     if (!channel) {
       return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);
@@ -70,20 +28,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   try {
     const { id } = await params;
     const body = await request.json();
-    const existingChannel = await getChannelById(id);
 
-    if (!existingChannel) {
-      return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);
-    }
-
-    if (body.config) {
-      const configValidation = validateChannelConfig(existingChannel.type, body.config);
-      if (!configValidation.valid) {
-        return error({ code: 'VALIDATION_ERROR', message: configValidation.error }, 400);
-      }
-    }
-
-    const updatedChannel = await updateChannel({
+    const result = await updateExistingChannel({
       id,
       name: body.name,
       enabled: body.enabled,
@@ -91,11 +37,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       description: body.description,
     });
 
-    if (!updatedChannel) {
-      return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);
+    if ('error' in result) {
+      if (result.error === 'Channel not found') {
+        return error({ code: 'NOT_FOUND', message: result.error }, 404);
+      }
+      return error({ code: 'VALIDATION_ERROR', message: result.error }, 400);
     }
 
-    return ok({ channel: updatedChannel, timestamp: new Date().toISOString() });
+    return ok({ channel: result.channel, timestamp: new Date().toISOString() });
   } catch (err) {
     logger.error('Failed to update notification channel', { error: err });
     return error({ code: 'INTERNAL_ERROR', message: 'Failed to update notification channel' }, 500);
@@ -108,7 +57,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const deleted = await deleteChannel(id);
+    const deleted = await deleteExistingChannel(id);
 
     if (!deleted) {
       return error({ code: 'NOT_FOUND', message: 'Channel not found' }, 404);

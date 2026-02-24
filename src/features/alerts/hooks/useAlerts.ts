@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import useSWR from 'swr';
 
-import { useToast } from '@/components/common/DashboardToast';
+import { useToast } from '@/components/common';
 import { defaultSwrConfig } from '@/shared/config/swr';
 import { logger } from '@/shared/logger';
 import { buildApiUrl, fetchApiData } from '@/shared/utils';

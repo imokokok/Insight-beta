@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { ErrorFallback } from '@/components/common/ErrorHandler';
+import { ErrorFallback } from '@/components/common';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 

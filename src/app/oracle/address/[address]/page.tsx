@@ -6,7 +6,7 @@ import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigat
 
 import { LayoutGrid, List as ListIcon } from 'lucide-react';
 
-import { CopyButton } from '@/components/common/CopyButton';
+import { CopyButton } from '@/components/common';
 import { AssertionList } from '@/features/oracle/components/AssertionList';
 import { AddressAvatar } from '@/features/wallet/components/AddressAvatar';
 import { UserStatsCard } from '@/features/wallet/components/UserStatsCard';

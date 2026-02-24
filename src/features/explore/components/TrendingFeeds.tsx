@@ -3,8 +3,7 @@
 import { motion } from 'framer-motion';
 import { TrendingUp } from 'lucide-react';
 
-import { StaggerContainer, StaggerItem } from '@/components/common/AnimatedContainer';
-import { EmptyDataState } from '@/components/common/EmptyState';
+import { StaggerContainer, StaggerItem, EmptyDataState } from '@/components/common';
 import { RefreshIndicator } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { PriceCardSkeleton } from '@/components/ui';

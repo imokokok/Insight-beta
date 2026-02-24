@@ -19,7 +19,7 @@ import {
   Info,
 } from 'lucide-react';
 
-import { Breadcrumb } from '@/components/common/Breadcrumb';
+import { Breadcrumb } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';

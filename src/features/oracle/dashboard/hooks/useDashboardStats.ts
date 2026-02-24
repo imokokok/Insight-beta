@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 
 import { CHART_COLORS } from '@/components/charts';
-import type { StatCardStatus } from '@/components/common/StatCard';
+import type { StatCardStatus } from '@/components/common';
 
 import type { DashboardStats } from '../types/dashboard';
 

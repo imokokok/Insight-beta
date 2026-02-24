@@ -14,8 +14,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 
-import type { SortState } from '@/components/common/SortableTableHeader';
-import { SortableTableHeader } from '@/components/common/SortableTableHeader';
+import type { SortState } from '@/components/common';
+import { SortableTableHeader } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';

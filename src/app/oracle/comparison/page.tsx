@@ -2,7 +2,7 @@
 
 import { Suspense, lazy } from 'react';
 
-import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { ErrorBoundary } from '@/components/common';
 import { ChartSkeleton } from '@/components/ui';
 import { ComparisonControls } from '@/features/comparison/components/ComparisonControls';
 import { useComparisonPage } from '@/features/comparison/hooks';

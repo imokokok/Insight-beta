@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react';
 
-import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { ErrorBoundary } from '@/components/common';
 import { ChartSkeleton } from '@/components/ui';
 import { useToast } from '@/components/ui';
 import { WS_CONFIG } from '@/config/constants';

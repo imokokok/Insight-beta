@@ -52,7 +52,7 @@ export {
   EmptyPriceDataState,
   EmptyEventsState,
   EmptyFirstItemState,
-} from '@/components/common/EmptyState';
+} from '@/components/common';
 
 // Refresh Indicator
 export { RefreshIndicator } from './RefreshIndicator';

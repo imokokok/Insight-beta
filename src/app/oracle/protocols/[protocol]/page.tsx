@@ -14,8 +14,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
-import { StatsBar, ContentSection, ContentGrid } from '@/components/common';
-import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { StatsBar, ContentSection, ContentGrid, ErrorBoundary } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { SUPPORTED_CHAINS } from '@/config/constants';

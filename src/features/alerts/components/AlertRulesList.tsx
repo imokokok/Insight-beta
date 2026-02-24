@@ -14,8 +14,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 
-import { useToast } from '@/components/common/DashboardToast';
-import { EmptyFirstItemState } from '@/components/common/EmptyState';
+import { useToast, EmptyFirstItemState } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';

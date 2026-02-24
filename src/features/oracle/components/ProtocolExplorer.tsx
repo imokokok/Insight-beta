@@ -14,7 +14,7 @@ import {
   Check,
 } from 'lucide-react';
 
-import { EmptyProtocolsState } from '@/components/common/EmptyState';
+import { EmptyProtocolsState } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';

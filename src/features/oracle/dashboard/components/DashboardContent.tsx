@@ -4,8 +4,8 @@ import { useMemo } from 'react';
 
 import { Activity, Shield, Zap, TrendingUp } from 'lucide-react';
 
-import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import { KPIOverviewBar, type KPIItem } from '@/components/common/KPIOverviewBar';
+import { ErrorBoundary, KPIOverviewBar } from '@/components/common';
+import type { KPIItem } from '@/components/common';
 import { EmptyDashboardState, RefreshIndicator } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { useOracleDashboard } from '@/features/oracle/dashboard';

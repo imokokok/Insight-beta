@@ -13,7 +13,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 
-import { MiniChart } from '@/components/common/MiniChart';
+import { MiniChart } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';

@@ -14,9 +14,7 @@ import {
 } from 'lucide-react';
 import { Virtuoso } from 'react-virtuoso';
 
-import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
-import { EmptyAlertsListState } from '@/components/common/EmptyState';
-import { KpiGrid } from '@/components/common/KpiCard';
+import { AutoRefreshControl, EmptyAlertsListState, KpiGrid } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Checkbox } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';

@@ -17,7 +17,7 @@ import {
   X,
 } from 'lucide-react';
 
-import { useToast } from '@/components/common/DashboardToast';
+import { useToast } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';

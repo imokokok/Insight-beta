@@ -2,10 +2,13 @@
 
 import { RefreshCw, Gavel, Clock, DollarSign, AlertCircle } from 'lucide-react';
 
-import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
-import { Breadcrumb } from '@/components/common/Breadcrumb';
-import { ToastContainer, useToast } from '@/components/common/DashboardToast';
-import { UnifiedStatsPanel } from '@/components/common/StatCard';
+import {
+  AutoRefreshControl,
+  Breadcrumb,
+  ToastContainer,
+  useToast,
+  UnifiedStatsPanel,
+} from '@/components/common';
 import { Button } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { RefreshIndicator } from '@/components/ui';
