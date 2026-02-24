@@ -87,6 +87,7 @@ export interface HeaderColumn {
   align: 'left' | 'right' | 'center';
   sortable: boolean;
   columnKey: keyof ColumnVisibility;
+  responsiveClass?: string;
 }
 
 export interface TableFormatters {

@@ -288,9 +288,11 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
                         {chain.displayName.charAt(0)}
                       </span>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold capitalize">{chain.displayName}</span>
+                        <span className="min-w-0 truncate font-semibold capitalize">
+                          {chain.displayName}
+                        </span>
                         <Badge
                           variant="outline"
                           className={cn('capitalize', HEALTH_COLORS[health.label]?.text ?? '')}

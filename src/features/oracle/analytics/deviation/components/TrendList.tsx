@@ -115,25 +115,27 @@ function TrendExpandableContent({
   return (
     <div className="mt-4 space-y-4 border-t pt-4">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
-          <p className="text-xs text-muted-foreground">{t('common.dataPoints')}</p>
-          <p className="text-base font-semibold sm:text-lg">{stats?.dataPointsCount ?? 0}</p>
+        <div className="min-w-0 rounded-lg bg-gray-50 p-2 sm:p-3">
+          <p className="truncate text-xs text-muted-foreground">{t('common.dataPoints')}</p>
+          <p className="truncate text-base font-semibold sm:text-lg">
+            {stats?.dataPointsCount ?? 0}
+          </p>
         </div>
-        <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
-          <p className="text-xs text-muted-foreground">{t('common.avgDeviation')}</p>
-          <p className="text-base font-semibold sm:text-lg">
+        <div className="min-w-0 rounded-lg bg-gray-50 p-2 sm:p-3">
+          <p className="truncate text-xs text-muted-foreground">{t('common.avgDeviation')}</p>
+          <p className="truncate text-base font-semibold sm:text-lg">
             {((stats?.avgDev ?? 0) * 100).toFixed(2)}%
           </p>
         </div>
-        <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
-          <p className="text-xs text-muted-foreground">{t('common.maxDeviation')}</p>
-          <p className="text-base font-semibold sm:text-lg">
+        <div className="min-w-0 rounded-lg bg-gray-50 p-2 sm:p-3">
+          <p className="truncate text-xs text-muted-foreground">{t('common.maxDeviation')}</p>
+          <p className="truncate text-base font-semibold sm:text-lg">
             {((stats?.maxDev ?? 0) * 100).toFixed(2)}%
           </p>
         </div>
-        <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
-          <p className="text-xs text-muted-foreground">{t('common.outliers')}</p>
-          <p className="text-base font-semibold text-red-500 sm:text-lg">
+        <div className="min-w-0 rounded-lg bg-gray-50 p-2 sm:p-3">
+          <p className="truncate text-xs text-muted-foreground">{t('common.outliers')}</p>
+          <p className="truncate text-base font-semibold text-red-500 sm:text-lg">
             {stats?.outlierCount ?? 0}
           </p>
         </div>

@@ -90,7 +90,7 @@ function ActionDialog({
 
           <div className="rounded-lg bg-muted p-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">{alert.title}</span>
+              <span className="max-w-[200px] truncate text-sm font-medium">{alert.title}</span>
               <Badge
                 className={
                   alert.severity === 'critical'

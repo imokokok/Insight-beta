@@ -262,7 +262,10 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
       </span>
 
       {item.badge !== undefined && item.badge !== 0 && (
-        <Badge variant={item.badgeVariant || 'default'} className="ml-2 px-1.5 py-0 text-xs">
+        <Badge
+          variant={item.badgeVariant || 'default'}
+          className="ml-2 flex-shrink-0 px-1.5 py-0 text-xs"
+        >
           {item.badge}
         </Badge>
       )}

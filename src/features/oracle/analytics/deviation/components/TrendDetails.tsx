@@ -222,7 +222,11 @@ export function TrendDetails({ selectedTrend, symbolData }: TrendDetailsProps) {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {enhancedStats.sortedProtocols.map(([protocol, count]) => (
-                    <Badge key={protocol} variant="secondary" className="gap-1">
+                    <Badge
+                      key={protocol}
+                      variant="secondary"
+                      className="hover:bg-secondary/80 cursor-pointer gap-1 transition-colors"
+                    >
                       <span className="capitalize">{protocol}</span>
                       <span className="text-xs text-muted-foreground">({count})</span>
                     </Badge>

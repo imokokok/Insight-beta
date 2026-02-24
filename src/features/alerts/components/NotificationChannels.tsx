@@ -359,7 +359,7 @@ export function NotificationChannels({
                             <div>
                               <span className="font-medium">{channel.name}</span>
                               {channel.description && (
-                                <p className="text-xs text-muted-foreground">
+                                <p className="truncate text-xs text-muted-foreground">
                                   {channel.description}
                                 </p>
                               )}
@@ -467,7 +467,7 @@ export function NotificationChannels({
       </Card>
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
           <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-lg bg-background p-6 shadow-lg">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="flex items-center justify-between border-b pb-4">

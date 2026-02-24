@@ -161,19 +161,19 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-lg border">
+        <div className="overflow-x-auto rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('api3.dapi.name')}</TableHead>
-                <TableHead>{t('api3.dapi.chain')}</TableHead>
-                <TableHead>{t('api3.dapi.sourceType')}</TableHead>
-                <TableHead>{t('api3.dapi.provider')}</TableHead>
-                <TableHead>{t('api3.dapi.price')}</TableHead>
-                <TableHead>Gas 成本</TableHead>
-                <TableHead>{t('api3.dapi.status')}</TableHead>
-                <TableHead>{t('api3.dapi.lastUpdate')}</TableHead>
-                <TableHead>{t('api3.dapi.dataFeedId')}</TableHead>
+                <TableHead className="min-w-[180px]">{t('api3.dapi.name')}</TableHead>
+                <TableHead className="hidden lg:table-cell">{t('api3.dapi.chain')}</TableHead>
+                <TableHead className="hidden xl:table-cell">{t('api3.dapi.sourceType')}</TableHead>
+                <TableHead className="hidden md:table-cell">{t('api3.dapi.provider')}</TableHead>
+                <TableHead className="min-w-[100px]">{t('api3.dapi.price')}</TableHead>
+                <TableHead className="hidden lg:table-cell">Gas 成本</TableHead>
+                <TableHead className="min-w-[80px]">{t('api3.dapi.status')}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t('api3.dapi.lastUpdate')}</TableHead>
+                <TableHead className="hidden md:table-cell">{t('api3.dapi.dataFeedId')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -224,12 +224,12 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                             </Badge>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           <Badge variant="secondary" className="capitalize">
                             {dapi.chain}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden xl:table-cell">
                           {dapi.sourceType ? (
                             <Badge
                               variant={dapi.sourceType === 'beacon' ? 'default' : 'secondary'}
@@ -244,7 +244,7 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                             <span className="text-muted-foreground">-</span>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           {dapi.providerName ? (
                             <Popover
                               open={
@@ -290,7 +290,7 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                             {formatPrice(dapi.lastPrice)}
                           </span>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           {gasInfo ? (
                             <Badge
                               variant="outline"
@@ -311,12 +311,12 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                             size="sm"
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           <span className="text-sm text-muted-foreground">
                             {formatTime(dapi.lastUpdatedAt)}
                           </span>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           <span className="font-mono text-xs text-muted-foreground">
                             {formatAddress(dapi.dataFeedId)}
                           </span>

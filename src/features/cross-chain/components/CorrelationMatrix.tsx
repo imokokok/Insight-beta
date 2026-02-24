@@ -108,6 +108,7 @@ export const CorrelationMatrix = memo(function CorrelationMatrix({
                   key={`header-${chain}`}
                   className="text-center text-xs font-medium capitalize"
                   style={{ width: cellSize, height: 24 }}
+                  title={chain}
                 >
                   {chain.slice(0, 4)}
                 </div>

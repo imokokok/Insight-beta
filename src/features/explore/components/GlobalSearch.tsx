@@ -143,7 +143,7 @@ export function GlobalSearch({ className, placeholder, autoFocus = false }: Glob
 
       {showResults && (
         <div
-          className="bg-popover absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-border shadow-lg"
+          className="absolute left-0 right-0 top-full z-[60] mt-2 overflow-hidden rounded-lg border border-border bg-popover shadow-lg"
           role="listbox"
         >
           {isLoading && results.length === 0 ? (

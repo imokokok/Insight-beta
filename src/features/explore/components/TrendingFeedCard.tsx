@@ -64,7 +64,7 @@ export function TrendingFeedCard({ feed, onClick }: TrendingFeedCardProps) {
       <div className="space-y-3 md:space-y-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <h3 className="truncate text-base font-bold text-foreground md:text-lg">
                 {feed.symbol}
               </h3>

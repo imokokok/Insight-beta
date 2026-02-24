@@ -140,19 +140,19 @@ export const ChainStatusOverview = memo(function ChainStatusOverview({
           <div
             key={item.chain}
             className={cn(
-              'flex items-center gap-2 rounded-md px-2 py-1 text-xs',
+              'flex min-w-0 items-center gap-2 rounded-md px-2 py-1 text-xs',
               item.status === 'healthy' && 'bg-green-500/10',
               item.status === 'degraded' && 'bg-amber-500/10',
               item.status === 'offline' && 'bg-red-500/10',
             )}
           >
             {item.status === 'healthy' ? (
-              <Wifi className="h-3 w-3 text-green-600" />
+              <Wifi className="h-3 w-3 shrink-0 text-green-600" />
             ) : (
-              <WifiOff className="h-3 w-3 text-red-600" />
+              <WifiOff className="h-3 w-3 shrink-0 text-red-600" />
             )}
-            <span className="font-medium">{item.displayName}</span>
-            <span className="ml-auto font-mono text-muted-foreground">
+            <span className="min-w-0 truncate font-medium">{item.displayName}</span>
+            <span className="ml-auto shrink-0 font-mono text-muted-foreground">
               {formatResponseTime(item.responseTimeMs)}
             </span>
           </div>

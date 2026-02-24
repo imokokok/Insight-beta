@@ -584,7 +584,7 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
                   <TableRow key={publisher.name} className="group cursor-pointer hover:bg-muted/50">
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold">{publisher.name}</span>
+                        <span className="truncate font-semibold">{publisher.name}</span>
                         {publisherAnomalyMap.get(publisher.name) && (
                           <AlertTriangle className="h-4 w-4 text-amber-500" />
                         )}

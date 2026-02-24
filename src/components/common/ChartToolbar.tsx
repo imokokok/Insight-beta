@@ -193,7 +193,7 @@ export const ChartToolbar = memo(function ChartToolbar({
           >
             <ZoomIn className={iconClass} />
           </button>
-          <span className="min-w-[3.5rem] text-center text-xs font-medium text-muted-foreground">
+          <span className="min-w-[3.5rem] truncate text-center text-xs font-medium text-muted-foreground">
             {Math.round(currentZoom * 100)}%
           </span>
           <button

@@ -27,6 +27,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       align: 'left',
       sortable: true,
       columnKey: 'symbol',
+      responsiveClass: '',
     },
     {
       field: null,
@@ -35,6 +36,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       align: 'left',
       sortable: false,
       columnKey: 'protocol',
+      responsiveClass: '',
     },
     {
       field: 'price',
@@ -43,6 +45,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       align: 'right',
       sortable: true,
       columnKey: 'price',
+      responsiveClass: 'hidden sm:table-cell',
     },
     {
       field: 'deviation',
@@ -51,6 +54,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       align: 'right',
       sortable: true,
       columnKey: 'deviation',
+      responsiveClass: '',
     },
     {
       field: 'spread',
@@ -59,6 +63,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       align: 'right',
       sortable: true,
       columnKey: 'spread',
+      responsiveClass: 'hidden md:table-cell',
     },
     {
       field: 'latency',
@@ -67,6 +72,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       align: 'right',
       sortable: true,
       columnKey: 'latency',
+      responsiveClass: 'hidden lg:table-cell',
     },
     {
       field: null,
@@ -75,6 +81,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       align: 'center',
       sortable: false,
       columnKey: 'status',
+      responsiveClass: 'hidden sm:table-cell',
     },
     {
       field: null,
@@ -83,6 +90,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       align: 'right',
       sortable: false,
       columnKey: 'confidence',
+      responsiveClass: 'hidden lg:table-cell',
     },
   ];
 
@@ -93,11 +101,15 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
       className="sticky top-0 z-10 border-b bg-muted/95 backdrop-blur supports-[backdrop-filter]:bg-muted/60"
       style={{ height, contain: 'layout style' }}
     >
-      <div className="flex h-full items-center px-4 text-sm font-medium">
+      <div className="flex h-full items-center overflow-x-auto px-4 text-sm font-medium">
         {visibleColumnsList.map((col, index) => (
           <div
             key={index}
-            className={`${col.width} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}`}
+            className={cn(
+              col.width,
+              col.responsiveClass,
+              col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : '',
+            )}
           >
             {col.sortable && col.field ? (
               <Button

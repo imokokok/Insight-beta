@@ -82,12 +82,14 @@ export const Breadcrumb = memo(function Breadcrumb({
                   )}
                 >
                   {item.icon}
-                  {!isHome && item.label}
+                  {!isHome && (
+                    <span className="max-w-[200px] truncate sm:max-w-[280px]">{item.label}</span>
+                  )}
                 </Link>
               ) : (
                 <span className="flex items-center gap-1.5">
                   {item.icon}
-                  {item.label}
+                  <span className="max-w-[200px] truncate sm:max-w-[280px]">{item.label}</span>
                 </span>
               )}
             </motion.div>

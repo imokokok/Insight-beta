@@ -33,7 +33,7 @@ export const GaugeGroup = memo(function GaugeGroup({
   const layoutClasses = {
     horizontal: 'flex flex-wrap items-start justify-center gap-6',
     vertical: 'flex flex-col items-center gap-6',
-    grid: 'grid gap-6 sm:grid-cols-2 lg:grid-cols-4',
+    grid: 'grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4',
   };
 
   return (

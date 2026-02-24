@@ -42,6 +42,40 @@ const trendIcons = {
   neutral: '→',
 };
 
+const getDividerClasses = (index: number, total: number, columns: 2 | 3 | 4 | 6): string => {
+  if (index >= total - 1) return '';
+
+  switch (columns) {
+    case 2:
+      return index % 2 === 0 ? 'border-r border-border/20' : '';
+    case 3:
+      return index % 3 !== 2 ? 'sm:border-r sm:border-border/20' : '';
+    case 4: {
+      const isMobileRowEnd = index % 2 === 1;
+      const isSmRowEnd = index % 4 === 3;
+      if (isMobileRowEnd && isSmRowEnd) return '';
+      if (isMobileRowEnd) return 'sm:border-r sm:border-border/20';
+      if (isSmRowEnd) return 'border-r border-border/20 sm:border-r-0';
+      return 'border-r border-border/20';
+    }
+    case 6: {
+      const isMobileRowEnd = index % 2 === 1;
+      const isSmRowEnd = index % 3 === 2;
+      const isLgRowEnd = index % 6 === 5;
+      if (isMobileRowEnd && isSmRowEnd && isLgRowEnd) return '';
+      if (isMobileRowEnd && isSmRowEnd) return 'lg:border-r lg:border-border/20';
+      if (isMobileRowEnd && isLgRowEnd) return 'sm:border-r sm:border-border/20 lg:border-r-0';
+      if (isSmRowEnd && isLgRowEnd) return 'border-r border-border/20 sm:border-r-0';
+      if (isMobileRowEnd) return 'sm:border-r sm:border-border/20';
+      if (isSmRowEnd) return 'border-r border-border/20 lg:border-r lg:border-border/20';
+      if (isLgRowEnd) return 'border-r border-border/20 sm:border-r lg:border-r-0';
+      return 'border-r border-border/20';
+    }
+    default:
+      return '';
+  }
+};
+
 export const InlineDataDisplay = memo(function InlineDataDisplay({
   items,
   columns = 4,
@@ -72,10 +106,7 @@ export const InlineDataDisplay = memo(function InlineDataDisplay({
             className={cn(
               'flex flex-col',
               compact ? 'py-1' : 'py-2',
-              showDividers &&
-                index < items.length - 1 &&
-                'border-r border-border/20 last:border-r-0',
-              showDividers && columns === 4 && index % 4 !== 3 && 'sm:border-r',
+              showDividers && getDividerClasses(index, items.length, columns),
             )}
           >
             <div className="flex items-center gap-1.5">

@@ -102,6 +102,7 @@ export function ConfidenceIntervalChart({ data, symbol, isLoading }: ConfidenceI
                   angle={-45}
                   textAnchor="end"
                   height={60}
+                  interval="preserveStartEnd"
                 />
                 <YAxis
                   domain={[0, 100]}

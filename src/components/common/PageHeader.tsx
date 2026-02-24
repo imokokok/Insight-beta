@@ -159,14 +159,14 @@ export const PageHeader = memo(function PageHeader({
           </div>
         </div>
 
-        <div className="flex flex-shrink-0 items-center gap-2">
+        <div className="flex flex-shrink-0 flex-wrap items-center justify-end gap-2">
           {onRefresh && (
             <Button
               variant="outline"
               size="sm"
               onClick={onRefresh}
               disabled={refreshDisabled || loading}
-              className="hidden sm:flex"
+              className="hidden sm:inline-flex"
             >
               <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
               Refresh
@@ -182,7 +182,7 @@ export const PageHeader = memo(function PageHeader({
               size="sm"
               onClick={onExport}
               disabled={exportDisabled}
-              className="hidden sm:flex"
+              className="hidden sm:inline-flex"
             >
               <Download className="mr-2 h-4 w-4" />
               Export
@@ -192,13 +192,14 @@ export const PageHeader = memo(function PageHeader({
             </Button>
           )}
 
-          {extraActions}
-
-          {children}
+          <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
+            {extraActions}
+            {children}
+          </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 w-9 p-0">
+              <Button variant="outline" size="sm" className="h-9 w-9 flex-shrink-0 p-0">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

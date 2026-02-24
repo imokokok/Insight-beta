@@ -229,7 +229,9 @@ export function FeedDetail({ address }: FeedDetailProps) {
           </CardHeader>
           <CardContent>
             <div className="mb-6">
-              <div className="text-4xl font-bold text-primary">{formatPrice(feed.price)}</div>
+              <div className="truncate text-2xl font-bold text-primary sm:text-3xl md:text-4xl">
+                {formatPrice(feed.price)}
+              </div>
               <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />

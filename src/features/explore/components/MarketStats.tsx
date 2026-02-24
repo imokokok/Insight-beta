@@ -30,7 +30,7 @@ export function MarketStats({
   const { t } = useI18n();
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 md:gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
       <div className="rounded-xl border border-border/30 bg-card/30 p-4">
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted-foreground md:text-sm">

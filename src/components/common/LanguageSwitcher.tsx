@@ -41,7 +41,9 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         className="inline-flex h-9 items-center gap-2 rounded-xl bg-white/50 px-3 text-sm font-medium text-[var(--foreground)] shadow-sm ring-1 ring-primary/10 backdrop-blur hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-primary/20"
       >
         <Globe size={16} className="text-primary" />
-        <span className="whitespace-nowrap">{isLoading ? '' : currentLabel}</span>
+        <span className="max-w-[80px] truncate whitespace-nowrap">
+          {isLoading ? '' : currentLabel}
+        </span>
       </button>
 
       {open && (

@@ -122,7 +122,7 @@ export const BridgeStatusCard = memo(function BridgeStatusCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3">
           {bridges.map((bridge) => {
             const config = STATUS_CONFIG[bridge.status];
             if (!config) return null;

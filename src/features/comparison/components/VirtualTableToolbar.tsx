@@ -91,7 +91,7 @@ const VirtualTableToolbar = React.memo(function VirtualTableToolbar({
               placeholder={t('comparison.table.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-64 pl-9"
+              className="w-full pl-9 sm:w-64"
             />
           </div>
 

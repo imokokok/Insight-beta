@@ -83,7 +83,7 @@ export function OcrRoundMonitor({ className }: OcrRoundMonitorProps) {
                   : 'border-muted',
               )}
             >
-              <div className="flex items-center gap-1.5 overflow-hidden">
+              <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
                 <span className="truncate text-xs font-medium">{node.nodeName}</span>
                 {node.role === 'proposer' && (
                   <Badge variant="outline" className="h-3.5 px-1 py-0 text-[9px]">

@@ -333,27 +333,36 @@ export function AnomalyList({ anomalies, isLoading, onSelect }: AnomalyListProps
                 <div className="border-t bg-gray-50/50 px-3 pb-4 pl-5 sm:px-4 sm:pl-6">
                   <div className="mt-3 space-y-3">
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      <div className="rounded bg-white p-2">
-                        <p className="text-[10px] text-muted-foreground">
+                      <div className="min-w-0 rounded bg-white p-2">
+                        <p className="truncate text-[10px] text-muted-foreground">
                           {t('common.averagePrice')}
                         </p>
-                        <p className="text-sm font-semibold">${anomaly.avgPrice.toFixed(4)}</p>
+                        <p className="truncate text-sm font-semibold">
+                          ${anomaly.avgPrice.toFixed(4)}
+                        </p>
                       </div>
-                      <div className="rounded bg-white p-2">
-                        <p className="text-[10px] text-muted-foreground">
+                      <div className="min-w-0 rounded bg-white p-2">
+                        <p className="truncate text-[10px] text-muted-foreground">
                           {t('common.medianPrice')}
                         </p>
-                        <p className="text-sm font-semibold">${anomaly.medianPrice.toFixed(4)}</p>
+                        <p className="truncate text-sm font-semibold">
+                          ${anomaly.medianPrice.toFixed(4)}
+                        </p>
                       </div>
-                      <div className="rounded bg-white p-2">
-                        <p className="text-[10px] text-muted-foreground">{t('common.protocols')}</p>
-                        <p className="text-sm font-semibold">{anomaly.protocols.length}</p>
+                      <div className="min-w-0 rounded bg-white p-2">
+                        <p className="truncate text-[10px] text-muted-foreground">
+                          {t('common.protocols')}
+                        </p>
+                        <p className="truncate text-sm font-semibold">{anomaly.protocols.length}</p>
                       </div>
-                      <div className="rounded bg-white p-2">
-                        <p className="text-[10px] text-muted-foreground">
+                      <div className="min-w-0 rounded bg-white p-2">
+                        <p className="truncate text-[10px] text-muted-foreground">
                           {t('common.maxDeviation')}
                         </p>
-                        <p className="text-sm font-semibold" style={{ color: deviationColor }}>
+                        <p
+                          className="truncate text-sm font-semibold"
+                          style={{ color: deviationColor }}
+                        >
                           {(anomaly.maxDeviationPercent * 100).toFixed(2)}%
                         </p>
                       </div>

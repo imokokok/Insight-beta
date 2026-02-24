@@ -120,7 +120,7 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
       >
         <div className="space-y-4">
           {/* Statistics Summary */}
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-lg border bg-muted/30 p-3">
               <p className="text-xs text-muted-foreground">{t('crossChain.stats.avgPrice')}</p>
               <p className="font-mono font-semibold">{formatPrice(data.statistics.avgPrice)}</p>
@@ -156,7 +156,7 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
 
           {/* Chain Price List */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between border-b pb-2 text-xs text-muted-foreground">
+            <div className="hidden items-center justify-between border-b pb-2 text-xs text-muted-foreground sm:flex">
               <span className="w-28">{t('crossChain.table.chain')}</span>
               <span className="w-32 text-right">{t('crossChain.table.price')}</span>
               <span className="w-24 text-right">{t('crossChain.table.deviation')}</span>
@@ -178,7 +178,7 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
                     <TooltipTrigger asChild>
                       <div
                         className={cn(
-                          'flex items-center justify-between rounded-lg border p-3 transition-colors',
+                          'flex flex-col gap-2 rounded-lg border p-3 transition-colors sm:flex-row sm:items-center sm:justify-between sm:gap-0',
                           chainColor?.bg,
                           chainColor?.border,
                           (isMinPrice || isMaxPrice) && 'ring-1 ring-primary/20',
@@ -186,15 +186,20 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
                         )}
                         onClick={() => onChainSelect?.(priceData.chain)}
                       >
-                        <div className="flex items-center gap-3">
-                          {isMaxPrice && <TrendingUp className="h-4 w-4 text-emerald-600" />}
-                          {isMinPrice && <TrendingDown className="h-4 w-4 text-red-600" />}
-                          <span className={cn('w-28 font-medium', chainColor?.text)}>
-                            {getChainDisplayName(priceData.chain as ChainId)}
+                        <div className="flex items-center justify-between sm:gap-3">
+                          <div className="flex items-center gap-3">
+                            {isMaxPrice && <TrendingUp className="h-4 w-4 text-emerald-600" />}
+                            {isMinPrice && <TrendingDown className="h-4 w-4 text-red-600" />}
+                            <span className={cn('font-medium', chainColor?.text)}>
+                              {getChainDisplayName(priceData.chain as ChainId)}
+                            </span>
+                          </div>
+                          <span className="font-mono font-semibold sm:hidden">
+                            {formatPrice(priceData.price)}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="hidden items-center gap-4 sm:flex">
                           <span className="w-32 text-right font-mono font-semibold">
                             {formatPrice(priceData.price)}
                           </span>
@@ -233,6 +238,40 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
                               </Badge>
                             )}
                           </div>
+                        </div>
+
+                        <div className="flex items-center justify-between sm:hidden">
+                          <div className="flex items-center gap-1">
+                            {deviationPercent >= 0 ? (
+                              <ArrowUpRight className="h-3 w-3 text-emerald-600" />
+                            ) : (
+                              <ArrowDownRight className="h-3 w-3 text-red-600" />
+                            )}
+                            <span
+                              className={cn(
+                                'font-mono text-sm font-medium',
+                                deviationPercent > 0 ? 'text-emerald-600' : 'text-red-600',
+                              )}
+                            >
+                              {formatChangePercent(deviationPercent / 100, 2, false)}
+                            </span>
+                          </div>
+                          {priceData.isStale ? (
+                            <Badge variant="secondary" className="gap-1 text-xs">
+                              <AlertTriangle className="h-3 w-3" />
+                              {t('crossChain.status.stale')}
+                            </Badge>
+                          ) : isOutlier ? (
+                            <Badge variant="destructive" className="gap-1 text-xs">
+                              <AlertTriangle className="h-3 w-3" />
+                              {t('crossChain.status.outlier')}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="gap-1 bg-transparent text-xs">
+                              <Minus className="h-3 w-3" />
+                              {t('crossChain.status.normal')}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </TooltipTrigger>

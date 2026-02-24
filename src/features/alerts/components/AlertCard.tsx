@@ -63,12 +63,14 @@ export function AlertCard({
           isSelected && 'ring-2 ring-primary',
         )}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <Badge className={config.bgColor}>{alert.severity}</Badge>
-            <span className="font-medium">{alert.title}</span>
+            <span className="truncate font-medium">{alert.title}</span>
           </div>
-          <span className="text-xs text-muted-foreground">{formatTime(alert.timestamp)}</span>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {formatTime(alert.timestamp)}
+          </span>
         </div>
       </button>
     );
@@ -95,18 +97,18 @@ export function AlertCard({
             <Checkbox checked={isChecked} onCheckedChange={onCheckChange} />
           </div>
         )}
-        <div className="flex-1">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <SourceIcon className="h-4 w-4 text-muted-foreground" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <SourceIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <Badge variant="outline" className="text-xs">
                   {source.label}
                 </Badge>
                 <Badge className={config.bgColor}>{alert.severity}</Badge>
               </div>
-              <h4 className="font-semibold">{alert.title}</h4>
-              <p className="text-sm text-muted-foreground">{alert.description}</p>
+              <h4 className="truncate font-semibold">{alert.title}</h4>
+              <p className="line-clamp-2 text-sm text-muted-foreground">{alert.description}</p>
 
               <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
@@ -145,7 +147,7 @@ export function AlertCard({
               )}
             </div>
 
-            <div className="text-right">
+            <div className="shrink-0 text-right">
               {alert.status === 'active' && (
                 <Badge className="bg-red-500">{t('alerts.statusActive')}</Badge>
               )}
@@ -216,7 +218,7 @@ export function AlertDetailPanel({ alert, onAlertUpdate }: AlertDetailPanelProps
           <Badge className={config.bgColor}>{currentAlert.severity}</Badge>
         </div>
 
-        <h3 className="text-lg font-semibold">{currentAlert.title}</h3>
+        <h3 className="line-clamp-2 text-lg font-semibold">{currentAlert.title}</h3>
 
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
@@ -284,14 +286,14 @@ export function AlertDetailPanel({ alert, onAlertUpdate }: AlertDetailPanelProps
         {currentAlert.description && (
           <div className="rounded-lg bg-muted p-3">
             <p className="text-xs text-muted-foreground">{t('alerts.description')}</p>
-            <p className="mt-1 text-sm">{currentAlert.description}</p>
+            <p className="mt-1 line-clamp-3 break-words text-sm">{currentAlert.description}</p>
           </div>
         )}
 
         {currentAlert.reason && (
           <div className="rounded-lg bg-muted p-3">
             <p className="text-xs text-muted-foreground">{t('alerts.reason')}</p>
-            <p className="mt-1 text-sm">{currentAlert.reason}</p>
+            <p className="mt-1 line-clamp-3 break-words text-sm">{currentAlert.reason}</p>
           </div>
         )}
 

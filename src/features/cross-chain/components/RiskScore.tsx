@@ -163,7 +163,9 @@ export const RiskScore = memo(function RiskScore({
             {displayFactors.map((factor, index) => (
               <div key={index} className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">{factor.name}</span>
+                  <span className="max-w-[100px] truncate text-muted-foreground">
+                    {factor.name}
+                  </span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">
                       权重: {(factor.weight * 100).toFixed(0)}%

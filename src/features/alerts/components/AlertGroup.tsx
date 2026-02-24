@@ -45,13 +45,13 @@ export function AlertGroup({
         onClick={toggleExpanded}
         className="flex w-full items-center justify-between p-3 text-left hover:bg-muted/50"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           {isExpanded ? (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
           )}
-          <span className="font-medium">{group.label}</span>
+          <span className="truncate font-medium">{group.label}</span>
           <Badge variant="secondary" className="ml-1">
             {group.count}
           </Badge>

@@ -122,8 +122,14 @@ export function AlertHeatmap({ data, loading, className }: AlertHeatmapProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <svg width={svgWidth} height={svgHeight} className="mx-auto">
+        <div className="max-w-full overflow-x-auto">
+          <svg
+            width={svgWidth}
+            height={svgHeight}
+            viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+            preserveAspectRatio="xMidYMid meet"
+            className="mx-auto min-w-fit"
+          >
             <g transform={`translate(${labelWidth + 10}, 10)`}>
               {hours
                 .filter((_, i) => i % 3 === 0)

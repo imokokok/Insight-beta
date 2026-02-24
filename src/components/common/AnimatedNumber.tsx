@@ -161,7 +161,7 @@ export function AnimatedNumber({
             exit={{ opacity: 0, y: -10, scale: 0.8 }}
             transition={{ duration: 0.3 }}
             className={cn(
-              'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
+              'inline-flex max-w-[120px] items-center gap-1 truncate rounded-full px-2 py-0.5 text-xs font-medium',
               getDiffColor(diff),
               diff > 0 ? 'bg-emerald-50' : diff < 0 ? 'bg-rose-50' : 'bg-gray-50',
             )}

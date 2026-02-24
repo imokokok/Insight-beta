@@ -254,6 +254,11 @@ export function DeviationDistributionChart({ trends }: DeviationDistributionChar
                 textAnchor="end"
                 height={isMobile ? 60 : 80}
                 interval={isMobile ? 1 : 0}
+                tickFormatter={(value: string) =>
+                  value.length > (isMobile ? 6 : 10)
+                    ? `${value.slice(0, isMobile ? 6 : 10)}...`
+                    : value
+                }
               />
               <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} unit="%" width={isMobile ? 30 : 40} />
               <Tooltip

@@ -116,7 +116,7 @@ export function MobileSidebar({ children }: MobileSidebarProps) {
               mass: 0.8,
             }}
             className={cn(
-              'fixed inset-y-0 left-0 z-50 w-[290px] bg-card shadow-2xl lg:hidden',
+              'fixed inset-y-0 left-0 z-50 w-[85vw] max-w-[320px] bg-card shadow-2xl lg:hidden',
               'flex flex-col',
             )}
           >

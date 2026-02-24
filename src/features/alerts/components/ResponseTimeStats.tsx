@@ -357,7 +357,7 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
                 return (
                   <div key={severity} className="rounded-lg border p-4">
                     <div className="mb-2 flex items-center gap-2">
-                      <Badge className={c.bgColor}>{c.label}</Badge>
+                      <Badge className={cn(c.bgColor, 'truncate')}>{c.label}</Badge>
                     </div>
                     <div className={cn('text-2xl font-bold', c.color)}>
                       {formatDurationShort(time)}

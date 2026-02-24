@@ -221,8 +221,10 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
                 <TableRow key={`${alert.feedName}-${alert.chain}-${index}`}>
                   <TableCell className="font-medium">
                     <div>
-                      <div>{alert.feedName}</div>
-                      <div className="text-xs text-muted-foreground">{alert.pair}</div>
+                      <div className="max-w-[200px] truncate">{alert.feedName}</div>
+                      <div className="max-w-[200px] truncate text-xs text-muted-foreground">
+                        {alert.pair}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>{alert.chain || '-'}</TableCell>
@@ -362,8 +364,10 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
                     <TableRow key={`${alert.feedName}-${alert.chain}-${index}`}>
                       <TableCell className="font-medium">
                         <div>
-                          <div>{alert.feedName}</div>
-                          <div className="text-xs text-muted-foreground">{alert.pair}</div>
+                          <div className="max-w-[200px] truncate">{alert.feedName}</div>
+                          <div className="max-w-[200px] truncate text-xs text-muted-foreground">
+                            {alert.pair}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>{alert.chain || '-'}</TableCell>

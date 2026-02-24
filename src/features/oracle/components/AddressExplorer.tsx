@@ -326,7 +326,7 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
                           <code className="truncate font-mono text-sm text-gray-700">
                             {item.address.slice(0, 10)}...{item.address.slice(-8)}
                           </code>

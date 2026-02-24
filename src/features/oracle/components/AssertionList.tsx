@@ -173,9 +173,11 @@ export const AssertionList = memo(function AssertionList({
               >
                 {item.chain[0]}
               </div>
-              <div>
-                <div className="mb-0.5 text-xs font-medium text-gray-400">{item.protocol}</div>
-                <div className="font-mono text-sm font-bold tracking-tight text-gray-900">
+              <div className="min-w-0">
+                <div className="mb-0.5 truncate text-xs font-medium text-gray-400">
+                  {item.protocol}
+                </div>
+                <div className="truncate font-mono text-sm font-bold tracking-tight text-gray-900">
                   {item.id}
                 </div>
               </div>

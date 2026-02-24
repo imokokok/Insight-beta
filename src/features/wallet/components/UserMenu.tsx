@@ -108,7 +108,7 @@ export function UserMenu() {
       </button>
 
       {isOpen && (
-        <div className="animate-in fade-in zoom-in-95 absolute right-0 top-full z-50 mt-2 w-64 origin-top-right rounded-xl border border-border bg-card p-2 shadow-xl duration-200">
+        <div className="animate-in fade-in zoom-in-95 absolute right-0 top-full z-[55] mt-2 w-64 origin-top-right rounded-xl border border-border bg-card p-2 shadow-xl duration-200">
           {/* Header */}
           <div className="mb-2 rounded-lg bg-muted/50 p-3">
             <div className="mb-2 flex items-center justify-between">

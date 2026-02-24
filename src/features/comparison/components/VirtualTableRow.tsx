@@ -80,7 +80,7 @@ const VirtualTableRow = React.memo(function VirtualTableRow({
   return (
     <div
       className={cn(
-        'flex items-center border-b px-4 transition-colors hover:bg-muted/30',
+        'flex min-w-0 items-center border-b px-4 transition-colors hover:bg-muted/30',
         densityConfig.padding,
         densityConfig.fontSize,
         isExpanded && 'bg-muted/40',
@@ -88,7 +88,7 @@ const VirtualTableRow = React.memo(function VirtualTableRow({
       style={{ ...style, contain: 'layout style', contentVisibility: 'auto' }}
     >
       {expandable && (
-        <div className="w-[30px] flex-shrink-0">
+        <div className="w-[30px] min-w-[30px] flex-shrink-0">
           <Button
             variant="ghost"
             size="sm"
@@ -106,17 +106,21 @@ const VirtualTableRow = React.memo(function VirtualTableRow({
           </Button>
         </div>
       )}
-      {visibleColumns.symbol && <div className="w-[100px] truncate font-medium">{row.symbol}</div>}
+      {visibleColumns.symbol && (
+        <div className="w-[100px] min-w-0 flex-shrink-0 truncate font-medium">{row.symbol}</div>
+      )}
       {visibleColumns.protocol && (
-        <div className="flex-1 capitalize">
+        <div className="min-w-0 flex-1 truncate capitalize">
           {PROTOCOL_DISPLAY_NAMES[row.protocol as keyof typeof PROTOCOL_DISPLAY_NAMES]}
         </div>
       )}
       {visibleColumns.price && (
-        <div className="w-[120px] text-right font-mono">{formatters.price(row.price)}</div>
+        <div className="w-[120px] min-w-0 flex-shrink-0 overflow-hidden text-right font-mono">
+          {formatters.price(row.price)}
+        </div>
       )}
       {visibleColumns.deviation && (
-        <div className="w-[120px] text-right">
+        <div className="w-[120px] min-w-0 flex-shrink-0 overflow-hidden text-right">
           <span
             className={cn(
               'inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium',
@@ -135,14 +139,14 @@ const VirtualTableRow = React.memo(function VirtualTableRow({
         </div>
       )}
       {visibleColumns.spread && (
-        <div className="w-[100px] text-right">
+        <div className="w-[100px] min-w-0 flex-shrink-0 overflow-hidden text-right">
           <Badge variant={getSpreadVariant(row.spreadPercent)} className="text-xs">
             ±{(row.spreadPercent * 100).toFixed(2)}%
           </Badge>
         </div>
       )}
       {visibleColumns.latency && (
-        <div className="w-[100px] text-right">
+        <div className="w-[100px] min-w-0 flex-shrink-0 overflow-hidden text-right">
           <span className={cn('text-xs', getLatencyColor(row.latency))}>
             <Clock className="mr-1 inline h-3 w-3" />
             {formatters.latency(row.latency)}
@@ -150,18 +154,18 @@ const VirtualTableRow = React.memo(function VirtualTableRow({
         </div>
       )}
       {visibleColumns.status && (
-        <div className="w-[80px] text-center">
+        <div className="w-[80px] min-w-0 flex-shrink-0 overflow-hidden text-center">
           <StatusBadge status={row.status} />
         </div>
       )}
       {visibleColumns.confidence && (
-        <div className="w-[80px] text-right">
+        <div className="w-[80px] min-w-0 flex-shrink-0 overflow-hidden text-right">
           <span className="text-xs text-muted-foreground">
             {(row.confidence * 100).toFixed(0)}%
           </span>
         </div>
       )}
-      <div className="w-[50px]">
+      <div className="w-[50px] min-w-0 flex-shrink-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">

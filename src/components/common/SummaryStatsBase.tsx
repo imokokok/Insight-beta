@@ -1,5 +1,7 @@
 'use client';
 
+import { cn } from '@/shared/utils';
+
 import { StatCard } from './StatCard';
 
 import type { StatCardColor, StatCardVariant } from './StatCard';
@@ -44,7 +46,7 @@ export function SummaryStatsBase({
 
   if (loading) {
     return (
-      <div className={`grid ${gridCols[columns]} gap-4 ${className}`}>
+      <div className={cn('grid gap-4', gridCols[columns], className)}>
         {Array.from({ length: loadingItemCount }).map((_, i) => (
           <div key={i} className="h-24 animate-pulse rounded-lg bg-gray-100" />
         ))}
@@ -53,7 +55,7 @@ export function SummaryStatsBase({
   }
 
   return (
-    <div className={`grid ${gridCols[columns]} gap-4 ${className}`}>
+    <div className={cn('grid gap-4', gridCols[columns], className)}>
       {stats.map((stat, index) => (
         <StatCard
           key={index}

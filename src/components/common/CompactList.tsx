@@ -59,21 +59,24 @@ export const CompactList = memo(function CompactList({
               item.onClick && 'cursor-pointer hover:bg-muted/50',
             )}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
               {item.icon && (
                 <span
-                  className={cn('text-muted-foreground', statusColors[item.status || 'default'])}
+                  className={cn(
+                    'shrink-0 text-muted-foreground',
+                    statusColors[item.status || 'default'],
+                  )}
                 >
                   {item.icon}
                 </span>
               )}
-              <span className={cn('text-sm', statusColors[item.status || 'default'])}>
+              <span className={cn('truncate text-sm', statusColors[item.status || 'default'])}>
                 {item.label}
               </span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex shrink-0 items-center gap-3">
               {item.value && (
-                <span className="text-sm font-medium text-foreground">{item.value}</span>
+                <span className="truncate text-sm font-medium text-foreground">{item.value}</span>
               )}
               {item.time && <span className="text-xs text-muted-foreground">{item.time}</span>}
             </div>
@@ -123,10 +126,17 @@ export const DualColumnList = memo(function DualColumnList({
                   item.onClick && 'cursor-pointer hover:bg-muted/50',
                 )}
               >
-                <span className={cn('text-sm', statusColors[item.status || 'default'])}>
+                <span
+                  className={cn(
+                    'min-w-0 flex-1 truncate text-sm',
+                    statusColors[item.status || 'default'],
+                  )}
+                >
                   {item.label}
                 </span>
-                {item.time && <span className="text-xs text-muted-foreground">{item.time}</span>}
+                {item.time && (
+                  <span className="shrink-0 text-xs text-muted-foreground">{item.time}</span>
+                )}
               </div>
             ))}
           </div>
@@ -148,10 +158,17 @@ export const DualColumnList = memo(function DualColumnList({
                   item.onClick && 'cursor-pointer hover:bg-muted/50',
                 )}
               >
-                <span className={cn('text-sm', statusColors[item.status || 'default'])}>
+                <span
+                  className={cn(
+                    'min-w-0 flex-1 truncate text-sm',
+                    statusColors[item.status || 'default'],
+                  )}
+                >
                   {item.label}
                 </span>
-                {item.time && <span className="text-xs text-muted-foreground">{item.time}</span>}
+                {item.time && (
+                  <span className="shrink-0 text-xs text-muted-foreground">{item.time}</span>
+                )}
               </div>
             ))}
           </div>

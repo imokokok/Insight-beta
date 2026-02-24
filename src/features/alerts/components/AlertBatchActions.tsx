@@ -289,11 +289,11 @@ export function AlertBatchActions({
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                 <AlertTriangle className="h-4 w-4 text-primary" />
               </div>
-              <div>
-                <p className="text-sm font-medium">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">
                   {t('alerts.batchActions.selected', { count: selectedCount })}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="truncate text-xs text-muted-foreground">
                   {activeCount} {t('alerts.batchActions.active')} · {unresolvedCount}{' '}
                   {t('alerts.batchActions.unresolved')}
                 </p>

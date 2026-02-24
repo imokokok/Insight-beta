@@ -364,19 +364,26 @@ export default function BandProtocolPage() {
   ]);
 
   const healthStatus: NetworkHealthStatus = useMemo(() => {
-    if (!state.bridgesData || state.bridgesData.summary.total === 0) return 'critical';
-    const activeRatio = state.bridgesData.summary.active / state.bridgesData.summary.total;
+    if (
+      !state.bridgesData ||
+      !state.bridgesData.summary ||
+      !state.bridgesData.summary.total ||
+      state.bridgesData.summary.total === 0
+    )
+      return 'critical';
+    const activeRatio = (state.bridgesData.summary.active ?? 0) / state.bridgesData.summary.total;
     if (activeRatio >= 0.8) return 'healthy';
     if (activeRatio >= 0.5) return 'warning';
     return 'critical';
   }, [state.bridgesData]);
 
   const getChainConnectivity = useMemo(() => {
-    if (!state.bridgesData) return [];
+    if (!state.bridgesData || !state.bridgesData.bridges) return [];
     return SUPPORTED_CHAINS.map((chain) => {
-      const isActive = state.bridgesData!.bridges.some(
-        (b) => (b.sourceChain === chain || b.destinationChain === chain) && b.status === 'active',
-      );
+      const isActive =
+        state.bridgesData?.bridges.some(
+          (b) => (b.sourceChain === chain || b.destinationChain === chain) && b.status === 'active',
+        ) ?? false;
       return { chain, isActive };
     });
   }, [state.bridgesData]);
@@ -451,7 +458,7 @@ export default function BandProtocolPage() {
                 state.overviewStats
                   ? {
                       overviewStats: {
-                        totalBridges: state.bridgesData?.summary.total ?? 0,
+                        totalBridges: state.bridgesData?.summary?.total ?? 0,
                         activeBridges: state.overviewStats.activeBridges,
                         totalTransfers: state.overviewStats.totalTransfers,
                         totalSources: state.overviewStats.totalSources,
@@ -560,19 +567,19 @@ export default function BandProtocolPage() {
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-muted-foreground">总数据桥</span>
                             <span className="font-mono font-semibold">
-                              {state.bridgesData?.summary.total ?? 0}
+                              {state.bridgesData?.summary?.total ?? 0}
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-muted-foreground">活跃数据桥</span>
                             <Badge variant="success" size="sm">
-                              {state.bridgesData?.summary.active ?? 0}
+                              {state.bridgesData?.summary?.active ?? 0}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-muted-foreground">非活跃数据桥</span>
                             <Badge variant="warning" size="sm">
-                              {state.bridgesData?.summary.inactive ?? 0}
+                              {state.bridgesData?.summary?.inactive ?? 0}
                             </Badge>
                           </div>
                         </div>
@@ -587,7 +594,7 @@ export default function BandProtocolPage() {
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-muted-foreground">EVM 链数据源</span>
                             <span className="font-mono font-semibold">
-                              {state.sourcesData?.summary.evmCount ?? 0}
+                              {state.sourcesData?.summary?.evmCount ?? 0}
                             </span>
                           </div>
                           <div className="h-1.5 w-full rounded-full bg-muted">
@@ -595,11 +602,16 @@ export default function BandProtocolPage() {
                               className="h-1.5 rounded-full bg-blue-500"
                               style={{
                                 width: `${
-                                  state.sourcesData
-                                    ? (state.sourcesData.summary.evmCount /
-                                        (state.sourcesData.summary.evmCount +
-                                          state.sourcesData.summary.cosmosCount)) *
-                                      100
+                                  state.sourcesData?.summary
+                                    ? (state.sourcesData.summary.evmCount ?? 0) /
+                                        ((state.sourcesData.summary.evmCount ?? 0) +
+                                          (state.sourcesData.summary.cosmosCount ?? 0)) >
+                                      0
+                                      ? ((state.sourcesData.summary.evmCount ?? 0) /
+                                          ((state.sourcesData.summary.evmCount ?? 0) +
+                                            (state.sourcesData.summary.cosmosCount ?? 0))) *
+                                        100
+                                      : 0
                                     : 0
                                 }%`,
                               }}
@@ -608,7 +620,7 @@ export default function BandProtocolPage() {
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-muted-foreground">Cosmos 链数据源</span>
                             <span className="font-mono font-semibold">
-                              {state.sourcesData?.summary.cosmosCount ?? 0}
+                              {state.sourcesData?.summary?.cosmosCount ?? 0}
                             </span>
                           </div>
                           <div className="h-1.5 w-full rounded-full bg-muted">
@@ -616,11 +628,16 @@ export default function BandProtocolPage() {
                               className="h-1.5 rounded-full bg-purple-500"
                               style={{
                                 width: `${
-                                  state.sourcesData
-                                    ? (state.sourcesData.summary.cosmosCount /
-                                        (state.sourcesData.summary.evmCount +
-                                          state.sourcesData.summary.cosmosCount)) *
-                                      100
+                                  state.sourcesData?.summary
+                                    ? (state.sourcesData.summary.cosmosCount ?? 0) /
+                                        ((state.sourcesData.summary.evmCount ?? 0) +
+                                          (state.sourcesData.summary.cosmosCount ?? 0)) >
+                                      0
+                                      ? ((state.sourcesData.summary.cosmosCount ?? 0) /
+                                          ((state.sourcesData.summary.evmCount ?? 0) +
+                                            (state.sourcesData.summary.cosmosCount ?? 0))) *
+                                        100
+                                      : 0
                                     : 0
                                 }%`,
                               }}

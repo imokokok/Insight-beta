@@ -140,7 +140,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                       >
                         <Search className="h-4 w-4" />
                         <span className="text-sm">{t('common.search')}</span>
-                        <kbd className="flex h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] font-medium">
+                        <kbd className="hidden h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] font-medium sm:flex">
                           <Command className="h-3 w-3" />K
                         </kbd>
                       </Button>

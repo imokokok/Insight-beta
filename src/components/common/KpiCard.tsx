@@ -51,7 +51,10 @@ export function KpiCard({ data, compact }: KpiCardProps) {
         </span>
         {trend && trend !== 'neutral' && (
           <span
-            className={cn('flex items-center gap-0.5 text-[10px] font-medium', TREND_COLORS[trend])}
+            className={cn(
+              'flex shrink-0 items-center gap-0.5 whitespace-nowrap text-[10px] font-medium',
+              TREND_COLORS[trend],
+            )}
           >
             {TREND_ICONS[trend]}
             {changePercent !== undefined && `${Math.abs(changePercent)}%`}

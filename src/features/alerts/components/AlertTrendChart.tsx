@@ -249,8 +249,8 @@ export function AlertTrendChart({
       }
     >
       {stats && (
-        <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div className="rounded-lg bg-gray-50 p-3">
+        <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
+          <div className="min-w-0 rounded-lg bg-gray-50 p-3">
             <p className="text-xs text-muted-foreground">{t('alerts.analysis.totalAlerts')}</p>
             <div className="flex items-baseline">
               <p className="text-xl font-bold">{formatNumber(stats.totalAlerts, 0)}</p>
@@ -261,15 +261,15 @@ export function AlertTrendChart({
               />
             </div>
           </div>
-          <div className="rounded-lg bg-gray-50 p-3">
+          <div className="min-w-0 rounded-lg bg-gray-50 p-3">
             <p className="text-xs text-muted-foreground">{t('alerts.analysis.avgPerHour')}</p>
             <p className="text-xl font-bold">{stats.avgPerHour}</p>
           </div>
-          <div className="rounded-lg bg-gray-50 p-3">
+          <div className="min-w-0 rounded-lg bg-gray-50 p-3">
             <p className="text-xs text-muted-foreground">{t('alerts.analysis.peakHour')}</p>
             <p className="text-xl font-bold">{stats.peakHour}:00</p>
           </div>
-          <div className="rounded-lg bg-gray-50 p-3">
+          <div className="min-w-0 rounded-lg bg-gray-50 p-3">
             <p className="text-xs text-muted-foreground">{t('alerts.analysis.trend')}</p>
             <TrendIndicator trend={stats.trend} percent={stats.trendPercent} />
           </div>

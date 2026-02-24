@@ -87,7 +87,7 @@ function WalletSelectModal({
                 key={option.id}
                 onClick={() => !option.disabled && onSelect(option.id)}
                 disabled={option.disabled || isConnecting}
-                className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 transition-all ${
+                className={`flex w-full items-center gap-3 rounded-xl border-2 p-4 transition-all ${
                   option.disabled
                     ? 'cursor-not-allowed border-border bg-muted opacity-50'
                     : option.recommended

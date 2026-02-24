@@ -77,7 +77,11 @@ export const StatsBar = memo(function StatsBar({
                 </span>
               )}
             </div>
-            {index < items.length - 1 && <span className="hidden text-border sm:inline">│</span>}
+            {index < items.length - 1 && (
+              <span className="select-none text-border opacity-0 sm:opacity-100" aria-hidden="true">
+                │
+              </span>
+            )}
           </div>
         ))}
       </div>

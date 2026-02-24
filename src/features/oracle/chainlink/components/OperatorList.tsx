@@ -83,7 +83,7 @@ export function OperatorList({ className, collapsible = false }: OperatorListPro
   const onlineCount = operators.filter((op) => op.online).length;
 
   const renderOperatorGrid = () => (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {operators.map((operator) => (
         <div
           key={operator.name}

@@ -123,7 +123,7 @@ export function FavoritesPanel({ className, onItemClick }: FavoritesPanelProps) 
                             <p className="truncate text-sm font-medium text-foreground">
                               {item.name}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="truncate text-xs text-muted-foreground">
                               {formatRelativeTime(Math.floor((Date.now() - item.addedAt) / 1000))}
                             </p>
                           </div>

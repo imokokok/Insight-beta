@@ -224,11 +224,42 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const total = allSources.length;
+    const active = allSources.filter((s) => s.status === 'active').length;
+    const inactive = allSources.filter((s) => s.status === 'inactive').length;
+    const evmCount = allSources.filter((s) => s.sourceType === 'evm').length;
+    const cosmosCount = allSources.filter((s) => s.sourceType === 'cosmos').length;
+    const avgReliability =
+      allSources.length > 0
+        ? allSources.reduce((acc, s) => acc + s.reliabilityScore, 0) / allSources.length
+        : 0;
+
+    const sources = allSources.map((s) => ({
+      sourceId: s.sourceId,
+      name: s.name,
+      symbol: s.symbol,
+      chain: s.chain,
+      sourceType: s.sourceType,
+      status: s.status,
+      updateIntervalSeconds: s.updateIntervalSeconds,
+      lastUpdateAt: s.lastUpdateAt,
+      reliabilityScore: s.reliabilityScore,
+      updateFrequency: s.updateFrequency,
+      lastUpdateLatency: s.lastUpdateLatency,
+      historicalReliability: s.historicalReliability,
+      anomalyCount: s.anomalyCount,
+    }));
+
     return ok({
-      totalChains: allConfigs.length,
-      totalSources: allSources.length,
-      configs: allConfigs,
-      dataSources: allSources,
+      sources,
+      summary: {
+        total,
+        active,
+        inactive,
+        evmCount,
+        cosmosCount,
+        avgReliability,
+      },
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to fetch data sources';

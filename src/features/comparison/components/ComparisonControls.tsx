@@ -150,7 +150,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                 variant={currentView === option.value ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => onViewChange(option.value)}
-                className="flex items-center gap-1 whitespace-nowrap px-2 text-xs sm:gap-1.5 sm:px-3 sm:text-sm"
+                className="flex min-w-[44px] items-center gap-1 whitespace-nowrap px-2 text-xs sm:gap-1.5 sm:px-3 sm:text-sm"
               >
                 {option.icon}
                 <span className="hidden sm:inline">{t(option.labelKey)}</span>

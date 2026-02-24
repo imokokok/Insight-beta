@@ -62,9 +62,9 @@ export const ChartCard = memo(function ChartCard({
     <>
       <Card className={cn('overflow-hidden', className)}>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <div>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 truncate text-base">
                 {icon}
                 {title}
                 {tooltip && (
@@ -86,7 +86,7 @@ export const ChartCard = memo(function ChartCard({
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <ExportButton
               chartRef={chartRef}
               data={data}

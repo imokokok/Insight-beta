@@ -190,13 +190,36 @@ export async function GET(request: NextRequest) {
       getBandChainStatus('testnet'),
     ]);
 
+    const total = filteredBridges.length;
+    const active = filteredBridges.filter((b) => b.status === 'active').length;
+    const inactive = filteredBridges.filter((b) => b.status === 'inactive').length;
+    const degraded = filteredBridges.filter((b) => b.status === 'degraded').length;
+
+    const bridges = filteredBridges.map((b) => ({
+      bridgeId: b.id,
+      sourceChain: b.sourceChain,
+      destinationChain: b.destinationChain,
+      status: b.status,
+      lastRelayTime: b.lastRelayTime,
+      pendingRequests: b.pendingRequests,
+      issues: b.issues,
+      contractAddress: b.contractAddress,
+    }));
+
     return ok({
-      totalBridges: filteredBridges.length,
+      bridges,
+      summary: {
+        total,
+        active,
+        inactive,
+        degraded,
+        totalTransfers: 0,
+        avgLatency: 0,
+      },
       bandChainStatus: {
         mainnet: mainnetStatus,
         testnet: testnetStatus,
       },
-      data: filteredBridges,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to fetch bridge status';

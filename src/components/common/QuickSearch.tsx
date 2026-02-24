@@ -114,7 +114,7 @@ export function QuickSearch({ isOpen, onClose }: QuickSearchProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
 
@@ -123,7 +123,7 @@ export function QuickSearch({ isOpen, onClose }: QuickSearchProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ duration: 0.15 }}
-            className="fixed left-1/2 top-[20%] z-50 w-full max-w-lg -translate-x-1/2"
+            className="fixed left-1/2 top-[20%] z-[60] w-[90vw] max-w-lg -translate-x-1/2"
           >
             <div className="overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
               <div className="flex items-center gap-3 border-b border-border px-4">

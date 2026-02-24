@@ -397,10 +397,14 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
         </CardHeader>
         <CardContent>
           <div className="flex items-start justify-between">
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-foreground">{value}</span>
-                {subtitle && <span className="text-sm text-muted-foreground">{subtitle}</span>}
+                <span className="truncate text-2xl font-bold text-foreground lg:text-3xl">
+                  {value}
+                </span>
+                {subtitle && (
+                  <span className="shrink-0 text-sm text-muted-foreground">{subtitle}</span>
+                )}
               </div>
 
               {comparison && (
@@ -493,7 +497,7 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
           </div>
 
           <h3 className="mb-1 text-sm font-medium text-muted-foreground">{title}</h3>
-          <p className="mb-2 text-3xl font-bold text-foreground">{value}</p>
+          <p className="mb-2 truncate text-2xl font-bold text-foreground lg:text-3xl">{value}</p>
 
           {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
 
@@ -707,9 +711,7 @@ export const UnifiedStatsPanel = memo(function UnifiedStatsPanel({
               key={index}
               className={cn(
                 'rounded-xl p-4 transition-all duration-200 hover:bg-card/50',
-                index < items.length - 1 &&
-                  'border-r border-border/30 last:border-r-0 sm:border-r lg:border-r-0',
-                index % columns !== columns - 1 && 'lg:border-r lg:border-border/30',
+                index % columns !== columns - 1 && 'border-r border-border/30',
               )}
             >
               <div className="mb-2 flex items-start justify-between">
