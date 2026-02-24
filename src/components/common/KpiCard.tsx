@@ -1,3 +1,4 @@
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import type { KpiCardData, KpiTrendDirection, KpiStatus } from '@/types/shared/kpi';
 import { DEFAULT_KPI_DATA, TREND_COLORS, STATUS_COLORS } from '@/types/shared/kpi';
@@ -30,6 +31,7 @@ interface KpiCardProps {
 }
 
 export function KpiCard({ data, compact }: KpiCardProps) {
+  const { t } = useI18n();
   const { value, label, trend = 'neutral', changePercent, status = 'neutral' } = data;
   const colors = STATUS_COLORS[status] ?? STATUS_COLORS.neutral!;
 
@@ -76,7 +78,7 @@ export function KpiCard({ data, compact }: KpiCardProps) {
 
       {changePercent !== undefined && trend === 'neutral' && (
         <div className={cn('mt-0.5 text-[10px]', TREND_COLORS[trend])}>
-          较上期 {changePercent > 0 ? '+' : ''}
+          {t('common.kpi.comparedToLastPeriod')} {changePercent > 0 ? '+' : ''}
           {changePercent}%
         </div>
       )}

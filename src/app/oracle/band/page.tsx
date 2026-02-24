@@ -79,14 +79,6 @@ const SUPPORTED_CHAINS = [
   'juno',
 ];
 
-const TABS: TabItem[] = [
-  { id: 'overview', label: '概览', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { id: 'bridges', label: '数据桥', icon: <GitBranch className="h-4 w-4" /> },
-  { id: 'sources', label: '数据源', icon: <Database className="h-4 w-4" /> },
-  { id: 'cosmos', label: 'Cosmos', icon: <Globe className="h-4 w-4" /> },
-  { id: 'analysis', label: '数据分析', icon: <BarChart3 className="h-4 w-4" /> },
-];
-
 interface BridgesResponse {
   bridges: Bridge[];
   summary: {
@@ -157,6 +149,18 @@ interface BandDashboardState {
 export default function BandProtocolPage() {
   const { t } = useI18n();
 
+  const TABS: TabItem[] = [
+    {
+      id: 'overview',
+      label: t('band.tabs.overview'),
+      icon: <LayoutDashboard className="h-4 w-4" />,
+    },
+    { id: 'bridges', label: t('band.tabs.bridges'), icon: <GitBranch className="h-4 w-4" /> },
+    { id: 'sources', label: t('band.tabs.sources'), icon: <Database className="h-4 w-4" /> },
+    { id: 'cosmos', label: 'Cosmos', icon: <Globe className="h-4 w-4" /> },
+    { id: 'analysis', label: t('band.tabs.analysis'), icon: <BarChart3 className="h-4 w-4" /> },
+  ];
+
   const [state, setState] = useState<BandDashboardState>({
     overviewStats: null,
     bridgesData: null,
@@ -202,7 +206,7 @@ export default function BandProtocolPage() {
         {
           scriptId: 'price_feed',
           name: 'Price Feed',
-          description: '获取加密货币价格数据',
+          description: t('band.oracleScriptTypes.priceFeed.description'),
           owner: 'band1abc123def456',
           codeHash: '0x1234abcd5678efgh',
           schema: '{symbol:string,price:uint64}',
@@ -215,7 +219,7 @@ export default function BandProtocolPage() {
         {
           scriptId: 'weather_data',
           name: 'Weather Data',
-          description: '获取全球天气数据',
+          description: t('band.oracleScriptTypes.weather.description'),
           owner: 'band1def456ghi789',
           codeHash: '0x5678efgh90abijkl',
           schema: '{location:string,temp:uint64}',
@@ -228,7 +232,7 @@ export default function BandProtocolPage() {
         {
           scriptId: 'sports_results',
           name: 'Sports Results',
-          description: '获取体育比赛结果',
+          description: t('band.oracleScriptTypes.sports.description'),
           owner: 'band1ghi789jkl012',
           codeHash: '0x90abijklcdefmnop',
           schema: '{gameId:string,score:string}',
@@ -241,7 +245,7 @@ export default function BandProtocolPage() {
         {
           scriptId: 'stock_prices',
           name: 'Stock Prices',
-          description: '获取股票价格数据',
+          description: t('band.oracleScriptTypes.stocks.description'),
           owner: 'band1jkl012mno345',
           codeHash: '0xcdefmnopqrstuvwx',
           schema: '{ticker:string,price:uint64}',
@@ -397,7 +401,7 @@ export default function BandProtocolPage() {
         <ErrorBanner
           error={new Error(state.error)}
           onRetry={fetchInitialData}
-          title="加载数据失败"
+          title={t('common.errorLoadFailed')}
           isRetrying={state.loading}
         />
       </div>
@@ -434,12 +438,14 @@ export default function BandProtocolPage() {
                       : 'bg-error/20 text-error'
                 }`}
               >
-                {healthStatus === 'healthy' ? '健康' : healthStatus === 'warning' ? '警告' : '异常'}
+                {healthStatus === 'healthy'
+                  ? t('common.status.healthy')
+                  : healthStatus === 'warning'
+                    ? t('common.status.warning')
+                    : t('common.status.critical')}
               </Badge>
             </h1>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              跨链预言机 - Cosmos 生态与数据桥监控
-            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t('band.pageDescription')}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={fetchInitialData} disabled={state.loading}>
@@ -494,23 +500,28 @@ export default function BandProtocolPage() {
             <TabContent activeTab={activeTab}>
               <TabPanelWrapper tabId="overview">
                 <div className="space-y-3">
-                  <ContentSection title="Band 协议概览" description="跨链预言机网络状态摘要">
+                  <ContentSection
+                    title={t('band.overview.title')}
+                    description={t('band.overview.description')}
+                  >
                     <p className="text-sm text-muted-foreground">
-                      Band Protocol 是基于 Cosmos
-                      的跨链预言机协议，通过数据桥为多链提供可靠的外部数据，支持 EVM 和 Cosmos
-                      生态系统。
+                      {t('band.overview.introduction')}
                     </p>
                   </ContentSection>
 
-                  <ContentSection title="核心特性">
+                  <ContentSection title={t('band.features.title')}>
                     <ContentGrid columns={3} gap="sm">
                       <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
                         <div className="rounded-lg bg-orange-500/10 p-2">
                           <Globe className="h-5 w-5 text-orange-500" />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground">跨链数据桥</p>
-                          <p className="text-sm font-semibold text-foreground">多链数据传输</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('band.features.crossChain.label')}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('band.features.crossChain.value')}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
@@ -518,8 +529,12 @@ export default function BandProtocolPage() {
                           <Activity className="h-5 w-5 text-blue-500" />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground">IBC 协议</p>
-                          <p className="text-sm font-semibold text-foreground">Cosmos 互操作</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('band.features.ibc.label')}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('band.features.ibc.value')}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
@@ -527,14 +542,21 @@ export default function BandProtocolPage() {
                           <Shield className="h-5 w-5 text-green-500" />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground">数据验证</p>
-                          <p className="text-sm font-semibold text-foreground">多源聚合验证</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('band.features.validation.label')}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('band.features.validation.value')}
+                          </p>
                         </div>
                       </div>
                     </ContentGrid>
                   </ContentSection>
 
-                  <ContentSection title="支持的链" description="Band Protocol 支持的区块链网络">
+                  <ContentSection
+                    title={t('band.supportedChains.title')}
+                    description={t('band.supportedChains.description')}
+                  >
                     <div className="flex flex-wrap gap-1.5">
                       {getChainConnectivity.map(({ chain, isActive }) => (
                         <Badge
@@ -561,23 +583,29 @@ export default function BandProtocolPage() {
                       <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <GitBranch className="h-3.5 w-3.5 text-primary" />
-                          数据桥状态概览
+                          {t('band.bridgeStatus.title')}
                         </h4>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">总数据桥</span>
+                            <span className="text-muted-foreground">
+                              {t('band.bridgeStatus.total')}
+                            </span>
                             <span className="font-mono font-semibold">
                               {state.bridgesData?.summary?.total ?? 0}
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">活跃数据桥</span>
+                            <span className="text-muted-foreground">
+                              {t('band.bridgeStatus.active')}
+                            </span>
                             <Badge variant="success" size="sm">
                               {state.bridgesData?.summary?.active ?? 0}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">非活跃数据桥</span>
+                            <span className="text-muted-foreground">
+                              {t('band.bridgeStatus.inactive')}
+                            </span>
                             <Badge variant="warning" size="sm">
                               {state.bridgesData?.summary?.inactive ?? 0}
                             </Badge>
@@ -588,11 +616,13 @@ export default function BandProtocolPage() {
                       <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Database className="h-3.5 w-3.5 text-primary" />
-                          数据源分布
+                          {t('band.sourceDistribution.title')}
                         </h4>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">EVM 链数据源</span>
+                            <span className="text-muted-foreground">
+                              {t('band.sourceDistribution.evm')}
+                            </span>
                             <span className="font-mono font-semibold">
                               {state.sourcesData?.summary?.evmCount ?? 0}
                             </span>
@@ -618,7 +648,9 @@ export default function BandProtocolPage() {
                             />
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">Cosmos 链数据源</span>
+                            <span className="text-muted-foreground">
+                              {t('band.sourceDistribution.cosmos')}
+                            </span>
                             <span className="font-mono font-semibold">
                               {state.sourcesData?.summary?.cosmosCount ?? 0}
                             </span>
@@ -661,15 +693,17 @@ export default function BandProtocolPage() {
                 {loadedTabs.has('bridges') ? (
                   <div className="space-y-4">
                     <ContentSection
-                      title="数据桥列表"
-                      description={`显示 ${state.bridgesData?.bridges.length ?? 0} 个数据桥${
-                        selectedBridge ? ' (点击数据桥查看趋势)' : ''
-                      }`}
+                      title={t('band.bridgeList.title')}
+                      description={
+                        t('band.bridgeList.description', {
+                          count: state.bridgesData?.bridges.length ?? 0,
+                        }) + (selectedBridge ? ' (点击数据桥查看趋势)' : '')
+                      }
                     >
                       {state.bridgesData?.bridges.length === 0 ? (
                         <div className="py-12 text-center text-muted-foreground">
                           <GitBranch className="mx-auto h-12 w-12 opacity-50" />
-                          <p className="mt-2">暂无数据桥信息</p>
+                          <p className="mt-2">{t('band.bridgeList.empty')}</p>
                         </div>
                       ) : (
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -734,8 +768,8 @@ export default function BandProtocolPage() {
                 {loadedTabs.has('cosmos') ? (
                   <div className="space-y-4">
                     <ContentSection
-                      title="Cosmos 链选择器"
-                      description="选择 Cosmos 生态链查看详细数据"
+                      title={t('band.cosmosSelector.title')}
+                      description={t('band.cosmosSelector.description')}
                     >
                       <CosmosChainSelector
                         selectedChain={selectedCosmosChain}
@@ -746,16 +780,23 @@ export default function BandProtocolPage() {
                       />
                     </ContentSection>
 
-                    <ContentSection title="Band Chain 区块信息" description="最新区块状态">
+                    <ContentSection
+                      title={t('band.blockInfo.title')}
+                      description={t('band.blockInfo.description')}
+                    >
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div className="rounded-lg bg-muted/30 p-4">
-                          <span className="text-sm text-muted-foreground">区块高度</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('band.blockInfo.height')}
+                          </span>
                           <div className="mt-1 font-mono text-lg">
                             {Math.floor(Math.random() * 10000000).toLocaleString()}
                           </div>
                         </div>
                         <div className="rounded-lg bg-muted/30 p-4">
-                          <span className="text-sm text-muted-foreground">区块哈希</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('band.blockInfo.hash')}
+                          </span>
                           <div className="mt-1 truncate font-mono text-sm">
                             0x
                             {Array.from({ length: 64 }, () =>
@@ -764,26 +805,37 @@ export default function BandProtocolPage() {
                           </div>
                         </div>
                         <div className="rounded-lg bg-muted/30 p-4">
-                          <span className="text-sm text-muted-foreground">时间戳</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('band.blockInfo.timestamp')}
+                          </span>
                           <div className="mt-1 text-sm">{new Date().toLocaleString()}</div>
                         </div>
                       </div>
                     </ContentSection>
 
-                    <ContentSection title="IBC 状态" description="当前选中链的 IBC 连接状态">
+                    <ContentSection
+                      title={t('band.ibcStatus.title')}
+                      description={t('band.ibcStatus.description')}
+                    >
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div className="rounded-lg bg-muted/30 p-4">
-                          <span className="text-sm text-muted-foreground">选中链 ID</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('band.ibcStatus.chainId')}
+                          </span>
                           <div className="mt-1 font-mono text-lg">{selectedCosmosChain}</div>
                         </div>
                         <div className="rounded-lg bg-muted/30 p-4">
-                          <span className="text-sm text-muted-foreground">IBC 连接数</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('band.ibcStatus.connections')}
+                          </span>
                           <div className="mt-1 text-lg font-semibold">
                             {state.ibcData?.connections.total ?? 0}
                           </div>
                         </div>
                         <div className="rounded-lg bg-muted/30 p-4">
-                          <span className="text-sm text-muted-foreground">活跃通道</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('band.ibcStatus.activeChannels')}
+                          </span>
                           <div className="mt-1 text-lg font-semibold">
                             {state.ibcData?.channels.open ?? 0}
                           </div>

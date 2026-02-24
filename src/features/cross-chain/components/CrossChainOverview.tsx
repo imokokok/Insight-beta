@@ -292,7 +292,7 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
       {dashboard?.priceComparisons && dashboard.priceComparisons.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Price Status Overview</CardTitle>
+            <CardTitle>{t('crossChain.priceStatus.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">

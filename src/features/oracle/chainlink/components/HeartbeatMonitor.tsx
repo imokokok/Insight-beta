@@ -59,11 +59,11 @@ function getStatusBadgeVariant(status: HeartbeatAlert['status']) {
 function getStatusLabel(status: HeartbeatAlert['status'], t: (key: string) => string) {
   switch (status) {
     case 'active':
-      return t('chainlink.heartbeat.status.active') || '活跃';
+      return t('chainlink.heartbeat.status.active');
     case 'timeout':
-      return t('chainlink.heartbeat.status.timeout') || '超时';
+      return t('chainlink.heartbeat.status.timeout');
     case 'critical':
-      return t('chainlink.heartbeat.status.critical') || '严重超时';
+      return t('chainlink.heartbeat.status.critical');
     default:
       return status;
   }
@@ -150,12 +150,12 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
         <div className="flex flex-col items-center justify-center gap-4 py-12">
           <AlertTriangle className="h-12 w-12 text-amber-500" />
           <div className="text-center">
-            <p className="font-medium text-foreground">{t('common.error') || '加载数据失败'}</p>
+            <p className="font-medium text-foreground">{t('common.error')}</p>
             <p className="text-sm text-muted-foreground">{error}</p>
           </div>
           <Button variant="outline" size="sm" onClick={fetchData}>
             <RefreshCw className="mr-2 h-4 w-4" />
-            {t('common.retry') || '重试'}
+            {t('common.retry')}
           </Button>
         </div>
       </div>
@@ -165,25 +165,25 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
   const renderStats = () => (
     <ContentGrid columns={4}>
       <StatItem
-        title={t('chainlink.heartbeat.stats.totalFeeds') || '总 Feed 数'}
+        title={t('chainlink.heartbeat.stats.totalFeeds')}
         value={stats.totalFeeds}
         icon={<Activity className="h-6 w-6 text-blue-600" />}
         colorClass="bg-blue-100 dark:bg-blue-900"
       />
       <StatItem
-        title={t('chainlink.heartbeat.stats.activeFeeds') || '活跃数'}
+        title={t('chainlink.heartbeat.stats.activeFeeds')}
         value={stats.activeFeeds}
         icon={<CheckCircle className="h-6 w-6 text-green-600" />}
         colorClass="bg-green-100 dark:bg-green-900"
       />
       <StatItem
-        title={t('chainlink.heartbeat.stats.timeoutFeeds') || '超时数'}
+        title={t('chainlink.heartbeat.stats.timeoutFeeds')}
         value={stats.timeoutFeeds ?? 0}
         icon={<Timer className="h-6 w-6 text-yellow-600" />}
         colorClass="bg-yellow-100 dark:bg-yellow-900"
       />
       <StatItem
-        title={t('chainlink.heartbeat.stats.criticalFeeds') || '严重超时数'}
+        title={t('chainlink.heartbeat.stats.criticalFeeds')}
         value={stats.criticalFeeds ?? 0}
         icon={<XCircle className="h-6 w-6 text-red-600" />}
         colorClass="bg-red-100 dark:bg-red-900"
@@ -196,7 +196,7 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
       return (
         <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
           <CheckCircle className="h-12 w-12 text-green-500" />
-          <p>{t('chainlink.heartbeat.noAlerts') || '暂无告警，所有 Feed 正常运行'}</p>
+          <p>{t('chainlink.heartbeat.noAlerts')}</p>
         </div>
       );
     }
@@ -206,12 +206,12 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t('chainlink.heartbeat.feedName') || 'Feed 名称'}</TableHead>
-              <TableHead>{t('chainlink.heartbeat.chain') || '链'}</TableHead>
-              <TableHead>{t('chainlink.heartbeat.heartbeat') || '心跳间隔'}</TableHead>
-              <TableHead>{t('chainlink.heartbeat.lastUpdate') || '最后更新'}</TableHead>
-              <TableHead>{t('chainlink.heartbeat.timeoutDuration') || '超时时长'}</TableHead>
-              <TableHead>{t('chainlink.heartbeat.status') || '状态'}</TableHead>
+              <TableHead>{t('chainlink.heartbeat.feedName')}</TableHead>
+              <TableHead>{t('chainlink.heartbeat.chain')}</TableHead>
+              <TableHead>{t('chainlink.heartbeat.heartbeat')}</TableHead>
+              <TableHead>{t('chainlink.heartbeat.lastUpdate')}</TableHead>
+              <TableHead>{t('chainlink.heartbeat.timeoutDuration')}</TableHead>
+              <TableHead>{t('chainlink.heartbeat.status')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -265,11 +265,11 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
       <div className={`space-y-6 ${className || ''}`}>
         <div className="flex items-center justify-end gap-2">
           <span className="text-xs text-muted-foreground">
-            {t('common.lastUpdated') || '最后更新'}: {formatTime(stats.generatedAt)}
+            {t('common.lastUpdated')}: {formatTime(stats.generatedAt)}
           </span>
           <Button variant="outline" size="sm" onClick={fetchData}>
             <RefreshCw className="mr-2 h-4 w-4" />
-            {t('common.refresh') || '刷新'}
+            {t('common.refresh')}
           </Button>
         </div>
 
@@ -278,7 +278,7 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
         <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
           <div className="mb-3 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-600" />
-            <span className="font-medium">{t('chainlink.heartbeat.alerts') || '告警列表'}</span>
+            <span className="font-medium">{t('chainlink.heartbeat.alerts')}</span>
           </div>
           {renderAlerts()}
         </div>
@@ -289,41 +289,41 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
   return (
     <div className={`space-y-6 ${className || ''}`}>
       <ContentSection
-        title={t('chainlink.heartbeat.title') || '心跳监控'}
-        description={t('chainlink.heartbeat.description') || '监控 Chainlink 数据 Feed 的心跳状态'}
+        title={t('chainlink.heartbeat.title')}
+        description={t('chainlink.heartbeat.description')}
         action={
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">
-              {t('common.lastUpdated') || '最后更新'}: {formatTime(stats.generatedAt)}
+              {t('common.lastUpdated')}: {formatTime(stats.generatedAt)}
             </span>
             <Button variant="outline" size="sm" onClick={fetchData}>
               <RefreshCw className="mr-2 h-4 w-4" />
-              {t('common.refresh') || '刷新'}
+              {t('common.refresh')}
             </Button>
           </div>
         }
       >
         <ContentGrid columns={4}>
           <StatItem
-            title={t('chainlink.heartbeat.stats.totalFeeds') || '总 Feed 数'}
+            title={t('chainlink.heartbeat.stats.totalFeeds')}
             value={stats.totalFeeds}
             icon={<Activity className="h-6 w-6 text-blue-600" />}
             colorClass="bg-blue-100 dark:bg-blue-900"
           />
           <StatItem
-            title={t('chainlink.heartbeat.stats.activeFeeds') || '活跃数'}
+            title={t('chainlink.heartbeat.stats.activeFeeds')}
             value={stats.activeFeeds}
             icon={<CheckCircle className="h-6 w-6 text-green-600" />}
             colorClass="bg-green-100 dark:bg-green-900"
           />
           <StatItem
-            title={t('chainlink.heartbeat.stats.timeoutFeeds') || '超时数'}
+            title={t('chainlink.heartbeat.stats.timeoutFeeds')}
             value={stats.timeoutFeeds ?? 0}
             icon={<Timer className="h-6 w-6 text-yellow-600" />}
             colorClass="bg-yellow-100 dark:bg-yellow-900"
           />
           <StatItem
-            title={t('chainlink.heartbeat.stats.criticalFeeds') || '严重超时数'}
+            title={t('chainlink.heartbeat.stats.criticalFeeds')}
             value={stats.criticalFeeds ?? 0}
             icon={<XCircle className="h-6 w-6 text-red-600" />}
             colorClass="bg-red-100 dark:bg-red-900"
@@ -335,26 +335,26 @@ export function HeartbeatMonitor({ collapsible = false, className }: HeartbeatMo
         title={
           <span className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
-            {t('chainlink.heartbeat.alerts') || '告警列表'}
+            {t('chainlink.heartbeat.alerts')}
           </span>
         }
       >
         {sortedAlerts.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
             <CheckCircle className="h-12 w-12 text-green-500" />
-            <p>{t('chainlink.heartbeat.noAlerts') || '暂无告警，所有 Feed 正常运行'}</p>
+            <p>{t('chainlink.heartbeat.noAlerts')}</p>
           </div>
         ) : (
           <div className="rounded-lg border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t('chainlink.heartbeat.feedName') || 'Feed 名称'}</TableHead>
-                  <TableHead>{t('chainlink.heartbeat.chain') || '链'}</TableHead>
-                  <TableHead>{t('chainlink.heartbeat.heartbeat') || '心跳间隔'}</TableHead>
-                  <TableHead>{t('chainlink.heartbeat.lastUpdate') || '最后更新'}</TableHead>
-                  <TableHead>{t('chainlink.heartbeat.timeoutDuration') || '超时时长'}</TableHead>
-                  <TableHead>{t('chainlink.heartbeat.status') || '状态'}</TableHead>
+                  <TableHead>{t('chainlink.heartbeat.feedName')}</TableHead>
+                  <TableHead>{t('chainlink.heartbeat.chain')}</TableHead>
+                  <TableHead>{t('chainlink.heartbeat.heartbeat')}</TableHead>
+                  <TableHead>{t('chainlink.heartbeat.lastUpdate')}</TableHead>
+                  <TableHead>{t('chainlink.heartbeat.timeoutDuration')}</TableHead>
+                  <TableHead>{t('chainlink.heartbeat.status')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

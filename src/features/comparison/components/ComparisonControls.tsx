@@ -185,7 +185,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                 >
                   <Filter className="mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">{t('comparison.controls.filter')}</span>
-                  <span className="sm:hidden">Filter</span>
+                  <span className="sm:hidden">{t('comparison.controls.filterMobile')}</span>
                   {activeFilterCount > 0 && (
                     <Badge
                       variant="default"
@@ -299,7 +299,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                 <Button variant="outline" size="sm" className="px-2 text-xs sm:px-3 sm:text-sm">
                   <Settings className="mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">{t('comparison.controls.settings')}</span>
-                  <span className="sm:hidden">Settings</span>
+                  <span className="sm:hidden">{t('comparison.controls.settingsMobile')}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-72" align="end">
@@ -442,7 +442,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                 className={cn('mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4', isLoading && 'animate-spin')}
               />
               <span className="hidden sm:inline">{t('comparison.controls.refresh')}</span>
-              <span className="sm:hidden">Refresh</span>
+              <span className="sm:hidden">{t('comparison.controls.refreshMobile')}</span>
             </Button>
 
             <DropdownMenu>
@@ -450,7 +450,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                 <Button variant="outline" size="sm" className="px-2 text-xs sm:px-3 sm:text-sm">
                   <Download className="mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">{t('comparison.controls.export')}</span>
-                  <span className="sm:hidden">Export</span>
+                  <span className="sm:hidden">{t('comparison.controls.exportMobile')}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

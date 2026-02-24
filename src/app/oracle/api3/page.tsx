@@ -274,7 +274,7 @@ export default function Api3Page() {
         <ErrorBanner
           error={new Error(state.error)}
           onRetry={fetchInitialData}
-          title="加载数据失败"
+          title={t('common.errorLoadFailed')}
           isRetrying={state.loading}
         />
       </div>
@@ -311,12 +311,14 @@ export default function Api3Page() {
                       : 'bg-error/20 text-error'
                 }`}
               >
-                {healthStatus === 'healthy' ? '健康' : healthStatus === 'warning' ? '警告' : '异常'}
+                {healthStatus === 'healthy'
+                  ? t('common.status.healthy')
+                  : healthStatus === 'warning'
+                    ? t('common.status.warning')
+                    : t('common.status.critical')}
               </Badge>
             </h1>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              第一方预言机 - Airnode 技术与签名数据验证
-            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t('api3.pageDescription')}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={fetchInitialData} disabled={state.loading}>
@@ -368,22 +370,26 @@ export default function Api3Page() {
             <TabContent activeTab={activeTab}>
               <TabPanelWrapper tabId="overview">
                 <div className="space-y-3">
-                  <ContentSection title="API3 协议概览" description="第一方预言机网络状态摘要">
-                    <p className="text-sm text-muted-foreground">
-                      API3 是一个第一方预言机解决方案，通过 Airnode 技术实现去中心化数据馈送。 API3
-                      协议提供安全、透明且可验证的链上数据，支持多种区块链网络。
-                    </p>
+                  <ContentSection
+                    title={t('api3.overview.title')}
+                    description={t('api3.overview.description')}
+                  >
+                    <p className="text-sm text-muted-foreground">{t('api3.overview.content')}</p>
                   </ContentSection>
 
-                  <ContentSection title="核心特性">
+                  <ContentSection title={t('api3.features.title')}>
                     <ContentGrid columns={3} gap="sm">
                       <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
                         <div className="rounded-lg bg-blue-500/10 p-2">
                           <Server className="h-5 w-5 text-blue-500" />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground">Airnode 技术</p>
-                          <p className="text-sm font-semibold text-foreground">第一方预言机节点</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('api3.features.airnode.label')}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('api3.features.airnode.value')}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
@@ -391,8 +397,12 @@ export default function Api3Page() {
                           <Shield className="h-5 w-5 text-green-500" />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground">签名验证</p>
-                          <p className="text-sm font-semibold text-foreground">可验证的数据源</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('api3.features.signature.label')}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('api3.features.signature.value')}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
@@ -400,14 +410,21 @@ export default function Api3Page() {
                           <TrendingUp className="h-5 w-5 text-purple-500" />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground">价格更新监控</p>
-                          <p className="text-sm font-semibold text-foreground">追踪价格更新事件</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('api3.features.priceMonitor.label')}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('api3.features.priceMonitor.value')}
+                          </p>
                         </div>
                       </div>
                     </ContentGrid>
                   </ContentSection>
 
-                  <ContentSection title="支持的链" description="API3 支持的区块链网络">
+                  <ContentSection
+                    title={t('api3.supportedChains.title')}
+                    description={t('api3.supportedChains.description')}
+                  >
                     <div className="flex flex-wrap gap-1.5">
                       {state.airnodesData?.metadata?.supportedChains?.map((chain) => (
                         <Badge key={chain} variant="secondary" className="text-xs capitalize">

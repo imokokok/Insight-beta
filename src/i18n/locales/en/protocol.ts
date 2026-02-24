@@ -54,4 +54,18 @@ export const protocol = {
     title: 'Protocol Comparison',
     description: 'Performance metrics by protocol',
   },
+  statsTitle: 'Protocol Statistics',
+  error: {
+    failedToLoad: 'Failed to Load Protocol',
+  },
+  nodesTitle: 'Nodes',
+  nodesDescription: '{{active}} active / {{total}} total',
+  nodesAccuracy: 'accuracy',
+  priceFeedsTitle: 'Price Feeds',
+  priceFeedsDescription: '{{active}} active / {{total}} total',
+  priceFeedsMoreFeeds: '+{{count}} more feeds',
+  supportedChainsTitle: 'Supported Chains',
+  featuresTitle: 'Features',
+  loadingProtocolDetails: 'Loading protocol details...',
+  officialSite: 'Official Site',
 };

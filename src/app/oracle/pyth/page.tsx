@@ -558,7 +558,7 @@ export default function PythPage() {
         <ErrorBanner
           error={new Error(state.error)}
           onRetry={fetchInitialData}
-          title="加载数据失败"
+          title={t('common.errorLoadFailed')}
           isRetrying={state.loading}
         />
       </div>
@@ -595,7 +595,11 @@ export default function PythPage() {
                       : 'bg-error/20 text-error'
                 }`}
               >
-                {healthStatus === 'healthy' ? '健康' : healthStatus === 'warning' ? '警告' : '异常'}
+                {healthStatus === 'healthy'
+                  ? t('common.status.healthy')
+                  : healthStatus === 'warning'
+                    ? t('common.status.warning')
+                    : t('common.status.critical')}
               </Badge>
             </h1>
             <p className="mt-0.5 text-xs text-muted-foreground">
@@ -663,7 +667,7 @@ export default function PythPage() {
                     </p>
                   </ContentSection>
 
-                  <ContentSection title="核心特性">
+                  <ContentSection title={t('pyth.features.title')}>
                     <ContentGrid columns={3} gap="sm">
                       <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
                         <div className="rounded-lg bg-yellow-500/10 p-2">

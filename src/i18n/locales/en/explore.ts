@@ -42,6 +42,11 @@ export const explore = {
     transactions: 'Transactions',
     sortByVolume: 'Sort by Volume',
     sortByPriceChange: 'Sort by Price Change',
+    loadError: 'Failed to load trending pairs',
+    empty: {
+      title: 'No Trending Pairs',
+      description: 'No trending pair data available at the moment',
+    },
   },
   discovery: {
     title: 'Data Discovery',
@@ -49,5 +54,14 @@ export const explore = {
     trendingProtocols: 'Trending Protocols',
     anomalies: 'Anomaly Detection',
     insights: 'Data Insights',
+  },
+  sort: {
+    selectMethod: 'Select sort method',
+  },
+  scrollLeft: {
+    ariaLabel: 'Scroll left',
+  },
+  scrollRight: {
+    ariaLabel: 'Scroll right',
   },
 };

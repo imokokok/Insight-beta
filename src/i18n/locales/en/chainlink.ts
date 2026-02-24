@@ -1,4 +1,55 @@
 export const chainlink = {
+  tabs: {
+    overview: 'Overview',
+    feeds: 'Price Feeds',
+    nodes: 'Node Monitor',
+    costs: 'Cost Analysis',
+    advanced: 'Advanced Analytics',
+  },
+  pageDescription: 'Decentralized Oracle Network - OCR Rounds & Node Operator Monitoring',
+  overview: {
+    title: 'Chainlink Protocol Overview',
+    description: 'Decentralized oracle network status summary',
+    introduction:
+      'Chainlink is the leading decentralized oracle network, achieving efficient data aggregation through OCR protocol, providing reliable external data for smart contracts.',
+  },
+  features: {
+    title: 'Core Features',
+    ocr: {
+      label: 'OCR Protocol',
+      value: 'Off-chain Report Aggregation',
+    },
+    operators: {
+      label: 'Node Operators',
+      value: 'Decentralized Data Sources',
+    },
+    security: {
+      label: 'Security Mechanism',
+      value: 'Multi-signature Verification',
+    },
+  },
+  supportedChains: {
+    title: 'Supported Chains',
+    description: 'Blockchain networks supported by Chainlink',
+  },
+  feedStatus: {
+    title: 'Feed Status Overview',
+    total: 'Total Feeds',
+    active: 'Active Feeds',
+    inactive: 'Inactive Feeds',
+  },
+  nodeStatus: {
+    title: 'Node Operator Status',
+    total: 'Total Nodes',
+    online: 'Online Nodes',
+    offline: 'Offline Nodes',
+  },
+  kpi: {
+    totalFeeds: 'Total Feeds',
+    activeNodes: 'Active Nodes',
+    avgLatency: 'Avg Latency',
+    ocrRounds: 'OCR Rounds',
+  },
   priceHistory: {
     title: 'Price Trend',
     inPeriod: 'in period',

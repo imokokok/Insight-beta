@@ -174,7 +174,7 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monitored Chains</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('crossChain.monitoredChains')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -205,7 +205,7 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Status</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('crossChain.status')}</CardTitle>
             <DollarSign className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>

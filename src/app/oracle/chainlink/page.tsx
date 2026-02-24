@@ -108,16 +108,27 @@ interface ChainlinkDashboardState {
   timeUntilRefresh: number;
 }
 
-const TABS: TabItem[] = [
-  { id: 'overview', label: '概览', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { id: 'feeds', label: '喂价数据', icon: <Coins className="h-4 w-4" /> },
-  { id: 'nodes', label: '节点监控', icon: <Server className="h-4 w-4" /> },
-  { id: 'costs', label: '成本分析', icon: <Fuel className="h-4 w-4" /> },
-  { id: 'advanced', label: '高级分析', icon: <LineChart className="h-4 w-4" /> },
-];
-
 export default function ChainlinkPage() {
   const { t } = useI18n();
+
+  const TABS: TabItem[] = useMemo(
+    () => [
+      {
+        id: 'overview',
+        label: t('chainlink.tabs.overview'),
+        icon: <LayoutDashboard className="h-4 w-4" />,
+      },
+      { id: 'feeds', label: t('chainlink.tabs.feeds'), icon: <Coins className="h-4 w-4" /> },
+      { id: 'nodes', label: t('chainlink.tabs.nodes'), icon: <Server className="h-4 w-4" /> },
+      { id: 'costs', label: t('chainlink.tabs.costs'), icon: <Fuel className="h-4 w-4" /> },
+      {
+        id: 'advanced',
+        label: t('chainlink.tabs.advanced'),
+        icon: <LineChart className="h-4 w-4" />,
+      },
+    ],
+    [t],
+  );
 
   const [state, setState] = useState<ChainlinkDashboardState>({
     overviewStats: null,
@@ -250,29 +261,45 @@ export default function ChainlinkPage() {
   const kpiData = useMemo(() => {
     if (!state.overviewStats) {
       return {
-        totalFeeds: { value: '-', label: '总 Feed 数', trend: 'neutral' as TrendDirection },
-        activeNodes: { value: '-', label: '活跃节点', trend: 'neutral' as TrendDirection },
-        avgLatency: { value: '-', label: '平均延迟', trend: 'neutral' as TrendDirection },
-        ocrRounds: { value: '-', label: 'OCR 轮次', trend: 'neutral' as TrendDirection },
+        totalFeeds: {
+          value: '-',
+          label: t('chainlink.kpi.totalFeeds'),
+          trend: 'neutral' as TrendDirection,
+        },
+        activeNodes: {
+          value: '-',
+          label: t('chainlink.kpi.activeNodes'),
+          trend: 'neutral' as TrendDirection,
+        },
+        avgLatency: {
+          value: '-',
+          label: t('chainlink.kpi.avgLatency'),
+          trend: 'neutral' as TrendDirection,
+        },
+        ocrRounds: {
+          value: '-',
+          label: t('chainlink.kpi.ocrRounds'),
+          trend: 'neutral' as TrendDirection,
+        },
       };
     }
 
     return {
       totalFeeds: {
         value: state.overviewStats.totalFeeds,
-        label: '总 Feed 数',
+        label: t('chainlink.kpi.totalFeeds'),
         trend: 'neutral' as TrendDirection,
         status: 'success' as const,
       },
       activeNodes: {
         value: state.overviewStats.activeNodes,
-        label: '活跃节点',
+        label: t('chainlink.kpi.activeNodes'),
         trend: 'up' as TrendDirection,
         status: state.overviewStats.activeNodes > 0 ? ('success' as const) : ('warning' as const),
       },
       avgLatency: {
         value: `${state.overviewStats.avgLatency}ms`,
-        label: '平均延迟',
+        label: t('chainlink.kpi.avgLatency'),
         trend: 'down' as TrendDirection,
         status:
           state.overviewStats.avgLatency < 200
@@ -283,11 +310,11 @@ export default function ChainlinkPage() {
       },
       ocrRounds: {
         value: state.overviewStats.ocrRounds,
-        label: 'OCR 轮次',
+        label: t('chainlink.kpi.ocrRounds'),
         trend: 'neutral' as TrendDirection,
       },
     };
-  }, [state.overviewStats]);
+  }, [state.overviewStats, t]);
 
   const activeFeedsCount = useMemo(() => {
     return state.feeds.filter((feed) => {
@@ -311,7 +338,7 @@ export default function ChainlinkPage() {
         <ErrorBanner
           error={new Error(state.error)}
           onRetry={fetchInitialData}
-          title="加载数据失败"
+          title={t('common.errorLoadFailed')}
           isRetrying={state.loading}
         />
       </div>
@@ -348,12 +375,14 @@ export default function ChainlinkPage() {
                       : 'bg-error/20 text-error'
                 }`}
               >
-                {healthStatus === 'healthy' ? '健康' : healthStatus === 'warning' ? '警告' : '异常'}
+                {healthStatus === 'healthy'
+                  ? t('common.status.healthy')
+                  : healthStatus === 'warning'
+                    ? t('common.status.warning')
+                    : t('common.status.critical')}
               </Badge>
             </h1>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              去中心化预言机网络 - OCR 轮次与节点运营商监控
-            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t('chainlink.pageDescription')}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={fetchInitialData} disabled={state.loading}>
@@ -407,24 +436,27 @@ export default function ChainlinkPage() {
               <TabPanelWrapper tabId="overview">
                 <div className="space-y-3">
                   <ContentSection
-                    title="Chainlink 协议概览"
-                    description="去中心化预言机网络状态摘要"
+                    title={t('chainlink.overview.title')}
+                    description={t('chainlink.overview.description')}
                   >
                     <p className="text-sm text-muted-foreground">
-                      Chainlink 是领先的去中心化预言机网络，通过 OCR
-                      协议实现高效的数据聚合，为智能合约提供可靠的外部数据。
+                      {t('chainlink.overview.introduction')}
                     </p>
                   </ContentSection>
 
-                  <ContentSection title="核心特性">
+                  <ContentSection title={t('chainlink.features.title')}>
                     <ContentGrid columns={3} gap="sm">
                       <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
                         <div className="rounded-lg bg-blue-500/10 p-2">
                           <Activity className="h-5 w-5 text-blue-500" />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground">OCR 协议</p>
-                          <p className="text-sm font-semibold text-foreground">链下报告聚合</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('chainlink.features.ocr.label')}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('chainlink.features.ocr.value')}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
@@ -432,8 +464,12 @@ export default function ChainlinkPage() {
                           <Users className="h-5 w-5 text-green-500" />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground">节点运营商</p>
-                          <p className="text-sm font-semibold text-foreground">去中心化数据源</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('chainlink.features.operators.label')}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('chainlink.features.operators.value')}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
@@ -441,14 +477,21 @@ export default function ChainlinkPage() {
                           <Shield className="h-5 w-5 text-purple-500" />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground">安全机制</p>
-                          <p className="text-sm font-semibold text-foreground">多签名验证</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('chainlink.features.security.label')}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('chainlink.features.security.value')}
+                          </p>
                         </div>
                       </div>
                     </ContentGrid>
                   </ContentSection>
 
-                  <ContentSection title="支持的链" description="Chainlink 支持的区块链网络">
+                  <ContentSection
+                    title={t('chainlink.supportedChains.title')}
+                    description={t('chainlink.supportedChains.description')}
+                  >
                     <div className="flex flex-wrap gap-1.5">
                       {state.overviewData?.metadata?.supportedChains?.map((chain) => (
                         <Badge key={chain} variant="secondary" className="text-xs capitalize">
@@ -487,21 +530,27 @@ export default function ChainlinkPage() {
                       <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Database className="h-3.5 w-3.5 text-primary" />
-                          Feed 状态概览
+                          {t('chainlink.feedStatus.title')}
                         </h4>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">总 Feed 数</span>
+                            <span className="text-muted-foreground">
+                              {t('chainlink.feedStatus.total')}
+                            </span>
                             <span className="font-mono font-semibold">{state.feeds.length}</span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">活跃 Feed</span>
+                            <span className="text-muted-foreground">
+                              {t('chainlink.feedStatus.active')}
+                            </span>
                             <Badge variant="success" size="sm">
                               {activeFeedsCount}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">非活跃 Feed</span>
+                            <span className="text-muted-foreground">
+                              {t('chainlink.feedStatus.inactive')}
+                            </span>
                             <Badge variant="warning" size="sm">
                               {state.feeds.length - activeFeedsCount}
                             </Badge>
@@ -512,23 +561,29 @@ export default function ChainlinkPage() {
                       <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Users className="h-3.5 w-3.5 text-primary" />
-                          节点运营商状态
+                          {t('chainlink.nodeStatus.title')}
                         </h4>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">总节点数</span>
+                            <span className="text-muted-foreground">
+                              {t('chainlink.nodeStatus.total')}
+                            </span>
                             <span className="font-mono font-semibold">
                               {state.operators.length}
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">在线节点</span>
+                            <span className="text-muted-foreground">
+                              {t('chainlink.nodeStatus.online')}
+                            </span>
                             <Badge variant="success" size="sm">
                               {onlineOperatorsCount}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">离线节点</span>
+                            <span className="text-muted-foreground">
+                              {t('chainlink.nodeStatus.offline')}
+                            </span>
                             <Badge variant="destructive" size="sm">
                               {state.operators.length - onlineOperatorsCount}
                             </Badge>

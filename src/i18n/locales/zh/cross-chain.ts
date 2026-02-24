@@ -114,4 +114,13 @@ export const crossChain = {
   },
   lastUpdated: '最后更新',
   chainsMonitored: '条链',
+  priceStatus: {
+    title: '价格状态概览',
+  },
+  monitoredChains: '监控链',
+  priceRange: '价格区间',
+  liquidity: {
+    selectChain: '选择链',
+    selectAsset: '选择资产',
+  },
 };

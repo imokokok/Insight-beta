@@ -114,4 +114,13 @@ export const crossChain = {
   },
   lastUpdated: 'Last Updated',
   chainsMonitored: 'chains',
+  priceStatus: {
+    title: 'Price Status Overview',
+  },
+  monitoredChains: 'Monitored Chains',
+  priceRange: 'Price Range',
+  liquidity: {
+    selectChain: 'Select chain',
+    selectAsset: 'Select asset',
+  },
 };

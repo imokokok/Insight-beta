@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 import type { LiquidityResponse, ChainLiquidity } from '../types';
@@ -73,6 +74,7 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
   data,
   isLoading,
 }: LiquidityAnalysisProps) {
+  const { t } = useI18n();
   const [selectedChain, setSelectedChain] = useState<string>('all');
   const [selectedAsset, setSelectedAsset] = useState<string>('all');
 
@@ -169,7 +171,7 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
             <Filter className="h-4 w-4 text-muted-foreground" />
             <Select value={selectedChain} onValueChange={setSelectedChain}>
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="选择链" />
+                <SelectValue placeholder={t('crossChain.liquidity.selectChain')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全部链</SelectItem>
@@ -183,7 +185,7 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
           </div>
           <Select value={selectedAsset} onValueChange={setSelectedAsset}>
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="选择资产" />
+              <SelectValue placeholder={t('crossChain.liquidity.selectAsset')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">全部资产</SelectItem>

@@ -1,4 +1,16 @@
 export const api3 = {
+  pageDescription: 'First-party Oracle - Airnode Technology & Signed Data Verification',
+  overview: {
+    title: 'API3 Protocol Overview',
+    description: 'First-party oracle network status summary',
+  },
+  features: {
+    title: 'Core Features',
+  },
+  supportedChains: {
+    title: 'Supported Chains',
+    description: 'Blockchain networks supported by API3',
+  },
   dapi: {
     listTitle: 'DAPI List',
     name: 'Name',
@@ -9,6 +21,9 @@ export const api3 = {
     dataFeedId: 'Data Feed ID',
     sourceType: 'Source Type',
     provider: 'Provider',
+    refresh: {
+      ariaLabel: 'Refresh data',
+    },
   },
   provider: {
     title: 'Data Provider',
@@ -102,5 +117,13 @@ export const api3 = {
     normalUpdate: 'Normal Update',
     anomalyUpdate: 'Anomaly Update',
     avgLine: 'Avg Line',
+  },
+  alertConfig: {
+    selectAlertType: 'Select alert type',
+    alertNamePlaceholder: 'Enter alert name',
+    selectDapi: 'Select dAPI',
+    airnodeAddressPlaceholder: 'Enter Airnode address',
+    selectNetwork: 'Select network',
+    thresholdPlaceholder: 'Enter threshold',
   },
 };

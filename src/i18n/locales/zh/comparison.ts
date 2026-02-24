@@ -28,6 +28,10 @@ export const comparison = {
     exportJSON: '导出为 JSON',
     exportCSV: '导出为 CSV',
     filterActive: '已启用筛选:',
+    filterMobile: '筛选',
+    settingsMobile: '设置',
+    refreshMobile: '刷新',
+    exportMobile: '导出',
   },
   status: {
     stale: '陈旧',

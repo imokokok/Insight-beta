@@ -153,7 +153,7 @@ export default function ExplorePage() {
               <button
                 onClick={() => scrollTabs('left')}
                 className="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-background/90 p-1.5 shadow-md"
-                aria-label="向左滚动"
+                aria-label={t('explore.scrollLeft.ariaLabel')}
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -182,7 +182,7 @@ export default function ExplorePage() {
               <button
                 onClick={() => scrollTabs('right')}
                 className="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-background/90 p-1.5 shadow-md"
-                aria-label="向右滚动"
+                aria-label={t('explore.scrollRight.ariaLabel')}
               >
                 <ChevronRight className="h-4 w-4" />
               </button>

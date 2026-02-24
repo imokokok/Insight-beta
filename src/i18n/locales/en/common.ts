@@ -23,6 +23,12 @@ export const common = {
   exportFailed: 'Export failed',
   exporting: 'Exporting...',
   search: 'Search',
+  searchAriaLabel: 'Search',
+  status: {
+    healthy: 'Healthy',
+    warning: 'Warning',
+    critical: 'Critical',
+  },
   filter: 'Filter',
   settings: 'Settings',
   overview: 'Overview',
@@ -130,6 +136,7 @@ export const common = {
   create: 'Create',
   update: 'Update',
   error: 'Error',
+  errorLoadFailed: 'Failed to load data',
   searchSymbols: 'Search symbols...',
   searchAlerts: 'Search alerts...',
   searchProtocols: 'Search protocols...',
@@ -216,6 +223,10 @@ export const common = {
   tooltip: {
     clickForHelp: 'Click for help',
   },
+  close: {
+    ariaLabel: 'Close',
+  },
+  lastUpdated: 'Last Updated',
   help: {
     title: 'Help',
     examples: 'Examples',
@@ -255,5 +266,6 @@ export const common = {
     avgLatency: 'Avg Latency',
     healthScore: 'Health Score',
     viewDetails: 'View Details',
+    comparedToLastPeriod: 'vs last period',
   },
 };

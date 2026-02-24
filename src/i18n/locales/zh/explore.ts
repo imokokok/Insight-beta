@@ -50,4 +50,13 @@ export const explore = {
     anomalies: '异常检测',
     insights: '数据洞察',
   },
+  sort: {
+    selectMethod: '选择排序方式',
+  },
+  scrollLeft: {
+    ariaLabel: '向左滚动',
+  },
+  scrollRight: {
+    ariaLabel: '向右滚动',
+  },
 };

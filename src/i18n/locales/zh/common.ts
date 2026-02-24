@@ -23,6 +23,12 @@ export const common = {
   exportFailed: '导出失败',
   exporting: '导出中...',
   search: '搜索',
+  searchAriaLabel: '搜索',
+  status: {
+    healthy: '健康',
+    warning: '警告',
+    critical: '异常',
+  },
   filter: '筛选',
   settings: '设置',
   overview: '概览',
@@ -130,6 +136,7 @@ export const common = {
   create: '创建',
   update: '更新',
   error: '错误',
+  errorLoadFailed: '加载数据失败',
   searchSymbols: '搜索符号...',
   searchAlerts: '搜索警报...',
   searchProtocols: '搜索协议...',
@@ -216,6 +223,10 @@ export const common = {
   tooltip: {
     clickForHelp: '点击获取帮助',
   },
+  close: {
+    ariaLabel: '关闭',
+  },
+  lastUpdated: '最后更新',
   help: {
     title: '帮助',
     examples: '示例',
@@ -253,5 +264,6 @@ export const common = {
     avgLatency: '平均延迟',
     healthScore: '健康评分',
     viewDetails: '查看详情',
+    comparedToLastPeriod: '较上期',
   },
 };

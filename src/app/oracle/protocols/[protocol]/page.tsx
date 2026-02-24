@@ -19,6 +19,7 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { SUPPORTED_CHAINS } from '@/config/constants';
+import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/shared/logger';
 import { cn, fetchApiData } from '@/shared/utils';
 
@@ -78,6 +79,7 @@ interface ProtocolDetail {
 }
 
 export default function ProtocolDetailPage({ params }: { params: Promise<{ protocol: string }> }) {
+  const { t } = useI18n();
   const [protocol, setProtocol] = useState<ProtocolDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -126,11 +128,13 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
         <div className="container mx-auto p-6">
           <div className="border-destructive/50 bg-destructive/10 rounded-xl border p-6 text-center">
             <AlertTriangle className="text-destructive mx-auto mb-4 h-12 w-12" />
-            <h2 className="text-destructive mb-2 text-xl font-bold">Failed to Load Protocol</h2>
+            <h2 className="text-destructive mb-2 text-xl font-bold">
+              {t('protocol.error.failedToLoad')}
+            </h2>
             <p className="mb-4 text-muted-foreground">{error}</p>
             <Button variant="outline" onClick={fetchProtocol}>
               <RefreshCw className="mr-2 h-4 w-4" />
-              Retry
+              {t('common.retry')}
             </Button>
           </div>
         </div>
@@ -151,7 +155,7 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
               )}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {protocol?.description || 'Loading protocol details...'}
+              {protocol?.description || t('protocol.loadingProtocolDetails')}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -163,12 +167,12 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
                 className="hover:text-accent-foreground inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium ring-offset-background transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <ExternalLink className="mr-2 h-4 w-4" />
-                Official Site
+                {t('protocol.officialSite')}
               </a>
             )}
             <Button variant="outline" size="sm" onClick={fetchProtocol} disabled={loading}>
               <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
-              Refresh
+              {t('common.refresh')}
             </Button>
           </div>
         </div>
@@ -178,21 +182,21 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
         ) : protocol ? (
           <>
             <StatsBar
-              title="协议统计"
+              title={t('protocol.statsTitle')}
               items={[
                 {
-                  label: 'Price Feeds',
+                  label: t('protocol.priceFeedsTitle'),
                   value: protocol.priceFeeds,
                   icon: <Link2 className="h-4 w-4" />,
                 },
                 {
-                  label: 'Active Feeds',
+                  label: t('protocol.stats.active'),
                   value: protocol.stats.activeFeeds,
                   status: 'healthy',
                   icon: <Activity className="h-4 w-4" />,
                 },
                 {
-                  label: 'Avg Latency',
+                  label: t('common.avgLatency'),
                   value: `${protocol.avgLatency}ms`,
                   status:
                     protocol.avgLatency < 200
@@ -203,7 +207,7 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
                   icon: <Zap className="h-4 w-4" />,
                 },
                 {
-                  label: 'Uptime',
+                  label: t('common.uptime'),
                   value: `${protocol.uptime}%`,
                   status:
                     protocol.uptime >= 99
@@ -220,7 +224,7 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
                   icon: <Zap className="h-4 w-4" />,
                 },
                 {
-                  label: 'Supported Chains',
+                  label: t('protocol.supportedChainsTitle'),
                   value: protocol.supportedChains.length,
                   icon: <Globe2 className="h-4 w-4" />,
                 },
@@ -229,8 +233,11 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
 
             <ContentGrid columns={2}>
               <ContentSection
-                title="Price Feeds"
-                description={`${protocol.stats.activeFeeds} active / ${protocol.stats.totalFeeds} total`}
+                title={t('protocol.priceFeedsTitle')}
+                description={t('protocol.priceFeedsDescription', {
+                  active: protocol.stats.activeFeeds,
+                  total: protocol.stats.totalFeeds,
+                })}
               >
                 <div className="space-y-2">
                   {protocol.feeds.slice(0, 10).map((feed) => (
@@ -255,7 +262,7 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
                   ))}
                   {protocol.feeds.length > 10 && (
                     <div className="text-center text-sm text-muted-foreground">
-                      +{protocol.feeds.length - 10} more feeds
+                      {t('protocol.priceFeedsMoreFeeds', { count: protocol.feeds.length - 10 })}
                     </div>
                   )}
                 </div>
@@ -263,8 +270,11 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
 
               {protocol.nodes.length > 0 && (
                 <ContentSection
-                  title="Nodes"
-                  description={`${protocol.nodes.filter((n) => n.status === 'active').length} active / ${protocol.nodes.length} total`}
+                  title={t('protocol.nodesTitle')}
+                  description={t('protocol.nodesDescription', {
+                    active: protocol.nodes.filter((n) => n.status === 'active').length,
+                    total: protocol.nodes.length,
+                  })}
                 >
                   <div className="space-y-2">
                     {protocol.nodes.map((node) => (
@@ -291,7 +301,9 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
                         </div>
                         <div className="text-right">
                           <div className="font-semibold">{node.accuracy.toFixed(1)}%</div>
-                          <div className="text-xs text-muted-foreground">accuracy</div>
+                          <div className="text-xs text-muted-foreground">
+                            {t('protocol.nodesAccuracy')}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -300,7 +312,7 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
               )}
             </ContentGrid>
 
-            <ContentSection title="Supported Chains">
+            <ContentSection title={t('protocol.supportedChainsTitle')}>
               <div className="flex flex-wrap gap-2">
                 {protocol.supportedChains.map((chainId) => {
                   const chainInfo = getChainInfo(chainId);
@@ -313,7 +325,7 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
               </div>
             </ContentSection>
 
-            <ContentSection title="Features">
+            <ContentSection title={t('protocol.featuresTitle')}>
               <div className="flex flex-wrap gap-2">
                 {protocol.features.map((feature) => (
                   <Badge key={feature} variant="secondary">

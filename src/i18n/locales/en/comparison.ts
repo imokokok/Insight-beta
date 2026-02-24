@@ -29,6 +29,10 @@ export const comparison = {
     exportJSON: 'Export as JSON',
     exportCSV: 'Export as CSV',
     filterActive: 'Filter Active:',
+    filterMobile: 'Filter',
+    settingsMobile: 'Settings',
+    refreshMobile: 'Refresh',
+    exportMobile: 'Export',
   },
   status: {
     stale: 'Stale',

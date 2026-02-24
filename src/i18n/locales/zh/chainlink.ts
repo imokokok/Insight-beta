@@ -1,4 +1,55 @@
 export const chainlink = {
+  tabs: {
+    overview: '概览',
+    feeds: '喂价数据',
+    nodes: '节点监控',
+    costs: '成本分析',
+    advanced: '高级分析',
+  },
+  pageDescription: '去中心化预言机网络 - OCR 轮次与节点运营商监控',
+  overview: {
+    title: 'Chainlink 协议概览',
+    description: '去中心化预言机网络状态摘要',
+    introduction:
+      'Chainlink 是领先的去中心化预言机网络，通过 OCR 协议实现高效的数据聚合，为智能合约提供可靠的外部数据。',
+  },
+  features: {
+    title: '核心特性',
+    ocr: {
+      label: 'OCR 协议',
+      value: '链下报告聚合',
+    },
+    operators: {
+      label: '节点运营商',
+      value: '去中心化数据源',
+    },
+    security: {
+      label: '安全机制',
+      value: '多签名验证',
+    },
+  },
+  supportedChains: {
+    title: '支持的链',
+    description: 'Chainlink 支持的区块链网络',
+  },
+  feedStatus: {
+    title: 'Feed 状态概览',
+    total: '总 Feed 数',
+    active: '活跃 Feed',
+    inactive: '非活跃 Feed',
+  },
+  nodeStatus: {
+    title: '节点运营商状态',
+    total: '总节点数',
+    online: '在线节点',
+    offline: '离线节点',
+  },
+  kpi: {
+    totalFeeds: '总 Feed 数',
+    activeNodes: '活跃节点',
+    avgLatency: '平均延迟',
+    ocrRounds: 'OCR 轮次',
+  },
   priceHistory: {
     title: '价格趋势',
     inPeriod: '期间变化',

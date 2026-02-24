@@ -149,7 +149,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                         size="icon"
                         onClick={toggleQuickSearch}
                         className="text-muted-foreground md:hidden"
-                        aria-label="搜索"
+                        aria-label={t('common.searchAriaLabel')}
                       >
                         <Search className="h-5 w-5" />
                       </Button>

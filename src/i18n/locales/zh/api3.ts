@@ -1,4 +1,16 @@
 export const api3 = {
+  pageDescription: '第一方预言机 - Airnode 技术与签名数据验证',
+  overview: {
+    title: 'API3 协议概览',
+    description: '第一方预言机网络状态摘要',
+  },
+  features: {
+    title: '核心特性',
+  },
+  supportedChains: {
+    title: '支持的链',
+    description: 'API3 支持的区块链网络',
+  },
   dapi: {
     listTitle: 'DAPI 列表',
     name: '名称',
@@ -9,6 +21,9 @@ export const api3 = {
     dataFeedId: '数据源 ID',
     sourceType: '数据源类型',
     provider: '提供商',
+    refresh: {
+      ariaLabel: '刷新数据',
+    },
   },
   provider: {
     title: '数据提供商',
@@ -102,5 +117,13 @@ export const api3 = {
     normalUpdate: '正常更新',
     anomalyUpdate: '异常更新',
     avgLine: '平均线',
+  },
+  alertConfig: {
+    selectAlertType: '选择告警类型',
+    alertNamePlaceholder: '输入告警名称',
+    selectDapi: '选择 dAPI',
+    airnodeAddressPlaceholder: '输入 Airnode 地址',
+    selectNetwork: '选择网络',
+    thresholdPlaceholder: '输入阈值',
   },
 };

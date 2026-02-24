@@ -73,10 +73,11 @@ function TopStatusBar({
   onExport?: () => void;
   isRefreshing?: boolean;
 }) {
+  const { t } = useI18n();
   const healthConfig: Record<HealthStatus, { label: string; color: string; bgColor: string }> = {
-    healthy: { label: '健康', color: 'text-success', bgColor: 'bg-success/20' },
-    warning: { label: '警告', color: 'text-warning', bgColor: 'bg-warning/20' },
-    critical: { label: '异常', color: 'text-error', bgColor: 'bg-error/20' },
+    healthy: { label: t('common.status.healthy'), color: 'text-success', bgColor: 'bg-success/20' },
+    warning: { label: t('common.status.warning'), color: 'text-warning', bgColor: 'bg-warning/20' },
+    critical: { label: t('common.status.critical'), color: 'text-error', bgColor: 'bg-error/20' },
   };
 
   const config = healthConfig[healthStatus];
@@ -93,7 +94,9 @@ function TopStatusBar({
     <div className="flex h-12 items-center justify-between border-b border-border/20 px-4 md:px-6">
       <div className="flex items-center gap-4 md:gap-6">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">系统状态</span>
+          <span className="text-sm font-medium text-muted-foreground">
+            {t('alerts.systemStatus')}
+          </span>
           <Badge variant="outline" className={cn('gap-1.5 border-0', config.bgColor, config.color)}>
             <span
               className={cn(

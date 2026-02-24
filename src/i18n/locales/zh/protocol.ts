@@ -14,6 +14,7 @@ export const protocol = {
     lastUpdate: '最后更新',
   },
   priceFeeds: {
+    title: '价格源',
     pageTitle: '价格源',
     pageDescription: '来自多个预言机协议的实时价格数据',
     totalFeeds: '总价格源',
@@ -53,4 +54,18 @@ export const protocol = {
     title: '协议比较',
     description: '各协议性能指标',
   },
+  statsTitle: '协议统计',
+  error: {
+    failedToLoad: '加载协议失败',
+  },
+  nodesTitle: '节点',
+  nodesDescription: '{{active}} 活跃 / {{total}} 总计',
+  nodesAccuracy: '准确性',
+  priceFeedsTitle: '价格源',
+  priceFeedsDescription: '{{active}} 活跃 / {{total}} 总计',
+  priceFeedsMoreFeeds: '+{{count}} 个更多价格源',
+  supportedChainsTitle: '支持的链',
+  featuresTitle: '特性',
+  loadingProtocolDetails: '正在加载协议详情...',
+  officialSite: '官方网站',
 };
