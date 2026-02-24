@@ -175,6 +175,76 @@ export const componentVariants: Record<string, Variants> = {
 };
 
 // ============================================================================
+// Item Variants
+// ============================================================================
+
+export const itemVariants: Record<string, Variants> = {
+  /** 淡入滑入 - 从左侧 */
+  slideInLeft: {
+    hidden: { opacity: 0, x: -8 },
+    visible: { opacity: 1, x: 0 },
+  },
+  /** 淡入滑入 - 从上方 */
+  slideInUp: {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3, ease: ANIMATION_EASING.standard },
+    },
+  },
+  /** 淡入滑入 - 从上方（带缓动） */
+  slideInUpSmooth: {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4, ease: [...ANIMATION_EASING.standard] },
+    },
+  },
+  /** 简单淡入 */
+  fadeIn: {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  },
+  /** 缩放淡入 */
+  scaleIn: {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1 },
+  },
+  /** 骨架屏项目 - 淡入滑入 */
+  skeletonItem: {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3 },
+    },
+  },
+};
+
+export const iconVariants: Record<string, Variants> = {
+  /** 弹簧缩放 - 适用于图标 */
+  springScale: {
+    hidden: { scale: 0.8, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        type: 'spring',
+        stiffness: 200,
+        damping: 15,
+      },
+    },
+  },
+  /** 简单缩放 */
+  scaleIn: {
+    hidden: { scale: 0.8, opacity: 0 },
+    visible: { scale: 1, opacity: 1 },
+  },
+};
+
+// ============================================================================
 // Container Variants (with stagger)
 // ============================================================================
 
@@ -217,6 +287,30 @@ export const containerVariants: Record<string, Variants> = {
     visible: {
       opacity: 1,
       transition: STAGGER_CONFIG.slow,
+    },
+  },
+  /** 空状态容器 - 带垂直滑入 */
+  emptyState: {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: [...ANIMATION_EASING.standard],
+        staggerChildren: 0.1,
+      },
+    },
+  },
+  /** 骨架屏容器 - 带交错延迟 */
+  skeleton: {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+        delayChildren: 0.1,
+      },
     },
   },
 };
@@ -576,6 +670,8 @@ export const animationTokens = {
   stagger: STAGGER_CONFIG,
   pageTransitions: pageTransitionVariants,
   components: componentVariants,
+  items: itemVariants,
+  icons: iconVariants,
   containers: containerVariants,
   scroll: scrollVariants,
   loading: loadingVariants,

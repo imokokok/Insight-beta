@@ -10,7 +10,7 @@
 
 import type { ReactNode } from 'react';
 
-import { motion, type Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Search,
   ShieldCheck,
@@ -35,6 +35,11 @@ import {
 
 import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n/LanguageProvider';
+import {
+  itemVariants,
+  containerVariants,
+  iconVariants,
+} from '@/lib/design-system/tokens/animation';
 import { cn } from '@/shared/utils';
 
 interface UnifiedEmptyStateProps {
@@ -57,41 +62,6 @@ interface UnifiedEmptyStateProps {
   animated?: boolean;
   children?: ReactNode;
 }
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: [0.4, 0, 0.2, 1],
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
-  },
-};
-
-const iconVariants: Variants = {
-  hidden: { scale: 0.8, opacity: 0 },
-  visible: {
-    scale: 1,
-    opacity: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 200,
-      damping: 15,
-    },
-  },
-};
 
 const variantStyles = {
   default: {
@@ -194,7 +164,7 @@ export function UnifiedEmptyState({
     ? {
         initial: 'hidden',
         animate: 'visible',
-        variants: containerVariants,
+        variants: containerVariants.emptyState,
       }
     : {};
 
@@ -214,7 +184,7 @@ export function UnifiedEmptyState({
     >
       {Icon && (
         <motion.div
-          variants={animated ? iconVariants : undefined}
+          variants={animated ? iconVariants.springScale : undefined}
           className={cn(
             'mb-5 flex items-center justify-center rounded-2xl shadow-sm',
             styles.iconBg,
@@ -226,7 +196,7 @@ export function UnifiedEmptyState({
       )}
 
       <motion.h3
-        variants={animated ? itemVariants : undefined}
+        variants={animated ? itemVariants.slideInUpSmooth : undefined}
         className={cn('text-gray-900 dark:text-gray-100', sizes.title)}
       >
         {title}
@@ -234,7 +204,7 @@ export function UnifiedEmptyState({
 
       {description && (
         <motion.p
-          variants={animated ? itemVariants : undefined}
+          variants={animated ? itemVariants.slideInUpSmooth : undefined}
           className={cn(
             'mt-3 max-w-md leading-relaxed text-gray-600 dark:text-gray-400',
             sizes.description,
@@ -245,14 +215,14 @@ export function UnifiedEmptyState({
       )}
 
       {children && (
-        <motion.div variants={animated ? itemVariants : undefined} className="mt-5">
+        <motion.div variants={animated ? itemVariants.slideInUpSmooth : undefined} className="mt-5">
           {children}
         </motion.div>
       )}
 
       {(action || secondaryAction) && (
         <motion.div
-          variants={animated ? itemVariants : undefined}
+          variants={animated ? itemVariants.slideInUpSmooth : undefined}
           className="mt-7 flex flex-wrap items-center justify-center gap-3"
         >
           {secondaryAction && (

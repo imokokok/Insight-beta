@@ -7,15 +7,13 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ChevronRight, Home } from 'lucide-react';
 
+import { itemVariants, containerVariants } from '@/lib/design-system/tokens/animation';
 import { cn } from '@/shared/utils';
+import type { BreadcrumbItem } from '@/types/common';
 
 import type { Route } from 'next';
 
-export interface BreadcrumbItem {
-  label: string;
-  href?: string;
-  icon?: React.ReactNode;
-}
+export type { BreadcrumbItem } from '@/types/common';
 
 export interface BreadcrumbProps {
   items: BreadcrumbItem[];
@@ -25,21 +23,6 @@ export interface BreadcrumbProps {
   separator?: React.ReactNode;
   animated?: boolean;
 }
-
-const itemVariants = {
-  hidden: { opacity: 0, x: -8 },
-  visible: { opacity: 1, x: 0 },
-};
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-    },
-  },
-};
 
 export const Breadcrumb = memo(function Breadcrumb({
   items,
@@ -67,7 +50,7 @@ export const Breadcrumb = memo(function Breadcrumb({
           <React.Fragment key={index}>
             {index > 0 && (separator || defaultSeparator)}
             <motion.div
-              variants={animated ? itemVariants : undefined}
+              variants={animated ? itemVariants.slideInLeft : undefined}
               className={cn(
                 'flex items-center gap-1.5',
                 isLast ? 'font-medium text-foreground' : 'text-muted-foreground',
@@ -101,7 +84,7 @@ export const Breadcrumb = memo(function Breadcrumb({
 
   if (animated) {
     return (
-      <motion.div variants={containerVariants} initial="hidden" animate="visible">
+      <motion.div variants={containerVariants.fastList} initial="hidden" animate="visible">
         {content}
       </motion.div>
     );

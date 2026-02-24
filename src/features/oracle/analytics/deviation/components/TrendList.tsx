@@ -27,6 +27,7 @@ import { Badge } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
+import { getDeviationColor } from '@/shared/utils/format/percentage';
 
 import { DeviationSeverityBadge } from './DeviationSeverityBadge';
 import { TrendDirectionBadge } from './TrendDirectionBadge';
@@ -38,14 +39,6 @@ interface TrendListProps {
   isLoading: boolean;
   onSelect: (trend: DeviationTrend) => void;
   symbolDataMap?: Record<string, PriceDeviationPoint[]>;
-}
-
-function getDeviationColor(deviation: number): string {
-  const absDeviation = Math.abs(deviation);
-  if (absDeviation >= 5) return '#dc2626';
-  if (absDeviation >= 2) return '#ea580c';
-  if (absDeviation >= 1) return '#f97316';
-  return '#22c55e';
 }
 
 interface MiniChartTooltipProps {
@@ -167,7 +160,10 @@ function TrendExpandableContent({
               fillOpacity={1}
               fill="url(#miniDeviationGradient)"
               dot={({ cx, cy, payload }) => {
-                const color = getDeviationColor(payload.deviation);
+                const color = getDeviationColor(payload.deviation, {
+                  format: 'hex',
+                  isPercent: true,
+                });
                 const hasOutliers = payload.outlierCount > 0;
                 return (
                   <Dot

@@ -21,6 +21,8 @@ import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
+import { TIME_RANGES } from '@/config/constants';
+import type { TimeRangeValue } from '@/config/constants';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import { formatPrice } from '@/shared/utils/format';
@@ -30,7 +32,7 @@ import type { Api3PriceData } from '../types/api3';
 interface Api3PriceChartProps {
   symbol: string;
   chain?: string;
-  timeRange?: '1h' | '4h' | '1d' | '1w' | '1m' | 'custom';
+  timeRange?: TimeRangeValue | 'custom';
   className?: string;
 }
 
@@ -39,25 +41,25 @@ const generateMockData = (timeRange: string): Api3PriceData[] => {
   const points =
     timeRange === '1h'
       ? 60
-      : timeRange === '4h'
-        ? 96
-        : timeRange === '1d'
+      : timeRange === '6h'
+        ? 72
+        : timeRange === '24h'
           ? 144
-          : timeRange === '1w'
+          : timeRange === '7d'
             ? 168
-            : timeRange === '1m'
+            : timeRange === '30d'
               ? 180
               : 720;
   const interval =
     timeRange === '1h'
       ? 60000
-      : timeRange === '4h'
-        ? 150000
-        : timeRange === '1d'
+      : timeRange === '6h'
+        ? 300000
+        : timeRange === '24h'
           ? 600000
-          : timeRange === '1w'
+          : timeRange === '7d'
             ? 3600000
-            : timeRange === '1m'
+            : timeRange === '30d'
               ? 7200000
               : 3600000;
 
@@ -78,24 +80,14 @@ const generateMockData = (timeRange: string): Api3PriceData[] => {
   });
 };
 
-const timeRangeOptions = [
-  { value: '1h', label: '1H' },
-  { value: '4h', label: '4H' },
-  { value: '1d', label: '1D' },
-  { value: '1w', label: '1W' },
-  { value: '1m', label: '1M' },
-] as const;
-
 export function Api3PriceChart({
   symbol,
   chain,
-  timeRange: initialTimeRange = '1d',
+  timeRange: initialTimeRange = '24h',
   className,
 }: Api3PriceChartProps) {
   const { t } = useI18n();
-  const [timeRange, setTimeRange] = useState<'1h' | '4h' | '1d' | '1w' | '1m' | 'custom'>(
-    initialTimeRange,
-  );
+  const [timeRange, setTimeRange] = useState<TimeRangeValue | 'custom'>(initialTimeRange);
   const [data, setData] = useState<Api3PriceData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [brushData, setBrushData] = useState<Api3PriceData[]>([]);
@@ -148,7 +140,7 @@ export function Api3PriceChart({
         month: 'short',
         day: 'numeric',
         hour:
-          timeRange === '1h' || timeRange === '4h' || timeRange === '1d' ? 'numeric' : undefined,
+          timeRange === '1h' || timeRange === '6h' || timeRange === '24h' ? 'numeric' : undefined,
         minute: timeRange === '1h' ? 'numeric' : undefined,
       }),
     }));
@@ -205,17 +197,14 @@ export function Api3PriceChart({
     setVisibleDataRange({ start: 0, end: data.length - 1 });
   };
 
-  const handleTimeRangeChange = useCallback(
-    (range: '1h' | '4h' | '1d' | '1w' | '1m' | 'custom') => {
-      if (range === 'custom') {
-        setShowDatePicker(true);
-      } else {
-        setShowDatePicker(false);
-        setTimeRange(range);
-      }
-    },
-    [],
-  );
+  const handleTimeRangeChange = useCallback((range: TimeRangeValue | 'custom') => {
+    if (range === 'custom') {
+      setShowDatePicker(true);
+    } else {
+      setShowDatePicker(false);
+      setTimeRange(range);
+    }
+  }, []);
 
   const handleCustomDateApply = useCallback(() => {
     if (customDateRange.startDate && customDateRange.endDate) {
@@ -262,20 +251,22 @@ export function Api3PriceChart({
           </div>
           <div className="flex items-center gap-2">
             <div className="flex rounded-lg border p-1">
-              {timeRangeOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleTimeRangeChange(option.value)}
-                  className={cn(
-                    'rounded-md px-3 py-1 text-xs font-medium transition-colors',
-                    timeRange === option.value
-                      ? 'text-primary-foreground bg-primary'
-                      : 'hover:bg-muted',
-                  )}
-                >
-                  {option.label}
-                </button>
-              ))}
+              {TIME_RANGES.filter((r) => ['1h', '24h', '7d', '30d'].includes(r.value)).map(
+                (option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => handleTimeRangeChange(option.value)}
+                    className={cn(
+                      'rounded-md px-3 py-1 text-xs font-medium transition-colors',
+                      timeRange === option.value
+                        ? 'text-primary-foreground bg-primary'
+                        : 'hover:bg-muted',
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                ),
+              )}
               <button
                 key="custom"
                 onClick={() => handleTimeRangeChange('custom')}

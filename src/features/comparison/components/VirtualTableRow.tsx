@@ -124,7 +124,7 @@ const VirtualTableRow = React.memo(function VirtualTableRow({
           <span
             className={cn(
               'inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium',
-              getDeviationColor(row.deviation),
+              getDeviationColor(row.deviation, { format: 'tailwind-with-bg' }),
             )}
           >
             {row.deviation > 0 ? (

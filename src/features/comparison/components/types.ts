@@ -143,13 +143,7 @@ export function createFormatters(): TableFormatters {
   };
 }
 
-export function getDeviationColor(deviation: number): string {
-  const abs = Math.abs(deviation);
-  if (abs > 0.02) return 'text-red-600 bg-red-50';
-  if (abs > 0.01) return 'text-amber-600 bg-amber-50';
-  if (abs > 0.005) return 'text-yellow-600 bg-yellow-50';
-  return 'text-emerald-600 bg-emerald-50';
-}
+export { getDeviationColor } from '@/shared/utils/format/percentage';
 
 export function getLatencyColor(latency: number): string {
   if (latency > 5000) return 'text-red-600';

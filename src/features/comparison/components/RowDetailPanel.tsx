@@ -172,7 +172,12 @@ export const RowDetailPanel = React.memo(function RowDetailPanel({
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t('comparison.table.deviation')}</p>
-                <p className={cn('text-sm font-medium', getDeviationColor(row.deviation))}>
+                <p
+                  className={cn(
+                    'text-sm font-medium',
+                    getDeviationColor(row.deviation, { format: 'tailwind-with-bg' }),
+                  )}
+                >
                   {row.deviation > 0 ? '+' : ''}
                   {formatDeviation(row.deviation)}
                 </p>

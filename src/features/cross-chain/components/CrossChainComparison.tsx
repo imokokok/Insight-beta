@@ -8,6 +8,8 @@ import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Switch } from '@/components/ui';
+import { TIME_RANGES } from '@/config/constants';
+import { VALID_SYMBOLS, AVAILABLE_CHAIN_IDS } from '@/config/constants';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
@@ -17,23 +19,6 @@ import { CrossChainComparisonCard } from './CrossChainComparisonCard';
 import { CrossChainPriceChart } from './CrossChainPriceChart';
 import { useCrossChainComparison, useCrossChainHistory, useCorrelation } from '../hooks';
 
-const AVAILABLE_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
-const AVAILABLE_CHAINS = [
-  'ethereum',
-  'bsc',
-  'polygon',
-  'avalanche',
-  'arbitrum',
-  'optimism',
-  'base',
-];
-const TIME_RANGES = [
-  { value: '24h', label: '24 Hours' },
-  { value: '7d', label: '7 Days' },
-  { value: '30d', label: '30 Days' },
-  { value: '90d', label: '90 Days' },
-];
-
 interface CrossChainComparisonProps {
   className?: string;
 }
@@ -42,7 +27,7 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
   const { t } = useI18n();
 
   const [selectedSymbol, setSelectedSymbol] = useState<string>('BTC');
-  const [selectedChains, setSelectedChains] = useState<string[]>(AVAILABLE_CHAINS);
+  const [selectedChains, setSelectedChains] = useState<string[]>(AVAILABLE_CHAIN_IDS);
   const [timeRange, setTimeRange] = useState<string>('7d');
   const [dataSources, setDataSources] = useState([
     { name: 'Chainlink', enabled: true },
@@ -240,7 +225,7 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {AVAILABLE_SYMBOLS.map((symbol) => (
+                  {VALID_SYMBOLS.map((symbol) => (
                     <SelectItem key={symbol} value={symbol}>
                       {symbol}
                     </SelectItem>
@@ -252,7 +237,7 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{t('crossChain.controls.chains')}:</span>
               <div className="flex flex-wrap gap-1">
-                {AVAILABLE_CHAINS.map((chain) => (
+                {AVAILABLE_CHAIN_IDS.map((chain) => (
                   <Button
                     key={chain}
                     variant={selectedChains.includes(chain) ? 'default' : 'outline'}
@@ -274,11 +259,13 @@ export function CrossChainComparison({ className }: CrossChainComparisonProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TIME_RANGES.map((range) => (
-                    <SelectItem key={range.value} value={range.value}>
-                      {range.label}
-                    </SelectItem>
-                  ))}
+                  {TIME_RANGES.filter((r) => ['24h', '7d', '30d', '90d'].includes(r.value)).map(
+                    (range) => (
+                      <SelectItem key={range.value} value={range.value}>
+                        {range.label}
+                      </SelectItem>
+                    ),
+                  )}
                 </SelectContent>
               </Select>
             </div>

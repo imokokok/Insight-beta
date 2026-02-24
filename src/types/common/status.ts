@@ -19,6 +19,8 @@ export type EntityStatus = 'active' | 'inactive' | 'pending' | 'archived';
 
 export type HealthStatus = 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
 
+export type NetworkHealthStatus = 'healthy' | 'warning' | 'critical';
+
 // ============================================================================
 // 告警严重级别（统一类型）
 // ============================================================================

@@ -31,7 +31,7 @@ export function formatDuration(
 ): string {
   const { placeholder = '—' } = options;
 
-  if (ms === null || ms === undefined || !Number.isFinite(ms)) {
+  if (ms === null || ms === undefined || !Number.isFinite(ms) || ms === 0) {
     return placeholder;
   }
 
@@ -54,10 +54,39 @@ export function formatDuration(
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
 
-  if (remainingMinutes === 0) {
-    return `${hours}h`;
+  if (hours < 24) {
+    if (remainingMinutes === 0) {
+      return `${hours}h`;
+    }
+    return `${hours}h ${remainingMinutes}m`;
   }
-  return `${hours}h ${remainingMinutes}m`;
+
+  const days = Math.floor(hours / 24);
+  const remainingHours = hours % 24;
+
+  if (remainingHours === 0) {
+    return `${days}d`;
+  }
+  return `${days}d ${remainingHours}h`;
+}
+
+export function formatDurationShort(
+  ms: number | null | undefined,
+  options: FormatLatencyOptions = {},
+): string {
+  const { placeholder = '—' } = options;
+
+  if (ms === null || ms === undefined || !Number.isFinite(ms) || ms === 0) {
+    return placeholder;
+  }
+
+  const minutes = Math.floor(ms / 60000);
+  const hours = Math.floor(minutes / 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes % 60}m`;
+  }
+  return `${minutes}m`;
 }
 
 export function formatInterval(ms: number | null | undefined): string {

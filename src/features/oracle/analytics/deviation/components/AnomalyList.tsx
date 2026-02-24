@@ -11,6 +11,7 @@ import { SkeletonList } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
 import { cn, formatTime } from '@/shared/utils';
+import { getDeviationColor } from '@/shared/utils/format/percentage';
 
 import type { PriceDeviationPoint } from '../types/deviation';
 
@@ -24,14 +25,6 @@ interface AnomalyDetailModalProps {
   anomaly: PriceDeviationPoint | null;
   onClose: () => void;
   t: (key: string) => string;
-}
-
-function getDeviationColor(deviation: number): string {
-  const absDeviation = Math.abs(deviation);
-  if (absDeviation >= 5) return '#dc2626';
-  if (absDeviation >= 2) return '#ea580c';
-  if (absDeviation >= 1) return '#f97316';
-  return '#22c55e';
 }
 
 function AnomalyDetailModal({ anomaly, onClose, t }: AnomalyDetailModalProps) {
@@ -50,7 +43,10 @@ function AnomalyDetailModal({ anomaly, onClose, t }: AnomalyDetailModalProps) {
   const priceSpread = maxPrice - minPrice;
   const priceSpreadPercent = (priceSpread / minPrice) * 100;
 
-  const deviationColor = getDeviationColor(anomaly.maxDeviationPercent * 100);
+  const deviationColor = getDeviationColor(anomaly.maxDeviationPercent * 100, {
+    format: 'hex',
+    isPercent: true,
+  });
 
   return (
     <div
@@ -253,7 +249,10 @@ export function AnomalyList({ anomalies, isLoading, onSelect }: AnomalyListProps
         {anomalies.map((anomaly) => {
           const key = `${anomaly.symbol}-${anomaly.timestamp}`;
           const isExpanded = expandedAnomalies.has(key);
-          const deviationColor = getDeviationColor(anomaly.maxDeviationPercent * 100);
+          const deviationColor = getDeviationColor(anomaly.maxDeviationPercent * 100, {
+            format: 'hex',
+            isPercent: true,
+          });
 
           const outlierPrices = anomaly.outlierProtocols.map((p) => ({
             protocol: p,

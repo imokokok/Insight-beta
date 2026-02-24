@@ -26,12 +26,9 @@ import {
 } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
+import type { BreadcrumbItem } from '@/types/common';
 
-export interface BreadcrumbItem {
-  label: string;
-  href?: string;
-  icon?: React.ReactNode;
-}
+export type { BreadcrumbItem } from '@/types/common';
 
 export interface PageHeaderProps {
   breadcrumbs?: BreadcrumbItem[];

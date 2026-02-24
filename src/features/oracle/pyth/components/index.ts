@@ -6,9 +6,5 @@ export { PublisherHistoryChart } from './PublisherHistoryChart';
 export { ConfidenceComparisonChart } from './ConfidenceComparisonChart';
 export { CrossChainPriceComparison } from './CrossChainPriceComparison';
 export { PriceHistoryChart } from './PriceHistoryChart';
-export {
-  PythKpiOverview,
-  PythTopStatusBar,
-  type TrendDirection,
-  type NetworkHealthStatus,
-} from './dashboard';
+export { PythKpiOverview, PythTopStatusBar, type TrendDirection } from './dashboard';
+export type { NetworkHealthStatus } from '@/types/common';

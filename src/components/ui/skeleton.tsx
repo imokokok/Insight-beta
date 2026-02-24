@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 
+import { itemVariants, containerVariants } from '@/lib/design-system/tokens/animation';
 import { cn } from '@/shared/utils';
 
 /**
@@ -433,30 +434,6 @@ function SkeletonList({
 }
 
 // ============================================================================
-// Animation Variants
-// ============================================================================
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.3 },
-  },
-};
-
-// ============================================================================
 // Skeleton Container
 // ============================================================================
 
@@ -476,7 +453,7 @@ function SkeletonContainer({ children, className, animated = true }: SkeletonCon
         ? {
             initial: 'hidden',
             animate: 'visible',
-            variants: containerVariants,
+            variants: containerVariants.skeleton,
           }
         : {})}
     >
@@ -504,7 +481,7 @@ function TableSkeleton({
   return (
     <motion.div
       className={cn('rounded-xl border border-gray-200 bg-white', className)}
-      variants={itemVariants}
+      variants={itemVariants.skeletonItem}
     >
       {showHeader && (
         <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">

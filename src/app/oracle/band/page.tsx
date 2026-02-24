@@ -41,7 +41,6 @@ import {
   BandKpiOverview,
   BandTopStatusBar,
   type BandKpiStats,
-  type NetworkHealthStatus,
 } from '@/features/oracle/band/components/dashboard';
 import type {
   Bridge,
@@ -58,6 +57,7 @@ import {
 } from '@/features/oracle/chainlink/components/dashboard';
 import { useI18n } from '@/i18n';
 import { fetchApiData, cn } from '@/shared/utils';
+import type { NetworkHealthStatus } from '@/types/common';
 
 const EXTENDED_CHAIN_DISPLAY_NAMES: Record<string, string> = {
   ...CHAIN_DISPLAY_NAMES,

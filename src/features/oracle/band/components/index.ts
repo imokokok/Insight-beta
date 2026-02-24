@@ -15,9 +15,5 @@ export { BridgeTrendChart } from './BridgeTrendChart';
 export { PriceTrendTab } from './PriceTrendTab';
 export { QualityAnalysisTab } from './QualityAnalysisTab';
 export { PriceComparisonTab } from './PriceComparisonTab';
-export {
-  BandKpiOverview,
-  BandTopStatusBar,
-  type BandKpiStats,
-  type NetworkHealthStatus,
-} from './dashboard';
+export { BandKpiOverview, BandTopStatusBar, type BandKpiStats } from './dashboard';
+export type { NetworkHealthStatus } from '@/types/common';

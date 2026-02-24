@@ -41,11 +41,11 @@ import {
   CrossChainPriceComparison,
   PriceHistoryChart,
 } from '@/features/oracle/pyth/components';
-import type { NetworkHealthStatus } from '@/features/oracle/pyth/components';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
 import { formatLatency } from '@/shared/utils/format';
 import { cn } from '@/shared/utils/ui';
+import type { PythOverviewStats, NetworkHealthStatus } from '@/types/common';
 
 interface PublisherStats {
   total: number;
@@ -68,13 +68,6 @@ interface HermesStatus {
     status: 'online' | 'offline';
     latency: number;
   }>;
-}
-
-interface OverviewStats {
-  totalPublishers: number;
-  activePublishers: number;
-  activePriceFeeds: number;
-  avgLatency: number;
 }
 
 interface PublisherDetail {
@@ -288,7 +281,7 @@ const TABS: TabItem[] = [
 ];
 
 interface PythDashboardState {
-  overviewStats: OverviewStats | null;
+  overviewStats: PythOverviewStats | null;
   publisherStats: PublisherStats | null;
   priceFeedStats: PriceFeedStats | null;
   hermesStatus: HermesStatus | null;
@@ -344,7 +337,7 @@ export default function PythPage() {
         avgLatency: 120,
       };
 
-      const overviewStats: OverviewStats = {
+      const overviewStats: PythOverviewStats = {
         totalPublishers: publisherStats.total,
         activePublishers: publisherStats.active,
         activePriceFeeds: priceFeedStats.active,

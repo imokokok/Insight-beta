@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 
+import { BAND_ORACLE_SYMBOLS } from '@/config/constants';
 import { ok, error } from '@/lib/api/apiResponse';
 
 interface OraclePrice {
@@ -48,17 +49,6 @@ interface ComparisonResponse {
   deviationHistory: DeviationHistoryPoint[];
 }
 
-const SYMBOLS = [
-  'BTC/USD',
-  'ETH/USD',
-  'ATOM/USD',
-  'OSMO/USD',
-  'BNB/USD',
-  'SOL/USD',
-  'MATIC/USD',
-  'AVAX/USD',
-];
-
 const BASE_PRICES: Record<string, number> = {
   'BTC/USD': 67500,
   'ETH/USD': 3450,
@@ -71,7 +61,7 @@ const BASE_PRICES: Record<string, number> = {
 };
 
 function generateOraclePrices(oracle: string): OraclePrice[] {
-  return SYMBOLS.map((symbol) => {
+  return BAND_ORACLE_SYMBOLS.map((symbol) => {
     const basePrice = BASE_PRICES[symbol] ?? 100;
     const variance = (Math.random() - 0.5) * 0.02;
     const oracleOffset = oracle === 'Band' ? 0 : (Math.random() - 0.5) * 0.01;
@@ -105,7 +95,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const symbols = searchParams.get('symbols');
 
-    const symbolList = symbols ? symbols.split(',').map((s) => s.trim().toUpperCase()) : SYMBOLS;
+    const symbolList = symbols
+      ? symbols.split(',').map((s) => s.trim().toUpperCase())
+      : [...BAND_ORACLE_SYMBOLS];
 
     const bandPrices = generateOraclePrices('Band');
     const chainlinkPrices = generateOraclePrices('Chainlink');

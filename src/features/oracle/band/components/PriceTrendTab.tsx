@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
-import { useI18n } from '@/i18n';
+import { TIME_RANGES, BAND_ORACLE_SYMBOL_OPTIONS } from '@/config/constants';
 import { fetchApiData, cn } from '@/shared/utils';
 
 interface PricePoint {
@@ -35,23 +35,7 @@ interface PriceHistoryResponse {
   };
 }
 
-const SYMBOLS = [
-  { value: 'BTC/USD', label: 'BTC/USD' },
-  { value: 'ETH/USD', label: 'ETH/USD' },
-  { value: 'ATOM/USD', label: 'ATOM/USD' },
-  { value: 'OSMO/USD', label: 'OSMO/USD' },
-  { value: 'BNB/USD', label: 'BNB/USD' },
-  { value: 'SOL/USD', label: 'SOL/USD' },
-];
-
-const TIME_RANGES = [
-  { value: '1h', label: '1 小时' },
-  { value: '24h', label: '24 小时' },
-  { value: '7d', label: '7 天' },
-];
-
 export function PriceTrendTab() {
-  useI18n();
   const [selectedSymbols, setSelectedSymbols] = useState<string[]>(['BTC/USD', 'ETH/USD']);
   const [timeRange, setTimeRange] = useState('24h');
   const [loading, setLoading] = useState(true);
@@ -124,7 +108,7 @@ export function PriceTrendTab() {
         <CardContent>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex flex-wrap gap-2">
-              {SYMBOLS.map((symbol) => (
+              {BAND_ORACLE_SYMBOL_OPTIONS.map((symbol) => (
                 <Badge
                   key={symbol.value}
                   variant={selectedSymbols.includes(symbol.value) ? 'default' : 'secondary'}
@@ -141,7 +125,7 @@ export function PriceTrendTab() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {TIME_RANGES.map((range) => (
+                {TIME_RANGES.filter((r) => ['1h', '24h', '7d'].includes(r.value)).map((range) => (
                   <SelectItem key={range.value} value={range.value}>
                     {range.label}
                   </SelectItem>

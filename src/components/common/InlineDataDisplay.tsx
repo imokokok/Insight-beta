@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 
+import { STATUS_TEXT_COLORS, TREND_COLORS } from '@/lib/design-system/tokens/colors';
 import { cn } from '@/shared/utils';
 
 export interface InlineDataItem {
@@ -22,19 +23,6 @@ export interface InlineDataDisplayProps {
   showDividers?: boolean;
   compact?: boolean;
 }
-
-const statusColors = {
-  healthy: 'text-success',
-  warning: 'text-warning',
-  critical: 'text-error',
-  neutral: 'text-foreground',
-};
-
-const trendColors = {
-  up: 'text-success',
-  down: 'text-error',
-  neutral: 'text-muted-foreground',
-};
 
 const trendIcons = {
   up: '↑',
@@ -112,7 +100,10 @@ export const InlineDataDisplay = memo(function InlineDataDisplay({
             <div className="flex items-center gap-1.5">
               {item.icon && (
                 <span
-                  className={cn('text-muted-foreground', statusColors[item.status || 'neutral'])}
+                  className={cn(
+                    'text-muted-foreground',
+                    STATUS_TEXT_COLORS[item.status || 'neutral'],
+                  )}
                 >
                   {item.icon}
                 </span>
@@ -132,14 +123,14 @@ export const InlineDataDisplay = memo(function InlineDataDisplay({
                 className={cn(
                   'font-semibold',
                   compact ? 'text-base' : 'text-lg',
-                  statusColors[item.status || 'neutral'],
+                  STATUS_TEXT_COLORS[item.status || 'neutral'],
                 )}
               >
                 {item.value}
               </span>
               {item.suffix && <span className="text-sm text-muted-foreground">{item.suffix}</span>}
               {item.trend && (
-                <span className={cn('text-xs font-medium', trendColors[item.trend])}>
+                <span className={cn('text-xs font-medium', TREND_COLORS[item.trend])}>
                   {trendIcons[item.trend]}
                 </span>
               )}
@@ -167,18 +158,20 @@ export const InlineDataRow = memo(function InlineDataRow({
       {items.map((item, index) => (
         <div key={index} className="flex items-center gap-1.5">
           {item.icon && (
-            <span className={cn('text-muted-foreground', statusColors[item.status || 'neutral'])}>
+            <span
+              className={cn('text-muted-foreground', STATUS_TEXT_COLORS[item.status || 'neutral'])}
+            >
               {item.icon}
             </span>
           )}
           <span className="text-sm text-muted-foreground">{item.label}</span>
-          <span className={cn('font-semibold', statusColors[item.status || 'neutral'])}>
+          <span className={cn('font-semibold', STATUS_TEXT_COLORS[item.status || 'neutral'])}>
             {item.prefix}
             {item.value}
             {item.suffix}
           </span>
           {item.trend && (
-            <span className={cn('text-xs font-medium', trendColors[item.trend])}>
+            <span className={cn('text-xs font-medium', TREND_COLORS[item.trend])}>
               {trendIcons[item.trend]}
             </span>
           )}

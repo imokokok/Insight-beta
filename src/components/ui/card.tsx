@@ -2,6 +2,7 @@ import React from 'react';
 
 import { motion } from 'framer-motion';
 
+import { TREND_COLORS } from '@/lib/design-system/tokens/colors';
 import { cn } from '@/shared/utils';
 
 import type { HTMLMotionProps } from 'framer-motion';
@@ -141,12 +142,6 @@ function InteractiveStatCard({
 }: StatCardProps) {
   const [isHovered, setIsHovered] = React.useState(false);
 
-  const trendColors = {
-    up: 'text-success',
-    down: 'text-error',
-    neutral: 'text-muted-foreground',
-  };
-
   const trendIcons = {
     up: '↑',
     down: '↓',
@@ -206,7 +201,7 @@ function InteractiveStatCard({
 
         {change !== undefined && !loading && (
           <motion.div
-            className={cn('flex items-center gap-1 text-sm font-medium', trendColors[trend])}
+            className={cn('flex items-center gap-1 text-sm font-medium', TREND_COLORS[trend])}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}

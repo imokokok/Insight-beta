@@ -25,7 +25,7 @@ export { AlertConfigPanel } from './AlertConfigPanel';
 export {
   Api3TopStatusBar,
   Api3KpiOverview,
-  type NetworkHealthStatus,
   type TrendDirection,
   type Api3KpiStats,
 } from './dashboard';
+export type { NetworkHealthStatus } from '@/types/common';

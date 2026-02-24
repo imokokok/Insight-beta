@@ -6,6 +6,7 @@ import { Grid3X3 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { getDeviationColor } from '@/shared/utils/format/percentage';
 
 import type { DeviationTrend, PriceDeviationPoint } from '../../types/deviation';
 
@@ -22,15 +23,6 @@ interface DeviationHeatmapProps {
   trends: DeviationTrend[];
   anomalies?: PriceDeviationPoint[];
   onCellClick?: (cell: HeatmapCell) => void;
-}
-
-function getDeviationColor(deviation: number): string {
-  const absDeviation = Math.abs(deviation);
-  if (absDeviation >= 0.05) return '#dc2626';
-  if (absDeviation >= 0.02) return '#ea580c';
-  if (absDeviation >= 0.01) return '#f97316';
-  if (absDeviation >= 0.005) return '#fdba74';
-  return '#fed7aa';
 }
 
 function formatTime(timestamp: string): string {
@@ -197,7 +189,7 @@ export function DeviationHeatmap({ trends, anomalies = [], onCellClick }: Deviat
             </div>
             <div
               className="mt-1 text-lg font-bold"
-              style={{ color: getDeviationColor(hoveredCell.deviation) }}
+              style={{ color: getDeviationColor(hoveredCell.deviation, { format: 'hex' }) }}
             >
               {(hoveredCell.deviation * 100).toFixed(2)}% {t('common.deviation')}
             </div>

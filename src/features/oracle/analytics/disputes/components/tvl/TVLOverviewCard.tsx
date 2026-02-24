@@ -6,6 +6,7 @@ import { Landmark, Coins, FileCheck, AlertTriangle, RefreshCw } from 'lucide-rea
 
 import { Card, CardContent } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { formatNumber, formatUsdCompact } from '@/shared/utils/format/number';
 
 interface TVLData {
   totalStaked: number;
@@ -14,20 +15,6 @@ interface TVLData {
   activeDisputes: number;
   lastUpdated: string;
   isMock?: boolean;
-}
-
-function formatNumber(num: number): string {
-  if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(2)}M`;
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}K`;
-  }
-  return num.toString();
-}
-
-function formatCurrency(num: number): string {
-  return `$${formatNumber(num)}`;
 }
 
 interface TVLStatCardProps {
@@ -113,7 +100,7 @@ export function TVLOverviewCard() {
     {
       icon: <Landmark className="h-4 w-4 text-blue-600" />,
       title: t('analytics:disputes.tvl.totalStaked'),
-      value: formatCurrency(tvlData.totalStaked),
+      value: formatUsdCompact(tvlData.totalStaked, 'en-US'),
       subValue: `${formatNumber(tvlData.totalStaked)} UMA`,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100',
@@ -121,7 +108,7 @@ export function TVLOverviewCard() {
     {
       icon: <Coins className="h-4 w-4 text-purple-600" />,
       title: t('analytics:disputes.tvl.totalBonded'),
-      value: formatCurrency(tvlData.totalBonded),
+      value: formatUsdCompact(tvlData.totalBonded, 'en-US'),
       subValue: `${formatNumber(tvlData.totalBonded)} UMA`,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',

@@ -22,7 +22,6 @@ export {
   TabContent,
   TabPanelWrapper,
   useTabNavigation,
-  type NetworkHealthStatus,
   type TrendDirection,
   type TabNavigationProps,
   type TabContentProps,
@@ -31,3 +30,4 @@ export {
   type UseTabNavigationOptions,
   type UseTabNavigationReturn,
 } from './dashboard';
+export type { NetworkHealthStatus } from '@/types/common';

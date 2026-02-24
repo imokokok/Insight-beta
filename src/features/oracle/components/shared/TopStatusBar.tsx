@@ -1,7 +1,8 @@
 import { Badge, Button } from '@/components/ui';
 import { cn } from '@/shared/utils';
+import type { NetworkHealthStatus } from '@/types/common';
 
-export type NetworkHealthStatus = 'healthy' | 'warning' | 'critical';
+export type { NetworkHealthStatus } from '@/types/common';
 
 interface TopStatusBarProps {
   healthStatus?: NetworkHealthStatus;

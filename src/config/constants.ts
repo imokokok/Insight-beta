@@ -258,6 +258,17 @@ export const ALERT_THRESHOLDS = Object.freeze({
   },
 } as const);
 
+export const TIME_RANGES = [
+  { value: '1h', label: '1H', labelKey: 'common.timeRange.1h' },
+  { value: '6h', label: '6H', labelKey: 'common.timeRange.6h' },
+  { value: '24h', label: '24H', labelKey: 'common.timeRange.24h' },
+  { value: '7d', label: '7D', labelKey: 'common.timeRange.7d' },
+  { value: '30d', label: '30D', labelKey: 'common.timeRange.30d' },
+  { value: '90d', label: '90D', labelKey: 'common.timeRange.90d' },
+] as const;
+
+export type TimeRangeValue = (typeof TIME_RANGES)[number]['value'];
+
 export const TIME_RANGE_OPTIONS = [
   { value: '1h', label: '1H' },
   { value: '24h', label: '24H' },
@@ -266,3 +277,37 @@ export const TIME_RANGE_OPTIONS = [
 ] as const;
 
 export type TimeRange = (typeof TIME_RANGE_OPTIONS)[number]['value'];
+
+// ============================================================================
+// 跨链功能常量
+// ============================================================================
+
+export const AVAILABLE_CHAIN_IDS = SUPPORTED_CHAINS.map((chain) => chain.id);
+
+export const BAND_ORACLE_SYMBOLS = [
+  'BTC/USD',
+  'ETH/USD',
+  'ATOM/USD',
+  'OSMO/USD',
+  'BNB/USD',
+  'SOL/USD',
+  'MATIC/USD',
+  'AVAX/USD',
+] as const;
+
+export type BandOracleSymbol = (typeof BAND_ORACLE_SYMBOLS)[number];
+
+export const BAND_ORACLE_SYMBOL_OPTIONS = BAND_ORACLE_SYMBOLS.map((symbol) => ({
+  value: symbol,
+  label: symbol,
+}));
+
+export const CHAIN_COLORS: Record<string, string> = {
+  ethereum: '#627EEA',
+  bsc: '#F3BA2F',
+  polygon: '#8247E5',
+  avalanche: '#E84142',
+  arbitrum: '#28A0F0',
+  optimism: '#FF0420',
+  base: '#0052FF',
+} as const;

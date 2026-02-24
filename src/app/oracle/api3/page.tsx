@@ -32,7 +32,6 @@ import {
   AlertConfigPanel,
   Api3TopStatusBar,
   Api3KpiOverview,
-  type NetworkHealthStatus,
 } from '@/features/oracle/api3';
 import {
   TabNavigation,
@@ -45,6 +44,7 @@ import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
 import { formatTime } from '@/shared/utils/format/date';
 import { cn } from '@/shared/utils/ui';
+import type { Api3OverviewStats, NetworkHealthStatus } from '@/types/common';
 
 interface Airnode {
   address: string;
@@ -106,15 +106,8 @@ interface DapisResponse {
   };
 }
 
-interface OverviewStats {
-  totalAirnodes: number;
-  onlineAirnodes: number;
-  priceUpdateEvents: number;
-  totalDapis: number;
-}
-
 interface Api3DashboardState {
-  overviewStats: OverviewStats | null;
+  overviewStats: Api3OverviewStats | null;
   airnodesData: AirnodesResponse | null;
   oevData: OevResponse | null;
   dapisData: DapisResponse | null;
@@ -167,7 +160,7 @@ export default function Api3Page() {
         fetchApiData<DapisResponse>('/api/oracle/api3/dapis'),
       ]);
 
-      const overviewStats: OverviewStats = {
+      const overviewStats: Api3OverviewStats = {
         totalAirnodes: airnodesRes.metadata?.total ?? 0,
         onlineAirnodes: airnodesRes.metadata?.online ?? 0,
         priceUpdateEvents: oevRes.metadata?.total ?? 0,

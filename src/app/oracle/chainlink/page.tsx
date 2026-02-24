@@ -27,7 +27,6 @@ import { chainlinkExportConfig } from '@/features/oracle/chainlink';
 import {
   TopStatusBar,
   KpiOverview,
-  type NetworkHealthStatus,
   type TrendDirection,
   TabNavigation,
   TabContent,
@@ -49,13 +48,7 @@ import { OperatorList } from '@/features/oracle/chainlink/components/OperatorLis
 import type { ChainlinkFeed, Operator, OcrRound } from '@/features/oracle/chainlink/types';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
-
-interface OverviewStats {
-  totalFeeds: number;
-  activeNodes: number;
-  ocrRounds: number;
-  avgLatency: number;
-}
+import type { ChainlinkOverviewStats, NetworkHealthStatus } from '@/types/common';
 
 interface FeedsApiResponse {
   feeds: ChainlinkFeed[];
@@ -95,7 +88,7 @@ interface ChainlinkOverviewResponse {
 }
 
 interface ChainlinkDashboardState {
-  overviewStats: OverviewStats | null;
+  overviewStats: ChainlinkOverviewStats | null;
   overviewData: ChainlinkOverviewResponse | null;
   feeds: ChainlinkFeed[];
   operators: Operator[];
@@ -163,7 +156,7 @@ export default function ChainlinkPage() {
       const feeds = feedsRes.feeds ?? [];
       const operators = operatorsRes.operators ?? [];
 
-      const overviewStats: OverviewStats = {
+      const overviewStats: ChainlinkOverviewStats = {
         totalFeeds: overviewRes.metadata?.totalFeeds ?? feeds.length,
         activeNodes: operators.filter((op) => op.online).length,
         ocrRounds: 0,

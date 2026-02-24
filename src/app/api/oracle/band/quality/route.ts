@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 
+import { BAND_ORACLE_SYMBOLS } from '@/config/constants';
 import { ok, error } from '@/lib/api/apiResponse';
 
 interface DataQualityMetrics {
@@ -45,17 +46,6 @@ interface QualityResponse {
   };
   symbols: Record<string, DataQualityMetrics>;
 }
-
-const SYMBOLS = [
-  'BTC/USD',
-  'ETH/USD',
-  'ATOM/USD',
-  'OSMO/USD',
-  'BNB/USD',
-  'SOL/USD',
-  'MATIC/USD',
-  'AVAX/USD',
-];
 
 function generateLatencyDistribution(): DataQualityMetrics['latency']['latencyDistribution'] {
   return [
@@ -112,7 +102,9 @@ export async function GET(request: NextRequest) {
     const symbols = searchParams.get('symbols');
     const chain = searchParams.get('chain') ?? 'cosmos';
 
-    const symbolList = symbols ? symbols.split(',').map((s) => s.trim().toUpperCase()) : SYMBOLS;
+    const symbolList = symbols
+      ? symbols.split(',').map((s) => s.trim().toUpperCase())
+      : [...BAND_ORACLE_SYMBOLS];
 
     const metrics: Record<string, DataQualityMetrics> = {};
     let totalCompleteness = 0;

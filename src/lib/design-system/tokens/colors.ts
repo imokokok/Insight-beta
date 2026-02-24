@@ -563,3 +563,50 @@ export function getMonitorStatusColor(
   const key = status.toLowerCase() as MonitorStatus;
   return MONITOR_STATUS_COLORS[key] || MONITOR_STATUS_COLORS.investigating;
 }
+
+export const STATUS_TEXT_COLORS = {
+  healthy: 'text-success',
+  warning: 'text-warning',
+  critical: 'text-error',
+  neutral: 'text-foreground',
+  default: 'text-foreground',
+  success: 'text-success',
+  error: 'text-error',
+} as const;
+
+export const TREND_COLORS = {
+  up: 'text-success',
+  down: 'text-error',
+  neutral: 'text-muted-foreground',
+} as const;
+
+export const STATUS_INDICATOR_COLORS = {
+  healthy: {
+    bg: 'bg-[#22C55E]',
+    ring: 'rgba(34, 197, 94, 0.4)',
+  },
+  warning: {
+    bg: 'bg-[#F59E0B]',
+    ring: 'rgba(245, 158, 11, 0.4)',
+  },
+  critical: {
+    bg: 'bg-[#EF4444]',
+    ring: 'rgba(239, 68, 68, 0.4)',
+  },
+  unknown: {
+    bg: 'bg-[#6B7280]',
+    ring: 'rgba(107, 114, 128, 0.4)',
+  },
+} as const;
+
+export const FEED_STATUS_COLORS = {
+  active: 'bg-green-100 text-green-800',
+  stale: 'bg-yellow-100 text-yellow-800',
+  inactive: 'bg-red-100 text-red-800',
+} as const;
+
+export const PROTOCOL_STATUS_COLORS = {
+  active: 'bg-green-500',
+  inactive: 'bg-gray-500',
+  maintenance: 'bg-yellow-500',
+} as const;

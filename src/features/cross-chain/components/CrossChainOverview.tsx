@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui';
 import { Label } from '@/components/ui';
 import { Switch } from '@/components/ui';
+import { VALID_SYMBOLS } from '@/config/constants';
 import {
   BridgeStatusCard,
   ChainStatusOverview,
@@ -24,8 +25,6 @@ import {
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import type { CrossChainDashboardData } from '@/types/crossChainAnalysisTypes';
-
-const AVAILABLE_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 
 interface CrossChainOverviewProps {
   className?: string;
@@ -84,7 +83,7 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t('crossChain.dashboard.title')}</h1>
           <p className="mt-1 text-muted-foreground">
-            {t('crossChain.dashboard.description', { count: AVAILABLE_SYMBOLS.length })}
+            {t('crossChain.dashboard.description', { count: VALID_SYMBOLS.length })}
           </p>
         </div>
         <div className="flex items-center gap-2">

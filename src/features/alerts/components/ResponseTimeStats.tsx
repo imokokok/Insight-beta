@@ -21,45 +21,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { fetchApiData, cn } from '@/shared/utils';
+import { fetchApiData, cn, formatDuration, formatDurationShort } from '@/shared/utils';
 
 import type { ResponseTimeMetrics, ResponseTimeTrendPoint } from '../types';
 
 interface ResponseTimeStatsData {
   metrics: ResponseTimeMetrics;
   trend: ResponseTimeTrendPoint[];
-}
-
-function formatDuration(ms: number): string {
-  if (!ms || ms === 0) return '--';
-
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) {
-    return `${days}d ${hours % 24}h`;
-  }
-  if (hours > 0) {
-    return `${hours}h ${minutes % 60}m`;
-  }
-  if (minutes > 0) {
-    return `${minutes}m ${seconds % 60}s`;
-  }
-  return `${seconds}s`;
-}
-
-function formatDurationShort(ms: number): string {
-  if (!ms || ms === 0) return '--';
-
-  const minutes = Math.floor(ms / 60000);
-  const hours = Math.floor(minutes / 60);
-
-  if (hours > 0) {
-    return `${hours}h ${minutes % 60}m`;
-  }
-  return `${minutes}m`;
 }
 
 interface ResponseTimeStatsProps {

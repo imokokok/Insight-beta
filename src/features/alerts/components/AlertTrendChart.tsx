@@ -8,6 +8,7 @@ import { EnhancedAreaChart, EnhancedBarChart, CHART_COLORS } from '@/components/
 import { ContentSection } from '@/components/common';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import { TIME_RANGES } from '@/config/constants';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { formatNumber, cn } from '@/shared/utils';
 
@@ -29,14 +30,6 @@ interface AlertTrendChartProps {
   className?: string;
   previousStats?: AlertHistoryStats;
 }
-
-const timeRangeOptions: { value: TimeRange; label: string }[] = [
-  { value: '1h', label: '1H' },
-  { value: '6h', label: '6H' },
-  { value: '24h', label: '24H' },
-  { value: '7d', label: '7D' },
-  { value: '30d', label: '30D' },
-];
 
 const groupByOptions: { value: GroupBy; label: string }[] = [
   { value: 'none', label: 'Total' },
@@ -226,11 +219,13 @@ export function AlertTrendChart({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {timeRangeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
+              {TIME_RANGES.filter((r) => ['1h', '6h', '24h', '7d', '30d'].includes(r.value)).map(
+                (option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ),
+              )}
             </SelectContent>
           </Select>
           <Select value={groupBy} onValueChange={(v) => onGroupByChange(v as GroupBy)}>

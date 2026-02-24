@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Progress } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import { BAND_ORACLE_SYMBOL_OPTIONS } from '@/config/constants';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
 
@@ -65,15 +66,6 @@ interface QualityResponse {
   };
 }
 
-const SYMBOLS = [
-  { value: 'BTC/USD', label: 'BTC/USD' },
-  { value: 'ETH/USD', label: 'ETH/USD' },
-  { value: 'ATOM/USD', label: 'ATOM/USD' },
-  { value: 'OSMO/USD', label: 'OSMO/USD' },
-  { value: 'BNB/USD', label: 'BNB/USD' },
-  { value: 'SOL/USD', label: 'SOL/USD' },
-];
-
 export function QualityAnalysisTab() {
   useI18n();
   const [selectedSymbol, setSelectedSymbol] = useState('BTC/USD');
@@ -123,7 +115,7 @@ export function QualityAnalysisTab() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SYMBOLS.map((symbol) => (
+                {BAND_ORACLE_SYMBOL_OPTIONS.map((symbol) => (
                   <SelectItem key={symbol.value} value={symbol.value}>
                     {symbol.label}
                   </SelectItem>

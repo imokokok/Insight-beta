@@ -27,6 +27,7 @@ import { Input } from '@/components/ui';
 import { Label } from '@/components/ui';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { TIME_RANGES } from '@/config/constants';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import type {
@@ -49,13 +50,6 @@ interface ComparisonControlsProps {
   isLoading?: boolean;
   availableSymbols?: string[];
 }
-
-const timeRangeOptions = [
-  { value: '1h', labelKey: 'comparison.timeRange.1h' },
-  { value: '24h', labelKey: 'comparison.timeRange.24h' },
-  { value: '7d', labelKey: 'comparison.timeRange.7d' },
-  { value: '30d', labelKey: 'comparison.timeRange.30d' },
-];
 
 const refreshIntervalOptions = [
   { value: 5000, labelKey: 'comparison.timeRange.5s' },
@@ -322,7 +316,9 @@ export const ComparisonControls = memo(function ComparisonControls({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {timeRangeOptions.map((option) => (
+                        {TIME_RANGES.filter((r) =>
+                          ['1h', '24h', '7d', '30d'].includes(r.value),
+                        ).map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {t(option.labelKey)}
                           </SelectItem>

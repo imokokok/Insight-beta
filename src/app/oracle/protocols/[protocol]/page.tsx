@@ -20,6 +20,7 @@ import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { SUPPORTED_CHAINS } from '@/config/constants';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { FEED_STATUS_COLORS, PROTOCOL_STATUS_COLORS } from '@/lib/design-system/tokens/colors';
 import { logger } from '@/shared/logger';
 import { cn, fetchApiData } from '@/shared/utils';
 
@@ -110,18 +111,6 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
 
   const getChainInfo = (chainId: string) => SUPPORTED_CHAINS.find((c) => c.id === chainId);
 
-  const statusColors: Record<string, string> = {
-    active: 'bg-green-500',
-    inactive: 'bg-gray-500',
-    maintenance: 'bg-yellow-500',
-  };
-
-  const feedStatusColors: Record<string, string> = {
-    active: 'bg-green-100 text-green-800',
-    stale: 'bg-yellow-100 text-yellow-800',
-    inactive: 'bg-red-100 text-red-800',
-  };
-
   if (error) {
     return (
       <ErrorBoundary>
@@ -151,7 +140,7 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
               <Globe className="h-6 w-6 text-blue-600" />
               <span className="capitalize">{protocol?.name || protocolName}</span>
               {protocol && (
-                <Badge className={statusColors[protocol.status]}>{protocol.status}</Badge>
+                <Badge className={PROTOCOL_STATUS_COLORS[protocol.status]}>{protocol.status}</Badge>
               )}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -246,7 +235,7 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ proto
                       className="flex items-center justify-between rounded-lg border border-border/30 bg-muted/20 p-3"
                     >
                       <div className="flex items-center gap-3">
-                        <Badge className={feedStatusColors[feed.status]}>{feed.status}</Badge>
+                        <Badge className={FEED_STATUS_COLORS[feed.status]}>{feed.status}</Badge>
                         <div>
                           <div className="font-medium">{feed.symbol}</div>
                           <div className="text-xs text-muted-foreground">{feed.chain}</div>

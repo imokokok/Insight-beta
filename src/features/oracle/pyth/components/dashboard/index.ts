@@ -1,6 +1,4 @@
 export { PythKpiOverview } from './PythKpiOverview';
-export {
-  TopStatusBar as PythTopStatusBar,
-  type NetworkHealthStatus,
-} from '@/features/oracle/components/shared';
+export { TopStatusBar as PythTopStatusBar } from '@/features/oracle/components/shared';
+export type { NetworkHealthStatus } from '@/types/common';
 export { type TrendDirection } from '@/components/common';

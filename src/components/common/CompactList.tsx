@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 
+import { STATUS_TEXT_COLORS } from '@/lib/design-system/tokens/colors';
 import { cn } from '@/shared/utils';
 
 export interface CompactListItem {
@@ -21,13 +22,6 @@ export interface CompactListProps {
   className?: string;
   showBorder?: boolean;
 }
-
-const statusColors = {
-  default: 'text-foreground',
-  success: 'text-success',
-  warning: 'text-warning',
-  error: 'text-error',
-};
 
 export const CompactList = memo(function CompactList({
   title,
@@ -64,13 +58,15 @@ export const CompactList = memo(function CompactList({
                 <span
                   className={cn(
                     'shrink-0 text-muted-foreground',
-                    statusColors[item.status || 'default'],
+                    STATUS_TEXT_COLORS[item.status || 'default'],
                   )}
                 >
                   {item.icon}
                 </span>
               )}
-              <span className={cn('truncate text-sm', statusColors[item.status || 'default'])}>
+              <span
+                className={cn('truncate text-sm', STATUS_TEXT_COLORS[item.status || 'default'])}
+              >
                 {item.label}
               </span>
             </div>
@@ -129,7 +125,7 @@ export const DualColumnList = memo(function DualColumnList({
                 <span
                   className={cn(
                     'min-w-0 flex-1 truncate text-sm',
-                    statusColors[item.status || 'default'],
+                    STATUS_TEXT_COLORS[item.status || 'default'],
                   )}
                 >
                   {item.label}
@@ -161,7 +157,7 @@ export const DualColumnList = memo(function DualColumnList({
                 <span
                   className={cn(
                     'min-w-0 flex-1 truncate text-sm',
-                    statusColors[item.status || 'default'],
+                    STATUS_TEXT_COLORS[item.status || 'default'],
                   )}
                 >
                   {item.label}

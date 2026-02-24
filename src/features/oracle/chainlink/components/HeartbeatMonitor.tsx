@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { formatTime, cn, fetchApiData } from '@/shared/utils';
+import { formatTime, cn, fetchApiData, formatDuration } from '@/shared/utils';
 
 import type { ChainlinkHeartbeatStats, HeartbeatAlert } from '../types/chainlink';
 
@@ -72,21 +72,7 @@ function getStatusLabel(status: HeartbeatAlert['status'], t: (key: string) => st
 function calculateTimeoutDuration(lastUpdate: string): number {
   const lastUpdateTime = new Date(lastUpdate).getTime();
   const now = Date.now();
-  return Math.floor((now - lastUpdateTime) / 1000);
-}
-
-function formatDuration(seconds: number): string {
-  if (seconds < 60) {
-    return `${seconds}s`;
-  }
-  if (seconds < 3600) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
-  }
-  const hours = Math.floor(seconds / 3600);
-  const remainingMinutes = Math.floor((seconds % 3600) / 60);
-  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+  return now - lastUpdateTime;
 }
 
 function sortAlertsBySeverity(alerts: HeartbeatAlert[]): HeartbeatAlert[] {

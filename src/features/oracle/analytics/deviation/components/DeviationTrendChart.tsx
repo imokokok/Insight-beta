@@ -19,6 +19,7 @@ import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
+import { getDeviationColor } from '@/shared/utils/format/percentage';
 
 import type { PriceDeviationPoint } from '../types/deviation';
 
@@ -43,14 +44,6 @@ interface ChartDataItem {
 interface DataPointDetail {
   data: ChartDataItem;
   position: { x: number; y: number };
-}
-
-function getDeviationColor(deviation: number): string {
-  const absDeviation = Math.abs(deviation);
-  if (absDeviation >= 5) return '#dc2626';
-  if (absDeviation >= 2) return '#ea580c';
-  if (absDeviation >= 1) return '#f97316';
-  return '#22c55e';
 }
 
 interface CustomTooltipProps {
@@ -393,7 +386,10 @@ export function DeviationTrendChart({ dataPoints }: DeviationTrendChartProps) {
                       cx={cx}
                       cy={cy}
                       r={isMobile ? 8 : 6}
-                      fill={getDeviationColor(payload.deviation)}
+                      fill={getDeviationColor(payload.deviation, {
+                        format: 'hex',
+                        isPercent: true,
+                      })}
                       stroke="#fff"
                       strokeWidth={2}
                       className="cursor-pointer"

@@ -4,6 +4,7 @@ import { memo } from 'react';
 
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
+import { STATUS_TEXT_COLORS, TREND_COLORS } from '@/lib/design-system/tokens/colors';
 import { cn } from '@/shared/utils';
 
 export interface StatsBarItem {
@@ -28,19 +29,6 @@ export interface StatsBarProps {
   className?: string;
 }
 
-const statusColors = {
-  healthy: 'text-success',
-  warning: 'text-warning',
-  critical: 'text-error',
-  neutral: 'text-foreground',
-};
-
-const trendColors = {
-  up: 'text-success',
-  down: 'text-error',
-  neutral: 'text-muted-foreground',
-};
-
 export const StatsBar = memo(function StatsBar({
   items,
   showProgress = false,
@@ -58,17 +46,24 @@ export const StatsBar = memo(function StatsBar({
         {items.map((item, index) => (
           <div key={index} className="flex items-center gap-2">
             {item.icon && (
-              <span className={cn('text-muted-foreground', statusColors[item.status || 'neutral'])}>
+              <span
+                className={cn(
+                  'text-muted-foreground',
+                  STATUS_TEXT_COLORS[item.status || 'neutral'],
+                )}
+              >
                 {item.icon}
               </span>
             )}
             <div className="flex items-baseline gap-1.5">
               <span className="text-sm text-muted-foreground">{item.label}</span>
-              <span className={cn('text-lg font-bold', statusColors[item.status || 'neutral'])}>
+              <span
+                className={cn('text-lg font-bold', STATUS_TEXT_COLORS[item.status || 'neutral'])}
+              >
                 {item.value}
               </span>
               {item.trend && item.trend !== 'neutral' && (
-                <span className={trendColors[item.trend]}>
+                <span className={TREND_COLORS[item.trend]}>
                   {item.trend === 'up' ? (
                     <TrendingUp className="h-3.5 w-3.5" />
                   ) : (

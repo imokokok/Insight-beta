@@ -1,3 +1,4 @@
+import { AVAILABLE_CHAIN_IDS } from '@/config/constants';
 import { apiSuccess } from '@/lib/api/apiResponse';
 import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 
@@ -22,18 +23,8 @@ interface CorrelationMatrixResponse {
   };
 }
 
-const SUPPORTED_CHAINS = [
-  'ethereum',
-  'bsc',
-  'polygon',
-  'avalanche',
-  'arbitrum',
-  'optimism',
-  'base',
-];
-
 function generateCorrelationMatrix(symbol: string, timeRange: string): CorrelationMatrixResponse {
-  const chains = SUPPORTED_CHAINS.slice(0, 5 + Math.floor(Math.random() * 3));
+  const chains = AVAILABLE_CHAIN_IDS.slice(0, 5 + Math.floor(Math.random() * 3));
   const size = chains.length;
   const matrix: number[][] = Array.from({ length: size }, () => Array(size).fill(0));
   const correlations: CorrelationData[] = [];
