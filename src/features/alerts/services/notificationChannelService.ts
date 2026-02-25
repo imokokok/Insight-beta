@@ -36,9 +36,12 @@ function encryptSensitiveFields(config: NotificationChannelConfig): Notification
     const value = encryptedConfig[field];
     if (typeof value === 'string' && value) {
       const encrypted = encryptString(value);
-      if (encrypted) {
-        (encryptedConfig as Record<string, unknown>)[field] = encrypted;
+      if (!encrypted) {
+        throw new Error(
+          `Failed to encrypt sensitive field '${String(field)}'. Encryption returned null or empty result.`,
+        );
       }
+      (encryptedConfig as Record<string, unknown>)[field] = encrypted;
     }
   }
 

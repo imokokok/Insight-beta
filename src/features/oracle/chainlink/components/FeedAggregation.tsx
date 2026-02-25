@@ -109,16 +109,18 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
 
         switch (key) {
           case 'price':
-            aVal = parseFloat(a.latestPrice) / Math.pow(10, 18 - a.decimals);
-            bVal = parseFloat(b.latestPrice) / Math.pow(10, 18 - b.decimals);
+            aVal = parseFloat(a.latestPrice) || 0;
+            aVal = aVal / Math.pow(10, 18 - a.decimals);
+            bVal = parseFloat(b.latestPrice) || 0;
+            bVal = bVal / Math.pow(10, 18 - b.decimals);
             break;
           case 'heartbeat':
             aVal = a.heartbeat;
             bVal = b.heartbeat;
             break;
           case 'deviation':
-            aVal = parseFloat(a.deviationThreshold);
-            bVal = parseFloat(b.deviationThreshold);
+            aVal = parseFloat(a.deviationThreshold) || 0;
+            bVal = parseFloat(b.deviationThreshold) || 0;
             break;
           case 'lastUpdate':
             aVal = new Date(a.lastUpdate).getTime();

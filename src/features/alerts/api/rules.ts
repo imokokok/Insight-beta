@@ -1,5 +1,6 @@
 import { SUPPORTED_CHAINS } from '@/config/constants';
 import { query } from '@/lib/database/db';
+import { withTransaction } from '@/lib/database/dbOptimization';
 import { logger } from '@/shared/logger';
 import type { SupportedChain } from '@/types/chains';
 import { type AlertRuleRow, rowToAlertRule } from '@/types/database/alert';
@@ -115,89 +116,92 @@ export async function createAlertRule(data: CreateRuleData): Promise<AlertRule> 
 
 export async function updateAlertRule(id: string, data: UpdateRuleData): Promise<AlertRule | null> {
   try {
-    const existingResult = await query<AlertRuleRow>('SELECT * FROM alert_rules WHERE id = $1', [
-      id,
-    ]);
+    return await withTransaction(async (client) => {
+      const existingResult = await client.query<AlertRuleRow>(
+        'SELECT * FROM alert_rules WHERE id = $1 FOR UPDATE',
+        [id],
+      );
 
-    if (existingResult.rows.length === 0) {
-      return null;
-    }
+      if (existingResult.rows.length === 0) {
+        return null;
+      }
 
-    const existing = existingResult.rows[0]!;
-    const now = new Date();
+      const existing = existingResult.rows[0]!;
+      const now = new Date();
 
-    const updatedRule = {
-      name: data.name ?? existing.name,
-      enabled: data.enabled ?? existing.enabled,
-      event: data.event ?? existing.event,
-      severity: data.severity ?? existing.severity,
-      protocols: data.protocols ?? existing.protocols,
-      chains: data.chains ?? existing.chains,
-      instances: data.chains ? null : existing.instances,
-      symbols: data.symbols ?? existing.symbols,
-      params: data.params
-        ? JSON.stringify(data.params)
-        : existing.params
-          ? JSON.stringify(existing.params)
-          : null,
-      channels: data.channels ?? existing.channels,
-      recipients: data.recipients ?? existing.recipients,
-      cooldown_minutes: data.cooldownMinutes ?? existing.cooldown_minutes,
-      max_notifications_per_hour:
-        data.maxNotificationsPerHour ?? existing.max_notifications_per_hour,
-      runbook: data.runbook ?? existing.runbook,
-      owner: data.owner ?? existing.owner,
-      silenced_until: data.silencedUntil ? new Date(data.silencedUntil) : existing.silenced_until,
-    };
+      const updatedRule = {
+        name: data.name ?? existing.name,
+        enabled: data.enabled ?? existing.enabled,
+        event: data.event ?? existing.event,
+        severity: data.severity ?? existing.severity,
+        protocols: data.protocols ?? existing.protocols,
+        chains: data.chains ?? existing.chains,
+        instances: data.chains ? null : existing.instances,
+        symbols: data.symbols ?? existing.symbols,
+        params: data.params
+          ? JSON.stringify(data.params)
+          : existing.params
+            ? JSON.stringify(existing.params)
+            : null,
+        channels: data.channels ?? existing.channels,
+        recipients: data.recipients ?? existing.recipients,
+        cooldown_minutes: data.cooldownMinutes ?? existing.cooldown_minutes,
+        max_notifications_per_hour:
+          data.maxNotificationsPerHour ?? existing.max_notifications_per_hour,
+        runbook: data.runbook ?? existing.runbook,
+        owner: data.owner ?? existing.owner,
+        silenced_until: data.silencedUntil ? new Date(data.silencedUntil) : existing.silenced_until,
+      };
 
-    await query(
-      `UPDATE alert_rules SET
-        name = $2, enabled = $3, event = $4, severity = $5, protocols = $6, chains = $7,
-        instances = $8, symbols = $9, params = $10, channels = $11, recipients = $12,
-        cooldown_minutes = $13, max_notifications_per_hour = $14, runbook = $15, owner = $16,
-        silenced_until = $17, updated_at = $18
-      WHERE id = $1`,
-      [
+      await client.query(
+        `UPDATE alert_rules SET
+          name = $2, enabled = $3, event = $4, severity = $5, protocols = $6, chains = $7,
+          instances = $8, symbols = $9, params = $10, channels = $11, recipients = $12,
+          cooldown_minutes = $13, max_notifications_per_hour = $14, runbook = $15, owner = $16,
+          silenced_until = $17, updated_at = $18
+        WHERE id = $1`,
+        [
+          id,
+          updatedRule.name,
+          updatedRule.enabled,
+          updatedRule.event,
+          updatedRule.severity,
+          updatedRule.protocols,
+          updatedRule.chains,
+          updatedRule.instances,
+          updatedRule.symbols,
+          updatedRule.params,
+          updatedRule.channels,
+          updatedRule.recipients,
+          updatedRule.cooldown_minutes,
+          updatedRule.max_notifications_per_hour,
+          updatedRule.runbook,
+          updatedRule.owner,
+          updatedRule.silenced_until,
+          now,
+        ],
+      );
+
+      return {
         id,
-        updatedRule.name,
-        updatedRule.enabled,
-        updatedRule.event,
-        updatedRule.severity,
-        updatedRule.protocols,
-        updatedRule.chains,
-        updatedRule.instances,
-        updatedRule.symbols,
-        updatedRule.params,
-        updatedRule.channels,
-        updatedRule.recipients,
-        updatedRule.cooldown_minutes,
-        updatedRule.max_notifications_per_hour,
-        updatedRule.runbook,
-        updatedRule.owner,
-        updatedRule.silenced_until,
-        now,
-      ],
-    );
-
-    return {
-      id,
-      name: updatedRule.name,
-      enabled: updatedRule.enabled,
-      event: updatedRule.event as AlertEvent,
-      severity: updatedRule.severity as AlertSeverity,
-      protocols: (updatedRule.protocols as OracleProtocol[]) ?? undefined,
-      chains: (updatedRule.chains as SupportedChain[]) ?? undefined,
-      instances: updatedRule.instances ?? undefined,
-      symbols: updatedRule.symbols ?? undefined,
-      params: updatedRule.params ? JSON.parse(updatedRule.params as string) : undefined,
-      channels: (updatedRule.channels as AlertRule['channels']) ?? undefined,
-      recipients: updatedRule.recipients ?? undefined,
-      cooldownMinutes: updatedRule.cooldown_minutes ?? undefined,
-      maxNotificationsPerHour: updatedRule.max_notifications_per_hour ?? undefined,
-      runbook: updatedRule.runbook ?? undefined,
-      owner: updatedRule.owner ?? undefined,
-      silencedUntil: updatedRule.silenced_until?.toISOString() ?? undefined,
-    };
+        name: updatedRule.name,
+        enabled: updatedRule.enabled,
+        event: updatedRule.event as AlertEvent,
+        severity: updatedRule.severity as AlertSeverity,
+        protocols: (updatedRule.protocols as OracleProtocol[]) ?? undefined,
+        chains: (updatedRule.chains as SupportedChain[]) ?? undefined,
+        instances: updatedRule.instances ?? undefined,
+        symbols: updatedRule.symbols ?? undefined,
+        params: updatedRule.params ? JSON.parse(updatedRule.params as string) : undefined,
+        channels: (updatedRule.channels as AlertRule['channels']) ?? undefined,
+        recipients: updatedRule.recipients ?? undefined,
+        cooldownMinutes: updatedRule.cooldown_minutes ?? undefined,
+        maxNotificationsPerHour: updatedRule.max_notifications_per_hour ?? undefined,
+        runbook: updatedRule.runbook ?? undefined,
+        owner: updatedRule.owner ?? undefined,
+        silencedUntil: updatedRule.silenced_until?.toISOString() ?? undefined,
+      };
+    });
   } catch (err) {
     logger.error('Failed to update alert rule', { error: err });
     throw err;

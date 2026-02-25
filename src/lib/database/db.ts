@@ -77,17 +77,19 @@ export async function query<T extends QueryResultRow = QueryResultRow>(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
+  let abortHandler: (() => void) | null = null;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    abortHandler = () => reject(new Error('database_connection_timeout'));
+    controller.signal.addEventListener('abort', abortHandler);
+  });
+
   try {
-    const client = await Promise.race([
-      db.connect(),
-      new Promise<never>((_, reject) => {
-        controller.signal.addEventListener('abort', () => {
-          reject(new Error('database_connection_timeout'));
-        });
-      }),
-    ]);
+    const client = await Promise.race([db.connect(), timeoutPromise]);
 
     clearTimeout(timeoutId);
+    if (abortHandler) {
+      controller.signal.removeEventListener('abort', abortHandler);
+    }
 
     try {
       const res = await client.query<T>(text, params);
@@ -97,6 +99,9 @@ export async function query<T extends QueryResultRow = QueryResultRow>(
     }
   } catch (error) {
     clearTimeout(timeoutId);
+    if (abortHandler) {
+      controller.signal.removeEventListener('abort', abortHandler);
+    }
     if (error instanceof Error && error.message === 'database_connection_timeout') {
       throw new Error('database_connection_timeout');
     }
@@ -122,6 +127,7 @@ export interface PoolHealthStatus {
 
 let lastHealthCheck: PoolHealthStatus | null = null;
 let healthCheckInterval: ReturnType<typeof setInterval> | null = null;
+let isHealthCheckRunning = false;
 
 export function getPoolStats(): {
   totalCount: number;
@@ -199,17 +205,27 @@ export function startHealthCheck(intervalMs: number = 30000): void {
   }
 
   healthCheckInterval = setInterval(async () => {
-    const health = await checkPoolHealth();
-    if (health.status !== 'healthy') {
-      logger.warn('Database pool health check', {
-        status: health.status,
-        issues: health.issues,
-        stats: {
-          total: health.totalConnections,
-          idle: health.idleConnections,
-          waiting: health.waitingClients,
-        },
-      });
+    if (isHealthCheckRunning) {
+      logger.warn('Health check already running, skipping this interval');
+      return;
+    }
+
+    isHealthCheckRunning = true;
+    try {
+      const health = await checkPoolHealth();
+      if (health.status !== 'healthy') {
+        logger.warn('Database pool health check', {
+          status: health.status,
+          issues: health.issues,
+          stats: {
+            total: health.totalConnections,
+            idle: health.idleConnections,
+            waiting: health.waitingClients,
+          },
+        });
+      }
+    } finally {
+      isHealthCheckRunning = false;
     }
   }, intervalMs);
 

@@ -120,10 +120,10 @@ export const DEFAULT_STALENESS_THRESHOLDS = Object.freeze({
 // ============================================================================
 
 export const DB_POOL_CONFIG = {
-  MAX_CONNECTIONS: parseInt(process.env.DB_POOL_MAX ?? '20', 10),
-  MIN_CONNECTIONS: parseInt(process.env.DB_POOL_MIN ?? '2', 10),
-  IDLE_TIMEOUT_MS: parseInt(process.env.DB_IDLE_TIMEOUT ?? '30000', 10),
-  CONNECTION_TIMEOUT_MS: parseInt(process.env.DB_CONNECTION_TIMEOUT ?? '10000', 10),
+  MAX_CONNECTIONS: parseInt(process.env.DB_POOL_MAX || '20', 10) || 20,
+  MIN_CONNECTIONS: parseInt(process.env.DB_POOL_MIN || '2', 10) || 2,
+  IDLE_TIMEOUT_MS: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10) || 30000,
+  CONNECTION_TIMEOUT_MS: parseInt(process.env.DB_CONNECTION_TIMEOUT || '10000', 10) || 10000,
 } as const;
 
 // ============================================================================

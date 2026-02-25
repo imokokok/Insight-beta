@@ -10,16 +10,26 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const body = await request.json();
 
     const { action, note, duration } = body as {
-      action: 'acknowledge' | 'resolve' | 'silence';
+      action?: 'acknowledge' | 'resolve' | 'silence';
       note?: string;
       duration?: number;
     };
+
+    if (action === undefined || action === null) {
+      return error(
+        {
+          code: 'VALIDATION_ERROR',
+          message: 'Missing required field: action',
+        },
+        400,
+      );
+    }
 
     if (!validateAlertAction(action)) {
       return error(
         {
           code: 'VALIDATION_ERROR',
-          message: 'Invalid action. Must be acknowledge, resolve, or silence.',
+          message: `Invalid action '${action}'. Must be one of: acknowledge, resolve, silence.`,
         },
         400,
       );
@@ -30,8 +40,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (!result) {
       return error(
         {
-          code: 'VALIDATION_ERROR',
-          message: 'Invalid action. Must be acknowledge, resolve, or silence.',
+          code: 'OPERATION_FAILED',
+          message: 'Failed to update alert status. Please check the alert ID and try again.',
         },
         400,
       );

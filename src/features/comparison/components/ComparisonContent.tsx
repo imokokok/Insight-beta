@@ -166,6 +166,10 @@ export function ComparisonContent({ onRefresh: _onRefresh }: ComparisonContentPr
   }, [debouncedFilter.symbols, realtime]);
 
   const disconnectWebSocket = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
     wsRef.current?.close();
     wsRef.current = null;
     setIsLive(false);

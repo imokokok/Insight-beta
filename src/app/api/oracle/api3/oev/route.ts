@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
       frequencyStats.push({
         dapiName,
         updatesPerMinute: Math.round((stats.count / timeRangeMinutes) * 10) / 10,
-        avgDelayMs: Math.round(stats.totalDelay / stats.count),
+        avgDelayMs: stats.count > 0 ? Math.round(stats.totalDelay / stats.count) : 0,
       });
     }
 
