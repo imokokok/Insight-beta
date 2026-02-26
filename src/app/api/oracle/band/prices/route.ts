@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-import { ok, error } from '@/lib/api/apiResponse';
+import { error } from '@/lib/api/apiResponse';
 import {
   createBandClient,
   getAvailableBandSymbols,
@@ -9,6 +10,8 @@ import {
 } from '@/lib/blockchain/bandOracle';
 import { getDefaultRpcUrl } from '@/lib/blockchain/chainConfig';
 import type { SupportedChain, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
+
+const CACHE_CONTROL = 'public, s-maxage=30, stale-while-revalidate=60';
 
 interface BandPriceQueryParams {
   symbol?: string;
@@ -48,6 +51,20 @@ function formatPriceFeed(feed: UnifiedPriceFeed): BandPriceResponse {
     isStale: feed.isStale ?? false,
     stalenessSeconds: feed.stalenessSeconds ?? 0,
   };
+}
+
+function ok<T>(data: T) {
+  return NextResponse.json(
+    {
+      success: true,
+      data,
+    },
+    {
+      headers: {
+        'Cache-Control': CACHE_CONTROL,
+      },
+    },
+  );
 }
 
 export async function GET(request: NextRequest) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, lazy, Suspense, useMemo } from 'react';
 import type { ComponentPropsWithoutRef } from 'react';
 
 import {
@@ -23,23 +23,45 @@ import { Badge } from '@/components/ui';
 import { Input } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { AlertListSkeleton } from '@/components/ui';
-import {
-  AlertCard,
-  AlertDetailPanel,
-  AlertRulesList,
-  AlertBatchActions,
-  AlertGroupSelector,
-  AlertGroupList,
-  AlertTrendChart,
-  AlertHeatmap,
-  NotificationChannels,
-  ResponseTimeStats,
-} from '@/features/alerts/components';
+import { AlertCard, AlertGroupSelector, AlertGroupList } from '@/features/alerts/components';
 import { useAlertsPage, sourceIcons } from '@/features/alerts/hooks';
 import type { AlertSeverity, AlertStatus } from '@/features/alerts/hooks/useAlerts';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/shared/utils';
 import type { KpiCardData, KpiStatus } from '@/types/shared/kpi';
+
+const AlertDetailPanel = lazy(() =>
+  import('@/features/alerts/components').then((mod) => ({ default: mod.AlertDetailPanel })),
+);
+const AlertRulesList = lazy(() =>
+  import('@/features/alerts/components').then((mod) => ({ default: mod.AlertRulesList })),
+);
+const AlertBatchActions = lazy(() =>
+  import('@/features/alerts/components').then((mod) => ({ default: mod.AlertBatchActions })),
+);
+const NotificationChannels = lazy(() =>
+  import('@/features/alerts/components').then((mod) => ({ default: mod.NotificationChannels })),
+);
+const AlertTrendChart = lazy(() =>
+  import('@/features/alerts/components').then((mod) => ({ default: mod.AlertTrendChart })),
+);
+const AlertHeatmap = lazy(() =>
+  import('@/features/alerts/components').then((mod) => ({ default: mod.AlertHeatmap })),
+);
+const ResponseTimeStats = lazy(() =>
+  import('@/features/alerts/components').then((mod) => ({ default: mod.ResponseTimeStats })),
+);
+
+function LoadingFallback({ height = '200px' }: { height?: string }) {
+  return (
+    <div
+      className="flex items-center justify-center rounded-lg border border-border/30 bg-[rgba(15,23,42,0.8)]"
+      style={{ height }}
+    >
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    </div>
+  );
+}
 
 const ListContainer = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
   ({ style, children, ...props }, ref) => (
@@ -453,11 +475,13 @@ export default function AlertsCenterPage() {
           </div>
 
           <TabsContent value={activeTab} className="space-y-3">
-            <AlertBatchActions
-              selectedAlerts={selectedAlerts}
-              onClearSelection={deselectAll}
-              onBatchActionComplete={handleBatchActionComplete}
-            />
+            <Suspense fallback={<AlertListSkeleton className="h-12" />}>
+              <AlertBatchActions
+                selectedAlerts={selectedAlerts}
+                onClearSelection={deselectAll}
+                onBatchActionComplete={handleBatchActionComplete}
+              />
+            </Suspense>
 
             <div className="grid gap-3 lg:grid-cols-2">
               <div className="rounded-lg border border-border/30 bg-[rgba(15,23,42,0.8)] backdrop-blur-sm">
@@ -553,47 +577,59 @@ export default function AlertsCenterPage() {
                 </div>
               </div>
 
-              <AlertDetailPanel alert={selectedAlert} />
+              <Suspense fallback={<LoadingFallback height="600px" />}>
+                <AlertDetailPanel alert={selectedAlert} />
+              </Suspense>
             </div>
           </TabsContent>
 
           <TabsContent value="rules" className="space-y-3">
-            <AlertRulesList
-              rules={rules}
-              loading={rulesLoading}
-              onToggle={toggleRule}
-              onDelete={deleteRule}
-              onCreate={createRule}
-              onUpdate={updateRule}
-            />
+            <Suspense fallback={<LoadingFallback height="400px" />}>
+              <AlertRulesList
+                rules={rules}
+                loading={rulesLoading}
+                onToggle={toggleRule}
+                onDelete={deleteRule}
+                onCreate={createRule}
+                onUpdate={updateRule}
+              />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="channels" className="space-y-3">
-            <NotificationChannels
-              channels={channels}
-              loading={channelsLoading}
-              fetchChannels={fetchChannels}
-              createChannel={createChannel}
-              updateChannel={updateChannel}
-              deleteChannel={deleteChannel}
-              toggleChannel={toggleChannel}
-              testChannel={testChannel}
-            />
+            <Suspense fallback={<LoadingFallback height="400px" />}>
+              <NotificationChannels
+                channels={channels}
+                loading={channelsLoading}
+                fetchChannels={fetchChannels}
+                createChannel={createChannel}
+                updateChannel={updateChannel}
+                deleteChannel={deleteChannel}
+                toggleChannel={toggleChannel}
+                testChannel={testChannel}
+              />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="analysis" className="space-y-3">
-            <ResponseTimeStats />
-            <AlertTrendChart
-              data={historyData?.trend || []}
-              stats={historyData?.stats || null}
-              timeRange={historyTimeRange}
-              groupBy={historyGroupBy}
-              onTimeRangeChange={setHistoryTimeRange}
-              onGroupByChange={setHistoryGroupBy}
-              loading={historyLoading}
-              previousStats={historyData?.previousStats}
-            />
-            <AlertHeatmap data={historyData?.heatmap || []} loading={historyLoading} />
+            <Suspense fallback={<LoadingFallback height="300px" />}>
+              <ResponseTimeStats />
+            </Suspense>
+            <Suspense fallback={<LoadingFallback height="400px" />}>
+              <AlertTrendChart
+                data={historyData?.trend || []}
+                stats={historyData?.stats || null}
+                timeRange={historyTimeRange}
+                groupBy={historyGroupBy}
+                onTimeRangeChange={setHistoryTimeRange}
+                onGroupByChange={setHistoryGroupBy}
+                loading={historyLoading}
+                previousStats={historyData?.previousStats}
+              />
+            </Suspense>
+            <Suspense fallback={<LoadingFallback height="400px" />}>
+              <AlertHeatmap data={historyData?.heatmap || []} loading={historyLoading} />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>

@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const stats = getChainlinkMockStats();
 
-    return ok({
+    const response = ok({
       stats,
       metadata: {
         source: 'chainlink-network',
@@ -13,6 +13,10 @@ export async function GET() {
         note: 'Mock data - to be replaced with real Chainlink network data',
       },
     });
+
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+
+    return response;
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to fetch Chainlink stats';
     return error({ code: 'INTERNAL_ERROR', message }, 500);

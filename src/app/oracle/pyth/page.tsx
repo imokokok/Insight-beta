@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 
 import {
   RefreshCw,
@@ -38,13 +38,25 @@ import {
   type TabItem,
 } from '@/features/oracle/chainlink/components';
 import { pythExportConfig } from '@/features/oracle/pyth';
-import {
-  PythKpiOverview,
-  PythTopStatusBar,
-  ConfidenceComparisonChart,
-  CrossChainPriceComparison,
-  PriceHistoryChart,
-} from '@/features/oracle/pyth/components';
+import { PythKpiOverview, PythTopStatusBar } from '@/features/oracle/pyth/components';
+
+const ConfidenceComparisonChart = lazy(() =>
+  import('@/features/oracle/pyth/components').then((mod) => ({
+    default: mod.ConfidenceComparisonChart,
+  })),
+);
+
+const CrossChainPriceComparison = lazy(() =>
+  import('@/features/oracle/pyth/components').then((mod) => ({
+    default: mod.CrossChainPriceComparison,
+  })),
+);
+
+const PriceHistoryChart = lazy(() =>
+  import('@/features/oracle/pyth/components').then((mod) => ({
+    default: mod.PriceHistoryChart,
+  })),
+);
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
 import { formatLatency } from '@/shared/utils/format';
@@ -700,7 +712,9 @@ export default function PythPage() {
 
                   <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
                     <div className="lg:col-span-1 xl:col-span-2">
-                      <PriceHistoryChart isLoading={state.loading} />
+                      <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+                        <PriceHistoryChart isLoading={state.loading} />
+                      </Suspense>
                     </div>
                     <div className="space-y-3 lg:col-span-1 xl:col-span-1">
                       <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
@@ -1062,8 +1076,12 @@ export default function PythPage() {
               <TabPanelWrapper tabId="analysis">
                 {loadedTabs.has('analysis') ? (
                   <div className="space-y-4">
-                    <CrossChainPriceComparison isLoading={state.loading} />
-                    <ConfidenceComparisonChart isLoading={state.loading} />
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <CrossChainPriceComparison isLoading={state.loading} />
+                    </Suspense>
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <ConfidenceComparisonChart isLoading={state.loading} />
+                    </Suspense>
                   </div>
                 ) : (
                   <div className="space-y-4">

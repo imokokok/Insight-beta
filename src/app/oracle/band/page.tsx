@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 
 import {
   RefreshCw,
@@ -20,26 +20,11 @@ import { ErrorBanner } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { CHAIN_DISPLAY_NAMES } from '@/config/chains';
 import {
-  BridgeStatusCard,
-  DataSourceList,
-  TransferHistory,
-  CosmosChainSelector,
   BandExportButton,
-  AggregationValidationCard,
-  BandPriceChart,
-  DataFreshnessCard,
-  OracleScriptList,
-  ValidatorHealthCard,
-  BridgeTrendChart,
-  PriceTrendTab,
-  QualityAnalysisTab,
-  PriceComparisonTab,
-} from '@/features/oracle/band';
-import {
   BandKpiOverview,
   BandTopStatusBar,
   type BandKpiStats,
-} from '@/features/oracle/band/components/dashboard';
+} from '@/features/oracle/band';
 import type {
   Bridge,
   DataSource,
@@ -57,6 +42,72 @@ import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 import { fetchApiData, cn } from '@/shared/utils';
 import type { NetworkHealthStatus } from '@/types/common';
+
+const BridgeStatusCard = lazy(() =>
+  import('@/features/oracle/band/components/BridgeStatusCard').then((mod) => ({
+    default: mod.BridgeStatusCard,
+  })),
+);
+const DataSourceList = lazy(() =>
+  import('@/features/oracle/band/components/DataSourceList').then((mod) => ({
+    default: mod.DataSourceList,
+  })),
+);
+const TransferHistory = lazy(() =>
+  import('@/features/oracle/band/components/TransferHistory').then((mod) => ({
+    default: mod.TransferHistory,
+  })),
+);
+const CosmosChainSelector = lazy(() =>
+  import('@/features/oracle/band/components/CosmosChainSelector').then((mod) => ({
+    default: mod.CosmosChainSelector,
+  })),
+);
+const BandPriceChart = lazy(() =>
+  import('@/features/oracle/band/components/BandPriceChart').then((mod) => ({
+    default: mod.BandPriceChart,
+  })),
+);
+const AggregationValidationCard = lazy(() =>
+  import('@/features/oracle/band/components/AggregationValidationCard').then((mod) => ({
+    default: mod.AggregationValidationCard,
+  })),
+);
+const DataFreshnessCard = lazy(() =>
+  import('@/features/oracle/band/components/DataFreshnessCard').then((mod) => ({
+    default: mod.DataFreshnessCard,
+  })),
+);
+const OracleScriptList = lazy(() =>
+  import('@/features/oracle/band/components/OracleScriptList').then((mod) => ({
+    default: mod.OracleScriptList,
+  })),
+);
+const ValidatorHealthCard = lazy(() =>
+  import('@/features/oracle/band/components/ValidatorHealthCard').then((mod) => ({
+    default: mod.ValidatorHealthCard,
+  })),
+);
+const BridgeTrendChart = lazy(() =>
+  import('@/features/oracle/band/components/BridgeTrendChart').then((mod) => ({
+    default: mod.BridgeTrendChart,
+  })),
+);
+const PriceTrendTab = lazy(() =>
+  import('@/features/oracle/band/components/PriceTrendTab').then((mod) => ({
+    default: mod.PriceTrendTab,
+  })),
+);
+const QualityAnalysisTab = lazy(() =>
+  import('@/features/oracle/band/components/QualityAnalysisTab').then((mod) => ({
+    default: mod.QualityAnalysisTab,
+  })),
+);
+const PriceComparisonTab = lazy(() =>
+  import('@/features/oracle/band/components/PriceComparisonTab').then((mod) => ({
+    default: mod.PriceComparisonTab,
+  })),
+);
 
 const EXTENDED_CHAIN_DISPLAY_NAMES: Record<string, string> = {
   ...CHAIN_DISPLAY_NAMES,
@@ -576,7 +627,9 @@ export default function BandProtocolPage() {
 
                   <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
                     <div className="lg:col-span-1 xl:col-span-2">
-                      <BandPriceChart symbol="ATOM/USD" chain="cosmos" timeRange="24h" />
+                      <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+                        <BandPriceChart symbol="ATOM/USD" chain="cosmos" timeRange="24h" />
+                      </Suspense>
                     </div>
                     <div className="space-y-3 lg:col-span-1 xl:col-span-1">
                       <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
@@ -680,11 +733,17 @@ export default function BandProtocolPage() {
                   </div>
 
                   <div className="grid gap-3 lg:grid-cols-2">
-                    <AggregationValidationCard symbol="ETH/USD" chain="ethereum" />
-                    <DataFreshnessCard symbol="ETH/USD" chain="ethereum" />
+                    <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+                      <AggregationValidationCard symbol="ETH/USD" chain="ethereum" />
+                    </Suspense>
+                    <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+                      <DataFreshnessCard symbol="ETH/USD" chain="ethereum" />
+                    </Suspense>
                   </div>
 
-                  <ValidatorHealthCard />
+                  <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                    <ValidatorHealthCard />
+                  </Suspense>
                 </div>
               </TabPanelWrapper>
 
@@ -707,27 +766,35 @@ export default function BandProtocolPage() {
                       ) : (
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                           {state.bridgesData?.bridges.map((bridge) => (
-                            <BridgeStatusCard
+                            <Suspense
                               key={bridge.bridgeId}
-                              bridge={bridge}
-                              onClick={(b) => setSelectedBridge(b)}
-                              className={cn(
-                                selectedBridge?.bridgeId === bridge.bridgeId && 'border-primary',
-                              )}
-                            />
+                              fallback={<Skeleton className="h-40 w-full" />}
+                            >
+                              <BridgeStatusCard
+                                bridge={bridge}
+                                onClick={(b) => setSelectedBridge(b)}
+                                className={cn(
+                                  selectedBridge?.bridgeId === bridge.bridgeId && 'border-primary',
+                                )}
+                              />
+                            </Suspense>
                           ))}
                         </div>
                       )}
                     </ContentSection>
 
                     {selectedBridge && (
-                      <BridgeTrendChart
-                        bridgeId={selectedBridge.bridgeId}
-                        bridgeName={`${EXTENDED_CHAIN_DISPLAY_NAMES[selectedBridge.sourceChain] ?? selectedBridge.sourceChain} → ${EXTENDED_CHAIN_DISPLAY_NAMES[selectedBridge.destinationChain] ?? selectedBridge.destinationChain}`}
-                      />
+                      <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                        <BridgeTrendChart
+                          bridgeId={selectedBridge.bridgeId}
+                          bridgeName={`${EXTENDED_CHAIN_DISPLAY_NAMES[selectedBridge.sourceChain] ?? selectedBridge.sourceChain} → ${EXTENDED_CHAIN_DISPLAY_NAMES[selectedBridge.destinationChain] ?? selectedBridge.destinationChain}`}
+                        />
+                      </Suspense>
                     )}
 
-                    <TransferHistory limit={20} />
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <TransferHistory limit={20} />
+                    </Suspense>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -741,19 +808,27 @@ export default function BandProtocolPage() {
                 {loadedTabs.has('sources') ? (
                   <div className="space-y-4">
                     <div className="grid gap-4 lg:grid-cols-2">
-                      <BandPriceChart symbol="ETH/USD" chain="ethereum" timeRange="24h" />
-                      <BandPriceChart symbol="BTC/USD" chain="ethereum" timeRange="24h" />
+                      <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                        <BandPriceChart symbol="ETH/USD" chain="ethereum" timeRange="24h" />
+                      </Suspense>
+                      <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                        <BandPriceChart symbol="BTC/USD" chain="ethereum" timeRange="24h" />
+                      </Suspense>
                     </div>
-                    <DataSourceList
-                      sources={state.sourcesData?.sources}
-                      loading={state.loading}
-                      chain={undefined}
-                      symbol={undefined}
-                    />
-                    <OracleScriptList
-                      scripts={state.oracleScripts ?? undefined}
-                      loading={state.loading}
-                    />
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <DataSourceList
+                        sources={state.sourcesData?.sources}
+                        loading={state.loading}
+                        chain={undefined}
+                        symbol={undefined}
+                      />
+                    </Suspense>
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <OracleScriptList
+                        scripts={state.oracleScripts ?? undefined}
+                        loading={state.loading}
+                      />
+                    </Suspense>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -770,13 +845,15 @@ export default function BandProtocolPage() {
                       title={t('band.cosmosSelector.title')}
                       description={t('band.cosmosSelector.description')}
                     >
-                      <CosmosChainSelector
-                        selectedChain={selectedCosmosChain}
-                        onChainChange={setSelectedCosmosChain}
-                        showDetails={true}
-                        showIBCStatus={true}
-                        filterType="mainnet"
-                      />
+                      <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+                        <CosmosChainSelector
+                          selectedChain={selectedCosmosChain}
+                          onChainChange={setSelectedCosmosChain}
+                          showDetails={true}
+                          showIBCStatus={true}
+                          filterType="mainnet"
+                        />
+                      </Suspense>
                     </ContentSection>
 
                     <ContentSection
@@ -853,9 +930,15 @@ export default function BandProtocolPage() {
               <TabPanelWrapper tabId="analysis">
                 {loadedTabs.has('analysis') ? (
                   <div className="space-y-4">
-                    <PriceTrendTab />
-                    <QualityAnalysisTab />
-                    <PriceComparisonTab />
+                    <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+                      <PriceTrendTab />
+                    </Suspense>
+                    <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+                      <QualityAnalysisTab />
+                    </Suspense>
+                    <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+                      <PriceComparisonTab />
+                    </Suspense>
                   </div>
                 ) : (
                   <div className="space-y-4">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 
 import {
   RefreshCw,
@@ -38,17 +38,52 @@ import {
   useTabNavigation,
   type TabItem,
 } from '@/features/oracle/chainlink/components';
-import {
-  ChainlinkPriceHistory,
-  FeedQualityAnalysis,
-  ChainlinkGasCostAnalysis,
-  HeartbeatMonitor,
-  DeviationTriggerStats,
-  CrossChainPriceComparison,
-} from '@/features/oracle/chainlink/components';
-import { FeedAggregation } from '@/features/oracle/chainlink/components/FeedAggregation';
-import { OcrRoundMonitor } from '@/features/oracle/chainlink/components/OcrRoundMonitor';
-import { OperatorList } from '@/features/oracle/chainlink/components/OperatorList';
+
+const ChainlinkPriceHistory = lazy(() =>
+  import('@/features/oracle/chainlink/components/ChainlinkPriceHistory').then((mod) => ({
+    default: mod.ChainlinkPriceHistory,
+  })),
+);
+const FeedQualityAnalysis = lazy(() =>
+  import('@/features/oracle/chainlink/components/FeedQualityAnalysis').then((mod) => ({
+    default: mod.FeedQualityAnalysis,
+  })),
+);
+const ChainlinkGasCostAnalysis = lazy(() =>
+  import('@/features/oracle/chainlink/components/ChainlinkGasCostAnalysis').then((mod) => ({
+    default: mod.ChainlinkGasCostAnalysis,
+  })),
+);
+const HeartbeatMonitor = lazy(() =>
+  import('@/features/oracle/chainlink/components/HeartbeatMonitor').then((mod) => ({
+    default: mod.HeartbeatMonitor,
+  })),
+);
+const DeviationTriggerStats = lazy(() =>
+  import('@/features/oracle/chainlink/components/DeviationTriggerStats').then((mod) => ({
+    default: mod.DeviationTriggerStats,
+  })),
+);
+const CrossChainPriceComparison = lazy(() =>
+  import('@/features/oracle/chainlink/components/CrossChainPriceComparison').then((mod) => ({
+    default: mod.CrossChainPriceComparison,
+  })),
+);
+const FeedAggregation = lazy(() =>
+  import('@/features/oracle/chainlink/components/FeedAggregation').then((mod) => ({
+    default: mod.FeedAggregation,
+  })),
+);
+const OcrRoundMonitor = lazy(() =>
+  import('@/features/oracle/chainlink/components/OcrRoundMonitor').then((mod) => ({
+    default: mod.OcrRoundMonitor,
+  })),
+);
+const OperatorList = lazy(() =>
+  import('@/features/oracle/chainlink/components/OperatorList').then((mod) => ({
+    default: mod.OperatorList,
+  })),
+);
 import type { ChainlinkFeed, Operator, OcrRound } from '@/features/oracle/chainlink/types';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
@@ -521,7 +556,9 @@ export default function ChainlinkPage() {
 
                   <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
                     <div className="lg:col-span-1 xl:col-span-2">
-                      <ChainlinkPriceHistory />
+                      <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+                        <ChainlinkPriceHistory />
+                      </Suspense>
                     </div>
                     <div className="space-y-3 lg:col-span-1 xl:col-span-1">
                       <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
@@ -595,8 +632,12 @@ export default function ChainlinkPage() {
               <TabPanelWrapper tabId="feeds">
                 {loadedTabs.has('feeds') ? (
                   <div className="space-y-4">
-                    <FeedAggregation />
-                    <OcrRoundMonitor />
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <FeedAggregation />
+                    </Suspense>
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <OcrRoundMonitor />
+                    </Suspense>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -609,8 +650,12 @@ export default function ChainlinkPage() {
               <TabPanelWrapper tabId="nodes">
                 {loadedTabs.has('nodes') ? (
                   <div className="space-y-4">
-                    <OperatorList collapsible />
-                    <HeartbeatMonitor collapsible />
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <OperatorList collapsible />
+                    </Suspense>
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <HeartbeatMonitor collapsible />
+                    </Suspense>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -623,8 +668,12 @@ export default function ChainlinkPage() {
               <TabPanelWrapper tabId="costs">
                 {loadedTabs.has('costs') ? (
                   <div className="space-y-4">
-                    <ChainlinkGasCostAnalysis collapsible />
-                    <DeviationTriggerStats collapsible />
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <ChainlinkGasCostAnalysis collapsible />
+                    </Suspense>
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <DeviationTriggerStats collapsible />
+                    </Suspense>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -637,8 +686,12 @@ export default function ChainlinkPage() {
               <TabPanelWrapper tabId="advanced">
                 {loadedTabs.has('advanced') ? (
                   <div className="space-y-4">
-                    <FeedQualityAnalysis collapsible />
-                    <CrossChainPriceComparison collapsible />
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <FeedQualityAnalysis collapsible />
+                    </Suspense>
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <CrossChainPriceComparison collapsible />
+                    </Suspense>
                   </div>
                 ) : (
                   <div className="space-y-4">

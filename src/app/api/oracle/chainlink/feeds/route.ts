@@ -1,35 +1,23 @@
 import type { NextRequest } from 'next/server';
 
+import { z } from 'zod';
+
 import { isSupportedChain, type ChainId } from '@/config/chains';
 import { getRpcUrl } from '@/config/env';
-import { ok, error } from '@/lib/api/apiResponse';
+import { error } from '@/lib/api/apiResponse';
 import { ChainlinkClient, getDefaultRpcUrl } from '@/lib/blockchain';
 import { POPULAR_FEEDS } from '@/lib/blockchain/chainlinkDataFeeds';
 import { getChainlinkMockFeeds, type Feed } from '@/lib/mock/oracleMockData';
 
-interface FeedsQueryParams {
-  chain?: ChainId;
-  status?: 'active' | 'inactive';
-  search?: string;
-  useRealData?: boolean;
-}
-
-function parseQueryParams(request: NextRequest): FeedsQueryParams {
-  const { searchParams } = new URL(request.url);
-  const chainParam = searchParams.get('chain');
-
-  let chain: ChainId | undefined;
-  if (chainParam && isSupportedChain(chainParam)) {
-    chain = chainParam;
-  }
-
-  return {
-    chain,
-    status: (searchParams.get('status') as FeedsQueryParams['status']) ?? 'active',
-    search: searchParams.get('search') ?? undefined,
-    useRealData: searchParams.get('real') !== 'false',
-  };
-}
+const FeedsQuerySchema = z.object({
+  chain: z.string().optional(),
+  status: z.enum(['active', 'inactive']).optional().default('active'),
+  search: z.string().optional(),
+  real: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((val) => val !== 'false'),
+});
 
 function getRpcUrlForChain(chain: ChainId): string | undefined {
   const envUrl = getRpcUrl(chain);
@@ -98,8 +86,17 @@ async function fetchRealFeeds(chain: ChainId): Promise<{
 
 export async function GET(request: NextRequest) {
   try {
-    const { chain, status, search, useRealData } = parseQueryParams(request);
-    const targetChain = chain ?? 'ethereum';
+    const { searchParams } = new URL(request.url);
+    const params = Object.fromEntries(searchParams.entries());
+    const result = FeedsQuerySchema.safeParse(params);
+
+    if (!result.success) {
+      const issues = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`);
+      return error({ code: 'VALIDATION_ERROR', message: issues.join('; ') }, 400);
+    }
+
+    const { chain, status, search, real: useRealData } = result.data;
+    const targetChain = chain && isSupportedChain(chain) ? chain : 'ethereum';
 
     let feeds: Feed[];
     let dataSource: 'on-chain' | 'fallback' = 'fallback';
@@ -132,24 +129,34 @@ export async function GET(request: NextRequest) {
     const activeCount = feeds.filter((f) => !f.isStale).length;
     const staleCount = feeds.filter((f) => f.isStale).length;
 
-    return ok({
-      feeds,
-      metadata: {
-        total: feeds.length,
-        active: activeCount,
-        stale: staleCount,
-        chain: targetChain,
-        filter: status,
-        source: dataSource,
-        lastUpdated: new Date().toISOString(),
-        rpcConfigured: !!getRpcUrlForChain(targetChain),
-        ...(fetchErrors.length > 0 && { errors: fetchErrors }),
-        note:
-          dataSource === 'on-chain'
-            ? 'Real-time data from Chainlink on-chain feeds'
-            : 'Fallback mock data - RPC may not be configured or chain data unavailable',
+    return Response.json(
+      {
+        success: true,
+        data: {
+          feeds,
+          metadata: {
+            total: feeds.length,
+            active: activeCount,
+            stale: staleCount,
+            chain: targetChain,
+            filter: status,
+            source: dataSource,
+            lastUpdated: new Date().toISOString(),
+            rpcConfigured: !!getRpcUrlForChain(targetChain),
+            ...(fetchErrors.length > 0 && { errors: fetchErrors }),
+            note:
+              dataSource === 'on-chain'
+                ? 'Real-time data from Chainlink on-chain feeds'
+                : 'Fallback mock data - RPC may not be configured or chain data unavailable',
+          },
+        },
       },
-    });
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        },
+      },
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to fetch feeds';
     return error({ code: 'INTERNAL_ERROR', message }, 500);

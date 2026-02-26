@@ -21,11 +21,8 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    return ok({
-      channels: mockChannels,
-      total: mockChannels.length,
-      timestamp: new Date().toISOString(),
-    });
+    console.error('Failed to fetch channels:', err);
+    return error({ code: 'FETCH_ERROR', message: 'Failed to fetch channels' }, 500);
   }
 }
 
