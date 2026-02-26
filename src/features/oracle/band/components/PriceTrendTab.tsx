@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { TIME_RANGES, BAND_ORACLE_SYMBOL_OPTIONS } from '@/config/constants';
+import { logger } from '@/shared/logger';
 import { fetchApiData, cn } from '@/shared/utils';
 
 interface PricePoint {
@@ -50,7 +51,7 @@ export function PriceTrendTab() {
       );
       setPriceData(response.data.data);
     } catch (error) {
-      console.error('Failed to fetch price data:', error);
+      logger.error('Failed to fetch price data:', { error });
     } finally {
       setLoading(false);
     }

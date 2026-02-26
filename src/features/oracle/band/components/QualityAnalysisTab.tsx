@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui';
 import { BAND_ORACLE_SYMBOL_OPTIONS } from '@/config/constants';
 import { useI18n } from '@/i18n';
+import { logger } from '@/shared/logger';
 import { fetchApiData } from '@/shared/utils';
 
 interface LatencyDistribution {
@@ -80,7 +81,7 @@ export function QualityAnalysisTab() {
       );
       setQualityData(response.data);
     } catch (error) {
-      console.error('Failed to fetch quality data:', error);
+      logger.error('Failed to fetch quality data:', { error });
     } finally {
       setLoading(false);
     }

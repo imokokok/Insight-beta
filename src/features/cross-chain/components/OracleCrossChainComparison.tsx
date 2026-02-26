@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { CHAIN_COLORS, CHAIN_DISPLAY_NAMES } from '@/config/chains';
+import { logger } from '@/shared/logger';
 import {
   formatPrice,
   formatDeviation,
@@ -109,7 +110,7 @@ export function OracleCrossChainComparison({
       const result = await fetchData(selectedSymbol, selectedChains);
       setData(result);
     } catch (error) {
-      console.error('Failed to load cross-chain comparison data:', error);
+      logger.error('Failed to load cross-chain comparison data:', { error });
     } finally {
       setIsLoading(false);
     }

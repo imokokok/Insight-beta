@@ -53,6 +53,8 @@ export function useAlertsPage() {
 
   useEffect(() => {
     alertsActions.fetchChannels();
+    // fetchChannels is stable (wrapped in useCallback in useNotificationChannels)
+    // We only want to fetch channels once on mount, not on every alertsActions change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

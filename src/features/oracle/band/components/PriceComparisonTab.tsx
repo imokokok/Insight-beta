@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { logger } from '@/shared/logger';
 import { fetchApiData, cn } from '@/shared/utils';
 import { formatPrice, getDeviationColor } from '@/shared/utils/format';
 
@@ -60,7 +61,7 @@ export function PriceComparisonTab() {
       const response = await fetchApiData<ComparisonResponse>('/api/oracle/band/comparison');
       setComparisonData(response.data);
     } catch (error) {
-      console.error('Failed to fetch comparison data:', error);
+      logger.error('Failed to fetch comparison data:', { error });
     } finally {
       setLoading(false);
     }

@@ -54,6 +54,7 @@ import {
   type TabItem,
 } from '@/features/oracle/chainlink/components/dashboard';
 import { useI18n } from '@/i18n';
+import { logger } from '@/shared/logger';
 import { fetchApiData, cn } from '@/shared/utils';
 import type { NetworkHealthStatus } from '@/types/common';
 
@@ -284,7 +285,7 @@ export default function BandProtocolPage() {
       const response = await fetchApiData<IBCResponse>('/api/oracle/band/ibc');
       updateState({ ibcData: response.data });
     } catch (err) {
-      console.error('Failed to fetch IBC data:', err);
+      logger.error('Failed to fetch IBC data:', { error: err });
     }
   }, [updateState]);
 

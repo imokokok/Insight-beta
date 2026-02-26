@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { logger } from '@/shared/logger';
+
 interface UseFullscreenOptions {
   onClose?: () => void;
   escapeKey?: boolean;
@@ -67,7 +69,7 @@ export function useFullscreen(options: UseFullscreenOptions = {}): UseFullscreen
     try {
       await document.documentElement.requestFullscreen();
     } catch (error) {
-      console.error('Failed to enter fullscreen:', error);
+      logger.error('Failed to enter fullscreen:', { error });
     }
   }, []);
 
@@ -75,7 +77,7 @@ export function useFullscreen(options: UseFullscreenOptions = {}): UseFullscreen
     try {
       await document.exitFullscreen();
     } catch (error) {
-      console.error('Failed to exit fullscreen:', error);
+      logger.error('Failed to exit fullscreen:', { error });
     }
   }, []);
 
