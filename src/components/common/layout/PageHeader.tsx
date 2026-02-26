@@ -110,28 +110,33 @@ export const PageHeader = memo(function PageHeader({
   children,
 }: PageHeaderProps) {
   return (
-    <div className={cn('space-y-4', className)}>
+    <motion.div
+      initial={{ opacity: 0, y: -5 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className={cn('space-y-5', className)}
+    >
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href="/"
-            className="flex items-center gap-1 transition-colors hover:text-foreground"
+            className="flex items-center gap-1 rounded px-1.5 py-0.5 transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
           >
             <Home className="h-4 w-4" />
           </Link>
           {breadcrumbs.map((item, index) => (
             <React.Fragment key={index}>
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
               {item.href ? (
                 <a
                   href={item.href}
-                  className="flex items-center gap-1 transition-colors hover:text-foreground"
+                  className="flex items-center gap-1 rounded px-1.5 py-0.5 transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
                 >
                   {item.icon}
                   {item.label}
                 </a>
               ) : (
-                <span className="flex items-center gap-1 text-foreground">
+                <span className="flex items-center gap-1 font-medium text-foreground">
                   {item.icon}
                   {item.label}
                 </span>
@@ -144,11 +149,22 @@ export const PageHeader = memo(function PageHeader({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
-            {icon && <div className="flex-shrink-0 rounded-lg bg-primary/10 p-2">{icon}</div>}
+            {icon && (
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.1, duration: 0.3 }}
+                className="flex-shrink-0 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 p-2.5 shadow-sm"
+              >
+                {icon}
+              </motion.div>
+            )}
             <div>
-              <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">{title}</h1>
+              <h1 className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
+                {title}
+              </h1>
               {description && (
-                <p className="mt-1 max-w-2xl text-sm text-muted-foreground sm:text-base">
+                <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
                   {description}
                 </p>
               )}
@@ -163,11 +179,11 @@ export const PageHeader = memo(function PageHeader({
               size="sm"
               onClick={onRefresh}
               disabled={refreshDisabled || loading}
-              className="hidden sm:inline-flex"
+              className="hidden transition-all duration-200 hover:border-primary/50 hover:shadow-sm sm:inline-flex"
             >
               <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
               Refresh
-              <kbd className="ml-2 hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium lg:inline-flex">
+              <kbd className="ml-2 hidden h-5 items-center gap-1 rounded border bg-muted/50 px-1.5 font-mono text-[10px] font-medium lg:inline-flex">
                 ⌘R
               </kbd>
             </Button>
@@ -179,11 +195,11 @@ export const PageHeader = memo(function PageHeader({
               size="sm"
               onClick={onExport}
               disabled={exportDisabled}
-              className="hidden sm:inline-flex"
+              className="hidden transition-all duration-200 hover:border-primary/50 hover:shadow-sm sm:inline-flex"
             >
               <Download className="mr-2 h-4 w-4" />
               Export
-              <kbd className="ml-2 hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium lg:inline-flex">
+              <kbd className="ml-2 hidden h-5 items-center gap-1 rounded border bg-muted/50 px-1.5 font-mono text-[10px] font-medium lg:inline-flex">
                 ⌘E
               </kbd>
             </Button>
@@ -196,7 +212,11 @@ export const PageHeader = memo(function PageHeader({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 w-9 flex-shrink-0 p-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 w-9 flex-shrink-0 p-0 transition-all duration-200 hover:border-primary/50 hover:shadow-sm"
+              >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -227,7 +247,7 @@ export const PageHeader = memo(function PageHeader({
           </DropdownMenu>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 });
 
@@ -244,26 +264,43 @@ export const DashboardPageHeader = memo(function DashboardPageHeader({
   sticky = true,
 }: DashboardPageHeaderProps) {
   return (
-    <header
-      className={cn(
-        'border-b border-gray-200/50 bg-white/80 px-4 py-3 backdrop-blur-sm lg:px-6',
-        sticky && 'sticky top-0 z-10',
-        className,
-      )}
+    <motion.header
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className={cn('px-4 py-4 lg:px-6', sticky && 'sticky top-0 z-10', className)}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           {showMobileMenu && onMobileMenuClick && (
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMobileMenuClick}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="transition-all duration-200 hover:bg-muted/50 lg:hidden"
+              onClick={onMobileMenuClick}
+            >
               <Menu className="h-5 w-5" />
             </Button>
           )}
           <div className="flex items-center gap-3">
-            {icon && <div className="hidden rounded-lg bg-primary/10 p-2 sm:block">{icon}</div>}
+            {icon && (
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.1, duration: 0.3 }}
+                className="hidden rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 p-2.5 shadow-sm sm:block"
+              >
+                {icon}
+              </motion.div>
+            )}
             <div>
-              <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">{title}</h1>
+              <h1 className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-xl font-bold tracking-tight text-foreground lg:text-2xl">
+                {title}
+              </h1>
               {description && (
-                <p className="hidden text-sm text-muted-foreground sm:block">{description}</p>
+                <p className="mt-1 hidden text-sm leading-relaxed text-muted-foreground sm:block">
+                  {description}
+                </p>
               )}
             </div>
           </div>
@@ -272,13 +309,13 @@ export const DashboardPageHeader = memo(function DashboardPageHeader({
         <div className="flex items-center gap-3 sm:gap-4">
           {statusBadge}
           {statusBadge && refreshControl && (
-            <div className="hidden h-6 w-px bg-gray-200 sm:block" />
+            <div className="hidden h-6 w-px bg-border/30 sm:block" />
           )}
           {refreshControl}
           {extraActions}
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 });
 
@@ -293,11 +330,10 @@ export function DynamicPageHeader({ className, actions }: DynamicPageHeaderProps
     <motion.header
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
       className={cn(
         'sticky top-0 z-20 mb-6 flex items-center justify-between gap-3',
-        'border-b border-border/50 bg-background/80 backdrop-blur-sm',
-        'px-1 py-4',
+        'px-1 py-5',
         className,
       )}
     >
@@ -306,14 +342,23 @@ export function DynamicPageHeader({ className, actions }: DynamicPageHeaderProps
           key={title}
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.2 }}
-          className="text-xl font-bold text-foreground md:text-2xl"
+          transition={{ duration: 0.25, delay: 0.1 }}
+          className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-xl font-bold text-foreground md:text-2xl"
         >
           {title}
         </motion.h1>
       </div>
 
-      {actions && <div className="flex items-center gap-3">{actions}</div>}
+      {actions && (
+        <motion.div
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.25, delay: 0.15 }}
+          className="flex items-center gap-3"
+        >
+          {actions}
+        </motion.div>
+      )}
     </motion.header>
   );
 }

@@ -112,13 +112,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <main id="main-content" className="min-w-0 flex-1">
             <ErrorBoundary>
               <div className="container mx-auto max-w-7xl p-4 md:p-8">
-                <header
-                  className={cn(
-                    'sticky top-0 z-20 mb-6 flex flex-col gap-3',
-                    'border-b border-border/50 bg-background/80 backdrop-blur-sm',
-                    'px-1 py-4',
-                  )}
-                >
+                <header className={cn('sticky top-0 z-20 mb-6 flex flex-col gap-3', 'px-1 py-5')}>
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <MobileMenuButton />
