@@ -176,20 +176,61 @@ NEXT_PUBLIC_SENTRY_DSN="https://your-public-sentry-dsn"
 INSIGHT_DEMO_MODE="true"
 ```
 
-## 5. 数据库设置
+## 5. 数据库设置 (Drizzle ORM)
 
-### 运行数据库迁移
+Insight 使用 Drizzle ORM 进行数据库管理。以下是常用的数据库命令：
+
+### 数据库 Schema 管理
 
 ```bash
-# 推送数据库 schema 到 Supabase
-npm run supabase:push
+# 生成数据库迁移文件（根据 schema 变更）
+npm run db:generate
+
+# 推送 schema 变更到数据库（直接应用，不使用迁移）
+npm run db:push
+
+# 运行数据库迁移
+npm run db:migrate
+
+# 打开 Drizzle Studio（可视化数据库管理界面）
+npm run db:studio
 ```
 
-### 验证数据库连接
+### Drizzle 工作流
+
+1. **修改 Schema**: 编辑 `src/lib/database/index.ts` 或相关的 schema 文件
+2. **生成迁移**: 运行 `npm run db:generate` 生成迁移文件
+3. **应用变更**: 运行 `npm run db:push` 或 `npm run db:migrate` 应用变更
+4. **验证**: 使用 `npm run db:studio` 打开可视化界面验证
+
+### Supabase CLI 命令（可选）
+
+如果你同时使用 Supabase CLI：
 
 ```bash
-# 打开 Supabase Studio
-npm run supabase:studio
+# 启动本地 Supabase
+npm run supabase:start
+
+# 停止本地 Supabase
+npm run supabase:stop
+
+# 查看 Supabase 状态
+npm run supabase:status
+
+# 推送数据库变更到 Supabase
+npm run supabase:push
+
+# 从 Supabase 拉取数据库变更
+npm run supabase:pull
+
+# 重置 Supabase 数据库
+npm run supabase:reset
+
+# 生成 TypeScript 类型（本地）
+npm run db:types:local
+
+# 生成 TypeScript 类型（云端）
+npm run db:types
 ```
 
 ## 6. 启动开发服务器
@@ -226,14 +267,39 @@ curl http://localhost:3000/api/health
 ### 运行测试
 
 ```bash
-# 运行单元测试
+# 运行单元测试（Vitest）
 npm run test
 
-# 运行类型检查
+# 运行 CI 测试（无监视模式）
+npm run test:ci
+
+# 运行带覆盖率的测试
+npm run test:coverage
+
+# 运行 E2E 测试（Playwright）
+npm run test:e2e
+
+# 运行有头模式的 E2E 测试
+npm run test:e2e:headed
+```
+
+### 类型检查和 Lint
+
+```bash
+# 运行 TypeScript 类型检查
 npm run typecheck
 
-# 运行 lint
+# 运行 ESLint
 npm run lint
+
+# 运行安全相关的 ESLint 规则
+npm run lint:security
+
+# 检查代码格式
+npm run format:check
+
+# 自动格式化代码
+npm run format:write
 ```
 
 ## 8. 常见问题
@@ -245,6 +311,15 @@ npm run lint
 - 检查 `DATABASE_URL` 是否正确
 - 确认 Supabase 项目已启动
 - 检查网络连接和防火墙设置
+
+### 问题: Drizzle 迁移失败
+
+**解决方案**:
+
+- 确保 `DATABASE_URL` 配置正确
+- 检查数据库用户权限
+- 尝试使用 `npm run db:push` 直接推送 schema（开发环境）
+- 查看 Drizzle Studio 了解当前数据库状态
 
 ### 问题: RPC 请求失败
 
@@ -286,17 +361,53 @@ PORT=3001 npm run dev
 ### 可用的 npm 脚本
 
 ```bash
+# 开发
 npm run dev              # 启动开发服务器
 npm run build            # 构建生产版本
-npm start                # 启动生产服务器
+
+# 代码质量
 npm run lint             # 运行 ESLint
+npm run lint:security    # 运行安全相关 ESLint 规则
 npm run typecheck        # 运行 TypeScript 类型检查
-npm run test             # 运行单元测试
-npm run test:ci          # 运行 CI 测试
+npm run format:check     # 检查代码格式
+npm run format:write     # 自动格式化代码
+
+# 测试
+npm run test             # 运行单元测试（Vitest，监视模式）
+npm run test:ci          # 运行 CI 测试（无监视）
 npm run test:coverage    # 运行带覆盖率的测试
-npm run test:e2e         # 运行 E2E 测试
+npm run test:coverage:report  # 运行测试并打开覆盖率报告
+npm run test:e2e         # 运行 E2E 测试（Playwright）
+npm run test:e2e:headed  # 运行有头模式的 E2E 测试
+
+# 数据库 (Drizzle ORM)
+npm run db:generate      # 生成数据库迁移
+npm run db:push          # 推送 schema 到数据库
+npm run db:migrate       # 运行数据库迁移
+npm run db:studio        # 打开 Drizzle Studio
+
+# 数据库 (Supabase CLI)
+npm run supabase:start   # 启动本地 Supabase
+npm run supabase:stop    # 停止本地 Supabase
+npm run supabase:status  # 查看 Supabase 状态
 npm run supabase:push    # 推送数据库变更
-npm run supabase:studio  # 打开 Supabase Studio
+npm run supabase:pull    # 拉取数据库变更
+npm run supabase:reset   # 重置数据库
+npm run db:types         # 生成 Supabase TypeScript 类型（云端）
+npm run db:types:local   # 生成 Supabase TypeScript 类型（本地）
+
+# 其他工具
+npm run analyze:bundle   # 分析打包结果
+npm run docs:api         # 生成 API 文档
+npm run i18n:extract     # 提取翻译键
+npm run i18n:validate    # 验证翻译
+npm run validate:schema  # 验证 schema 一致性
+npm run changeset        # 创建 changeset
+npm run changeset:add    # 添加 changeset
+npm run changeset:version # 版本化 changeset
+npm run changeset:publish # 发布 changeset
+npm run test:chaos       # 运行混沌测试
+npm run test:chaos:dry-run # 混沌测试试运行
 ```
 
 ### 代码规范
@@ -321,6 +432,8 @@ npm run test
 - 查看 [系统架构概述](../architecture/overview.md) 了解系统架构
 - 阅读 [编码标准](../../CODING_STANDARDS.md) 了解代码规范
 - 查看 [调试指南](./debugging.md) 学习如何调试问题
+- 阅读 [测试指南](./testing.md) 了解测试策略
+- 阅读 [API 指南](./api.md) 了解 API 结构
 - 阅读 [贡献指南](../../CONTRIBUTING.md) 了解如何贡献代码
 
 ---

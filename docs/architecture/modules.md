@@ -24,7 +24,6 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 | **Explore**    | `src/features/explore/`     | 数据探索       |
 | **Alerts**     | `src/features/alerts/`      | 告警系统       |
 | **Security**   | `src/features/security/`    | 安全与异常检测 |
-| **Wallet**     | `src/features/wallet/`      | 钱包连接       |
 
 ---
 
@@ -32,7 +31,7 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 
 ### Dashboard 模块
 
-\*\*路径: `src/features/dashboard/`
+**路径**: `src/features/dashboard/`
 
 **职责**:
 
@@ -43,14 +42,14 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 
 **主要组件**:
 
-- `ProfessionalDashboard.tsx` - 专业仪表板组件
-- `KPICards.tsx` - KPI 指标卡片
-- `PriceHistoryChart.tsx` - 价格历史图表
-- `QuickActionsPanel.tsx` - 快速操作面板
+- `Dashboard` 组件
+- KPI 指标卡片
+- 价格历史图表
+- 快速操作面板
 
 **主要 Hooks**:
 
-- `useDashboard.ts` - 仪表板数据获取与状态管理
+- `useDashboard` - 仪表板数据获取与状态管理
 
 ---
 
@@ -64,46 +63,24 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 - 偏差分析
 - 争议分析
 - 协议对比
+- 多协议支持（API3、Band、Chainlink、Pyth、UMA）
 
 **子模块**:
 
-#### Analytics (偏差分析)
+#### Analytics (分析)
 
-**路径**: `src/features/oracle/analytics/deviation/`
+**路径**: `src/features/oracle/analytics/`
 
-- 实时偏差监控
-- 偏差趋势分析
-- 异常检测
-- 数据导出
+- **Deviation (偏差分析)**: `src/features/oracle/analytics/deviation/`
+  - 实时偏差监控
+  - 偏差趋势分析
+  - 异常检测
+  - 数据导出
 
-**主要组件**:
-
-- `DeviationContent.tsx` - 偏差分析主界面
-- `DeviationHeatmap.tsx` - 偏差热力图
-- `DeviationTrendChart.tsx` - 偏差趋势图
-- `AnomalyList.tsx` - 异常列表
-
-**主要 Hooks**:
-
-- `useDeviationAnalytics.ts` - 偏差分析数据管理
-
-#### Disputes (争议分析)
-
-**路径**: `src/features/oracle/analytics/disputes/`
-
-- 争议历史查看
-- 争议趋势分析
-- 保证金分布分析
-
-**主要组件**:
-
-- `DisputeContent.tsx` - 争议分析主界面
-- `DisputeList.tsx` - 争议列表
-- `BondDistributionChart.tsx` - 保证金分布图
-
-**主要 Hooks**:
-
-- `useDisputeAnalytics.ts` - 争议分析数据管理
+- **Disputes (争议分析)**: `src/features/oracle/analytics/disputes/`
+  - 争议历史查看
+  - 争议趋势分析
+  - 保证金分布分析
 
 #### Dashboard (预言机仪表板)
 
@@ -116,9 +93,10 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 **主要服务**:
 
 - `priceFetcher.ts` - 价格获取服务
-- `priceDeviationAnalytics.ts` - 偏差分析服务
-- `unifiedPriceService.ts` - 统一价格服务
+- `reliabilityScorer.ts` - 可靠性评分服务
 - `syncFramework.ts` - 数据同步框架
+- `apiCache.ts` - API 缓存服务
+- `realtime/index.ts` - 实时数据服务
 
 #### API3 子模块
 
@@ -133,7 +111,7 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 
 - `AirnodeDetail.tsx` - Airnode 详情
 - `DapiList.tsx` - dAPI 列表
-- `OevOverview.tsx` - OEV 概览
+- `Api3PriceChart.tsx` - API3 价格图表
 
 #### Band 子模块
 
@@ -146,7 +124,21 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 **主要组件**:
 
 - `DataSourceList.tsx` - 数据源列表
-- `AggregationValidationCard.tsx` - 聚合验证
+- `BandPriceChart.tsx` - Band 价格图表
+- `BridgeStatusCard.tsx` - 桥接状态卡片
+
+#### Chainlink 子模块
+
+**路径**: `src/features/oracle/chainlink/`
+
+- Feeds 监控
+- Operator 列表
+- 偏差分析
+
+**主要组件**:
+
+- `FeedDetail.tsx` - Feed 详情
+- `OperatorList.tsx` - Operator 列表
 
 #### Pyth 子模块
 
@@ -158,8 +150,16 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 
 **主要组件**:
 
-- `PublisherMonitor.tsx` - Publisher 监控
-- `ConfidenceIntervalChart.tsx` - 置信区间图表
+- Publisher 监控组件
+- 置信区间图表
+
+#### Reliability (可靠性) 子模块
+
+**路径**: `src/features/oracle/reliability/`
+
+- 可靠性评分计算
+- 历史可靠性分析
+- 多维度评估
 
 ---
 
@@ -172,6 +172,7 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 - 多协议价格实时对比
 - 偏差热力图
 - 延迟分析
+- 成本效率分析
 
 **主要组件**:
 
@@ -179,10 +180,15 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 - `PriceHeatmap.tsx` - 价格热力图
 - `LatencyAnalysis.tsx` - 延迟分析
 - `RealtimeComparison.tsx` - 实时对比
+- `ProtocolCompare.tsx` - 协议对比
+- `CostEfficiency.tsx` - 成本效率分析
+- `VirtualTable.tsx` - 虚拟表格
 
 **主要 Hooks**:
 
 - `useComparison.ts` - 对比数据管理
+- `useComparisonPage.ts` - 对比页面管理
+- `useProtocolMetrics.ts` - 协议指标管理
 
 ---
 
@@ -196,6 +202,7 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 - 相关性分析
 - 价格一致性监控
 - 流动性分析
+- 桥接状态监控
 
 **主要组件**:
 
@@ -203,12 +210,13 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 - `CrossChainComparison.tsx` - 跨链对比
 - `CorrelationMatrix.tsx` - 相关性矩阵
 - `PriceConsistencyMonitor.tsx` - 价格一致性监控
-- `LiquidityDistribution.tsx` - 流动性分布
+- `LiquidityAnalysis.tsx` - 流动性分析
+- `BridgeStatusCard.tsx` - 桥接状态卡片
+- `RiskScore.tsx` - 风险评分
 
 **主要 Hooks**:
 
 - `useCrossChain.ts` - 跨链数据管理
-- `usePriceConsistency.ts` - 价格一致性监控
 
 ---
 
@@ -222,6 +230,7 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 - 市场概览
 - 热门价格源
 - 协议探索
+- 收藏管理
 
 **主要组件**:
 
@@ -229,12 +238,18 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 - `TrendingFeeds.tsx` - 热门价格源
 - `GlobalSearch.tsx` - 全局搜索
 - `DataDiscovery.tsx` - 数据发现
+- `MarketHealthScore.tsx` - 市场健康评分
+- `RecentAnomalies.tsx` - 近期异常
+- `FavoritesPanel.tsx` - 收藏面板
 
 **主要 Hooks**:
 
 - `useMarketOverview.ts` - 市场概览数据
 - `useGlobalSearch.ts` - 搜索功能
 - `useTrendingFeeds.ts` - 热门价格源
+- `useDataDiscovery.ts` - 数据发现
+- `useFavorites.ts` - 收藏管理
+- `useHistory.ts` - 历史记录
 
 ---
 
@@ -248,6 +263,7 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 - 告警通知发送
 - 告警历史记录
 - 响应时间统计
+- 通知渠道配置
 
 **主要组件**:
 
@@ -255,42 +271,28 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 - `AlertRuleForm.tsx` - 告警规则表单
 - `NotificationChannels.tsx` - 通知渠道配置
 - `AlertTrendChart.tsx` - 告警趋势图
+- `AlertCard.tsx` - 告警卡片
+- `AlertGroup.tsx` - 告警分组
+- `AlertHeatmap.tsx` - 告警热力图
+- `ResponseTimeStats.tsx` - 响应时间统计
+- `EmailConfig.tsx` - 邮件配置
+- `TelegramConfig.tsx` - Telegram 配置
+- `WebhookConfig.tsx` - Webhook 配置
 
 **主要 Hooks**:
 
 - `useAlertRules.ts` - 告警规则管理
 - `useAlerts.ts` - 告警数据
 - `useNotificationChannels.ts` - 通知渠道
+- `useAlertHistory.ts` - 告警历史
+- `useAlertsFilter.ts` - 告警筛选
+- `useAlertsPage.ts` - 告警页面管理
+- `useAlertActions.ts` - 告警操作
 
 **主要工具**:
 
 - `alertScoring.ts` - 告警评分
-
----
-
----
-
-### Wallet 模块
-
-**路径**: `src/features/wallet/`
-
-**职责**:
-
-- 钱包连接管理
-- 用户身份管理
-
-**主要组件**:
-
-- `ConnectWallet.tsx` - 连接钱包
-- `UserMenu.tsx` - 用户菜单
-
-**主要 Context**:
-
-- `WalletContext.tsx` - 钱包上下文
-
-**主要 Hooks**:
-
-- `useWallet.ts` - 钱包状态管理
+- `normalize.ts` - 数据标准化
 
 ---
 
@@ -306,8 +308,8 @@ Insight 平台采用功能模块化设计，主要包含以下核心模块：
 
 **主要服务**:
 
-- `AnomalyDetectionService.ts` - 异常检测服务
-- `StatisticalDetector.ts` - 统计检测器
+- 异常检测服务
+- 统计检测器
 
 ---
 
@@ -357,9 +359,6 @@ graph TD
     CrossChain --> Oracle
     Explore --> Oracle
     Alerts --> Oracle
-
-    Wallet[Wallet] --> Dashboard
-    Wallet --> Alerts
 
     Security[Security] --> Oracle
     Security --> Alerts

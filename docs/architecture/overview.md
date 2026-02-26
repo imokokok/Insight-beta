@@ -21,7 +21,7 @@ graph TB
     subgraph "API 层 (API Layer)"
         API_Routes[Next.js API Routes]
         REST_API[REST API]
-        SSE[SSE/WebSocket<br/>实时数据推送]
+        SSE[SSE<br/>实时数据推送]
         Swagger[Swagger/OpenAPI<br/>文档]
     end
 
@@ -31,11 +31,12 @@ graph TB
         Deviation[偏差分析服务]
         Alert[告警服务]
         CrossChain[跨链分析服务]
-        Cache[内存缓存]
+        Reliability[可靠性评分服务]
     end
 
     subgraph "数据层 (Data Layer)"
         DB[(PostgreSQL<br/>Supabase)]
+        Drizzle[Drizzle ORM]
         Historical[历史数据]
         Alerts[告警数据]
         Users[用户配置]
@@ -48,7 +49,7 @@ graph TB
         API3[API3]
         BandProtocol[Band Protocol]
         UMA[UMA]
-        Notifications[通知服务<br/>Slack/Telegram/Webhook]
+        Notifications[通知服务<br/>Email/Telegram/Webhook]
     end
 
     Browser --> NextApp
@@ -68,20 +69,17 @@ graph TB
     REST_API --> Deviation
     REST_API --> Alert
     REST_API --> CrossChain
+    REST_API --> Reliability
     SSE --> PriceAgg
 
-    OracleSync --> Cache
-    PriceAgg --> Cache
-    Deviation --> Cache
-    Alert --> Cache
-    CrossChain --> Cache
+    OracleSync --> Drizzle
+    PriceAgg --> Drizzle
+    Deviation --> Drizzle
+    Alert --> Drizzle
+    CrossChain --> Drizzle
+    Reliability --> Drizzle
 
-    Cache --> DB
-    OracleSync --> DB
-    PriceAgg --> DB
-    Deviation --> DB
-    Alert --> DB
-    CrossChain --> DB
+    Drizzle --> DB
 
     OracleSync --> RPC
     OracleSync --> Chainlink
@@ -102,7 +100,7 @@ graph TB
 
 ### 2. 前端层
 
-- **Next.js App Router**: 使用 Next.js 16 的 App Router 架构
+- **Next.js App Router**: 使用 Next.js 的 App Router 架构
 - **React 组件**: 功能模块化的 React 组件
 - **图表组件**: 使用 D3 和 Victory 进行数据可视化
 - **国际化系统**: 支持中英文多语言
@@ -111,7 +109,7 @@ graph TB
 
 - **Next.js API Routes**: 服务端 API 路由
 - **REST API**: 标准的 RESTful API 接口
-- **SSE/WebSocket**: 实时数据推送服务
+- **SSE**: 实时数据推送服务
 - **Swagger/OpenAPI**: API 文档
 
 ### 4. 服务层
@@ -121,11 +119,12 @@ graph TB
 - **偏差分析服务**: 价格偏差检测与分析
 - **告警服务**: 告警规则处理与通知
 - **跨链分析服务**: 跨链数据分析
-- **内存缓存**: 使用内存缓存提升性能，适合单实例部署
+- **可靠性评分服务**: 预言机可靠性评估
 
 ### 5. 数据层
 
 - **PostgreSQL (Supabase)**: 主数据库
+- **Drizzle ORM**: 类型安全的数据库 ORM
 - **历史数据**: 价格和预言机历史数据
 - **告警数据**: 告警规则和历史记录
 - **用户配置**: 用户偏好和设置
@@ -134,7 +133,7 @@ graph TB
 
 - **区块链 RPC**: Alchemy、Infura 等 RPC 提供商
 - **预言机协议**: Chainlink、Pyth、API3、Band Protocol、UMA
-- **通知服务**: Slack、Telegram、Webhook
+- **通知服务**: Email、Telegram、Webhook
 
 ## 主要功能模块
 
@@ -182,14 +181,14 @@ graph TB
 
 ## 技术选型理由
 
-### Next.js 16.1.6
+### Next.js
 
 - 支持 App Router 架构，更灵活的路由组织
 - 服务端组件与客户端组件分离，性能更好
 - 内置 API Routes，无需额外后端服务
 - 优秀的开发体验和部署支持
 
-### TypeScript 5.7.3
+### TypeScript
 
 - 类型安全，减少运行时错误
 - 更好的 IDE 支持和代码提示
@@ -208,12 +207,13 @@ graph TB
 - 内置认证、实时订阅、存储等功能
 - 与 Vercel 部署集成良好
 
-### 内存缓存
+### Drizzle ORM
 
-- 适合单实例部署（如 Vercel）
-- 无需额外的基础设施
-- 低延迟访问
-- 未来可扩展为 Redis（多实例部署时）
+- 类型安全的数据库访问
+- 轻量级且高性能
+- 优秀的 TypeScript 支持
+- 声明式 schema 定义
+- 内置迁移系统
 
 ---
 

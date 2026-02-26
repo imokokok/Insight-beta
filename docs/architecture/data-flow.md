@@ -8,6 +8,7 @@
 - [价格聚合数据流](#价格聚合数据流)
 - [告警触发流程](#告警触发流程)
 - [跨链分析数据流](#跨链分析数据流)
+- [可靠性评分数据流](#可靠性评分数据流)
 
 ---
 
@@ -19,38 +20,38 @@
 
 ```mermaid
 sequenceDiagram
-    participant User as 用户
-    participant Frontend as 前端
-    participant API as API Routes
+    participant Cron as 定时任务
     participant SyncService as 同步服务
     participant RPC as RPC 节点
     participant Oracle as 预言机协议
-    participant Cache as 缓存层
+    participant Drizzle as Drizzle ORM
     participant DB as 数据库
+    participant User as 用户
+    participant Frontend as 前端
+    participant API as API Routes
 
-    Note over SyncService,DB: 后台同步流程
+    Note over Cron,DB: 后台同步流程
 
+    Cron->>SyncService: 触发同步
     SyncService->>RPC: 获取最新区块
     RPC-->>SyncService: 返回区块数据
 
     loop 每个预言机协议
         SyncService->>Oracle: 查询价格数据
         Oracle-->>SyncService: 返回价格
-        SyncService->>Cache: 写入缓存
-        SyncService->>DB: 存储历史数据
+        SyncService->>Drizzle: 写入数据
+        Drizzle->>DB: 存储历史数据
+        Drizzle-->>SyncService: 确认写入
     end
 
     Note over User,DB: 用户请求流程
 
     User->>Frontend: 访问页面
     Frontend->>API: 请求价格数据
-    API->>Cache: 检查缓存
-    alt 缓存命中
-        Cache-->>API: 返回缓存数据
-    else 缓存未命中
-        API->>DB: 查询数据库
-        DB-->>API: 返回数据
-    end
+    API->>Drizzle: 查询数据
+    Drizzle->>DB: 执行查询
+    DB-->>Drizzle: 返回数据
+    Drizzle-->>API: 返回数据
     API-->>Frontend: 返回价格数据
     Frontend-->>User: 显示数据
 ```
@@ -70,9 +71,9 @@ sequenceDiagram
    - 统一数据格式
 
 3. **数据存储**
-   - 写入内存缓存
-   - 存储历史数据到数据库
-   - 更新同步状态
+   - 通过 Drizzle ORM 写入数据库
+   - 存储历史数据到 `price_history` 表
+   - 更新同步状态到 `sync_state` 和 `oracle_sync_state` 表
 
 #### 2. 用户请求
 
@@ -81,9 +82,8 @@ sequenceDiagram
    - 前端调用 API
 
 2. **API 处理请求**
-   - 先检查缓存
-   - 缓存命中则直接返回
-   - 缓存未命中则查询数据库
+   - 通过 Drizzle ORM 查询数据库
+   - 按需使用索引优化查询性能
 
 3. **返回数据**
    - 返回统一格式数据
@@ -125,6 +125,12 @@ flowchart TD
     G --> H[偏差热力图]
     G --> I[偏差趋势图]
     G --> J[异常检测]
+
+    H --> Drizzle[Drizzle ORM]
+    I --> Drizzle
+    J --> Drizzle
+
+    Drizzle --> DB[(数据库)]
 ```
 
 ### 详细步骤
@@ -147,8 +153,8 @@ flowchart TD
    - 计算各协议相对于平均值的偏差
 
 4. **存储结果**
-   - 缓存聚合结果
-   - 写入数据库
+   - 通过 Drizzle ORM 存储到 `price_history` 表
+   - 包含 protocol、symbol、chain、price、deviation、latency_ms 等字段
 
 #### 2. 数据分析
 
@@ -178,28 +184,35 @@ sequenceDiagram
     participant Scheduler as 定时任务
     participant AlertEngine as 告警引擎
     participant PriceService as 价格服务
-    participant AlertRules as 告警规则
-    participant Condition as 条件检查
+    participant Drizzle as Drizzle ORM
+    participant DB as 数据库
     participant Notifier as 通知服务
-    participant AlertHistory as 告警历史
     participant User as 用户
 
     loop 定期检查
         Scheduler->>AlertEngine: 触发检查
-        AlertEngine->>AlertRules: 获取活跃规则
+        AlertEngine->>Drizzle: 获取活跃规则
+        Drizzle->>DB: 查询 alert_rules
+        DB-->>Drizzle: 返回规则
+        Drizzle-->>AlertEngine: 返回规则
 
         loop 每个规则
             AlertEngine->>PriceService: 获取价格数据
+            PriceService->>Drizzle: 查询价格历史
+            Drizzle->>DB: 查询 price_history
+            DB-->>Drizzle: 返回数据
+            Drizzle-->>PriceService: 返回数据
             PriceService-->>AlertEngine: 返回数据
 
-            AlertEngine->>Condition: 检查条件
+            AlertEngine->>AlertEngine: 检查条件
             alt 条件满足
-                Condition-->>AlertEngine: 触发告警
                 AlertEngine->>Notifier: 发送通知
-                Notifier->>User: 邮件/Telegram/Slack
-                AlertEngine->>AlertHistory: 记录告警历史
+                Notifier->>User: 邮件/Telegram/Webhook
+                AlertEngine->>Drizzle: 记录告警历史
+                Drizzle->>DB: 插入 alerts 表
+                Drizzle-->>AlertEngine: 确认
             else 条件不满足
-                Condition-->>AlertEngine: 不触发
+                AlertEngine->>AlertEngine: 不触发
             end
         end
     end
@@ -214,8 +227,8 @@ sequenceDiagram
    - 可配置检查频率
 
 2. **获取规则**
-   - 从数据库读取活跃告警规则
-   - 加载规则配置
+   - 从 `alert_rules` 表读取活跃告警规则
+   - 加载规则配置（protocols、chains、symbols、params 等）
 
 3. **获取数据**
    - 根据规则获取对应价格数据
@@ -236,11 +249,10 @@ sequenceDiagram
 2. **发送通知**
    - 邮件
    - Telegram 机器人
-   - Slack Webhook
-   - 自定义 Webhook
+   - Webhook
 
 3. **记录历史**
-   - 记录告警事件
+   - 记录告警事件到 `alerts` 表
    - 记录触发时间
    - 记录当时数据
 
@@ -270,6 +282,9 @@ flowchart LR
     I --> J
     F --> J
     G --> J
+
+    A --> Drizzle[Drizzle ORM]
+    Drizzle --> DB[(数据库)]
 ```
 
 ### 详细步骤
@@ -312,6 +327,70 @@ flowchart LR
    - 风险提示
 
 > **免责声明**: 本功能仅用于监控预言机数据质量，不提供交易建议。价格差异可能由数据延迟、流动性差异等因素造成，不构成套利机会。
+
+---
+
+## 可靠性评分数据流
+
+### 概述
+
+描述预言机可靠性评分计算流程。
+
+```mermaid
+flowchart TD
+    A[获取历史价格数据] --> B[计算准确性]
+    A --> C[计算延迟]
+    A --> D[计算可用性]
+
+    B --> E[综合评分]
+    C --> E
+    D --> E
+
+    E --> F[存储评分结果]
+    F --> Drizzle[Drizzle ORM]
+    Drizzle --> DB[(oracle_reliability_scores)]
+
+    E --> G[可靠性趋势图]
+    E --> H[多维度分析]
+```
+
+### 详细步骤
+
+#### 1. 数据获取
+
+1. **获取历史数据**
+   - 从 `price_history` 表获取指定时间范围内的价格数据
+   - 按 protocol、symbol、chain 筛选
+
+#### 2. 评分计算
+
+1. **准确性评分**
+   - 计算与基准价格的平均偏差
+   - 计算最大/最小偏差
+   - 生成 accuracy_score
+
+2. **延迟评分**
+   - 计算平均响应时间
+   - 生成 latency_score
+
+3. **可用性评分**
+   - 计算成功请求比例
+   - 生成 availability_score
+
+4. **综合评分**
+   - 加权平均各维度评分
+   - 生成最终 score
+
+#### 3. 结果存储与展示
+
+1. **存储结果**
+   - 通过 Drizzle ORM 存储到 `oracle_reliability_scores` 表
+   - 包含 protocol、symbol、chain、score、accuracy_score、latency_score、availability_score 等字段
+
+2. **展示结果**
+   - 可靠性趋势图
+   - 多维度分析
+   - 协议排名
 
 ---
 

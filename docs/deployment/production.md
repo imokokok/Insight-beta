@@ -38,12 +38,12 @@ graph LR
    - **区域**: 选择离你的用户最近的区域
 4. 等待项目初始化（2-5 分钟）
 
-### 配置数据库
+### 配置数据库连接
 
 1. 在 Supabase 仪表板中进入项目
-2. 进入 "SQL Editor"
-3. 运行数据库迁移脚本
-4. 验证表结构已创建
+2. 进入 "Settings" → "Database" → "Connection Pooling"
+3. 复制 "Connection String" (选择 "Transaction" 模式)
+4. 格式应该类似: `postgresql://postgres:[password]@[project-ref].pooler.supabase.com:6543/postgres`
 
 ### 获取 Supabase 凭证
 
@@ -53,6 +53,79 @@ graph LR
 - anon public key
 - service_role key
 - Database URL（在 "Database" → "Connection Pooling" 中）
+
+### 使用 Drizzle ORM 管理数据库
+
+项目使用 **Drizzle ORM** 进行数据库管理，这是一个类型安全的 TypeScript ORM。
+
+#### 安装依赖
+
+确保已安装必要的依赖（已在 `package.json` 中配置）:
+
+```bash
+npm install
+```
+
+#### 数据库配置
+
+Drizzle 配置文件位于 `drizzle.config.ts`:
+
+```typescript
+import type { Config } from 'drizzle-kit';
+
+export default {
+  schema: './src/lib/database/index.ts',
+  out: './drizzle',
+  dialect: 'postgresql',
+  dbCredentials: {
+    url: process.env.DATABASE_URL || '',
+  },
+} satisfies Config;
+```
+
+#### 生成迁移文件
+
+当你修改 schema 后，生成迁移文件:
+
+```bash
+npm run db:generate
+```
+
+这会在 `./drizzle` 目录下生成 SQL 迁移文件。
+
+#### 应用迁移到生产环境
+
+在部署前，确保已应用所有迁移:
+
+```bash
+# 设置 DATABASE_URL 环境变量
+export DATABASE_URL="postgresql://postgres:[password]@[project-ref].pooler.supabase.com:6543/postgres"
+
+# 应用迁移
+npm run db:migrate
+```
+
+或者使用 `db:push` 直接推送 schema 更改（适合开发环境）:
+
+```bash
+npm run db:push
+```
+
+#### 查看数据库
+
+使用 Drizzle Studio 可视化查看和编辑数据库:
+
+```bash
+npm run db:studio
+```
+
+这会在浏览器中打开 Drizzle Studio 界面。
+
+#### 数据库 Schema 初始化
+
+项目还包含一个自动初始化机制，在应用启动时会自动检查并创建缺失的表结构。这个机制位于 `src/lib/database/DbInitializer.ts`。
+
+在生产环境中，建议优先使用 Drizzle 迁移，而不是依赖自动初始化。
 
 ## 步骤 2: 准备代码仓库
 
@@ -81,7 +154,8 @@ graph LR
 NEXT_PUBLIC_SUPABASE_URL=https://[project-ref].supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-DATABASE_URL=postgresql://...
+SUPABASE_PROJECT_ID=your-project-id
+DATABASE_URL=postgresql://postgres:[password]@[project-ref].pooler.supabase.com:6543/postgres
 
 # 应用
 NEXT_PUBLIC_APP_URL=https://your-domain.com
@@ -91,6 +165,8 @@ NODE_ENV=production
 INSIGHT_ADMIN_TOKEN=your-strong-admin-token
 INSIGHT_ADMIN_TOKEN_SALT=your-salt
 JWT_SECRET=your-jwt-secret-at-least-32-chars
+INSIGHT_CONFIG_ENCRYPTION_KEY=your-encryption-key-at-least-32-chars
+INSIGHT_CRON_SECRET=your-cron-secret
 
 # RPC
 ALCHEMY_API_KEY=your-alchemy-key
@@ -101,6 +177,22 @@ INFURA_API_KEY=your-infura-key
 #### 可选变量
 
 ```env
+# 自定义 RPC URL（优先级最高）
+ETHEREUM_RPC_URL=""
+POLYGON_RPC_URL=""
+ARBITRUM_RPC_URL=""
+OPTIMISM_RPC_URL=""
+BASE_RPC_URL=""
+AVALANCHE_RPC_URL=""
+BSC_RPC_URL=""
+FANTOM_RPC_URL=""
+SOLANA_RPC_URL=""
+
+# Gas 价格 API
+ETHERSCAN_API_KEY=""
+BLOCKNATIVE_API_KEY=""
+GASPRICE_API_KEY=""
+
 # 日志
 LOG_LEVEL=info
 
@@ -110,8 +202,23 @@ NEXT_PUBLIC_SENTRY_DSN=https://your-public-sentry-dsn
 
 # 通知
 INSIGHT_SLACK_WEBHOOK_URL=https://hooks.slack.com/...
+INSIGHT_SLACK_TIMEOUT_MS=10000
 INSIGHT_TELEGRAM_BOT_TOKEN=your-bot-token
 INSIGHT_TELEGRAM_CHAT_ID=your-chat-id
+INSIGHT_TELEGRAM_TIMEOUT_MS=10000
+INSIGHT_WEBHOOK_URL=https://your-webhook-url
+INSIGHT_WEBHOOK_TIMEOUT_MS=10000
+INSIGHT_SMTP_HOST=smtp.example.com
+INSIGHT_SMTP_PORT=587
+INSIGHT_SMTP_USER=your-smtp-user
+INSIGHT_SMTP_PASS=your-smtp-pass
+INSIGHT_FROM_EMAIL=noreply@example.com
+INSIGHT_DEFAULT_EMAIL=admin@example.com
+PAGERDUTY_API_KEY=your-pagerduty-key
+
+# 功能开关
+INSIGHT_DEMO_MODE=false
+CHAOS_ENABLED=false
 ```
 
 **重要提示**:
