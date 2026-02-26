@@ -163,11 +163,14 @@ export function ChainlinkPriceHistory({ className }: ChainlinkPriceHistoryProps)
     limit: timeRangeConfig.limit,
   });
 
-  const historyMap: Record<AssetSymbol, typeof ethHistory> = {
-    'ETH/USD': ethHistory,
-    'BTC/USD': btcHistory,
-    'LINK/USD': linkHistory,
-  };
+  const historyMap: Record<AssetSymbol, typeof ethHistory> = useMemo(
+    () => ({
+      'ETH/USD': ethHistory,
+      'BTC/USD': btcHistory,
+      'LINK/USD': linkHistory,
+    }),
+    [ethHistory, btcHistory, linkHistory],
+  );
 
   const isLoading = assetsToFetch.some((asset) => historyMap[asset]?.isLoading);
   const isError = assetsToFetch.some((asset) => historyMap[asset]?.isError);
@@ -197,7 +200,7 @@ export function ChainlinkPriceHistory({ className }: ChainlinkPriceHistoryProps)
     });
 
     return Array.from(dataByTimestamp.values()).sort((a, b) => a.timestamp - b.timestamp);
-  }, [assetsToFetch, ethHistory.data, btcHistory.data, linkHistory.data]);
+  }, [assetsToFetch, historyMap]);
 
   const priceStatsMap = useMemo(() => {
     const stats: AssetPriceStats[] = [];
@@ -228,13 +231,13 @@ export function ChainlinkPriceHistory({ className }: ChainlinkPriceHistoryProps)
     });
 
     return stats;
-  }, [selectedAssets, ethHistory.data, btcHistory.data, linkHistory.data]);
+  }, [selectedAssets, historyMap]);
 
   const handleRefresh = useCallback(() => {
     assetsToFetch.forEach((asset) => {
       historyMap[asset]?.refresh();
     });
-  }, [assetsToFetch]);
+  }, [assetsToFetch, historyMap]);
 
   const toggleAsset = useCallback((symbol: AssetSymbol) => {
     setSelectedAssets((prev) => {

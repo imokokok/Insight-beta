@@ -298,7 +298,7 @@ export default function AlertsCenterPage() {
         status: (summary.active > 0 ? 'error' : 'success') as KpiStatus,
       },
     ];
-  }, [data?.summary, t]);
+  }, [data, t]);
 
   if (error && !loading && !data) {
     return (

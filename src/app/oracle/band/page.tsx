@@ -329,7 +329,7 @@ export default function BandProtocolPage() {
     } finally {
       updateState({ loading: false });
     }
-  }, [updateState]);
+  }, [updateState, t]);
 
   const fetchIBCData = useCallback(async () => {
     try {

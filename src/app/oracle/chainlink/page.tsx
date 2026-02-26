@@ -38,6 +38,10 @@ import {
   useTabNavigation,
   type TabItem,
 } from '@/features/oracle/chainlink/components';
+import type { ChainlinkFeed, Operator, OcrRound } from '@/features/oracle/chainlink/types';
+import { useI18n } from '@/i18n';
+import { fetchApiData } from '@/shared/utils';
+import type { ChainlinkOverviewStats, NetworkHealthStatus } from '@/types/common';
 
 const ChainlinkPriceHistory = lazy(() =>
   import('@/features/oracle/chainlink/components/ChainlinkPriceHistory').then((mod) => ({
@@ -84,10 +88,6 @@ const OperatorList = lazy(() =>
     default: mod.OperatorList,
   })),
 );
-import type { ChainlinkFeed, Operator, OcrRound } from '@/features/oracle/chainlink/types';
-import { useI18n } from '@/i18n';
-import { fetchApiData } from '@/shared/utils';
-import type { ChainlinkOverviewStats, NetworkHealthStatus } from '@/types/common';
 
 interface FeedsApiResponse {
   feeds: ChainlinkFeed[];

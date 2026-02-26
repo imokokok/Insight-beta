@@ -39,6 +39,11 @@ import {
 } from '@/features/oracle/chainlink/components';
 import { pythExportConfig } from '@/features/oracle/pyth';
 import { PythKpiOverview, PythTopStatusBar } from '@/features/oracle/pyth/components';
+import { useI18n } from '@/i18n';
+import { fetchApiData } from '@/shared/utils';
+import { formatLatency } from '@/shared/utils/format';
+import { cn } from '@/shared/utils/ui';
+import type { PythOverviewStats, NetworkHealthStatus } from '@/types/common';
 
 const ConfidenceComparisonChart = lazy(() =>
   import('@/features/oracle/pyth/components').then((mod) => ({
@@ -57,11 +62,6 @@ const PriceHistoryChart = lazy(() =>
     default: mod.PriceHistoryChart,
   })),
 );
-import { useI18n } from '@/i18n';
-import { fetchApiData } from '@/shared/utils';
-import { formatLatency } from '@/shared/utils/format';
-import { cn } from '@/shared/utils/ui';
-import type { PythOverviewStats, NetworkHealthStatus } from '@/types/common';
 
 interface PublisherStats {
   total: number;
