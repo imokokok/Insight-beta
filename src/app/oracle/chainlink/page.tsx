@@ -561,7 +561,7 @@ export default function ChainlinkPage() {
                       </Suspense>
                     </div>
                     <div className="space-y-3 lg:col-span-1 xl:col-span-1">
-                      <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
+                      <div className="rounded border border-border/20 p-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Database className="h-3.5 w-3.5 text-primary" />
                           {t('chainlink.feedStatus.title')}
@@ -592,7 +592,7 @@ export default function ChainlinkPage() {
                         </div>
                       </div>
 
-                      <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
+                      <div className="rounded border border-border/20 p-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Users className="h-3.5 w-3.5 text-primary" />
                           {t('chainlink.nodeStatus.title')}

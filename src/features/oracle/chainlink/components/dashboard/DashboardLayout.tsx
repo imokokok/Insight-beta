@@ -82,9 +82,7 @@ export function LeftNavSection({ children, className, title }: LayoutSectionProp
 }
 
 export function MainContentSection({ children, className }: LayoutSectionProps) {
-  return (
-    <div className={cn('mb-6 rounded bg-[rgba(15,23,42,0.8)] p-4', className)}>{children}</div>
-  );
+  return <div className={cn('mb-6 rounded p-4', className)}>{children}</div>;
 }
 
 export function RightStatusSection({ children, className, title }: LayoutSectionProps) {
