@@ -207,20 +207,8 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  modularizeImports: {
-    'lucide-react': {
-      transform: 'lucide-react/dist/esm/icons/{{ kebabCase member }}',
-    },
-    'date-fns': {
-      transform: 'date-fns/{{ member }}',
-    },
-  },
-
   reactStrictMode: true,
   typedRoutes: true,
-
-  // Disable Turbopack and use webpack
-  turbopack: {},
 
   webpack: (config, { isServer, dev }) => {
     config.resolve = config.resolve || {};

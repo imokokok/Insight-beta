@@ -4,7 +4,7 @@
   "private": true,
   "description": "Universal Oracle Data Analytics Platform - Multi-protocol oracle data analysis and aggregation",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build --webpack",
     "lint": "eslint src --max-warnings=500",
     "lint:security": "eslint src --rule 'security/*:error'",

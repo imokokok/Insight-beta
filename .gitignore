@@ -32,6 +32,9 @@ docs/generated/
 *.swp
 *.swo
 
+# Trae IDE
+.trae/
+
 # 操作系统
 .DS_Store
 Thumbs.db
