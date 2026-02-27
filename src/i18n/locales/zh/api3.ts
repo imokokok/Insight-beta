@@ -1,11 +1,32 @@
 export const api3 = {
   pageDescription: '第一方预言机 - Airnode 技术与签名数据验证',
+  tabs: {
+    overview: '概览',
+    airnodes: 'Airnodes',
+    data: '数据服务',
+    analysis: '分析工具',
+    tools: '工具',
+  },
   overview: {
     title: 'API3 协议概览',
     description: '第一方预言机网络状态摘要',
+    content:
+      'API3 是第一方预言机解决方案，通过 Airnode 技术实现去中心化数据馈送。提供可验证的签名数据和跨链数据服务。',
   },
   features: {
     title: '核心特性',
+    airnode: {
+      label: 'Airnode 网络',
+      value: '去中心化第一方预言机节点',
+    },
+    signature: {
+      label: '签名验证',
+      value: '验证数据真实性',
+    },
+    priceMonitor: {
+      label: '价格监控',
+      value: '实时价格更新追踪',
+    },
   },
   supportedChains: {
     title: '支持的链',
@@ -24,6 +45,8 @@ export const api3 = {
     refresh: {
       ariaLabel: '刷新数据',
     },
+    noData: '暂无 Airnode 数据',
+    gasCost: 'Gas 成本',
   },
   provider: {
     title: '数据提供商',
@@ -47,6 +70,41 @@ export const api3 = {
     lastSeen: '最后在线',
     endpointId: '端点 ID',
     sponsor: '赞助商地址',
+    statusOverview: 'Airnode 状态概览',
+    totalAirnodes: '总 Airnodes',
+    onlineAirnodes: '在线 Airnodes',
+    offlineAirnodes: '离线 Airnodes',
+    dapisCount: 'dAPIs 数量',
+    lastHeartbeat: '最后心跳',
+    responseTimeHistory: '响应时间历史',
+    noHistoryData: '暂无历史数据',
+    contractAddress: '合约地址',
+    ipfsEndpoint: 'IPFS 端点',
+    relatedDapis: '关联的 dAPI 列表',
+    tradingPair: '交易对',
+    currentValue: '当前值',
+    updateRecords: '更新记录',
+    old_value: '旧值',
+    new_value: '新值',
+    txHash: '交易哈希',
+    online: '在线',
+    offline: '离线',
+    active: '活跃',
+    inactive: '非活跃',
+    unknown: '未知',
+    viewInExplorer: '在区块浏览器中查看',
+    statusInfo: '状态信息',
+    airnodeInfo: 'Airnode 信息',
+    xpub: 'xpub',
+    uptimeRate: '在线率',
+    gas: 'Gas',
+    dapi: 'dAPI',
+  },
+  dapiStatus: {
+    title: 'dAPIs 状态概览',
+    totalDapis: '总 dAPIs',
+    activeDapis: '活跃 dAPIs',
+    inactiveDapis: '非活跃 dAPIs',
   },
   priceUpdate: {
     totalUpdates: '价格更新事件',
@@ -68,6 +126,9 @@ export const api3 = {
     status_normal: '正常',
     status_warning: '警告',
     status_critical: '严重',
+    totalEvents: '总更新事件',
+    involvedDapis: '涉及 dAPIs',
+    involvedChains: '涉及链',
   },
   signature: {
     title: '签名验证',
@@ -125,5 +186,10 @@ export const api3 = {
     airnodeAddressPlaceholder: '输入 Airnode 地址',
     selectNetwork: '选择网络',
     thresholdPlaceholder: '输入阈值',
+  },
+  performance: {
+    excellent: '优秀',
+    good: '良好',
+    slow: '较慢',
   },
 };

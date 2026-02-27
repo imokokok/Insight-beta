@@ -37,11 +37,17 @@ export const explore = {
   },
   trending: {
     title: '热门交易对',
+    description: '发现最受欢迎和活跃的价格数据源',
     volume: '交易量',
     priceChange: '价格变动',
     transactions: '交易次数',
     sortByVolume: '按交易量排序',
     sortByPriceChange: '按价格变动排序',
+    loadError: '加载热门交易对失败',
+    empty: {
+      title: '暂无热门交易对',
+      description: '当前没有可用的热门交易对数据',
+    },
   },
   discovery: {
     title: '数据发现',

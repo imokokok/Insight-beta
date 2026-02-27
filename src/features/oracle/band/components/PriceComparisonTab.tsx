@@ -51,7 +51,7 @@ interface ComparisonResponse {
 }
 
 export function PriceComparisonTab() {
-  useI18n();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [comparisonData, setComparisonData] = useState<ComparisonResponse['data'] | null>(null);
 
@@ -82,10 +82,10 @@ export function PriceComparisonTab() {
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-lg font-medium">预言机价格对比</CardTitle>
+          <CardTitle className="text-lg font-medium">{t('band.priceComparison.title')}</CardTitle>
           <Button variant="outline" size="sm" onClick={fetchComparisonData} disabled={loading}>
             <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
-            刷新
+            {t('common.refresh')}
           </Button>
         </CardHeader>
         <CardContent>
@@ -100,7 +100,9 @@ export function PriceComparisonTab() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">总资产数</span>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('band.priceComparison.totalAssets')}
+                    </span>
                     <ArrowDownUp className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="mt-2 text-3xl font-bold">
@@ -112,7 +114,9 @@ export function PriceComparisonTab() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">平均偏差</span>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('band.priceComparison.avgDeviation')}
+                    </span>
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div
@@ -129,7 +133,9 @@ export function PriceComparisonTab() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">最大偏差</span>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('band.priceComparison.maxDeviation')}
+                    </span>
                     <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div
@@ -146,7 +152,9 @@ export function PriceComparisonTab() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">同步状态</span>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('band.priceComparison.syncStatus')}
+                    </span>
                     {comparisonData.summary.symbolsInSync > 0 ? (
                       <TrendingUp className="h-4 w-4 text-green-500" />
                     ) : (
@@ -177,7 +185,9 @@ export function PriceComparisonTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-medium">价格对比详情</CardTitle>
+          <CardTitle className="text-lg font-medium">
+            {t('band.priceComparison.detailsTitle')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -186,13 +196,13 @@ export function PriceComparisonTab() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>资产</TableHead>
+                  <TableHead>{t('band.priceComparison.asset')}</TableHead>
                   <TableHead className="text-right">Band</TableHead>
                   <TableHead className="text-right">Chainlink</TableHead>
                   <TableHead className="text-right">Pyth</TableHead>
                   <TableHead className="text-right">Band vs Chainlink</TableHead>
                   <TableHead className="text-right">Band vs Pyth</TableHead>
-                  <TableHead className="text-right">状态</TableHead>
+                  <TableHead className="text-right">{t('common.table.status')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -232,8 +242,8 @@ export function PriceComparisonTab() {
                           Math.abs(item.deviations.bandVsChainlink),
                           Math.abs(item.deviations.bandVsPyth),
                         ) < 0.5
-                          ? '同步'
-                          : '偏差'}
+                          ? t('band.priceComparison.synced')
+                          : t('band.priceComparison.desynced')}
                       </Badge>
                     </TableCell>
                   </TableRow>
@@ -241,14 +251,18 @@ export function PriceComparisonTab() {
               </TableBody>
             </Table>
           ) : (
-            <div className="text-center text-muted-foreground">暂无数据</div>
+            <div className="text-center text-muted-foreground">
+              {t('band.priceComparison.noData')}
+            </div>
           )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-medium">偏差趋势 (24h)</CardTitle>
+          <CardTitle className="text-lg font-medium">
+            {t('band.priceComparison.deviationTrend')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -269,7 +283,7 @@ export function PriceComparisonTab() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="pb-2 text-left font-medium">时间</th>
+                      <th className="pb-2 text-left font-medium">{t('common.table.time')}</th>
                       <th className="pb-2 text-right font-medium">Band vs Chainlink</th>
                       <th className="pb-2 text-right font-medium">Band vs Pyth</th>
                     </tr>
@@ -300,7 +314,9 @@ export function PriceComparisonTab() {
               </div>
             </div>
           ) : (
-            <div className="text-center text-muted-foreground">暂无数据</div>
+            <div className="text-center text-muted-foreground">
+              {t('band.priceComparison.noData')}
+            </div>
           )}
         </CardContent>
       </Card>

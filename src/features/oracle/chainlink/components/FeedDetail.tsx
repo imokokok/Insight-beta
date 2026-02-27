@@ -175,7 +175,7 @@ export function FeedDetail({ address }: FeedDetailProps) {
               <Link href="/oracle/chainlink">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  返回列表
+                  {t('chainlink.feedDetail.backToList')}
                 </Button>
               </Link>
             </div>
@@ -203,7 +203,9 @@ export function FeedDetail({ address }: FeedDetailProps) {
               <Database className="h-6 w-6 text-blue-600" />
               <span>{feed.pair}</span>
               <Badge variant={health.healthy ? 'success' : 'destructive'} className="ml-2">
-                {health.healthy ? '健康' : '异常'}
+                {health.healthy
+                  ? t('chainlink.feedDetail.healthy')
+                  : t('chainlink.feedDetail.unhealthy')}
               </Badge>
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -224,7 +226,7 @@ export function FeedDetail({ address }: FeedDetailProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              当前价格
+              {t('chainlink.feedDetail.currentPrice')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -235,7 +237,7 @@ export function FeedDetail({ address }: FeedDetailProps) {
               <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  更新于 {formatTime(feed.lastUpdate)}
+                  {t('chainlink.feedDetail.updatedAt', { time: formatTime(feed.lastUpdate) })}
                 </span>
                 {feed.isStale && (
                   <Badge variant="warning" size="sm">
@@ -259,7 +261,7 @@ export function FeedDetail({ address }: FeedDetailProps) {
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-muted-foreground">
-                  暂无历史数据
+                  {t('chainlink.feedDetail.noHistoryData')}
                 </div>
               )}
             </div>
@@ -271,12 +273,14 @@ export function FeedDetail({ address }: FeedDetailProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5" />
-                健康状态
+                {t('chainlink.feedDetail.healthStatus')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">状态</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('chainlink.feedDetail.status')}
+                </span>
                 <div className="flex items-center gap-2">
                   {health.healthy ? (
                     <CheckCircle className="h-4 w-4 text-green-500" />
@@ -289,13 +293,17 @@ export function FeedDetail({ address }: FeedDetailProps) {
                       health.healthy ? 'text-green-600' : 'text-red-600',
                     )}
                   >
-                    {health.healthy ? '正常' : '异常'}
+                    {health.healthy
+                      ? t('chainlink.feedDetail.normal')
+                      : t('chainlink.feedDetail.abnormal')}
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">数据延迟</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('chainlink.feedDetail.dataDelay')}
+                </span>
                 <Badge variant={health.stalenessSeconds > 3600 ? 'warning' : 'secondary'}>
                   {formatStaleness(health.stalenessSeconds)}
                 </Badge>
@@ -303,7 +311,9 @@ export function FeedDetail({ address }: FeedDetailProps) {
 
               {health.issues.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">问题列表</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {t('chainlink.feedDetail.issueList')}
+                  </p>
                   <div className="space-y-2">
                     {health.issues.map((issue, index) => (
                       <div
@@ -329,34 +339,46 @@ export function FeedDetail({ address }: FeedDetailProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">交易对</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('chainlink.feedDetail.pair')}
+                </span>
                 <span className="font-medium">{feed.pair}</span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">基础资产</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('chainlink.feedDetail.baseAsset')}
+                </span>
                 <Badge variant="outline">{feed.baseAsset}</Badge>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">报价资产</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('chainlink.feedDetail.quoteAsset')}
+                </span>
                 <Badge variant="outline">{feed.quoteAsset}</Badge>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">链</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('chainlink.feedDetail.chain')}
+                </span>
                 <Badge variant="secondary" className="capitalize">
                   {feed.chain}
                 </Badge>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">精度</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('chainlink.feedDetail.decimals')}
+                </span>
                 <span className="font-mono text-sm">{feed.decimals} decimals</span>
               </div>
 
               <div className="space-y-2">
-                <span className="text-sm text-muted-foreground">合约地址</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('chainlink.feedDetail.contractAddress')}
+                </span>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 truncate rounded bg-muted px-2 py-1 text-xs">
                     {feed.address}
@@ -369,7 +391,7 @@ export function FeedDetail({ address }: FeedDetailProps) {
                   >
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
-                  {copied && <span className="text-xs text-green-600">已复制</span>}
+                  {copied && <span className="text-xs text-green-600">{t('common.copied')}</span>}
                 </div>
               </div>
 
@@ -381,7 +403,7 @@ export function FeedDetail({ address }: FeedDetailProps) {
                   className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  在区块浏览器中查看
+                  {t('chainlink.feedDetail.viewOnExplorer')}
                 </a>
               </div>
             </CardContent>

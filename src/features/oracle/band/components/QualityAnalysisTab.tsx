@@ -68,7 +68,7 @@ interface QualityResponse {
 }
 
 export function QualityAnalysisTab() {
-  useI18n();
+  const { t } = useI18n();
   const [selectedSymbol, setSelectedSymbol] = useState('BTC/USD');
   const [loading, setLoading] = useState(true);
   const [qualityData, setQualityData] = useState<QualityResponse['data'] | null>(null);
@@ -109,7 +109,7 @@ export function QualityAnalysisTab() {
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-lg font-medium">数据质量概览</CardTitle>
+          <CardTitle className="text-lg font-medium">{t('band.qualityAnalysis.title')}</CardTitle>
           <div className="flex items-center gap-2">
             <Select value={selectedSymbol} onValueChange={setSelectedSymbol}>
               <SelectTrigger className="w-[140px]">
@@ -125,7 +125,7 @@ export function QualityAnalysisTab() {
             </Select>
             <Button variant="outline" size="sm" onClick={fetchQualityData} disabled={loading}>
               <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              刷新
+              {t('common.refresh')}
             </Button>
           </div>
         </CardHeader>
@@ -141,7 +141,9 @@ export function QualityAnalysisTab() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">总体评分</span>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('band.qualityAnalysis.overallScore')}
+                    </span>
                     <Activity className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div
@@ -150,7 +152,9 @@ export function QualityAnalysisTab() {
                     {qualityData.summary.overallScore}
                   </div>
                   <Badge variant={getScoreBadge(qualityData.summary.overallScore)} className="mt-1">
-                    {qualityData.summary.overallScore >= 90 ? '健康' : '降级'}
+                    {qualityData.summary.overallScore >= 90
+                      ? t('band.qualityAnalysis.healthy')
+                      : t('band.qualityAnalysis.degraded')}
                   </Badge>
                 </CardContent>
               </Card>
@@ -158,7 +162,9 @@ export function QualityAnalysisTab() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">数据完整性</span>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('band.qualityAnalysis.dataIntegrity')}
+                    </span>
                     <CheckCircle className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="mt-2 text-3xl font-bold">
@@ -171,7 +177,9 @@ export function QualityAnalysisTab() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">平均延迟</span>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('band.qualityAnalysis.avgLatency')}
+                    </span>
                     <Clock className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="mt-2 text-3xl font-bold">{qualityData.summary.avgLatency}ms</div>
@@ -184,7 +192,9 @@ export function QualityAnalysisTab() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">一致性评分</span>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('band.qualityAnalysis.consistencyScore')}
+                    </span>
                     {qualityData.summary.avgConsistency >= 90 ? (
                       <CheckCircle className="h-4 w-4 text-green-500" />
                     ) : (
@@ -197,7 +207,9 @@ export function QualityAnalysisTab() {
                     {qualityData.summary.avgConsistency}%
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    偏差: {metrics?.consistency.deviationFromMedian}%
+                    {t('band.qualityAnalysis.deviationFromMedian', {
+                      value: metrics?.consistency.deviationFromMedian ?? 0,
+                    })}
                   </span>
                 </CardContent>
               </Card>
@@ -209,7 +221,9 @@ export function QualityAnalysisTab() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-medium">响应时间分布</CardTitle>
+            <CardTitle className="text-lg font-medium">
+              {t('band.qualityAnalysis.responseTimeDistribution')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -237,20 +251,24 @@ export function QualityAnalysisTab() {
                     <span className="ml-2 font-medium">{metrics.latency.p99LatencyMs}ms</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">最大:</span>
+                    <span className="text-muted-foreground">{t('band.qualityAnalysis.max')}</span>
                     <span className="ml-2 font-medium">{metrics.latency.maxLatencyMs}ms</span>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="text-center text-muted-foreground">暂无数据</div>
+              <div className="text-center text-muted-foreground">
+                {t('band.qualityAnalysis.noData')}
+              </div>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-medium">数据一致性校验</CardTitle>
+            <CardTitle className="text-lg font-medium">
+              {t('band.qualityAnalysis.dataConsistencyCheck')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -258,7 +276,9 @@ export function QualityAnalysisTab() {
             ) : metrics ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">跨源一致性</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('band.qualityAnalysis.crossSourceConsistency')}
+                  </span>
                   <Badge
                     variant={metrics.consistency.crossSourceAgreement >= 95 ? 'success' : 'warning'}
                   >
@@ -267,21 +287,27 @@ export function QualityAnalysisTab() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">与中位数偏差</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('band.qualityAnalysis.deviationFromMedianLabel')}
+                  </span>
                   <span className="font-medium">±{metrics.consistency.deviationFromMedian}%</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">异常数据点</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('band.qualityAnalysis.outlierDataPoints')}
+                  </span>
                   <Badge
                     variant={metrics.consistency.outlierCount > 5 ? 'destructive' : 'secondary'}
                   >
-                    {metrics.consistency.outlierCount} 个
+                    {metrics.consistency.outlierCount} {t('band.qualityAnalysis.units')}
                   </Badge>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">一致性评分</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('band.qualityAnalysis.consistencyScore')}
+                  </span>
                   <span
                     className={`font-bold ${getScoreColor(metrics.consistency.consistencyScore)}`}
                   >
@@ -291,21 +317,27 @@ export function QualityAnalysisTab() {
 
                 <div className="mt-4 border-t pt-4">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">新鲜度评分</span>
+                    <span className="text-muted-foreground">
+                      {t('band.qualityAnalysis.freshnessScore')}
+                    </span>
                     <Badge variant={metrics.freshness.freshnessScore >= 95 ? 'success' : 'warning'}>
                       {metrics.freshness.freshnessScore}%
                     </Badge>
                   </div>
                   <div className="mt-2 text-xs text-muted-foreground">
-                    最后更新: {new Date(metrics.freshness.lastUpdateTimestamp).toLocaleString()}
+                    {t('band.qualityAnalysis.lastUpdate')}:{' '}
+                    {new Date(metrics.freshness.lastUpdateTimestamp).toLocaleString()}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    更新频率: 每 {metrics.freshness.updateFrequency} 秒
+                    {t('band.qualityAnalysis.updateFrequency')}: {t('band.qualityAnalysis.every')}{' '}
+                    {metrics.freshness.updateFrequency} {t('band.qualityAnalysis.seconds')}
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="text-center text-muted-foreground">暂无数据</div>
+              <div className="text-center text-muted-foreground">
+                {t('band.qualityAnalysis.noData')}
+              </div>
             )}
           </CardContent>
         </Card>

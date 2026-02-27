@@ -1,11 +1,32 @@
 export const api3 = {
   pageDescription: 'First-party Oracle - Airnode Technology & Signed Data Verification',
+  tabs: {
+    overview: 'Overview',
+    airnodes: 'Airnodes',
+    data: 'Data Services',
+    analysis: 'Analysis Tools',
+    tools: 'Tools',
+  },
   overview: {
     title: 'API3 Protocol Overview',
     description: 'First-party oracle network status summary',
+    content:
+      'API3 is a first-party oracle solution that enables decentralized data feeds through Airnode technology. Provides verifiable signed data and cross-chain data services.',
   },
   features: {
     title: 'Core Features',
+    airnode: {
+      label: 'Airnode Network',
+      value: 'Decentralized first-party oracle nodes',
+    },
+    signature: {
+      label: 'Signature Verification',
+      value: 'Verify data authenticity',
+    },
+    priceMonitor: {
+      label: 'Price Monitor',
+      value: 'Real-time price update tracking',
+    },
   },
   supportedChains: {
     title: 'Supported Chains',
@@ -24,6 +45,8 @@ export const api3 = {
     refresh: {
       ariaLabel: 'Refresh data',
     },
+    noData: 'No Airnode data available',
+    gasCost: 'Gas Cost',
   },
   provider: {
     title: 'Data Provider',
@@ -47,6 +70,35 @@ export const api3 = {
     lastSeen: 'Last Seen',
     endpointId: 'Endpoint ID',
     sponsor: 'Sponsor Address',
+    statusOverview: 'Airnode Status Overview',
+    totalAirnodes: 'Total Airnodes',
+    onlineAirnodes: 'Online Airnodes',
+    offlineAirnodes: 'Offline Airnodes',
+    dapisCount: 'dAPIs Count',
+    lastHeartbeat: 'Last Heartbeat',
+    responseTimeHistory: 'Response Time History',
+    noHistoryData: 'No history data available',
+    contractAddress: 'Contract Address',
+    ipfsEndpoint: 'IPFS Endpoint',
+    relatedDapis: 'Related dAPI List',
+    tradingPair: 'Trading Pair',
+    currentValue: 'Current Value',
+    updateRecords: 'Update Records',
+    old_value: 'Old Value',
+    new_value: 'New Value',
+    txHash: 'Transaction Hash',
+    online: 'Online',
+    offline: 'Offline',
+    active: 'Active',
+    inactive: 'Inactive',
+    unknown: 'Unknown',
+    viewInExplorer: 'View in Block Explorer',
+  },
+  dapiStatus: {
+    title: 'dAPIs Status Overview',
+    totalDapis: 'Total dAPIs',
+    activeDapis: 'Active dAPIs',
+    inactiveDapis: 'Inactive dAPIs',
   },
   priceUpdate: {
     totalUpdates: 'Price Update Events',
@@ -68,6 +120,9 @@ export const api3 = {
     status_normal: 'Normal',
     status_warning: 'Warning',
     status_critical: 'Critical',
+    totalEvents: 'Total Update Events',
+    involvedDapis: 'Involved dAPIs',
+    involvedChains: 'Involved Chains',
   },
   signature: {
     title: 'Signature Verification',
@@ -125,5 +180,10 @@ export const api3 = {
     airnodeAddressPlaceholder: 'Enter Airnode address',
     selectNetwork: 'Select network',
     thresholdPlaceholder: 'Enter threshold',
+  },
+  performance: {
+    excellent: 'Excellent',
+    good: 'Good',
+    slow: 'Slow',
   },
 };

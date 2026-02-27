@@ -154,7 +154,12 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                 className="w-full pl-8 sm:w-64"
               />
             </div>
-            <Button variant="outline" size="icon" onClick={handleRefresh} aria-label="刷新数据">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleRefresh}
+              aria-label={t('api3.dapi.refresh.ariaLabel')}
+            >
               <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
             </Button>
           </div>
@@ -170,7 +175,7 @@ export function DapiList({ chain, symbol, className }: DapiListProps) {
                 <TableHead className="hidden xl:table-cell">{t('api3.dapi.sourceType')}</TableHead>
                 <TableHead className="hidden md:table-cell">{t('api3.dapi.provider')}</TableHead>
                 <TableHead className="min-w-[100px]">{t('api3.dapi.price')}</TableHead>
-                <TableHead className="hidden lg:table-cell">Gas 成本</TableHead>
+                <TableHead className="hidden lg:table-cell">{t('api3.dapi.gasCost')}</TableHead>
                 <TableHead className="min-w-[80px]">{t('api3.dapi.status')}</TableHead>
                 <TableHead className="hidden sm:table-cell">{t('api3.dapi.lastUpdate')}</TableHead>
                 <TableHead className="hidden md:table-cell">{t('api3.dapi.dataFeedId')}</TableHead>

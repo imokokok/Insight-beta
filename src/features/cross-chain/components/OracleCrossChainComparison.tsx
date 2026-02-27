@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { CHAIN_COLORS, CHAIN_DISPLAY_NAMES } from '@/config/chains';
+import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 import {
   formatPrice,
@@ -93,6 +94,7 @@ export function OracleCrossChainComparison({
   showConsistencyScore = true,
   className,
 }: OracleCrossChainComparisonProps) {
+  const { t } = useI18n();
   const [selectedSymbol, setSelectedSymbol] = useState<string>(availableSymbols[0] || 'BTC');
   const [selectedChains, setSelectedChains] = useState<string[]>(supportedChains.slice(0, 5));
   const [data, setData] = useState<{
@@ -161,28 +163,28 @@ export function OracleCrossChainComparison({
   const defaultTitle = useMemo(() => {
     switch (protocol) {
       case 'chainlink':
-        return '跨链价格对比';
+        return t('crossChain.comparison.chainlinkTitle');
       case 'pyth':
-        return '跨链价格一致性验证';
+        return t('crossChain.comparison.pythTitle');
       case 'api3':
-        return '跨链对比';
+        return t('crossChain.comparison.api3Title');
       default:
-        return '跨链价格对比';
+        return t('crossChain.comparison.chainlinkTitle');
     }
-  }, [protocol]);
+  }, [protocol, t]);
 
   const defaultDescription = useMemo(() => {
     switch (protocol) {
       case 'chainlink':
-        return '对比同一价格源在不同链上的价格差异';
+        return t('crossChain.comparison.chainlinkDescription');
       case 'pyth':
-        return '对比同一价格源在不同链上的价格差异与一致性';
+        return t('crossChain.comparison.pythDescription');
       case 'api3':
-        return '同一 dAPI 在不同链上的指标对比分析';
+        return t('crossChain.comparison.api3Description');
       default:
-        return '跨链价格对比分析';
+        return t('crossChain.comparison.chainlinkDescription');
     }
-  }, [protocol]);
+  }, [protocol, t]);
 
   const getStatusBadge = (status?: ChainPriceData['status']) => {
     if (!showStatus || !status) return null;
@@ -191,20 +193,20 @@ export function OracleCrossChainComparison({
       case 'active':
         return (
           <Badge variant="success" className="h-5 px-1.5 text-[10px]">
-            正常
+            {t('crossChain.status.available')}
           </Badge>
         );
       case 'stale':
         return (
           <Badge variant="warning" className="h-5 px-1.5 text-[10px]">
-            延迟
+            {t('crossChain.status.delayed')}
           </Badge>
         );
       case 'unavailable':
       case 'inactive':
         return (
           <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
-            不可用
+            {t('crossChain.status.unavailable')}
           </Badge>
         );
       default:
@@ -232,7 +234,7 @@ export function OracleCrossChainComparison({
     return (
       <Card className={className}>
         <CardContent className="pt-6">
-          <div className="py-8 text-center text-muted-foreground">暂无数据</div>
+          <div className="py-8 text-center text-muted-foreground">{t('common.noData')}</div>
         </CardContent>
       </Card>
     );
@@ -255,7 +257,7 @@ export function OracleCrossChainComparison({
             <div className="flex flex-col gap-3 sm:w-80">
               <Select value={selectedSymbol} onValueChange={setSelectedSymbol}>
                 <SelectTrigger>
-                  <SelectValue placeholder="选择价格源" />
+                  <SelectValue placeholder={t('crossChain.comparison.selectPriceSource')} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableSymbols.map((symbol) => (
@@ -273,7 +275,7 @@ export function OracleCrossChainComparison({
                   disabled={refreshing || isLoading}
                 >
                   <RefreshCw className={cn('mr-2 h-4 w-4', refreshing && 'animate-spin')} />
-                  刷新
+                  {t('crossChain.controls.refresh')}
                 </Button>
               </div>
             </div>
@@ -306,7 +308,9 @@ export function OracleCrossChainComparison({
             <Card className="bg-muted/50">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">平均价格</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('crossChain.stats.avgPrice')}
+                  </span>
                 </div>
                 <div className="mt-2">
                   <span className="text-2xl font-bold">{formatPrice(data.stats.avgPrice)}</span>
@@ -316,13 +320,15 @@ export function OracleCrossChainComparison({
             <Card className="bg-muted/50">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">价格区间</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('crossChain.stats.priceRange')}
+                  </span>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
                         <Info className="h-4 w-4 text-muted-foreground" />
                       </TooltipTrigger>
-                      <TooltipContent>最高价与最低价之间的差值</TooltipContent>
+                      <TooltipContent>{t('crossChain.stats.priceRangeTooltip')}</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
@@ -340,7 +346,9 @@ export function OracleCrossChainComparison({
             <Card className="bg-muted/50">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">最大偏差</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('crossChain.stats.maxDeviation')}
+                  </span>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-2xl font-bold">{formatPrice(data.stats.maxDeviation)}</span>
@@ -353,7 +361,9 @@ export function OracleCrossChainComparison({
             <Card className="bg-muted/50">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">覆盖链数</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('crossChain.stats.coveredChains')}
+                  </span>
                 </div>
                 <div className="mt-2">
                   <span className="text-2xl font-bold">{data.prices.length}</span>
@@ -369,20 +379,26 @@ export function OracleCrossChainComparison({
 
       <Card>
         <CardHeader>
-          <CardTitle>各链价格详情</CardTitle>
-          <CardDescription>按链展示价格数据、与平均值的差异及更新状态</CardDescription>
+          <CardTitle>{t('crossChain.priceDetails.title')}</CardTitle>
+          <CardDescription>{t('crossChain.priceDetails.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>链名称</TableHead>
-                  <TableHead className="text-right">价格</TableHead>
-                  <TableHead className="text-right">与平均价差值</TableHead>
-                  <TableHead className="text-right">偏差百分比</TableHead>
-                  {showConfidence && <TableHead className="text-right">置信度</TableHead>}
-                  {showStatus && <TableHead className="text-center">状态</TableHead>}
+                  <TableHead>{t('crossChain.table.chain')}</TableHead>
+                  <TableHead className="text-right">{t('crossChain.table.price')}</TableHead>
+                  <TableHead className="text-right">{t('crossChain.table.diffFromAvg')}</TableHead>
+                  <TableHead className="text-right">
+                    {t('crossChain.table.deviationPercent')}
+                  </TableHead>
+                  {showConfidence && (
+                    <TableHead className="text-right">{t('crossChain.table.confidence')}</TableHead>
+                  )}
+                  {showStatus && (
+                    <TableHead className="text-center">{t('crossChain.table.status')}</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -455,14 +471,16 @@ export function OracleCrossChainComparison({
       {showConsistencyScore && (
         <Card>
           <CardHeader>
-            <CardTitle>统计摘要</CardTitle>
-            <CardDescription>跨链价格一致性分析指标</CardDescription>
+            <CardTitle>{t('crossChain.summary.title')}</CardTitle>
+            <CardDescription>{t('crossChain.summary.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-lg border p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">一致性评分</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('crossChain.stats.consistencyScore')}
+                  </span>
                 </div>
                 <div className="mt-2">
                   <div className="flex items-center gap-2">
@@ -479,7 +497,9 @@ export function OracleCrossChainComparison({
               </div>
               <div className="rounded-lg border p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">风险等级</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('crossChain.stats.riskLevel')}
+                  </span>
                 </div>
                 <div className="mt-2">
                   <Badge
@@ -493,17 +513,17 @@ export function OracleCrossChainComparison({
                     className="px-3 py-1 text-base"
                   >
                     {riskLevel === 'low'
-                      ? '低风险'
+                      ? t('crossChain.stats.riskLow')
                       : riskLevel === 'medium'
-                        ? '中等风险'
-                        : '高风险'}
+                        ? t('crossChain.stats.riskMedium')
+                        : t('crossChain.stats.riskHigh')}
                   </Badge>
                   <p className="mt-2 text-sm text-muted-foreground">
                     {riskLevel === 'low'
-                      ? '跨链价格高度一致，数据质量良好'
+                      ? t('crossChain.stats.riskLowDescription')
                       : riskLevel === 'medium'
-                        ? '存在轻微价格差异，需持续监控'
-                        : '价格差异较大，建议检查数据源或网络状态'}
+                        ? t('crossChain.stats.riskMediumDescription')
+                        : t('crossChain.stats.riskHighDescription')}
                   </p>
                 </div>
               </div>

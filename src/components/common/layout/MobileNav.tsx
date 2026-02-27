@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 import { Button } from '@/components/ui';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 interface MobileNavContextType {
@@ -91,6 +92,7 @@ interface MobileSidebarProps {
 
 export function MobileSidebar({ children }: MobileSidebarProps) {
   const { isOpen, close } = useMobileNav();
+  const { t } = useI18n();
 
   return (
     <AnimatePresence>
@@ -121,7 +123,7 @@ export function MobileSidebar({ children }: MobileSidebarProps) {
             )}
           >
             <div className="flex h-16 items-center justify-between border-b border-border px-5">
-              <span className="text-xl font-bold text-foreground">导航菜单</span>
+              <span className="text-xl font-bold text-foreground">{t('nav.labels.navMenu')}</span>
               <button
                 onClick={close}
                 className="group rounded-full p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95"

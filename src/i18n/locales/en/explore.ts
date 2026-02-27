@@ -58,6 +58,14 @@ export const explore = {
   sort: {
     selectMethod: 'Select sort method',
   },
+  sortOptions: {
+    volume: 'Volume',
+    volatility: 'Volatility',
+    updateFrequency: 'Update Frequency',
+    popularity: 'Popularity',
+  },
+  filter: 'Filter',
+  trendingFilterTitle: 'Filter Trending Pairs',
   scrollLeft: {
     ariaLabel: 'Scroll left',
   },

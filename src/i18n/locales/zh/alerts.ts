@@ -17,6 +17,13 @@ export const alerts = {
     rules: '规则',
     channels: '通知渠道',
     analysis: '分析',
+    allShort: '全部',
+    priceAnomalyShort: '价格',
+    crossChainShort: '跨链',
+    securityShort: '安全',
+    rulesShort: '规则',
+    channelsShort: '通道',
+    analysisShort: '分析',
   },
   filters: {
     allSeverity: '全部级别',

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { TIME_RANGES, BAND_ORACLE_SYMBOL_OPTIONS } from '@/config/constants';
+import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 import { fetchApiData, cn } from '@/shared/utils';
 
@@ -37,6 +38,7 @@ interface PriceHistoryResponse {
 }
 
 export function PriceTrendTab() {
+  const { t } = useI18n();
   const [selectedSymbols, setSelectedSymbols] = useState<string[]>(['BTC/USD', 'ETH/USD']);
   const [timeRange, setTimeRange] = useState('24h');
   const [loading, setLoading] = useState(true);
@@ -98,11 +100,11 @@ export function PriceTrendTab() {
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-lg font-medium">价格趋势分析</CardTitle>
+          <CardTitle className="text-lg font-medium">{t('band.priceTrend.title')}</CardTitle>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={fetchPriceData} disabled={loading}>
               <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
-              刷新
+              {t('common.refresh')}
             </Button>
           </div>
         </CardHeader>
@@ -192,7 +194,7 @@ export function PriceTrendTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-medium">价格走势图</CardTitle>
+          <CardTitle className="text-lg font-medium">{t('band.priceTrend.chartTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -202,7 +204,7 @@ export function PriceTrendTab() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="pb-2 text-left font-medium">时间</th>
+                    <th className="pb-2 text-left font-medium">{t('common.table.time')}</th>
                     {selectedSymbols.map((symbol) => (
                       <th key={symbol} className="pb-2 text-right font-medium">
                         {symbol}

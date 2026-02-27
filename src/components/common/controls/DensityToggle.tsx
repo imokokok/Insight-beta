@@ -7,6 +7,7 @@ import { memo } from 'react';
 
 import { AlignJustify, Menu, LayoutGrid } from 'lucide-react';
 
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 import { useDensity, type DensityMode } from './DensityProvider';
@@ -24,10 +25,10 @@ const densityIcons: Record<DensityMode, React.ElementType> = {
   comfortable: LayoutGrid,
 };
 
-const densityLabels: Record<DensityMode, string> = {
-  compact: '紧凑',
-  standard: '标准',
-  comfortable: '宽松',
+const densityKeys: Record<DensityMode, string> = {
+  compact: 'common.density.compact',
+  standard: 'common.density.standard',
+  comfortable: 'common.density.comfortable',
 };
 
 const sizeClasses = {
@@ -49,6 +50,13 @@ export const DensityToggle = memo(function DensityToggle({
   variant = 'icons',
 }: DensityToggleProps) {
   const { density, setDensity, toggleDensity } = useDensity();
+  const { t } = useI18n();
+
+  const densityLabels: Record<DensityMode, string> = {
+    compact: t(densityKeys.compact),
+    standard: t(densityKeys.standard),
+    comfortable: t(densityKeys.comfortable),
+  };
 
   if (variant === 'icons') {
     return (
@@ -63,7 +71,7 @@ export const DensityToggle = memo(function DensityToggle({
           sizeClasses[size],
           className,
         )}
-        title={`当前: ${densityLabels[density]} - 点击切换`}
+        title={t('common.density.current', { density: densityLabels[density] })}
       >
         {Object.entries(densityIcons).map(([mode, Icon]) => (
           <Icon key={mode} className={cn(iconSizes[size], density !== mode && 'hidden')} />

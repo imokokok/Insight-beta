@@ -75,5 +75,6 @@ export const nav = {
   },
   labels: {
     search: 'Search navigation...',
+    navMenu: 'Navigation Menu',
   },
 };

@@ -17,6 +17,13 @@ export const alerts = {
     rules: 'Rules',
     channels: 'Channels',
     analysis: 'Analysis',
+    allShort: 'All',
+    priceAnomalyShort: 'Price',
+    crossChainShort: 'Cross',
+    securityShort: 'Security',
+    rulesShort: 'Rules',
+    channelsShort: 'Channels',
+    analysisShort: 'Analysis',
   },
   filters: {
     allSeverity: 'All Severity',

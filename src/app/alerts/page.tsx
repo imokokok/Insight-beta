@@ -130,7 +130,9 @@ function TopStatusBar({
         </div>
 
         <div className="hidden items-center gap-2 sm:flex">
-          <span className="text-sm font-medium text-muted-foreground">连接</span>
+          <span className="text-sm font-medium text-muted-foreground">
+            {t('alerts.connection')}
+          </span>
           <div className="flex items-center gap-1.5">
             <span className={cn('relative flex h-2 w-2', isConnected && 'animate-pulse')}>
               {isConnected && (
@@ -146,14 +148,18 @@ function TopStatusBar({
             <span
               className={cn('text-xs font-medium', isConnected ? 'text-success' : 'text-error')}
             >
-              {isConnected ? '已连接' : '断开'}
+              {isConnected
+                ? t('common.connectionStatus.connected')
+                : t('common.connectionStatus.disconnected')}
             </span>
           </div>
         </div>
 
         {lastUpdateTime && (
           <div className="hidden items-center gap-2 md:flex">
-            <span className="text-sm font-medium text-muted-foreground">更新于</span>
+            <span className="text-sm font-medium text-muted-foreground">
+              {t('alerts.updatedAt')}
+            </span>
             <span className="font-mono text-xs text-foreground">{formatTime(lastUpdateTime)}</span>
           </div>
         )}
@@ -385,37 +391,37 @@ export default function AlertsCenterPage() {
               <TabsTrigger value="all" className="text-xs sm:text-sm">
                 <sourceIcons.all className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{t('alerts.tabs.all')}</span>
-                <span className="sm:hidden">全部</span>
+                <span className="sm:hidden">{t('alerts.tabs.allShort')}</span>
               </TabsTrigger>
               <TabsTrigger value="price_anomaly" className="text-xs sm:text-sm">
                 <AlertTriangle className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{t('alerts.tabs.priceAnomaly')}</span>
-                <span className="sm:hidden">价格</span>
+                <span className="sm:hidden">{t('alerts.tabs.priceAnomalyShort')}</span>
               </TabsTrigger>
               <TabsTrigger value="cross_chain" className="text-xs sm:text-sm">
                 <Activity className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{t('alerts.tabs.crossChain')}</span>
-                <span className="sm:hidden">跨链</span>
+                <span className="sm:hidden">{t('alerts.tabs.crossChainShort')}</span>
               </TabsTrigger>
               <TabsTrigger value="security" className="text-xs sm:text-sm">
                 <AlertCircle className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{t('alerts.tabs.security')}</span>
-                <span className="sm:hidden">安全</span>
+                <span className="sm:hidden">{t('alerts.tabs.securityShort')}</span>
               </TabsTrigger>
               <TabsTrigger value="rules" className="text-xs sm:text-sm">
                 <CheckCircle className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{t('alerts.tabs.rules')}</span>
-                <span className="sm:hidden">规则</span>
+                <span className="sm:hidden">{t('alerts.tabs.rulesShort')}</span>
               </TabsTrigger>
               <TabsTrigger value="channels" className="text-xs sm:text-sm">
                 <Bell className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{t('alerts.tabs.channels')}</span>
-                <span className="sm:hidden">通道</span>
+                <span className="sm:hidden">{t('alerts.tabs.channelsShort')}</span>
               </TabsTrigger>
               <TabsTrigger value="analysis" className="text-xs sm:text-sm">
                 <Activity className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{t('alerts.tabs.analysis')}</span>
-                <span className="sm:hidden">分析</span>
+                <span className="sm:hidden">{t('alerts.tabs.analysisShort')}</span>
               </TabsTrigger>
             </TabsList>
           </div>

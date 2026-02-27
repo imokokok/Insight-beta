@@ -75,5 +75,6 @@ export const nav = {
   },
   labels: {
     search: '搜索导航...',
+    navMenu: '导航菜单',
   },
 };

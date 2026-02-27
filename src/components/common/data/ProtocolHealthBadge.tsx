@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { Badge } from '@/components/ui';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 export type ProtocolHealthStatus = 'healthy' | 'warning' | 'critical';
@@ -15,23 +16,23 @@ interface ProtocolHealthBadgeProps {
 const healthConfig: Record<
   ProtocolHealthStatus,
   {
-    defaultLabel: string;
+    labelKey: string;
     dotColor: string;
     variant: 'success' | 'warning' | 'danger';
   }
 > = {
   healthy: {
-    defaultLabel: '健康',
+    labelKey: 'common.status.healthy',
     dotColor: 'bg-success',
     variant: 'success',
   },
   warning: {
-    defaultLabel: '警告',
+    labelKey: 'common.status.warning',
     dotColor: 'bg-warning',
     variant: 'warning',
   },
   critical: {
-    defaultLabel: '异常',
+    labelKey: 'common.status.critical',
     dotColor: 'bg-error',
     variant: 'danger',
   },
@@ -43,8 +44,9 @@ const ProtocolHealthBadge = React.memo(function ProtocolHealthBadge({
   showDot = true,
   className,
 }: ProtocolHealthBadgeProps) {
+  const { t } = useI18n();
   const config = healthConfig[status];
-  const displayLabel = label ?? config.defaultLabel;
+  const displayLabel = label ?? t(config.labelKey);
 
   return (
     <Badge variant={config.variant} className={cn('gap-1.5', className)}>

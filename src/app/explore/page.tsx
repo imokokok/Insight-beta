@@ -110,10 +110,10 @@ export default function ExplorePage() {
   }, [activeTab, scrollToActiveTab]);
 
   const sortOptions = [
-    { value: 'volume', label: '交易量' },
-    { value: 'volatility', label: '波动性' },
-    { value: 'updateFrequency', label: '更新频率' },
-    { value: 'popularity', label: '关注度' },
+    { value: 'volume', label: t('explore.sortOptions.volume') },
+    { value: 'volatility', label: t('explore.sortOptions.volatility') },
+    { value: 'updateFrequency', label: t('explore.sortOptions.updateFrequency') },
+    { value: 'popularity', label: t('explore.sortOptions.popularity') },
   ];
 
   return (
@@ -228,7 +228,7 @@ export default function ExplorePage() {
       <MobileFilterSheet
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
-        title="筛选热门交易对"
+        title={t('explore.trendingFilterTitle')}
         sortValue={sortBy}
         onSortChange={setSortBy}
         sortOptions={sortOptions}

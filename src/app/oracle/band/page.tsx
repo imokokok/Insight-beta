@@ -755,7 +755,7 @@ export default function BandProtocolPage() {
                       description={
                         t('band.bridgeList.description', {
                           count: state.bridgesData?.bridges.length ?? 0,
-                        }) + (selectedBridge ? ' (点击数据桥查看趋势)' : '')
+                        }) + (selectedBridge ? ` (${t('band.bridgeList.clickToViewTrend')})` : '')
                       }
                     >
                       {state.bridgesData?.bridges.length === 0 ? (

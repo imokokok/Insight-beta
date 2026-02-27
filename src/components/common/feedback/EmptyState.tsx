@@ -277,26 +277,29 @@ export function EmptySearchState({
   animated?: boolean;
   suggestions?: string[];
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={searchTerm ? FilterX : Search}
-      title={searchTerm ? `未找到 "${searchTerm}" 的结果` : '暂无搜索结果'}
-      description={
-        searchTerm ? '请尝试使用其他关键词，或检查拼写是否正确' : '开始搜索以查找您需要的数据'
+      title={
+        searchTerm
+          ? t('common.empty.searchEmptyWithTerm', { term: searchTerm })
+          : t('common.empty.noSearchResults')
       }
+      description={searchTerm ? t('common.empty.searchSuggestion') : t('common.empty.searchEmpty')}
       variant="info"
       className={className}
       animated={animated}
       action={
         onClear
           ? {
-              label: '清除筛选',
+              label: t('common.empty.clearFilters'),
               onClick: onClear,
               variant: 'default',
             }
           : onRefresh
             ? {
-                label: '刷新搜索',
+                label: t('common.empty.refreshSearch'),
                 onClick: onRefresh,
                 variant: 'default',
               }
@@ -305,7 +308,7 @@ export function EmptySearchState({
       secondaryAction={
         onRefresh && onClear
           ? {
-              label: '刷新',
+              label: t('common.refresh'),
               onClick: onRefresh,
             }
           : undefined
@@ -839,14 +842,13 @@ export function EmptyAlertsListState({
   className?: string;
   animated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <UnifiedEmptyState
       icon={isFiltered ? FilterX : ShieldCheck}
-      title={isFiltered ? '没有匹配的告警' : '一切正常！'}
+      title={isFiltered ? t('common.empty.noMatchingResults') : t('common.empty.noAlerts')}
       description={
-        isFiltered
-          ? '当前筛选条件下没有找到任何告警，请尝试调整筛选条件'
-          : '没有活动的告警，所有系统运行正常'
+        isFiltered ? t('common.empty.noAlertsFiltered') : t('common.empty.noAlertsDescription')
       }
       variant={isFiltered ? 'info' : 'healthy'}
       className={className}
@@ -854,17 +856,17 @@ export function EmptyAlertsListState({
       action={
         isFiltered && onClearFilters
           ? {
-              label: '清除筛选',
+              label: t('common.empty.clearFilters'),
               onClick: onClearFilters,
             }
           : onCreateRule
             ? {
-                label: '创建告警规则',
+                label: t('common.actions.createRule'),
                 onClick: onCreateRule,
               }
             : onRefresh
               ? {
-                  label: '刷新',
+                  label: t('common.refresh'),
                   onClick: onRefresh,
                 }
               : undefined
@@ -872,7 +874,7 @@ export function EmptyAlertsListState({
       secondaryAction={
         isFiltered && onRefresh
           ? {
-              label: '刷新',
+              label: t('common.refresh'),
               onClick: onRefresh,
             }
           : undefined
@@ -881,7 +883,7 @@ export function EmptyAlertsListState({
       {!isFiltered && (
         <div className="mt-4 flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-2 text-sm text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
           <Sparkles className="h-4 w-4" />
-          <span>所有系统运行正常，继续保持</span>
+          <span>{t('common.empty.allSystemsNormal')}</span>
         </div>
       )}
     </UnifiedEmptyState>

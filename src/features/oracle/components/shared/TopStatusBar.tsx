@@ -1,4 +1,5 @@
 import { Badge, Button } from '@/components/ui';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import type { NetworkHealthStatus } from '@/types/common';
 
@@ -15,25 +16,6 @@ interface TopStatusBarProps {
   className?: string;
 }
 
-const healthConfig: Record<NetworkHealthStatus, { label: string; color: string; bgColor: string }> =
-  {
-    healthy: {
-      label: '健康',
-      color: 'text-success',
-      bgColor: 'bg-success/20',
-    },
-    warning: {
-      label: '警告',
-      color: 'text-warning',
-      bgColor: 'bg-warning/20',
-    },
-    critical: {
-      label: '异常',
-      color: 'text-error',
-      bgColor: 'bg-error/20',
-    },
-  };
-
 export function TopStatusBar({
   healthStatus = 'healthy',
   isConnected = true,
@@ -44,6 +26,29 @@ export function TopStatusBar({
   onExport,
   className,
 }: TopStatusBarProps) {
+  const { t } = useI18n();
+
+  const healthConfig: Record<
+    NetworkHealthStatus,
+    { label: string; color: string; bgColor: string }
+  > = {
+    healthy: {
+      label: t('common.status.healthy'),
+      color: 'text-success',
+      bgColor: 'bg-success/20',
+    },
+    warning: {
+      label: t('common.status.warning'),
+      color: 'text-warning',
+      bgColor: 'bg-warning/20',
+    },
+    critical: {
+      label: t('common.status.critical'),
+      color: 'text-error',
+      bgColor: 'bg-error/20',
+    },
+  };
+
   const config = healthConfig[healthStatus];
 
   const formatTime = (time: Date | string) => {
@@ -65,7 +70,9 @@ export function TopStatusBar({
     >
       <div className="flex items-center gap-4 md:gap-6">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">网络状态</span>
+          <span className="text-sm font-medium text-muted-foreground">
+            {t('common.networkStatus')}
+          </span>
           <Badge variant="outline" className={cn('gap-1.5 border-0', config.bgColor, config.color)}>
             <span
               className={cn(
@@ -79,7 +86,9 @@ export function TopStatusBar({
         </div>
 
         <div className="hidden items-center gap-2 sm:flex">
-          <span className="text-sm font-medium text-muted-foreground">连接</span>
+          <span className="text-sm font-medium text-muted-foreground">
+            {t('common.connection')}
+          </span>
           <div className="flex items-center gap-1.5">
             <span className={cn('relative flex h-2 w-2', isConnected && 'animate-pulse')}>
               {isConnected && (
@@ -100,14 +109,18 @@ export function TopStatusBar({
             <span
               className={cn('text-xs font-medium', isConnected ? 'text-success' : 'text-error')}
             >
-              {isConnected ? '已连接' : '断开'}
+              {isConnected
+                ? t('common.connectionStatus.connected')
+                : t('common.connectionStatus.disconnected')}
             </span>
           </div>
         </div>
 
         {lastUpdateTime && (
           <div className="hidden items-center gap-2 md:flex">
-            <span className="text-sm font-medium text-muted-foreground">更新于</span>
+            <span className="text-sm font-medium text-muted-foreground">
+              {t('common.updatedAt')}
+            </span>
             <span className="font-mono text-xs text-foreground">{formatTime(lastUpdateTime)}</span>
           </div>
         )}
@@ -131,7 +144,11 @@ export function TopStatusBar({
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             />
           </svg>
-          <span className="hidden sm:inline">{isAutoRefreshEnabled ? '自动' : '手动'}</span>
+          <span className="hidden sm:inline">
+            {isAutoRefreshEnabled
+              ? t('common.actions.autoRefresh')
+              : t('common.actions.manualRefresh')}
+          </span>
         </Button>
 
         <Button variant="outline" size="sm" onClick={onRefresh} className="gap-1.5 text-xs">
@@ -143,7 +160,7 @@ export function TopStatusBar({
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             />
           </svg>
-          <span className="hidden sm:inline">刷新</span>
+          <span className="hidden sm:inline">{t('common.refresh')}</span>
         </Button>
 
         <Button variant="outline" size="sm" onClick={onExport} className="gap-1.5 text-xs">
@@ -155,7 +172,7 @@ export function TopStatusBar({
               d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          <span className="hidden sm:inline">导出</span>
+          <span className="hidden sm:inline">{t('common.export')}</span>
         </Button>
       </div>
     </div>

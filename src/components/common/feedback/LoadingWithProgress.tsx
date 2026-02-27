@@ -7,14 +7,8 @@ import { Loader2, RefreshCw, Clock, AlertCircle, Sparkles } from 'lucide-react';
 
 import { Button } from '@/components/ui';
 import { Progress } from '@/components/ui';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
-
-/**
- * 长时间加载提示组件
- *
- * 为长时间加载添加进度指示和友好的提示文案
- * 支持进度条、状态提示、超时处理等功能
- */
 
 interface LoadingWithProgressProps {
   isLoading: boolean;
@@ -30,20 +24,6 @@ interface LoadingWithProgressProps {
   onRetry?: () => void;
 }
 
-const loadingMessages = [
-  '正在加载数据...',
-  '请稍候，数据准备中...',
-  '正在同步最新数据...',
-  '加载中，很快就好...',
-  '数据处理中...',
-];
-
-const timeoutMessages = [
-  '加载时间较长，请耐心等待',
-  '数据正在处理中，即将完成',
-  '网络可能较慢，正在重试...',
-];
-
 export function LoadingWithProgress({
   isLoading,
   children,
@@ -57,6 +37,7 @@ export function LoadingWithProgress({
   showRetry = true,
   onRetry,
 }: LoadingWithProgressProps) {
+  const { t } = useI18n();
   const [progress, setProgress] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
   const [isTimeout, setIsTimeout] = useState(false);
@@ -64,6 +45,15 @@ export function LoadingWithProgress({
   const progressRef = useRef<NodeJS.Timeout | null>(null);
   const messageRef = useRef<NodeJS.Timeout | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const loadingMessagesRaw = t('common.loading.messages');
+  const timeoutMessagesRaw = t('common.loading.timeoutMessages');
+  const loadingMessages = Array.isArray(loadingMessagesRaw)
+    ? loadingMessagesRaw
+    : [loadingMessagesRaw];
+  const timeoutMessages = Array.isArray(timeoutMessagesRaw)
+    ? timeoutMessagesRaw
+    : [timeoutMessagesRaw];
 
   useEffect(() => {
     if (isLoading) {
@@ -110,7 +100,7 @@ export function LoadingWithProgress({
       if (messageRef.current) clearInterval(messageRef.current);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [isLoading, timeout, showProgress, progressInterval, onTimeout]);
+  }, [isLoading, timeout, showProgress, progressInterval, onTimeout, loadingMessages.length]);
 
   const currentMessage = loadingMessage
     ? loadingMessage
@@ -163,7 +153,7 @@ export function LoadingWithProgress({
                 {isTimeout && (
                   <p className="flex items-center justify-center gap-1 text-sm text-amber-600 dark:text-amber-400">
                     <AlertCircle className="h-4 w-4" />
-                    <span>如加载时间过长，请检查网络连接</span>
+                    <span>{t('common.loading.checkNetwork')}</span>
                   </p>
                 )}
               </div>
@@ -178,14 +168,14 @@ export function LoadingWithProgress({
               {showRetry && onRetry && (
                 <Button variant="outline" size="sm" onClick={onRetry} className="mt-2 gap-2">
                   <RefreshCw className="h-4 w-4" />
-                  重新加载
+                  {t('common.retry')}
                 </Button>
               )}
 
               {!isTimeout && (
                 <div className="mt-2 flex items-center gap-1 text-xs text-gray-400">
                   <Sparkles className="h-3 w-3" />
-                  <span>正在优化加载体验...</span>
+                  <span>{t('common.loading.optimizing')}</span>
                 </div>
               )}
             </div>

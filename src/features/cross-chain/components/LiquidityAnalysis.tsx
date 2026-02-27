@@ -133,14 +133,14 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Droplets className="h-5 w-5" />
-            流动性分析
+            {t('crossChain.liquidity.title')}
           </CardTitle>
-          <CardDescription>暂无流动性数据</CardDescription>
+          <CardDescription>{t('crossChain.liquidity.noData')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="py-8 text-center text-muted-foreground">
             <CheckCircle className="mx-auto h-8 w-8 opacity-50" />
-            <p className="mt-2">当前没有流动性数据</p>
+            <p className="mt-2">{t('crossChain.liquidity.noDataMessage')}</p>
           </div>
         </CardContent>
       </Card>
@@ -154,14 +154,15 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
           <div>
             <CardTitle className="flex items-center gap-2">
               <Droplets className="h-5 w-5" />
-              流动性分析
+              {t('crossChain.liquidity.title')}
             </CardTitle>
-            <CardDescription>跨链流动性概览与深度分析</CardDescription>
+            <CardDescription>{t('crossChain.liquidity.description')}</CardDescription>
           </div>
           {data.summary && (
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="gap-1">
-                总流动性: {formatLiquidity(data.summary.totalLiquidity)}
+                {t('crossChain.liquidity.totalLiquidity')}:{' '}
+                {formatLiquidity(data.summary.totalLiquidity)}
               </Badge>
             </div>
           )}
@@ -174,7 +175,7 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
                 <SelectValue placeholder={t('crossChain.liquidity.selectChain')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">全部链</SelectItem>
+                <SelectItem value="all">{t('crossChain.liquidity.allChains')}</SelectItem>
                 {availableChains.map((chain) => (
                   <SelectItem key={chain} value={chain}>
                     {chain.charAt(0).toUpperCase() + chain.slice(1)}
@@ -188,7 +189,7 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
               <SelectValue placeholder={t('crossChain.liquidity.selectAsset')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">全部资产</SelectItem>
+              <SelectItem value="all">{t('crossChain.liquidity.allAssets')}</SelectItem>
               {availableAssets.map((asset) => (
                 <SelectItem key={asset} value={asset}>
                   {asset}
@@ -202,7 +203,9 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">总流动性</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t('crossChain.liquidity.totalLiquidity')}
+              </CardTitle>
               <Droplets className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -210,14 +213,17 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
                 {formatLiquidity(data.summary?.totalLiquidity ?? 0)}
               </div>
               <p className="text-xs text-muted-foreground">
-                平均: {formatLiquidity(data.summary?.avgLiquidity ?? 0)}
+                {t('crossChain.liquidity.avgLiquidity')}:{' '}
+                {formatLiquidity(data.summary?.avgLiquidity ?? 0)}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">24h 变化</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t('crossChain.liquidity.change24h')}
+              </CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -237,13 +243,17 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
                 {(data.summary?.liquidityChangePercent24h ?? 0) >= 0 ? '+' : ''}
                 {(data.summary?.liquidityChangePercent24h ?? 0).toFixed(2)}%
               </div>
-              <p className="text-xs text-muted-foreground">流动性变化</p>
+              <p className="text-xs text-muted-foreground">
+                {t('crossChain.liquidity.liquidityChange')}
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">最高流动性链</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t('crossChain.liquidity.highestLiquidityChain')}
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -251,19 +261,25 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
                 {data.summary?.mostLiquidChain ?? '-'}
               </div>
               <p className="text-xs text-muted-foreground">
-                最活跃资产: {data.summary?.mostLiquidSymbol ?? '-'}
+                {t('crossChain.liquidity.mostActiveAsset')}: {data.summary?.mostLiquidSymbol ?? '-'}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">健康度评分</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t('crossChain.liquidity.healthScore')}
+              </CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">优秀</div>
-              <p className="text-xs text-muted-foreground">整体流动性健康</p>
+              <div className="text-2xl font-bold text-green-600">
+                {t('crossChain.liquidity.healthExcellent')}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('crossChain.liquidity.overallHealth')}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -299,16 +315,21 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
                           variant="outline"
                           className={cn('capitalize', HEALTH_COLORS[health.label]?.text ?? '')}
                         >
-                          {health.label === 'excellent' && '优秀'}
-                          {health.label === 'good' && '良好'}
-                          {health.label === 'fair' && '一般'}
-                          {health.label === 'poor' && '较差'}
+                          {health.label === 'excellent' &&
+                            t('crossChain.liquidity.healthExcellent')}
+                          {health.label === 'good' && t('crossChain.liquidity.healthGood')}
+                          {health.label === 'fair' && t('crossChain.liquidity.healthFair')}
+                          {health.label === 'poor' && t('crossChain.liquidity.healthPoor')}
                         </Badge>
                       </div>
                       <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>健康度: {health.score}/100</span>
+                        <span>
+                          {t('crossChain.liquidity.healthScoreLabel')}: {health.score}/100
+                        </span>
                         <span>•</span>
-                        <span>平均滑点: {chain.avgSlippage.toFixed(3)}%</span>
+                        <span>
+                          {t('crossChain.liquidity.avgSlippage')}: {chain.avgSlippage.toFixed(3)}%
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -348,7 +369,9 @@ export const LiquidityAnalysis = memo(function LiquidityAnalysis({
         </div>
 
         {filteredChains.length === 0 && (
-          <div className="py-8 text-center text-muted-foreground">没有找到匹配的流动性数据</div>
+          <div className="py-8 text-center text-muted-foreground">
+            {t('crossChain.liquidity.noMatchingData')}
+          </div>
         )}
       </CardContent>
     </Card>

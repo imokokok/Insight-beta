@@ -89,7 +89,7 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)}>
             <Settings className="mr-2 h-4 w-4" />
-            设置
+            {t('common.settings')}
           </Button>
           <Button variant="outline" size="sm" onClick={handleRefreshAll}>
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -108,12 +108,14 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>阈值设置</CardTitle>
-              <CardDescription>配置价格偏差检测阈值</CardDescription>
+              <CardTitle>{t('crossChain.settings.title')}</CardTitle>
+              <CardDescription>{t('crossChain.settings.description')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="deviation-threshold">警告偏差阈值 (%)</Label>
+                <Label htmlFor="deviation-threshold">
+                  {t('crossChain.settings.warningThreshold')}
+                </Label>
                 <Input
                   id="deviation-threshold"
                   type="number"
@@ -121,11 +123,15 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
                   value={deviationThreshold}
                   onChange={(e) => setDeviationThreshold(e.target.value)}
                 />
-                <p className="text-sm text-muted-foreground">当偏差超过此值时触发警告</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('crossChain.settings.warningThresholdHint')}
+                </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="critical-threshold">严重偏差阈值 (%)</Label>
+                <Label htmlFor="critical-threshold">
+                  {t('crossChain.settings.criticalThreshold')}
+                </Label>
                 <Input
                   id="critical-threshold"
                   type="number"
@@ -133,21 +139,25 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
                   value={criticalThreshold}
                   onChange={(e) => setCriticalThreshold(e.target.value)}
                 />
-                <p className="text-sm text-muted-foreground">当偏差超过此值时触发严重告警</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('crossChain.settings.criticalThresholdHint')}
+                </p>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>通知设置</CardTitle>
-              <CardDescription>配置告警通知</CardDescription>
+              <CardTitle>{t('crossChain.settings.notificationTitle')}</CardTitle>
+              <CardDescription>{t('crossChain.settings.notificationDescription')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>启用告警</Label>
-                  <p className="text-sm text-muted-foreground">检测到偏差时接收通知</p>
+                  <Label>{t('crossChain.settings.enableAlerts')}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('crossChain.settings.enableAlertsHint')}
+                  </p>
                 </div>
                 <Switch checked={alertEnabled} onCheckedChange={setAlertEnabled} />
               </div>
@@ -155,11 +165,11 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
               <div className="flex items-center gap-2 pt-2">
                 <Button variant="outline" size="sm" onClick={handleReset}>
                   <RotateCcw className="mr-2 h-4 w-4" />
-                  重置
+                  {t('crossChain.settings.reset')}
                 </Button>
                 <Button size="sm" onClick={handleSave} disabled={isSaving}>
                   <Save className="mr-2 h-4 w-4" />
-                  {isSaving ? '保存中...' : '保存'}
+                  {isSaving ? t('crossChain.settings.saving') : t('crossChain.settings.save')}
                 </Button>
               </div>
             </CardContent>
@@ -178,13 +188,15 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
             <div className="text-2xl font-bold">
               {dashboardLoading ? '-' : (dashboard?.activeAlerts ?? 0)}
             </div>
-            <p className="text-xs text-muted-foreground">价格偏差告警</p>
+            <p className="text-xs text-muted-foreground">{t('crossChain.priceAlerts')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">价格一致性</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t('crossChain.dashboard.priceConsistency')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -194,7 +206,9 @@ export function CrossChainOverview({ className }: CrossChainOverviewProps) {
               %
             </div>
             <p className="text-xs text-muted-foreground">
-              平均偏差 | 严重: {dashboard?.priceConsistency?.criticalDeviations ?? 0}
+              {t('crossChain.dashboard.avgDeviation')} |{' '}
+              {t('crossChain.dashboard.criticalDeviations')}:{' '}
+              {dashboard?.priceConsistency?.criticalDeviations ?? 0}
             </p>
           </CardContent>
         </Card>

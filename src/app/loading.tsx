@@ -2,7 +2,11 @@
 
 import { motion } from 'framer-motion';
 
+import { useI18n } from '@/i18n';
+
 export default function Loading() {
+  const { t } = useI18n();
+
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center">
       <motion.div
@@ -11,7 +15,6 @@ export default function Loading() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
       >
-        {/* 外圈 - 品牌紫色 */}
         <motion.div
           className="absolute inset-0 rounded-full border-4 border-primary/20"
           animate={{ rotate: 360 }}
@@ -20,7 +23,6 @@ export default function Loading() {
           <div className="absolute -top-1 left-1/2 h-4 w-4 -translate-x-1/2 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30" />
         </motion.div>
 
-        {/* 中圈 - 青色 */}
         <motion.div
           className="absolute inset-2 rounded-full border-4 border-cyan-200"
           animate={{ rotate: -360 }}
@@ -29,7 +31,6 @@ export default function Loading() {
           <div className="absolute -bottom-1 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-500 shadow-lg shadow-cyan-500/30" />
         </motion.div>
 
-        {/* 内圈 - 中心 Logo */}
         <motion.div
           className="absolute inset-5 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-cyan-100"
           animate={{ scale: [1, 1.1, 1] }}
@@ -47,7 +48,6 @@ export default function Loading() {
           </svg>
         </motion.div>
 
-        {/* 装饰光点 */}
         <motion.div
           className="absolute -right-2 top-1/2 h-2 w-2 rounded-full bg-yellow-400"
           animate={{
@@ -66,24 +66,24 @@ export default function Loading() {
         />
       </motion.div>
 
-      {/* 加载文字 */}
       <motion.div
         className="mt-8 text-center"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <p className="text-base font-medium text-[var(--foreground)]">加载中</p>
+        <p className="text-base font-medium text-[var(--foreground)]">
+          {t('common.loading.default')}
+        </p>
         <motion.p
           className="mt-1 text-sm text-muted-foreground"
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          正在准备数据...
+          {t('common.loading.preparing')}
         </motion.p>
       </motion.div>
 
-      {/* 进度条 */}
       <motion.div
         className="mt-6 h-1 w-48 overflow-hidden rounded-full bg-gray-200"
         initial={{ opacity: 0 }}

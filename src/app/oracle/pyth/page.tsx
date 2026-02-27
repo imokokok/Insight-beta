@@ -288,14 +288,6 @@ const mockPriceFeedDetails: PriceFeedDetail[] = [
   },
 ];
 
-const TABS: TabItem[] = [
-  { id: 'overview', label: '概览', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { id: 'publishers', label: 'Publisher', icon: <Users className="h-4 w-4" /> },
-  { id: 'price-feeds', label: '价格推送', icon: <Activity className="h-4 w-4" /> },
-  { id: 'analysis', label: '数据分析', icon: <BarChart3 className="h-4 w-4" /> },
-  { id: 'hermes', label: '服务状态', icon: <Server className="h-4 w-4" /> },
-];
-
 interface PythDashboardState {
   overviewStats: PythOverviewStats | null;
   publisherStats: PublisherStats | null;
@@ -311,6 +303,37 @@ interface PythDashboardState {
 
 export default function PythPage() {
   const { t } = useI18n();
+
+  const TABS: TabItem[] = useMemo(
+    () => [
+      {
+        id: 'overview',
+        label: t('pyth.tabs.overview'),
+        icon: <LayoutDashboard className="h-4 w-4" />,
+      },
+      {
+        id: 'publishers',
+        label: t('pyth.tabs.publishers'),
+        icon: <Users className="h-4 w-4" />,
+      },
+      {
+        id: 'price-feeds',
+        label: t('pyth.tabs.priceFeeds'),
+        icon: <Activity className="h-4 w-4" />,
+      },
+      {
+        id: 'analysis',
+        label: t('pyth.tabs.analysis'),
+        icon: <BarChart3 className="h-4 w-4" />,
+      },
+      {
+        id: 'hermes',
+        label: t('pyth.tabs.hermes'),
+        icon: <Server className="h-4 w-4" />,
+      },
+    ],
+    [t],
+  );
 
   const [state, setState] = useState<PythDashboardState>({
     overviewStats: null,
@@ -611,9 +634,7 @@ export default function PythPage() {
                     : t('common.status.critical')}
               </Badge>
             </h1>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              高频预言机 - 实时价格推送与 Publisher 监控
-            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t('pyth.pageDescription')}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={fetchInitialData} disabled={state.loading}>
@@ -667,12 +688,11 @@ export default function PythPage() {
               <TabPanelWrapper tabId="overview">
                 <div className="space-y-3">
                   <ContentSection
-                    title="Pyth Network 协议概览"
-                    description="高频预言机网络状态摘要"
+                    title={t('pyth.overview.title')}
+                    description={t('pyth.overview.description')}
                   >
                     <p className="text-sm text-muted-foreground">
-                      Pyth Network 是一个专注于高频金融数据的第一方预言机网络，通过 Publisher
-                      直接在链上推送价格数据，实现低延迟、高精度的价格更新。
+                      {t('pyth.overview.introduction')}
                     </p>
                   </ContentSection>
 
@@ -683,8 +703,12 @@ export default function PythPage() {
                           <Zap className="h-5 w-5 text-yellow-500" />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground">高频更新</p>
-                          <p className="text-sm font-semibold text-foreground">亚秒级价格推送</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('pyth.features.highFrequency.label')}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('pyth.features.highFrequency.value')}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2.5 border-b border-border/30 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
@@ -693,9 +717,11 @@ export default function PythPage() {
                         </div>
                         <div>
                           <p className="text-xs font-medium text-muted-foreground">
-                            Publisher 网络
+                            {t('pyth.features.publishers.label')}
                           </p>
-                          <p className="text-sm font-semibold text-foreground">第一方数据源</p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('pyth.features.publishers.value')}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2.5">
@@ -703,8 +729,12 @@ export default function PythPage() {
                           <Shield className="h-5 w-5 text-purple-500" />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground">数据完整性</p>
-                          <p className="text-sm font-semibold text-foreground">可验证的价格证明</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('pyth.features.dataIntegrity.label')}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('pyth.features.dataIntegrity.value')}
+                          </p>
                         </div>
                       </div>
                     </ContentGrid>
@@ -720,24 +750,30 @@ export default function PythPage() {
                       <div className="border-b border-border/30 pb-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Users className="h-3.5 w-3.5 text-primary" />
-                          Publisher 状态概览
+                          {t('pyth.publisher.statusOverview')}
                         </h4>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">总 Publisher</span>
+                            <span className="text-muted-foreground">
+                              {t('pyth.publisher.totalPublishers')}
+                            </span>
                             <span className="font-mono font-semibold">
                               {state.publisherStats?.total ?? mockPublisherDetails.length}
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">活跃 Publisher</span>
+                            <span className="text-muted-foreground">
+                              {t('pyth.publisher.activePublishers')}
+                            </span>
                             <Badge variant="success" size="sm">
                               {state.publisherStats?.active ??
                                 mockPublisherDetails.filter((p) => p.status === 'active').length}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">非活跃 Publisher</span>
+                            <span className="text-muted-foreground">
+                              {t('pyth.publisher.inactivePublishers')}
+                            </span>
                             <Badge variant="warning" size="sm">
                               {state.publisherStats?.inactive ??
                                 mockPublisherDetails.filter((p) => p.status !== 'active').length}
@@ -749,30 +785,38 @@ export default function PythPage() {
                       <div className="border-b border-border/30 pb-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Activity className="h-3.5 w-3.5 text-primary" />
-                          价格推送统计
+                          {t('pyth.priceStatus.statistics')}
                         </h4>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">总价格源</span>
+                            <span className="text-muted-foreground">
+                              {t('pyth.priceStatus.totalFeeds')}
+                            </span>
                             <span className="font-mono font-semibold">
                               {state.priceFeedStats?.total ?? mockPriceFeedDetails.length}
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">活跃价格源</span>
+                            <span className="text-muted-foreground">
+                              {t('pyth.priceStatus.activeFeeds')}
+                            </span>
                             <Badge variant="success" size="sm">
                               {state.priceFeedStats?.active ??
                                 mockPriceFeedDetails.filter((f) => f.status === 'active').length}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">平均更新频率</span>
+                            <span className="text-muted-foreground">
+                              {t('pyth.priceStatus.avgUpdateFrequency')}
+                            </span>
                             <span className="font-mono font-semibold">
                               {state.priceFeedStats?.avgUpdateFrequency ?? 2.5}s
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">平均延迟</span>
+                            <span className="text-muted-foreground">
+                              {t('pyth.priceStatus.avgLatency')}
+                            </span>
                             <span
                               className={cn(
                                 'font-mono font-semibold',
@@ -794,10 +838,10 @@ export default function PythPage() {
                   <div className="border-b border-border/30">
                     <div className="mb-3 flex items-center gap-2">
                       <Users className="h-5 w-5 text-primary" />
-                      <h3 className="font-semibold">Publisher 详细列表</h3>
+                      <h3 className="font-semibold">{t('pyth.publisher.detailedList')}</h3>
                     </div>
                     <p className="mb-3 text-sm text-muted-foreground">
-                      Pyth 数据发布者状态与性能监控
+                      {t('pyth.publisher.detailedListDesc')}
                     </p>
                     <div className="overflow-x-auto">
                       {state.loading ? (
@@ -815,7 +859,7 @@ export default function PythPage() {
                                 currentSort={publisherSort}
                                 onSort={handlePublisherSort}
                               >
-                                Publisher 名称
+                                {t('pyth.publisher.name')}
                               </SortableTableHeader>
                               <SortableTableHeader
                                 sortKey="credibilityScore"
@@ -823,7 +867,7 @@ export default function PythPage() {
                                 onSort={handlePublisherSort}
                                 className="text-right"
                               >
-                                可信度评分
+                                {t('pyth.publisher.credibilityScore')}
                               </SortableTableHeader>
                               <SortableTableHeader
                                 sortKey="publishFrequency"
@@ -831,7 +875,7 @@ export default function PythPage() {
                                 onSort={handlePublisherSort}
                                 className="text-right"
                               >
-                                发布频率 (s)
+                                {t('pyth.publisher.publishFrequency')} (s)
                               </SortableTableHeader>
                               <SortableTableHeader
                                 sortKey="supportedFeeds"
@@ -839,9 +883,11 @@ export default function PythPage() {
                                 onSort={handlePublisherSort}
                                 className="text-right"
                               >
-                                支持的价格源
+                                {t('pyth.publisher.supportedFeeds')}
                               </SortableTableHeader>
-                              <TableHead className="text-center">状态</TableHead>
+                              <TableHead className="text-center">
+                                {t('pyth.publisher.status')}
+                              </TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -891,10 +937,10 @@ export default function PythPage() {
                                       <XCircle className="h-3 w-3" />
                                     )}
                                     {publisher.status === 'active'
-                                      ? '活跃'
+                                      ? t('pyth.status.active')
                                       : publisher.status === 'degraded'
-                                        ? '降级'
-                                        : '离线'}
+                                        ? t('pyth.status.degraded')
+                                        : t('pyth.status.offline')}
                                   </Badge>
                                 </TableCell>
                               </TableRow>
@@ -914,9 +960,11 @@ export default function PythPage() {
                   <div className="border-b border-border/30">
                     <div className="mb-3 flex items-center gap-2">
                       <Activity className="h-5 w-5 text-primary" />
-                      <h3 className="font-semibold">价格推送详细统计</h3>
+                      <h3 className="font-semibold">{t('pyth.priceStatus.detailedStats')}</h3>
                     </div>
-                    <p className="mb-3 text-sm text-muted-foreground">实时价格更新频率与延迟分析</p>
+                    <p className="mb-3 text-sm text-muted-foreground">
+                      {t('pyth.priceStatus.detailedStatsDesc')}
+                    </p>
                     <div className="mb-3 flex gap-2">
                       {(['All', 'Crypto', 'Equities', 'FX', 'Commodities'] as const).map(
                         (category) => (
@@ -926,7 +974,7 @@ export default function PythPage() {
                             size="sm"
                             onClick={() => setSelectedCategory(category)}
                           >
-                            {category === 'All' ? '全部' : category}
+                            {category === 'All' ? t('common.all') : category}
                           </Button>
                         ),
                       )}
@@ -947,16 +995,16 @@ export default function PythPage() {
                                 currentSort={priceFeedSort}
                                 onSort={handlePriceFeedSort}
                               >
-                                价格源名称
+                                {t('pyth.priceStatus.feedName')}
                               </SortableTableHeader>
-                              <TableHead>分类</TableHead>
+                              <TableHead>{t('pyth.priceStatus.categoryName')}</TableHead>
                               <SortableTableHeader
                                 sortKey="latestPrice"
                                 currentSort={priceFeedSort}
                                 onSort={handlePriceFeedSort}
                                 className="text-right"
                               >
-                                最新价格
+                                {t('pyth.priceStatus.latestPrice')}
                               </SortableTableHeader>
                               <SortableTableHeader
                                 sortKey="updateFrequency"
@@ -964,10 +1012,14 @@ export default function PythPage() {
                                 onSort={handlePriceFeedSort}
                                 className="text-right"
                               >
-                                更新频率 (s)
+                                {t('pyth.priceStatus.updateFrequency')} (s)
                               </SortableTableHeader>
-                              <TableHead className="text-right">置信区间</TableHead>
-                              <TableHead className="text-center">状态</TableHead>
+                              <TableHead className="text-right">
+                                {t('pyth.priceStatus.confidenceInterval')}
+                              </TableHead>
+                              <TableHead className="text-center">
+                                {t('pyth.publisher.status')}
+                              </TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -1049,10 +1101,10 @@ export default function PythPage() {
                                     )}
                                     {feed.status === 'error' && <XCircle className="h-3 w-3" />}
                                     {feed.status === 'active'
-                                      ? '活跃'
+                                      ? t('pyth.status.active')
                                       : feed.status === 'stale'
-                                        ? '延迟'
-                                        : '异常'}
+                                        ? t('pyth.status.delayed')
+                                        : t('pyth.status.abnormal')}
                                   </Badge>
                                 </TableCell>
                               </TableRow>
@@ -1090,9 +1142,11 @@ export default function PythPage() {
                   <div className="border-b border-border/30">
                     <div className="mb-3 flex items-center gap-2">
                       <Server className="h-5 w-5 text-primary" />
-                      <h3 className="font-semibold">Hermes 服务状态</h3>
+                      <h3 className="font-semibold">{t('pyth.hermes.title')}</h3>
                     </div>
-                    <p className="mb-3 text-sm text-muted-foreground">Pyth 数据传输服务节点监控</p>
+                    <p className="mb-3 text-sm text-muted-foreground">
+                      {t('pyth.hermes.description')}
+                    </p>
                     {state.loading && !state.hermesStatus ? (
                       <div className="space-y-4">
                         {[...Array(3)].map((_, i) => (
@@ -1118,10 +1172,10 @@ export default function PythPage() {
                             }
                           >
                             {state.hermesStatus.status === 'healthy'
-                              ? '运行正常'
+                              ? t('pyth.hermes.status.running')
                               : state.hermesStatus.status === 'degraded'
-                                ? '性能降级'
-                                : '服务异常'}
+                                ? t('pyth.hermes.status.degraded')
+                                : t('pyth.hermes.status.error')}
                           </Badge>
                         </div>
                         <div className="space-y-3">
@@ -1154,7 +1208,7 @@ export default function PythPage() {
                     ) : (
                       <div className="py-12 text-center text-muted-foreground">
                         <Server className="mx-auto h-12 w-12 opacity-50" />
-                        <p className="mt-2">Hermes 服务数据加载中...</p>
+                        <p className="mt-2">{t('pyth.hermes.loading')}</p>
                       </div>
                     )}
                   </div>

@@ -4,6 +4,7 @@ import {
   type KpiCardData,
   type TrendDirection,
 } from '@/components/common';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 interface KpiOverviewProps {
@@ -23,11 +24,12 @@ export function KpiOverview({
   className,
   compact = false,
 }: KpiOverviewProps) {
+  const { t } = useI18n();
   const kpis = [
-    { ...totalFeeds, label: totalFeeds.label || '总 Feed 数', key: 'feeds' },
-    { ...activeNodes, label: activeNodes.label || '活跃节点', key: 'nodes' },
-    { ...avgLatency, label: avgLatency.label || '平均延迟', key: 'latency' },
-    { ...ocrRounds, label: ocrRounds.label || 'OCR 轮次', key: 'rounds' },
+    { ...totalFeeds, label: totalFeeds.label || t('chainlink.kpi.totalFeeds'), key: 'feeds' },
+    { ...activeNodes, label: activeNodes.label || t('chainlink.kpi.activeNodes'), key: 'nodes' },
+    { ...avgLatency, label: avgLatency.label || t('chainlink.kpi.avgLatency'), key: 'latency' },
+    { ...ocrRounds, label: ocrRounds.label || t('chainlink.kpi.ocrRounds'), key: 'rounds' },
   ];
 
   return (

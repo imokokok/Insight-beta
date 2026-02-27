@@ -117,17 +117,18 @@ interface Api3DashboardState {
   timeUntilRefresh: number;
 }
 
-const TABS: TabItem[] = [
-  { id: 'overview', label: '概览', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { id: 'airnodes', label: 'Airnodes', icon: <Server className="h-4 w-4" /> },
-  { id: 'data', label: '数据服务', icon: <Database className="h-4 w-4" /> },
-  { id: 'analysis', label: '分析工具', icon: <GitCompare className="h-4 w-4" /> },
-  { id: 'tools', label: '工具', icon: <Shield className="h-4 w-4" /> },
+const getTabs = (t: (key: string) => string): TabItem[] => [
+  { id: 'overview', label: t('api3.tabs.overview'), icon: <LayoutDashboard className="h-4 w-4" /> },
+  { id: 'airnodes', label: t('api3.tabs.airnodes'), icon: <Server className="h-4 w-4" /> },
+  { id: 'data', label: t('api3.tabs.data'), icon: <Database className="h-4 w-4" /> },
+  { id: 'analysis', label: t('api3.tabs.analysis'), icon: <GitCompare className="h-4 w-4" /> },
+  { id: 'tools', label: t('api3.tabs.tools'), icon: <Shield className="h-4 w-4" /> },
 ];
 
 export default function Api3Page() {
   const { t } = useI18n();
   const router = useRouter();
+  const TABS = useMemo(() => getTabs(t), [t]);
 
   const [state, setState] = useState<Api3DashboardState>({
     overviewStats: null,
@@ -451,23 +452,29 @@ export default function Api3Page() {
                       <div className="border-b border-border/30 pb-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Activity className="h-3.5 w-3.5 text-primary" />
-                          价格更新事件
+                          {t('api3.priceUpdate.totalUpdates')}
                         </h4>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">总更新事件</span>
+                            <span className="text-muted-foreground">
+                              {t('api3.priceUpdate.totalEvents')}
+                            </span>
                             <span className="font-mono font-semibold">
                               {state.oevData?.metadata?.total ?? 0}
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">涉及 dAPIs</span>
+                            <span className="text-muted-foreground">
+                              {t('api3.priceUpdate.involvedDapis')}
+                            </span>
                             <Badge variant="secondary" size="sm">
                               {state.oevData?.metadata?.queriedDapis?.length ?? 0}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">涉及链</span>
+                            <span className="text-muted-foreground">
+                              {t('api3.priceUpdate.involvedChains')}
+                            </span>
                             <Badge variant="secondary" size="sm">
                               {state.oevData?.metadata?.queriedChains?.length ?? 0}
                             </Badge>
@@ -479,23 +486,29 @@ export default function Api3Page() {
                       <div className="border-b border-border/30 pb-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Server className="h-3.5 w-3.5 text-primary" />
-                          Airnode 状态概览
+                          {t('api3.airnode.statusOverview')}
                         </h4>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">总 Airnodes</span>
+                            <span className="text-muted-foreground">
+                              {t('api3.airnode.totalAirnodes')}
+                            </span>
                             <span className="font-mono font-semibold">
                               {state.airnodesData?.metadata?.total ?? 0}
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">在线 Airnodes</span>
+                            <span className="text-muted-foreground">
+                              {t('api3.airnode.onlineAirnodes')}
+                            </span>
                             <Badge variant="success" size="sm">
                               {state.airnodesData?.metadata?.online ?? 0}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">离线 Airnodes</span>
+                            <span className="text-muted-foreground">
+                              {t('api3.airnode.offlineAirnodes')}
+                            </span>
                             <Badge variant="destructive" size="sm">
                               {state.airnodesData?.metadata?.offline ?? 0}
                             </Badge>
@@ -506,23 +519,29 @@ export default function Api3Page() {
                       <div className="border-b border-border/30 pb-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Database className="h-3.5 w-3.5 text-primary" />
-                          dAPIs 状态概览
+                          {t('api3.dapiStatus.title')}
                         </h4>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">总 dAPIs</span>
+                            <span className="text-muted-foreground">
+                              {t('api3.dapiStatus.totalDapis')}
+                            </span>
                             <span className="font-mono font-semibold">
                               {state.dapisData?.metadata?.total ?? 0}
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">活跃 dAPIs</span>
+                            <span className="text-muted-foreground">
+                              {t('api3.dapiStatus.activeDapis')}
+                            </span>
                             <Badge variant="success" size="sm">
                               {state.dapisData?.metadata?.active ?? 0}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">非活跃 dAPIs</span>
+                            <span className="text-muted-foreground">
+                              {t('api3.dapiStatus.inactiveDapis')}
+                            </span>
                             <Badge variant="warning" size="sm">
                               {state.dapisData?.metadata?.inactive ?? 0}
                             </Badge>
@@ -548,7 +567,7 @@ export default function Api3Page() {
                         {state.airnodesData.airnodes.length === 0 ? (
                           <div className="py-12 text-center text-muted-foreground">
                             <Server className="mx-auto h-12 w-12 opacity-50" />
-                            <p className="mt-2">暂无 Airnode 数据</p>
+                            <p className="mt-2">{t('api3.dapi.noData')}</p>
                           </div>
                         ) : (
                           <div className="space-y-2">
@@ -566,7 +585,7 @@ export default function Api3Page() {
                                   </div>
                                   <div>
                                     <div className="flex items-center gap-2">
-                                      <span className="font-medium">Airnode</span>
+                                      <span className="font-medium">{t('api3.airnode.title')}</span>
                                       <span
                                         className={cn(
                                           'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
@@ -579,7 +598,7 @@ export default function Api3Page() {
                                       </span>
                                     </div>
                                     <p className="text-sm text-muted-foreground">
-                                      最后心跳:{' '}
+                                      {t('api3.airnode.lastHeartbeat')}:{' '}
                                       {airnode.lastHeartbeat
                                         ? formatTime(airnode.lastHeartbeat)
                                         : '-'}
@@ -588,13 +607,17 @@ export default function Api3Page() {
                                 </div>
                                 <div className="flex items-center gap-6">
                                   <div className="text-right">
-                                    <p className="text-xs text-muted-foreground">链</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {t('api3.airnode.chain')}
+                                    </p>
                                     <Badge variant="secondary" className="text-xs">
                                       {airnode.chain}
                                     </Badge>
                                   </div>
                                   <div className="text-right">
-                                    <p className="text-xs text-muted-foreground">响应时间</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {t('api3.airnode.responseTime')}
+                                    </p>
                                     <p
                                       className={cn(
                                         'font-medium',

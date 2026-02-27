@@ -2,7 +2,7 @@ export const errors = {
   apiError: 'Server error',
   chainNotAdded: 'This network is not added in your wallet. Please add it first.',
   contractNotFound: 'Contract not found',
-  forbidden: 'Forbidden (admin token required)',
+  forbiddenError: 'Forbidden (admin token required)',
   httpError: 'Network request failed',
   insufficientFunds: 'Insufficient funds to pay for gas or value.',
   invalidAddress: 'Invalid address',
@@ -34,4 +34,84 @@ export const errors = {
   componentLoadFailed: 'Component failed to load',
   tryRefresh: 'An error occurred with this component. Please try refreshing.',
   retry: 'Retry',
+  network: {
+    title: 'Network Connection Failed',
+    message: 'Unable to connect to the server. Please check your network connection.',
+    suggestions: [
+      'Check if your network connection is working',
+      'Try refreshing the page',
+      'Check your firewall or proxy settings',
+    ],
+  },
+  server: {
+    title: 'Server Error',
+    message: 'The server is temporarily unavailable. Please try again later.',
+    suggestions: [
+      'Wait a few minutes and try again',
+      'Check the system status page',
+      'Contact technical support',
+    ],
+  },
+  timeout: {
+    title: 'Request Timeout',
+    message: 'The request took too long to process. Please try again later.',
+    suggestions: [
+      'Check your network connection speed',
+      'Reduce the amount of data requested',
+      'Try again later',
+    ],
+  },
+  notFound: {
+    title: 'Page Not Found',
+    message: 'The page you are looking for does not exist or has been removed.',
+    suggestions: [
+      'Check if the URL is correct',
+      'Go back to the previous page',
+      'Go to the homepage',
+    ],
+  },
+  forbidden: {
+    title: 'Access Denied',
+    message: 'You do not have permission to access this page.',
+    suggestions: [
+      'Check if you are logged in',
+      'Confirm you have access permissions',
+      'Contact the administrator',
+    ],
+  },
+  validation: {
+    title: 'Data Validation Failed',
+    message: 'The submitted data is invalid. Please check and try again.',
+    suggestions: [
+      'Check the format of the input data',
+      'Ensure all required fields are filled',
+      'Review the specific error messages',
+    ],
+  },
+  generic: {
+    title: 'An Error Occurred',
+    message: 'An unknown error occurred. Please try again later.',
+    suggestions: [
+      'Refresh the page and try again',
+      'Clear your browser cache',
+      'Contact technical support',
+    ],
+  },
+  boundary: {
+    title: 'Something went wrong',
+    message: 'An error occurred while rendering this component.',
+    retrying: 'Retrying...',
+    retryCount: 'Attempt {{count}}...',
+    copied: 'Copied',
+    copyErrorInfo: 'Copy',
+    showDetails: 'Show Details',
+    hideDetails: 'Hide Details',
+    errorDetails: 'Error Details',
+    errorType: 'Error Type',
+    errorMessage: 'Error Message',
+    errorCode: 'Error Code',
+    timestamp: 'Time',
+    requestId: 'Request ID',
+    suggestedActions: 'Suggested Actions',
+  },
 };

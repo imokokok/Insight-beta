@@ -144,9 +144,9 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
   };
 
   const formatResponseTime = (ms: number): string => {
-    if (ms < 100) return `${ms}ms (优秀)`;
-    if (ms < 300) return `${ms}ms (良好)`;
-    return `${ms}ms (较慢)`;
+    if (ms < 100) return `${ms}ms (${t('api3.performance.excellent')})`;
+    if (ms < 300) return `${ms}ms (${t('api3.performance.good')})`;
+    return `${ms}ms (${t('api3.performance.slow')})`;
   };
 
   const getResponseTimeColor = (ms: number) => {
@@ -231,7 +231,7 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
               <Link href="/oracle/api3">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  返回列表
+                  {t('common.backToList')}
                 </Button>
               </Link>
             </div>
@@ -259,7 +259,7 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
               <Server className="h-6 w-6 text-blue-600" />
               <span>Airnode</span>
               <Badge variant={airnode.online ? 'success' : 'destructive'} className="ml-2">
-                {airnode.online ? '在线' : '离线'}
+                {airnode.online ? t('api3.airnode.online') : t('api3.airnode.offline')}
               </Badge>
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">API3 Airnode on {airnode.chain}</p>
@@ -278,7 +278,7 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              响应时间历史
+              {t('api3.airnode.responseTimeHistory')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -292,12 +292,13 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
                 <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    最后心跳 {airnode.lastHeartbeat ? formatTime(airnode.lastHeartbeat) : '-'}
+                    {t('api3.airnode.lastHeartbeat')}{' '}
+                    {airnode.lastHeartbeat ? formatTime(airnode.lastHeartbeat) : '-'}
                   </span>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">在线率</p>
+                <p className="text-sm text-muted-foreground">{t('api3.airnode.uptimeRate')}</p>
                 <p className="text-lg font-bold text-green-600">{airnode.uptime.toFixed(2)}%</p>
               </div>
             </div>
@@ -324,7 +325,7 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
                     <Line
                       type="monotone"
                       dataKey="responseTime"
-                      name="响应时间"
+                      name={t('api3.airnode.responseTime')}
                       stroke="#3b82f6"
                       strokeWidth={2}
                       dot={false}
@@ -334,7 +335,7 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
                 </ResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center text-muted-foreground">
-                  暂无历史数据
+                  {t('api3.airnode.noHistoryData')}
                 </div>
               )}
             </div>
@@ -346,12 +347,12 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5" />
-                状态信息
+                {t('api3.airnode.statusInfo')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">状态</span>
+                <span className="text-sm text-muted-foreground">{t('common.status.healthy')}</span>
                 <div className="flex items-center gap-2">
                   {airnode.online ? (
                     <CheckCircle className="h-4 w-4 text-green-500" />
@@ -364,32 +365,38 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
                       airnode.online ? 'text-green-600' : 'text-red-600',
                     )}
                   >
-                    {airnode.online ? '在线' : '离线'}
+                    {airnode.online ? t('api3.airnode.online') : t('api3.airnode.offline')}
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">链</span>
+                <span className="text-sm text-muted-foreground">{t('api3.airnode.chain')}</span>
                 <Badge variant="secondary" className="capitalize">
                   {airnode.chain}
                 </Badge>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">响应时间</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('api3.airnode.responseTime')}
+                </span>
                 <span className={cn('font-medium', getResponseTimeColor(airnode.responseTime))}>
                   {airnode.responseTime}ms
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">在线率</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('api3.airnode.uptimeRate')}
+                </span>
                 <span className="font-medium text-green-600">{airnode.uptime.toFixed(2)}%</span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">dAPIs 数量</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('api3.airnode.dapisCount')}
+                </span>
                 <span className="font-medium">
                   {metadata.activeDapis} / {metadata.totalDapis}
                 </span>
@@ -401,12 +408,14 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Info className="h-5 w-5" />
-                Airnode 信息
+                {t('api3.airnode.airnodeInfo')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <span className="text-sm text-muted-foreground">合约地址</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('api3.airnode.contractAddress')}
+                </span>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 truncate rounded bg-muted px-2 py-1 text-xs">
                     {airnode.address}
@@ -419,12 +428,12 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
                   >
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
-                  {copied && <span className="text-xs text-green-600">已复制</span>}
+                  {copied && <span className="text-xs text-green-600">{t('common.copied')}</span>}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <span className="text-sm text-muted-foreground">xpub</span>
+                <span className="text-sm text-muted-foreground">{t('api3.airnode.xpub')}</span>
                 <code className="block truncate rounded bg-muted px-2 py-1 text-xs">
                   {airnode.xpub}
                 </code>
@@ -438,7 +447,7 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
                   className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  在区块浏览器中查看
+                  {t('api3.airnode.viewInExplorer')}
                 </a>
                 <a
                   href={airnode.ipfsEndpoint}
@@ -447,7 +456,7 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
                   className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
                 >
                   <Zap className="h-3.5 w-3.5" />
-                  IPFS 端点
+                  {t('api3.airnode.ipfsEndpoint')}
                 </a>
               </div>
             </CardContent>
@@ -459,7 +468,7 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Server className="h-5 w-5" />
-            关联的 dAPI 列表
+            {t('api3.airnode.relatedDapis')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -468,15 +477,19 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
               <thead>
                 <tr className="border-b">
                   <th className="pb-3 text-left text-sm font-medium text-muted-foreground">
-                    交易对
+                    {t('api3.airnode.tradingPair')}
                   </th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">链</th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">状态</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground">
-                    当前值
+                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">
+                    {t('api3.dapi.chain')}
+                  </th>
+                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">
+                    {t('api3.dapi.status')}
                   </th>
                   <th className="pb-3 text-right text-sm font-medium text-muted-foreground">
-                    最后更新
+                    {t('api3.airnode.currentValue')}
+                  </th>
+                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground">
+                    {t('api3.dapi.lastUpdate')}
                   </th>
                 </tr>
               </thead>
@@ -494,10 +507,10 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
                     <td className="py-3">
                       <Badge variant={dapi.status === 'active' ? 'success' : 'secondary'} size="sm">
                         {dapi.status === 'active'
-                          ? '活跃'
+                          ? t('api3.airnode.active')
                           : dapi.status === 'inactive'
-                            ? '非活跃'
-                            : '未知'}
+                            ? t('api3.airnode.inactive')
+                            : t('api3.airnode.unknown')}
                       </Badge>
                     </td>
                     <td className="py-3 text-right font-mono">{dapi.lastValue}</td>
@@ -516,7 +529,7 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <RefreshCw className="h-5 w-5" />
-            更新记录
+            {t('api3.airnode.updateRecords')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -524,17 +537,23 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">时间</th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">dAPI</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground">
-                    旧值
-                  </th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground">
-                    新值
-                  </th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground">Gas</th>
                   <th className="pb-3 text-left text-sm font-medium text-muted-foreground">
-                    交易哈希
+                    {t('common.table.time')}
+                  </th>
+                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">
+                    {t('api3.airnode.dapi')}
+                  </th>
+                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground">
+                    {t('api3.airnode.old_value')}
+                  </th>
+                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground">
+                    {t('api3.airnode.new_value')}
+                  </th>
+                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground">
+                    {t('api3.airnode.gas')}
+                  </th>
+                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">
+                    {t('api3.airnode.txHash')}
                   </th>
                 </tr>
               </thead>

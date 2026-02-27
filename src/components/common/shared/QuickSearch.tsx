@@ -144,7 +144,7 @@ export function QuickSearch({ isOpen, onClose }: QuickSearchProps) {
               <div className="max-h-80 overflow-y-auto p-2">
                 {filteredItems.length === 0 ? (
                   <div className="py-8 text-center text-muted-foreground">
-                    <p>未找到匹配的页面</p>
+                    <p>{t('common.empty.noMatchingResults')}</p>
                   </div>
                 ) : (
                   filteredItems.map((item, index) => (
@@ -179,13 +179,13 @@ export function QuickSearch({ isOpen, onClose }: QuickSearchProps) {
                     <kbd className="h-5 rounded border border-border bg-muted px-1.5 text-[10px]">
                       ↓
                     </kbd>
-                    <span>导航</span>
+                    <span>{t('common.quickSearch.navigate')}</span>
                   </span>
                   <span className="flex items-center gap-1">
                     <kbd className="h-5 rounded border border-border bg-muted px-1.5 text-[10px]">
                       ↵
                     </kbd>
-                    <span>选择</span>
+                    <span>{t('common.quickSearch.select')}</span>
                   </span>
                 </div>
                 <span className="flex items-center gap-1">
@@ -193,7 +193,7 @@ export function QuickSearch({ isOpen, onClose }: QuickSearchProps) {
                   <kbd className="h-5 rounded border border-border bg-muted px-1.5 text-[10px]">
                     K
                   </kbd>
-                  <span>关闭</span>
+                  <span>{t('common.quickSearch.close')}</span>
                 </span>
               </div>
             </div>

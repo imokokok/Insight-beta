@@ -8,6 +8,7 @@ import { RefreshIndicator } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { PriceCardSkeleton } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { useI18n } from '@/i18n';
 
 import { SortSelector } from './SortSelector';
 import { TrendingFeedCard } from './TrendingFeedCard';
@@ -21,6 +22,7 @@ interface TrendingFeedsProps {
 }
 
 export function TrendingFeeds({ onFeedClick, initialSortBy = 'volume' }: TrendingFeedsProps) {
+  const { t } = useI18n();
   const isMobile = useIsMobile();
   const {
     feeds,
@@ -40,9 +42,9 @@ export function TrendingFeeds({ onFeedClick, initialSortBy = 'volume' }: Trendin
         <div>
           <h2 className="flex items-center gap-2 text-lg font-bold sm:text-xl md:text-2xl">
             <TrendingUp className="h-4 w-4 text-primary md:h-5 md:w-5" />
-            热门交易对
+            {t('explore.trending.title')}
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">发现最受欢迎和活跃的价格数据源</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t('explore.trending.description')}</p>
         </div>
         <div className="flex items-center gap-2 md:gap-3">
           {!isMobile && <SortSelector value={sortBy} onChange={setSortBy} />}
@@ -58,7 +60,7 @@ export function TrendingFeeds({ onFeedClick, initialSortBy = 'volume' }: Trendin
         <ErrorBanner
           error={error}
           onRetry={refresh}
-          title="加载热门交易对失败"
+          title={t('explore.trending.loadError')}
           isRetrying={isRefreshing}
         />
       )}
@@ -81,8 +83,8 @@ export function TrendingFeeds({ onFeedClick, initialSortBy = 'volume' }: Trendin
       {!isLoading && !isError && feeds.length === 0 && (
         <EmptyDataState
           icon={TrendingUp}
-          title="暂无热门交易对"
-          description="当前没有可用的热门交易对数据"
+          title={t('explore.trending.empty.title')}
+          description={t('explore.trending.empty.description')}
           onRefresh={refresh}
         />
       )}

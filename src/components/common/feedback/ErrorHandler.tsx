@@ -27,6 +27,7 @@ import {
 
 import { Button } from '@/components/ui';
 import { useToast } from '@/components/ui';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 // ==================== 错误类型定义 ====================
@@ -52,81 +53,84 @@ export interface ErrorDetails {
 
 // ==================== 错误类型配置 ====================
 
-const errorConfig: Record<
-  ErrorType,
-  {
-    icon: typeof AlertCircle;
-    title: string;
-    color: string;
-    bgColor: string;
-    borderColor: string;
-    defaultMessage: string;
-    suggestions: string[];
-  }
-> = {
-  network: {
-    icon: WifiOff,
-    title: '网络连接失败',
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-50',
-    borderColor: 'border-amber-200',
-    defaultMessage: '无法连接到服务器，请检查您的网络连接',
-    suggestions: ['检查您的网络连接是否正常', '尝试刷新页面', '检查防火墙或代理设置'],
-  },
-  server: {
-    icon: ServerOff,
-    title: '服务器错误',
-    color: 'text-rose-600',
-    bgColor: 'bg-rose-50',
-    borderColor: 'border-rose-200',
-    defaultMessage: '服务器暂时不可用，请稍后重试',
-    suggestions: ['等待几分钟后重试', '检查系统状态页面', '联系技术支持'],
-  },
-  timeout: {
-    icon: Clock,
-    title: '请求超时',
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50',
-    borderColor: 'border-orange-200',
-    defaultMessage: '请求处理时间过长，请稍后重试',
-    suggestions: ['检查网络连接速度', '减少请求的数据量', '稍后重试'],
-  },
-  not_found: {
-    icon: AlertCircle,
-    title: '页面未找到',
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-50',
-    borderColor: 'border-gray-200',
-    defaultMessage: '您访问的页面不存在或已被移除',
-    suggestions: ['检查URL是否正确', '返回上一页', '前往首页'],
-  },
-  forbidden: {
-    icon: AlertCircle,
-    title: '访问被拒绝',
-    color: 'text-red-600',
-    bgColor: 'bg-red-50',
-    borderColor: 'border-red-200',
-    defaultMessage: '您没有权限访问此页面',
-    suggestions: ['检查是否已登录', '确认您有访问权限', '联系管理员'],
-  },
-  validation: {
-    icon: AlertCircle,
-    title: '数据验证失败',
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-50',
-    borderColor: 'border-yellow-200',
-    defaultMessage: '提交的数据有误，请检查并重试',
-    suggestions: ['检查输入的数据格式', '确保所有必填项已填写', '查看具体的错误提示'],
-  },
-  unknown: {
-    icon: Bug,
-    title: '发生错误',
-    color: 'text-primary',
-    bgColor: 'bg-primary/5',
-    borderColor: 'border-primary/20',
-    defaultMessage: '发生未知错误，请稍后重试',
-    suggestions: ['刷新页面重试', '清除浏览器缓存', '联系技术支持'],
-  },
+const getErrorConfig = (t: ReturnType<typeof useI18n>['t']) => {
+  const networkSuggestions = t('errors.network.suggestions');
+  const serverSuggestions = t('errors.server.suggestions');
+  const timeoutSuggestions = t('errors.timeout.suggestions');
+  const notFoundSuggestions = t('errors.notFound.suggestions');
+  const forbiddenSuggestions = t('errors.forbidden.suggestions');
+  const validationSuggestions = t('errors.validation.suggestions');
+  const genericSuggestions = t('errors.generic.suggestions');
+
+  return {
+    network: {
+      icon: WifiOff,
+      title: t('errors.network.title'),
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-50',
+      borderColor: 'border-amber-200',
+      defaultMessage: t('errors.network.message'),
+      suggestions: Array.isArray(networkSuggestions) ? networkSuggestions : [networkSuggestions],
+    },
+    server: {
+      icon: ServerOff,
+      title: t('errors.server.title'),
+      color: 'text-rose-600',
+      bgColor: 'bg-rose-50',
+      borderColor: 'border-rose-200',
+      defaultMessage: t('errors.server.message'),
+      suggestions: Array.isArray(serverSuggestions) ? serverSuggestions : [serverSuggestions],
+    },
+    timeout: {
+      icon: Clock,
+      title: t('errors.timeout.title'),
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+      borderColor: 'border-orange-200',
+      defaultMessage: t('errors.timeout.message'),
+      suggestions: Array.isArray(timeoutSuggestions) ? timeoutSuggestions : [timeoutSuggestions],
+    },
+    not_found: {
+      icon: AlertCircle,
+      title: t('errors.notFound.title'),
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50',
+      borderColor: 'border-gray-200',
+      defaultMessage: t('errors.notFound.message'),
+      suggestions: Array.isArray(notFoundSuggestions) ? notFoundSuggestions : [notFoundSuggestions],
+    },
+    forbidden: {
+      icon: AlertCircle,
+      title: t('errors.forbidden.title'),
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+      borderColor: 'border-red-200',
+      defaultMessage: t('errors.forbidden.message'),
+      suggestions: Array.isArray(forbiddenSuggestions)
+        ? forbiddenSuggestions
+        : [forbiddenSuggestions],
+    },
+    validation: {
+      icon: AlertCircle,
+      title: t('errors.validation.title'),
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50',
+      borderColor: 'border-yellow-200',
+      defaultMessage: t('errors.validation.message'),
+      suggestions: Array.isArray(validationSuggestions)
+        ? validationSuggestions
+        : [validationSuggestions],
+    },
+    unknown: {
+      icon: Bug,
+      title: t('errors.generic.title'),
+      color: 'text-primary',
+      bgColor: 'bg-primary/5',
+      borderColor: 'border-primary/20',
+      defaultMessage: t('errors.generic.message'),
+      suggestions: Array.isArray(genericSuggestions) ? genericSuggestions : [genericSuggestions],
+    },
+  } as const;
 };
 
 // ==================== 错误边界组件 ====================
@@ -221,7 +225,9 @@ export function ErrorFallback({
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
   const { toast } = useToast();
+  const { t } = useI18n();
 
+  const errorConfig = getErrorConfig(t);
   const config = errorConfig[error.type] || errorConfig.unknown;
   const Icon = config.icon;
 
@@ -233,15 +239,14 @@ export function ErrorFallback({
     setIsRetrying(true);
     setRetryCount((prev) => prev + 1);
 
-    // 模拟重试延迟
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     onRetry();
     setIsRetrying(false);
 
     toast({
-      title: '正在重试',
-      message: `第 ${retryCount + 1} 次尝试...`,
+      title: t('errors.boundary.retrying'),
+      message: t('errors.boundary.retryCount', { count: retryCount + 1 }),
       type: 'info',
       duration: 2000,
     });
@@ -249,12 +254,12 @@ export function ErrorFallback({
 
   const handleCopyError = () => {
     const errorText = `
-错误类型: ${error.type}
-错误信息: ${error.message}
-错误代码: ${error.code || 'N/A'}
-时间: ${error.timestamp.toISOString()}
-请求ID: ${error.requestId || 'N/A'}
-${error.stack ? `\n堆栈:\n${error.stack}` : ''}
+${t('errors.boundary.errorType')}: ${error.type}
+${t('errors.boundary.errorMessage')}: ${error.message}
+${t('errors.boundary.errorCode')}: ${error.code || 'N/A'}
+${t('errors.boundary.timestamp')}: ${error.timestamp.toISOString()}
+${t('errors.boundary.requestId')}: ${error.requestId || 'N/A'}
+${error.stack ? `\nStack:\n${error.stack}` : ''}
     `.trim();
 
     navigator.clipboard.writeText(errorText);
@@ -262,14 +267,13 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
     setTimeout(() => setCopied(false), 2000);
 
     toast({
-      title: '已复制',
-      message: '错误信息已复制到剪贴板',
+      title: t('errors.boundary.copied'),
+      message: t('errors.boundary.copied'),
       type: 'success',
       duration: 2000,
     });
   };
 
-  // 自动重试逻辑
   useEffect(() => {
     if (retryCount > 0 && retryCount < 3 && error.type === 'network') {
       const timer = setTimeout(() => {
@@ -278,8 +282,6 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
       return () => clearTimeout(timer);
     }
     return undefined;
-    // Intentionally not including handleRetry in deps to avoid infinite loop
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retryCount, error.type]);
 
   return (
@@ -295,7 +297,6 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
           config.borderColor,
         )}
       >
-        {/* Icon */}
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -308,16 +309,15 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
           <Icon className={cn('h-10 w-10', config.color)} />
         </motion.div>
 
-        {/* Title */}
         <h2 className={cn('mb-2 text-center text-2xl font-bold', config.color)}>{config.title}</h2>
 
-        {/* Message */}
         <p className="mb-6 text-center text-gray-600">{error.message || config.defaultMessage}</p>
 
-        {/* Suggestions */}
         {suggestions.length > 0 && (
           <div className="mb-6 rounded-xl bg-white/60 p-4">
-            <h3 className="mb-2 text-sm font-semibold text-gray-700">建议操作：</h3>
+            <h3 className="mb-2 text-sm font-semibold text-gray-700">
+              {t('errors.boundary.suggestedActions')}：
+            </h3>
             <ul className="space-y-2">
               {suggestions.map((suggestion, index) => (
                 <motion.li
@@ -335,7 +335,6 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
           </div>
         )}
 
-        {/* Actions */}
         <div className="flex flex-wrap items-center justify-center gap-3">
           {onRetry && (
             <Button
@@ -347,7 +346,7 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
               )}
             >
               <RefreshCw className={cn('h-4 w-4', isRetrying && 'animate-spin')} />
-              {isRetrying ? '重试中...' : '重试'}
+              {isRetrying ? t('errors.boundary.retrying') : t('common.retry')}
               {retryCount > 0 && ` (${retryCount})`}
             </Button>
           )}
@@ -355,19 +354,18 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
           {onBack && (
             <Button variant="outline" onClick={onBack} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              返回
+              {t('common.back')}
             </Button>
           )}
 
           {onHome && (
             <Button variant="outline" onClick={onHome} className="gap-2">
               <Home className="h-4 w-4" />
-              首页
+              {t('nav.home')}
             </Button>
           )}
         </div>
 
-        {/* Error Details Toggle */}
         <div className="mt-6 border-t border-gray-200 pt-4">
           <button
             onClick={() => setShowDetails(!showDetails)}
@@ -376,12 +374,12 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
             {showDetails ? (
               <>
                 <ChevronUp className="h-4 w-4" />
-                隐藏详细信息
+                {t('errors.boundary.hideDetails')}
               </>
             ) : (
               <>
                 <ChevronDown className="h-4 w-4" />
-                显示详细信息
+                {t('errors.boundary.showDetails')}
               </>
             )}
           </button>
@@ -396,13 +394,15 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
               >
                 <div className="mt-4 rounded-lg bg-gray-900 p-4 text-left">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs text-gray-400">错误详情</span>
+                    <span className="text-xs text-gray-400">
+                      {t('errors.boundary.errorDetails')}
+                    </span>
                     <button
                       onClick={handleCopyError}
                       className="flex items-center gap-1 text-xs text-gray-400 hover:text-white"
                     >
                       {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                      {copied ? '已复制' : '复制'}
+                      {copied ? t('errors.boundary.copied') : t('errors.boundary.copyErrorInfo')}
                     </button>
                   </div>
                   <pre className="max-h-48 overflow-auto text-xs text-gray-300">
@@ -435,6 +435,8 @@ interface ErrorToastProps {
 }
 
 export function ErrorToast({ error, onRetry, onDismiss, className }: ErrorToastProps) {
+  const { t } = useI18n();
+  const errorConfig = getErrorConfig(t);
   const config = errorConfig[error.type] || errorConfig.unknown;
   const Icon = config.icon;
 
@@ -463,12 +465,12 @@ export function ErrorToast({ error, onRetry, onDismiss, className }: ErrorToastP
                 onClick={onRetry}
                 className="text-sm font-medium text-blue-600 hover:text-blue-700"
               >
-                重试
+                {t('common.retry')}
               </button>
             )}
             {onDismiss && (
               <button onClick={onDismiss} className="text-sm text-gray-500 hover:text-gray-700">
-                忽略
+                {t('common.skip')}
               </button>
             )}
           </div>
@@ -505,7 +507,7 @@ export function useErrorRecovery(options: UseErrorRecoveryOptions = {}) {
         ? errorHandler(error)
         : {
             type: 'unknown' as ErrorType,
-            message: error instanceof Error ? error.message : '发生未知错误',
+            message: error instanceof Error ? error.message : 'Unknown error',
             timestamp: new Date(),
           };
 
