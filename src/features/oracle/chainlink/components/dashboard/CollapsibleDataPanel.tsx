@@ -66,8 +66,8 @@ export function CollapsibleDataPanel({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded border border-border/20 bg-[rgba(15,23,42,0.8)]',
-        'backdrop-blur-sm transition-all duration-200',
+        'overflow-hidden rounded border border-border/20',
+        'transition-all duration-200',
         className,
       )}
     >

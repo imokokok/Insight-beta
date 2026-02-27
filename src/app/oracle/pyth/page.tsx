@@ -575,7 +575,7 @@ export default function PythPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0F1C] pb-16 md:pb-0">
+    <div className="min-h-screen pb-16 md:pb-0">
       <PythTopStatusBar
         healthStatus={healthStatus}
         isConnected={true}
@@ -678,7 +678,7 @@ export default function PythPage() {
 
                   <ContentSection title={t('pyth.features.title')}>
                     <ContentGrid columns={3} gap="sm">
-                      <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
+                      <div className="flex items-center gap-2.5 border-b border-border/30 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
                         <div className="rounded-lg bg-yellow-500/10 p-2">
                           <Zap className="h-5 w-5 text-yellow-500" />
                         </div>
@@ -687,7 +687,7 @@ export default function PythPage() {
                           <p className="text-sm font-semibold text-foreground">亚秒级价格推送</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
+                      <div className="flex items-center gap-2.5 border-b border-border/30 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
                         <div className="rounded-lg bg-green-500/10 p-2">
                           <Users className="h-5 w-5 text-green-500" />
                         </div>
@@ -698,7 +698,7 @@ export default function PythPage() {
                           <p className="text-sm font-semibold text-foreground">第一方数据源</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
+                      <div className="flex items-center gap-2.5">
                         <div className="rounded-lg bg-purple-500/10 p-2">
                           <Shield className="h-5 w-5 text-purple-500" />
                         </div>
@@ -717,7 +717,7 @@ export default function PythPage() {
                       </Suspense>
                     </div>
                     <div className="space-y-3 lg:col-span-1 xl:col-span-1">
-                      <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
+                      <div className="border-b border-border/30 pb-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Users className="h-3.5 w-3.5 text-primary" />
                           Publisher 状态概览
@@ -746,7 +746,7 @@ export default function PythPage() {
                         </div>
                       </div>
 
-                      <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
+                      <div className="border-b border-border/30 pb-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Activity className="h-3.5 w-3.5 text-primary" />
                           价格推送统计
@@ -791,16 +791,14 @@ export default function PythPage() {
 
               <TabPanelWrapper tabId="publishers">
                 {loadedTabs.has('publishers') ? (
-                  <div className="rounded-xl border border-border/30 bg-card/30">
-                    <div className="border-b border-border/30 p-4">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-5 w-5 text-primary" />
-                        <h3 className="font-semibold">Publisher 详细列表</h3>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Pyth 数据发布者状态与性能监控
-                      </p>
+                  <div className="border-b border-border/30">
+                    <div className="mb-3 flex items-center gap-2">
+                      <Users className="h-5 w-5 text-primary" />
+                      <h3 className="font-semibold">Publisher 详细列表</h3>
                     </div>
+                    <p className="mb-3 text-sm text-muted-foreground">
+                      Pyth 数据发布者状态与性能监控
+                    </p>
                     <div className="overflow-x-auto">
                       {state.loading ? (
                         <div className="space-y-2 p-4">
@@ -913,29 +911,25 @@ export default function PythPage() {
 
               <TabPanelWrapper tabId="price-feeds">
                 {loadedTabs.has('price-feeds') ? (
-                  <div className="rounded-xl border border-border/30 bg-card/30">
-                    <div className="border-b border-border/30 p-4">
-                      <div className="flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-primary" />
-                        <h3 className="font-semibold">价格推送详细统计</h3>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        实时价格更新频率与延迟分析
-                      </p>
-                      <div className="mt-4 flex gap-2">
-                        {(['All', 'Crypto', 'Equities', 'FX', 'Commodities'] as const).map(
-                          (category) => (
-                            <Button
-                              key={category}
-                              variant={selectedCategory === category ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => setSelectedCategory(category)}
-                            >
-                              {category === 'All' ? '全部' : category}
-                            </Button>
-                          ),
-                        )}
-                      </div>
+                  <div className="border-b border-border/30">
+                    <div className="mb-3 flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-primary" />
+                      <h3 className="font-semibold">价格推送详细统计</h3>
+                    </div>
+                    <p className="mb-3 text-sm text-muted-foreground">实时价格更新频率与延迟分析</p>
+                    <div className="mb-3 flex gap-2">
+                      {(['All', 'Crypto', 'Equities', 'FX', 'Commodities'] as const).map(
+                        (category) => (
+                          <Button
+                            key={category}
+                            variant={selectedCategory === category ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setSelectedCategory(category)}
+                          >
+                            {category === 'All' ? '全部' : category}
+                          </Button>
+                        ),
+                      )}
                     </div>
                     <div className="overflow-x-auto">
                       {state.loading ? (
@@ -1093,18 +1087,18 @@ export default function PythPage() {
 
               <TabPanelWrapper tabId="hermes">
                 {loadedTabs.has('hermes') ? (
-                  <div className="rounded-xl border border-border/30 bg-card/30 p-4">
-                    <div className="mb-4 flex items-center gap-2 border-b border-border/30 pb-3">
+                  <div className="border-b border-border/30">
+                    <div className="mb-3 flex items-center gap-2">
                       <Server className="h-5 w-5 text-primary" />
                       <h3 className="font-semibold">Hermes 服务状态</h3>
                     </div>
-                    <p className="mb-4 text-sm text-muted-foreground">Pyth 数据传输服务节点监控</p>
+                    <p className="mb-3 text-sm text-muted-foreground">Pyth 数据传输服务节点监控</p>
                     {state.loading && !state.hermesStatus ? (
                       <div className="space-y-4">
                         {[...Array(3)].map((_, i) => (
                           <div
                             key={i}
-                            className="flex items-center justify-between rounded-lg border p-4"
+                            className="flex items-center justify-between border-b border-border/20 pb-3"
                           >
                             <Skeleton className="h-4 w-32" />
                             <Skeleton className="h-4 w-16" />
@@ -1130,11 +1124,11 @@ export default function PythPage() {
                                 : '服务异常'}
                           </Badge>
                         </div>
-                        <div className="grid gap-3">
+                        <div className="space-y-3">
                           {state.hermesStatus.endpoints.map((endpoint, index) => (
                             <div
                               key={index}
-                              className="flex items-center justify-between rounded-lg border p-4"
+                              className="flex items-center justify-between border-b border-border/20 pb-3"
                             >
                               <div>
                                 <p className="font-medium">{endpoint.name}</p>

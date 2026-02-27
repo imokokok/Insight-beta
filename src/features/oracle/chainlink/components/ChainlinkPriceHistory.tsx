@@ -79,7 +79,7 @@ const CustomTooltip = ({
   if (!active || !payload || payload.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-border/50 bg-card/95 p-3 shadow-lg backdrop-blur-sm">
+    <div className="rounded-lg border border-border/50 p-3 shadow-lg backdrop-blur-sm">
       <p className="mb-2 text-xs text-muted-foreground">{label}</p>
       {payload.map((entry, index) => {
         const assetKey = entry.dataKey.replace('Price', '') as AssetSymbol;
@@ -413,7 +413,7 @@ export function ChainlinkPriceHistory({ className }: ChainlinkPriceHistoryProps)
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="rounded-lg bg-muted/30 p-3">
+                <div key={i} className="rounded-lg border border-border/30 p-3">
                   <Skeleton className="h-3 w-16" />
                   <Skeleton className="mt-2 h-6 w-20" />
                 </div>
@@ -442,7 +442,7 @@ export function ChainlinkPriceHistory({ className }: ChainlinkPriceHistoryProps)
                 {priceStatsMap.map((stats) => (
                   <div
                     key={stats.symbol}
-                    className="rounded-lg bg-muted/30 p-2.5"
+                    className="rounded-lg border border-border/30 p-2.5"
                     style={{
                       borderLeft: `3px solid ${stats.color}`,
                     }}

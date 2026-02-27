@@ -273,7 +273,7 @@ export default function Api3Page() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0F1C] pb-16 md:pb-0">
+    <div className="min-h-screen pb-16 md:pb-0">
       <Api3TopStatusBar
         healthStatus={healthStatus}
         isConnected={true}
@@ -370,7 +370,7 @@ export default function Api3Page() {
 
                   <ContentSection title={t('api3.features.title')}>
                     <ContentGrid columns={3} gap="sm">
-                      <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
+                      <div className="flex items-center gap-2.5 border-b border-border/30 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
                         <div className="rounded-lg bg-blue-500/10 p-2">
                           <Server className="h-5 w-5 text-blue-500" />
                         </div>
@@ -383,7 +383,7 @@ export default function Api3Page() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
+                      <div className="flex items-center gap-2.5 border-b border-border/30 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
                         <div className="rounded-lg bg-green-500/10 p-2">
                           <Shield className="h-5 w-5 text-green-500" />
                         </div>
@@ -396,7 +396,7 @@ export default function Api3Page() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
+                      <div className="flex items-center gap-2.5">
                         <div className="rounded-lg bg-purple-500/10 p-2">
                           <TrendingUp className="h-5 w-5 text-purple-500" />
                         </div>
@@ -448,7 +448,7 @@ export default function Api3Page() {
 
                   <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
                     <div className="lg:col-span-1 xl:col-span-2">
-                      <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
+                      <div className="border-b border-border/30 pb-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Activity className="h-3.5 w-3.5 text-primary" />
                           价格更新事件
@@ -476,7 +476,7 @@ export default function Api3Page() {
                       </div>
                     </div>
                     <div className="space-y-3 lg:col-span-1 xl:col-span-1">
-                      <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
+                      <div className="border-b border-border/30 pb-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Server className="h-3.5 w-3.5 text-primary" />
                           Airnode 状态概览
@@ -503,7 +503,7 @@ export default function Api3Page() {
                         </div>
                       </div>
 
-                      <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
+                      <div className="border-b border-border/30 pb-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Database className="h-3.5 w-3.5 text-primary" />
                           dAPIs 状态概览
@@ -546,7 +546,7 @@ export default function Api3Page() {
                     ) : state.airnodesData ? (
                       <>
                         {state.airnodesData.airnodes.length === 0 ? (
-                          <div className="rounded-xl border border-border/30 bg-card/30 py-12 text-center text-muted-foreground">
+                          <div className="py-12 text-center text-muted-foreground">
                             <Server className="mx-auto h-12 w-12 opacity-50" />
                             <p className="mt-2">暂无 Airnode 数据</p>
                           </div>
@@ -555,7 +555,7 @@ export default function Api3Page() {
                             {state.airnodesData.airnodes.map((airnode, index) => (
                               <div
                                 key={index}
-                                className="flex cursor-pointer items-center justify-between rounded-xl border border-border/30 bg-card/30 p-4 transition-colors hover:bg-muted/30"
+                                className="flex cursor-pointer items-center justify-between border-b border-border/30 pb-3 pt-1 transition-colors hover:bg-muted/20"
                                 onClick={() =>
                                   router.push(`/oracle/api3/airnode/${airnode.address}`)
                                 }

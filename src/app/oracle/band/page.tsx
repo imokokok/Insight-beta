@@ -459,7 +459,7 @@ export default function BandProtocolPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0F1C] pb-16 md:pb-0">
+    <div className="min-h-screen pb-16 md:pb-0">
       <BandTopStatusBar
         healthStatus={healthStatus}
         isConnected={true}
@@ -561,7 +561,7 @@ export default function BandProtocolPage() {
 
                   <ContentSection title={t('band.features.title')}>
                     <ContentGrid columns={3} gap="sm">
-                      <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
+                      <div className="flex items-center gap-2.5 border-b border-border/30 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
                         <div className="rounded-lg bg-orange-500/10 p-2">
                           <Globe className="h-5 w-5 text-orange-500" />
                         </div>
@@ -574,7 +574,7 @@ export default function BandProtocolPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
+                      <div className="flex items-center gap-2.5 border-b border-border/30 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
                         <div className="rounded-lg bg-blue-500/10 p-2">
                           <Activity className="h-5 w-5 text-blue-500" />
                         </div>
@@ -587,7 +587,7 @@ export default function BandProtocolPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2.5 rounded-lg border border-border/30 bg-muted/30 p-3">
+                      <div className="flex items-center gap-2.5">
                         <div className="rounded-lg bg-green-500/10 p-2">
                           <Shield className="h-5 w-5 text-green-500" />
                         </div>
@@ -632,7 +632,7 @@ export default function BandProtocolPage() {
                       </Suspense>
                     </div>
                     <div className="space-y-3 lg:col-span-1 xl:col-span-1">
-                      <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
+                      <div className="border-b border-border/30 pb-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <GitBranch className="h-3.5 w-3.5 text-primary" />
                           {t('band.bridgeStatus.title')}
@@ -665,7 +665,7 @@ export default function BandProtocolPage() {
                         </div>
                       </div>
 
-                      <div className="rounded border border-border/20 bg-[rgba(15,23,42,0.8)] p-3">
+                      <div className="border-b border-border/30 pb-3">
                         <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
                           <Database className="h-3.5 w-3.5 text-primary" />
                           {t('band.sourceDistribution.title')}
@@ -861,7 +861,7 @@ export default function BandProtocolPage() {
                       description={t('band.blockInfo.description')}
                     >
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <div className="rounded-lg bg-muted/30 p-4">
+                        <div className="border-b border-border/30 pb-3 sm:border-b-0 sm:pb-0">
                           <span className="text-sm text-muted-foreground">
                             {t('band.blockInfo.height')}
                           </span>
@@ -869,7 +869,7 @@ export default function BandProtocolPage() {
                             {Math.floor(Math.random() * 10000000).toLocaleString()}
                           </div>
                         </div>
-                        <div className="rounded-lg bg-muted/30 p-4">
+                        <div className="border-b border-border/30 pb-3 sm:border-b-0 sm:pb-0">
                           <span className="text-sm text-muted-foreground">
                             {t('band.blockInfo.hash')}
                           </span>
@@ -880,7 +880,7 @@ export default function BandProtocolPage() {
                             ).join('')}
                           </div>
                         </div>
-                        <div className="rounded-lg bg-muted/30 p-4">
+                        <div>
                           <span className="text-sm text-muted-foreground">
                             {t('band.blockInfo.timestamp')}
                           </span>
@@ -894,13 +894,13 @@ export default function BandProtocolPage() {
                       description={t('band.ibcStatus.description')}
                     >
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <div className="rounded-lg bg-muted/30 p-4">
+                        <div className="border-b border-border/30 pb-3 sm:border-b-0 sm:pb-0">
                           <span className="text-sm text-muted-foreground">
                             {t('band.ibcStatus.chainId')}
                           </span>
                           <div className="mt-1 font-mono text-lg">{selectedCosmosChain}</div>
                         </div>
-                        <div className="rounded-lg bg-muted/30 p-4">
+                        <div className="border-b border-border/30 pb-3 sm:border-b-0 sm:pb-0">
                           <span className="text-sm text-muted-foreground">
                             {t('band.ibcStatus.connections')}
                           </span>
@@ -908,7 +908,7 @@ export default function BandProtocolPage() {
                             {state.ibcData?.connections.total ?? 0}
                           </div>
                         </div>
-                        <div className="rounded-lg bg-muted/30 p-4">
+                        <div>
                           <span className="text-sm text-muted-foreground">
                             {t('band.ibcStatus.activeChannels')}
                           </span>

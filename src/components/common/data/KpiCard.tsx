@@ -37,17 +37,11 @@ export function KpiCard({ data, compact }: KpiCardProps) {
 
   return (
     <div
-      className={cn(
-        'rounded border bg-[rgba(15,23,42,0.8)] backdrop-blur-sm',
-        'transition-all duration-200 ease-in-out',
-        'hover:border-primary/30 hover:shadow-md hover:shadow-primary/5',
-        colors.border,
-        compact ? 'p-2.5' : 'p-3',
-      )}
+      className={cn('flex flex-col', 'transition-colors duration-200', compact ? 'py-2' : 'py-3')}
     >
-      <div className="mb-1 flex items-start justify-between">
+      <div className="mb-0.5 flex items-center justify-between">
         <span
-          className={cn('font-medium text-muted-foreground', compact ? 'text-[11px]' : 'text-xs')}
+          className={cn('font-medium text-muted-foreground', compact ? 'text-[10px]' : 'text-xs')}
         >
           {label}
         </span>
@@ -69,7 +63,7 @@ export function KpiCard({ data, compact }: KpiCardProps) {
           className={cn(
             'font-mono font-bold tracking-tight',
             colors.text,
-            compact ? 'text-lg' : 'text-xl',
+            compact ? 'text-base' : 'text-lg',
           )}
         >
           {value}
@@ -111,10 +105,7 @@ export function KpiGrid({
         )}
       >
         {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="h-20 animate-pulse rounded border border-border/20 bg-[rgba(15,23,42,0.8)]"
-          />
+          <div key={i} className="h-16 animate-pulse rounded border border-border/20 bg-muted/30" />
         ))}
       </div>
     );
@@ -123,8 +114,9 @@ export function KpiGrid({
   return (
     <div
       className={cn(
-        'grid gap-2 md:gap-3',
-        compact ? 'grid-cols-2 xl:grid-cols-4' : 'grid-cols-2 sm:grid-cols-4',
+        'grid grid-cols-2 sm:grid-cols-4',
+        'divide-x divide-y divide-border/30 sm:divide-y-0',
+        'overflow-hidden rounded-lg border border-border/30',
         className,
       )}
     >

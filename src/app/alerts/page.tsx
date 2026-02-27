@@ -55,7 +55,7 @@ const ResponseTimeStats = lazy(() =>
 function LoadingFallback({ height = '200px' }: { height?: string }) {
   return (
     <div
-      className="flex items-center justify-center rounded-lg border border-border/30 bg-[rgba(15,23,42,0.8)]"
+      className="flex items-center justify-center rounded-lg border border-border/30"
       style={{ height }}
     >
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -302,7 +302,7 @@ export default function AlertsCenterPage() {
 
   if (error && !loading && !data) {
     return (
-      <div className="min-h-screen bg-[#0A0F1C] p-6">
+      <div className="min-h-screen p-6">
         <ErrorBanner
           error={new Error(error)}
           onRetry={() => refresh()}
@@ -314,7 +314,7 @@ export default function AlertsCenterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0F1C] pb-16 md:pb-0">
+    <div className="min-h-screen pb-16 md:pb-0">
       <TopStatusBar
         healthStatus={healthStatus}
         isConnected={true}
@@ -380,7 +380,7 @@ export default function AlertsCenterPage() {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3">
-          <div className="rounded-lg border border-border/30 bg-[rgba(15,23,42,0.8)] p-2 backdrop-blur-sm">
+          <div className="rounded-lg border border-border/30 p-2 backdrop-blur-sm">
             <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7">
               <TabsTrigger value="all" className="text-xs sm:text-sm">
                 <sourceIcons.all className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -420,7 +420,7 @@ export default function AlertsCenterPage() {
             </TabsList>
           </div>
 
-          <div className="rounded-lg border border-border/30 bg-[rgba(15,23,42,0.8)] p-3 backdrop-blur-sm">
+          <div className="rounded-lg border border-border/30 p-3 backdrop-blur-sm">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -484,7 +484,7 @@ export default function AlertsCenterPage() {
             </Suspense>
 
             <div className="grid gap-3 lg:grid-cols-2">
-              <div className="rounded-lg border border-border/30 bg-[rgba(15,23,42,0.8)] backdrop-blur-sm">
+              <div className="rounded-lg border border-border/30 backdrop-blur-sm">
                 <div className="border-b border-border/20 p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">

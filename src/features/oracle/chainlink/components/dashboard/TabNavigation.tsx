@@ -117,13 +117,7 @@ export function TabNavigation({ tabs, activeTab, onTabChange, className }: TabNa
 
   return (
     <>
-      <div
-        className={cn(
-          'relative border-b border-border/20 bg-[#0A0F1C]',
-          'hidden md:block',
-          className,
-        )}
-      >
+      <div className={cn('relative border-b border-border/20', 'hidden md:block', className)}>
         <div
           ref={tabsRef}
           role="tablist"
@@ -201,13 +195,13 @@ export function TabNavigation({ tabs, activeTab, onTabChange, className }: TabNa
           })}
         </div>
 
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#0A0F1C] to-transparent md:hidden" />
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-transparent to-transparent md:hidden" />
       </div>
 
       <div
         className={cn(
           'fixed bottom-0 left-0 right-0 z-50',
-          'border-t border-border/30 bg-[#0A0F1C]/95 backdrop-blur-lg',
+          'border-t border-border/30 backdrop-blur-lg',
           'md:hidden',
           'safe-area-inset-bottom',
         )}

@@ -33,8 +33,9 @@ export function KpiOverview({
   return (
     <div
       className={cn(
-        'grid gap-2 md:gap-3',
-        compact ? 'grid-cols-2 xl:grid-cols-4' : 'grid-cols-2 sm:grid-cols-4',
+        'grid grid-cols-2 sm:grid-cols-4',
+        'divide-x divide-y divide-border/30 sm:divide-y-0',
+        'overflow-hidden rounded-lg border border-border/30',
         className,
       )}
     >

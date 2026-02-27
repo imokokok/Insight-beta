@@ -68,7 +68,7 @@ export function OcrRoundMonitor({ className }: OcrRoundMonitorProps) {
 
   const renderNodeContributions = (contributions: NodeContribution[]) => {
     return (
-      <div className="space-y-2 bg-muted/30 p-2.5">
+      <div className="space-y-2 border-t border-border/30 p-2.5">
         <div className="text-[10px] font-medium text-muted-foreground">
           {t('chainlink.ocr.nodeContributions') || '节点贡献度'}
         </div>

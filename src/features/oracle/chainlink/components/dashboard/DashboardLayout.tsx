@@ -29,7 +29,7 @@ export function DashboardLayout({
         {leftPanel && (
           <aside
             className={cn(
-              'hidden w-64 shrink-0 border-r border-border/20 bg-[rgba(15,23,42,0.8)] lg:block xl:w-72',
+              'hidden w-64 shrink-0 border-r border-border/20 lg:block xl:w-72',
               'transition-all duration-300 ease-in-out',
             )}
           >
@@ -48,7 +48,7 @@ export function DashboardLayout({
         {rightPanel && (
           <aside
             className={cn(
-              'hidden w-80 shrink-0 border-l border-border/20 bg-[rgba(15,23,42,0.8)] xl:block',
+              'hidden w-80 shrink-0 border-l border-border/20 xl:block',
               'transition-all duration-300 ease-in-out',
             )}
           >
@@ -87,7 +87,7 @@ export function MainContentSection({ children, className }: LayoutSectionProps) 
 
 export function RightStatusSection({ children, className, title }: LayoutSectionProps) {
   return (
-    <div className={cn('mb-4 rounded border border-border/10 bg-card/50 p-3', className)}>
+    <div className={cn('mb-4 rounded border border-border/10 p-3', className)}>
       {title && <h4 className="mb-2 text-xs font-medium text-muted-foreground">{title}</h4>}
       {children}
     </div>
