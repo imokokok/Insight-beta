@@ -65,7 +65,9 @@ export default function ReliabilityPage() {
           <RefreshIndicator
             lastUpdated={lastUpdated ? new Date(lastUpdated) : null}
             isRefreshing={isLoading}
-            onRefresh={refresh}
+            onRefresh={() => {
+              refresh();
+            }}
           />
         </div>
       </div>

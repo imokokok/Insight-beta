@@ -1,10 +1,13 @@
 'use client';
 
-import { RefreshCw, Radio, Clock } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+
+import { RefreshCw, Radio, Clock, Check } from 'lucide-react';
 
 import { Button } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Switch } from '@/components/ui';
+import { useToast } from '@/components/ui';
 import { formatLastUpdated } from '@/config/refreshStrategy';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
@@ -12,12 +15,13 @@ import { cn } from '@/shared/utils';
 interface RefreshIndicatorProps {
   lastUpdated: Date | null;
   isRefreshing?: boolean;
-  onRefresh?: () => void;
+  onRefresh?: () => void | Promise<void>;
   className?: string;
   realtimeMode?: boolean;
   onRealtimeModeChange?: (enabled: boolean) => void;
   refreshInterval?: number;
   onRefreshIntervalChange?: (interval: number) => void;
+  showSuccessToast?: boolean;
 }
 
 const intervalOptions = [
@@ -36,8 +40,41 @@ export function RefreshIndicator({
   onRealtimeModeChange,
   refreshInterval = 10000,
   onRefreshIntervalChange,
+  showSuccessToast = false,
 }: RefreshIndicatorProps) {
   const { t } = useI18n();
+  const { toast } = useToast();
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [prevRefreshing, setPrevRefreshing] = useState(isRefreshing);
+
+  useEffect(() => {
+    if (prevRefreshing && !isRefreshing && showSuccessToast) {
+      setShowSuccess(true);
+      toast({
+        title: t('common.refreshSuccess'),
+        type: 'success',
+        duration: 2000,
+      });
+      const timer = setTimeout(() => setShowSuccess(false), 1500);
+      return () => clearTimeout(timer);
+    }
+    setPrevRefreshing(isRefreshing);
+    return undefined;
+  }, [isRefreshing, prevRefreshing, showSuccessToast, toast, t]);
+
+  const handleRefresh = useCallback(async () => {
+    if (onRefresh) {
+      try {
+        await onRefresh();
+      } catch {
+        toast({
+          title: t('common.refreshFailed'),
+          type: 'error',
+          duration: 3000,
+        });
+      }
+    }
+  }, [onRefresh, toast, t]);
 
   return (
     <div className={cn('flex items-center gap-3', className)}>
@@ -96,11 +133,15 @@ export function RefreshIndicator({
         <Button
           variant="ghost"
           size="sm"
-          onClick={onRefresh}
+          onClick={handleRefresh}
           disabled={isRefreshing}
-          className="h-7 w-7 p-0"
+          className={cn('h-7 w-7 p-0 transition-all duration-200', showSuccess && 'text-success')}
         >
-          <RefreshCw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin')} />
+          {showSuccess ? (
+            <Check className="animate-in zoom-in h-3.5 w-3.5 duration-150" />
+          ) : (
+            <RefreshCw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin')} />
+          )}
         </Button>
       )}
     </div>

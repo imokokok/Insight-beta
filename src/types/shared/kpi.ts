@@ -8,6 +8,8 @@ export interface KpiCardData {
   trend?: KpiTrendDirection;
   changePercent?: number;
   status?: KpiStatus;
+  trendData?: number[];
+  showTrend?: boolean;
 }
 
 export const DEFAULT_KPI_DATA: KpiCardData = {

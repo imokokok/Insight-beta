@@ -38,7 +38,7 @@ function TabPanel({ id, children, isActive, className }: TabPanelProps) {
     if (!isVisible && shouldRender && !isActive) {
       const timer = setTimeout(() => {
         setShouldRender(false);
-      }, 300);
+      }, 150);
       return () => clearTimeout(timer);
     }
     return undefined;
@@ -53,7 +53,7 @@ function TabPanel({ id, children, isActive, className }: TabPanelProps) {
       aria-labelledby={`tab-${id}`}
       hidden={!isActive}
       className={cn(
-        'transition-opacity duration-300 ease-in-out',
+        'transition-opacity duration-150 ease-in-out',
         isVisible ? 'opacity-100' : 'opacity-0',
         className,
       )}

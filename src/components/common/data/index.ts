@@ -70,6 +70,8 @@ export {
 export { AnimatedNumber } from './AnimatedNumber';
 export { KpiCard, KpiGrid, DEFAULT_KPI_DATA, TREND_COLORS, STATUS_COLORS } from './KpiCard';
 export type { KpiCardData, TrendDirection, KpiStatus } from './KpiCard';
+export { MiniTrend } from './MiniTrend';
+export type { MiniTrendProps } from './MiniTrend';
 export { MiniChart } from './MiniChart';
 export { VirtualList } from './VirtualList';
 export { ProtocolHealthBadge } from './ProtocolHealthBadge';

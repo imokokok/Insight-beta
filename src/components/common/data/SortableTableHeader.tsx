@@ -30,20 +30,21 @@ export function SortableTableHeader({
 
   const SortIcon = () => {
     if (!isActive) {
-      return <ArrowUpDown className="ml-1 h-4 w-4 opacity-40" />;
+      return <ArrowUpDown className="ml-1 h-4 w-4 opacity-40 transition-opacity duration-150" />;
     }
     return direction === 'asc' ? (
-      <ArrowUp className="ml-1 h-4 w-4" />
+      <ArrowUp className="ml-1 h-4 w-4 rotate-0 transition-transform duration-200" />
     ) : (
-      <ArrowDown className="ml-1 h-4 w-4" />
+      <ArrowDown className="ml-1 h-4 w-4 rotate-0 transition-transform duration-200" />
     );
   };
 
   return (
     <TableHead
       className={cn(
-        'cursor-pointer select-none transition-colors hover:bg-muted/50',
-        isActive && 'font-semibold text-foreground',
+        'cursor-pointer select-none transition-colors duration-150',
+        'hover:bg-muted/50',
+        isActive && 'bg-muted/30 font-semibold text-foreground',
         className,
       )}
       onClick={() => onSort(sortKey)}

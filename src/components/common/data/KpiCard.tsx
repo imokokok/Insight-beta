@@ -3,6 +3,8 @@ import { cn } from '@/shared/utils';
 import type { KpiCardData, KpiTrendDirection, KpiStatus } from '@/types/shared/kpi';
 import { DEFAULT_KPI_DATA, TREND_COLORS, STATUS_COLORS } from '@/types/shared/kpi';
 
+import { MiniTrend } from './MiniTrend';
+
 export { DEFAULT_KPI_DATA, TREND_COLORS, STATUS_COLORS };
 export type { KpiCardData, KpiStatus };
 export type { KpiTrendDirection as TrendDirection };
@@ -32,8 +34,18 @@ interface KpiCardProps {
 
 export function KpiCard({ data, compact }: KpiCardProps) {
   const { t } = useI18n();
-  const { value, label, trend = 'neutral', changePercent, status = 'neutral' } = data;
+  const {
+    value,
+    label,
+    trend = 'neutral',
+    changePercent,
+    status = 'neutral',
+    trendData,
+    showTrend,
+  } = data;
   const colors = STATUS_COLORS[status] ?? STATUS_COLORS.neutral!;
+
+  const trendColor = trend === 'up' ? 'success' : trend === 'down' ? 'error' : 'neutral';
 
   return (
     <div
@@ -68,6 +80,9 @@ export function KpiCard({ data, compact }: KpiCardProps) {
         >
           {value}
         </span>
+        {showTrend && trendData && trendData.length >= 2 && (
+          <MiniTrend data={trendData} color={trendColor} mode="line" />
+        )}
       </div>
 
       {changePercent !== undefined && trend === 'neutral' && (
