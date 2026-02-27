@@ -36,6 +36,7 @@ export function KpiOverview({
         'grid grid-cols-2 sm:grid-cols-4',
         'divide-x divide-y divide-border/30 sm:divide-y-0',
         'overflow-hidden rounded-lg border border-border/30',
+        'px-3',
         className,
       )}
     >

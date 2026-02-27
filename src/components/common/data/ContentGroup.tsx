@@ -20,18 +20,18 @@ export function ContentGroup({
   ...props
 }: ContentGroupProps) {
   const gapClasses = {
-    sm: 'space-y-2',
+    sm: 'space-y-3',
     md: 'space-y-4',
-    lg: 'space-y-6',
-    xl: 'space-y-8',
+    lg: 'space-y-5',
+    xl: 'space-y-6',
   };
 
   return (
-    <div className={cn(className)} {...props}>
+    <div className={cn('py-4', className)} {...props}>
       {(title || description) && (
-        <div className="mb-4">
-          {title && <h3 className="text-sm font-medium text-foreground">{title}</h3>}
-          {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
+        <div className="mb-3 border-b border-border/20 pb-2">
+          {title && <h3 className="text-sm font-semibold text-foreground">{title}</h3>}
+          {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
         </div>
       )}
       <div
@@ -63,12 +63,12 @@ export function ContentSection({
   ...props
 }: ContentSectionProps) {
   return (
-    <section className={cn('mb-4', className)} {...props}>
+    <section className={cn('py-4', className)} {...props}>
       {(title || description || action) && (
-        <div className="mb-2 flex items-start justify-between">
+        <div className="mb-3 flex items-start justify-between border-b border-border/20 pb-2">
           <div>
             {title && typeof title === 'string' ? (
-              <h2 className="text-base font-semibold text-foreground">{title}</h2>
+              <h2 className="text-sm font-semibold text-foreground">{title}</h2>
             ) : (
               title
             )}
@@ -108,9 +108,9 @@ export function ContentGrid({
   };
 
   const gapClasses = {
-    sm: 'gap-3',
-    md: 'gap-4',
-    lg: 'gap-6',
+    sm: 'gap-2',
+    md: 'gap-3',
+    lg: 'gap-4',
   };
 
   return (
