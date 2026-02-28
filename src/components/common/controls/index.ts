@@ -6,3 +6,7 @@ export type { TimeRangeSelectorProps, TimeRange, TimeRangePreset } from './TimeR
 export { RealtimeModeToggle } from './RealtimeModeToggle';
 export { DensityProvider, useDensity } from './DensityProvider';
 export type { DensityMode, DensityConfig, DensityProviderProps } from './DensityProvider';
+export { FilterPopover } from './FilterPopover';
+export type { FilterPopoverProps } from './FilterPopover';
+export { FilterBar } from './FilterBar';
+export type { FilterBarProps } from './FilterBar';

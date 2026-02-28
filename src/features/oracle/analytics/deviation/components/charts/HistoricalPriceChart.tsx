@@ -16,6 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import type { PriceHistoryRecord } from '@/features/oracle/analytics/deviation/hooks/usePriceHistory';
 import { useI18n } from '@/i18n';
+import { CHART_GRID } from '@/lib/chart-config';
 
 interface HistoricalPriceChartProps {
   data: PriceHistoryRecord[];
@@ -102,7 +103,11 @@ export function HistoricalPriceChart({ data, isLoading }: HistoricalPriceChartPr
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <CartesianGrid
+                strokeDasharray={CHART_GRID.strokeDasharray}
+                className={CHART_GRID.className}
+                vertical={CHART_GRID.vertical}
+              />
               <XAxis dataKey="date" tick={{ fontSize: 12 }} className="text-muted-foreground" />
               <YAxis
                 tick={{ fontSize: 12 }}

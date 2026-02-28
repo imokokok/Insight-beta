@@ -24,6 +24,13 @@ import { SkeletonList } from '@/components/ui';
 import { TIME_RANGES } from '@/config/constants';
 import type { TimeRangeValue } from '@/config/constants';
 import { useI18n } from '@/i18n';
+import {
+  CHART_GRID,
+  CHART_AXIS,
+  CHART_TOOLTIP,
+  CHART_COLORS,
+  formatChartValue,
+} from '@/lib/chart-config';
 import { cn } from '@/shared/utils';
 import { formatPrice } from '@/shared/utils/format';
 
@@ -394,27 +401,31 @@ export function Api3PriceChart({
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <RechartsLineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <CartesianGrid
+                  strokeDasharray={CHART_GRID.strokeDasharray}
+                  stroke={CHART_GRID.stroke}
+                  vertical={CHART_GRID.vertical}
+                />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 10 }}
+                  tick={CHART_AXIS.tick}
                   interval="preserveStartEnd"
                   className="text-muted-foreground"
                 />
                 <YAxis
-                  tick={{ fontSize: 12 }}
+                  tick={CHART_AXIS.tick}
                   className="text-muted-foreground"
                   domain={['auto', 'auto']}
-                  tickFormatter={(v) => `$${v.toFixed(0)}`}
+                  tickFormatter={(v) => formatChartValue(v, 'price')}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
+                    backgroundColor: CHART_TOOLTIP.backgroundColor,
+                    border: CHART_TOOLTIP.border,
+                    borderRadius: CHART_TOOLTIP.borderRadius,
                   }}
                   formatter={(value, name) => [
-                    formatPrice(Number(value) || 0),
+                    formatChartValue(Number(value) || 0, 'price'),
                     name === 'price' ? t('api3.price.spotPrice') : t('api3.price.emaPrice'),
                   ]}
                   labelFormatter={(label) => `${t('common.time')}: ${label}`}
@@ -424,7 +435,7 @@ export function Api3PriceChart({
                   type="monotone"
                   dataKey="price"
                   name={t('api3.price.spotPrice')}
-                  stroke="#3b82f6"
+                  stroke={CHART_COLORS.primary}
                   strokeWidth={2}
                   dot={false}
                   activeDot={{ r: 4 }}
@@ -433,7 +444,7 @@ export function Api3PriceChart({
                   type="monotone"
                   dataKey="emaPrice"
                   name={t('api3.price.emaPrice')}
-                  stroke="#8b5cf6"
+                  stroke={CHART_COLORS.purple}
                   strokeWidth={2}
                   strokeDasharray="5 5"
                   dot={false}

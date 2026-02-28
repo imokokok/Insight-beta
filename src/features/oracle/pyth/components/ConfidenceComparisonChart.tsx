@@ -18,6 +18,7 @@ import {
 import { Checkbox } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { CHART_GRID } from '@/lib/chart-config';
 
 interface PriceSourceData {
   name: string;
@@ -195,7 +196,11 @@ export function ConfidenceComparisonChart({ isLoading }: ConfidenceComparisonCha
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <CartesianGrid
+                    strokeDasharray={CHART_GRID.strokeDasharray}
+                    className={CHART_GRID.className}
+                    vertical={CHART_GRID.vertical}
+                  />
                   <XAxis
                     dataKey="time"
                     tick={{ fontSize: 10 }}

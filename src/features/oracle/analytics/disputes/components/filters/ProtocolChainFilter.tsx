@@ -1,10 +1,9 @@
 'use client';
 
-import { Layers, Network, X } from 'lucide-react';
+import { Check, Layers, Network, X } from 'lucide-react';
 
-import { Button } from '@/components/ui';
+import { FilterBar, FilterPopover } from '@/components/common/controls';
 import { Badge } from '@/components/ui';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
@@ -29,23 +28,19 @@ export function ProtocolChainFilter({
 }: ProtocolChainFilterProps) {
   const { t } = useI18n();
 
-  const handleProtocolSelect = (value: string) => {
-    if (value === 'all') {
-      onProtocolChange([]);
-    } else if (selectedProtocols.includes(value)) {
-      onProtocolChange(selectedProtocols.filter((p) => p !== value));
+  const handleProtocolToggle = (protocol: string) => {
+    if (selectedProtocols.includes(protocol)) {
+      onProtocolChange(selectedProtocols.filter((p) => p !== protocol));
     } else {
-      onProtocolChange([...selectedProtocols, value]);
+      onProtocolChange([...selectedProtocols, protocol]);
     }
   };
 
-  const handleChainSelect = (value: string) => {
-    if (value === 'all') {
-      onChainChange([]);
-    } else if (selectedChains.includes(value)) {
-      onChainChange(selectedChains.filter((c) => c !== value));
+  const handleChainToggle = (chain: string) => {
+    if (selectedChains.includes(chain)) {
+      onChainChange(selectedChains.filter((c) => c !== chain));
     } else {
-      onChainChange([...selectedChains, value]);
+      onChainChange([...selectedChains, chain]);
     }
   };
 
@@ -57,50 +52,61 @@ export function ProtocolChainFilter({
     onChainChange(selectedChains.filter((c) => c !== chain));
   };
 
-  const handleClearAll = () => {
-    onProtocolChange([]);
-    onChainChange([]);
-  };
-
   const hasFilters = selectedProtocols.length > 0 || selectedChains.length > 0;
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-2', className)}>
-      <div className="flex items-center gap-2">
-        <Layers className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium">{t('analytics.disputes.filters.protocol')}:</span>
-        <Select value={selectedProtocols[0] || 'all'} onValueChange={handleProtocolSelect}>
-          <SelectTrigger className="w-32">
-            <SelectValue placeholder={t('analytics.disputes.filters.allProtocols')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('analytics.disputes.filters.allProtocols')}</SelectItem>
-            {protocols.map((protocol) => (
-              <SelectItem key={protocol} value={protocol}>
-                {protocol.toUpperCase()}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    <FilterBar className={className}>
+      <FilterPopover
+        icon={<Layers className="h-4 w-4" />}
+        label={t('analytics.disputes.filters.protocol')}
+        count={selectedProtocols.length}
+      >
+        <div className="space-y-1">
+          {protocols.map((protocol) => {
+            const isSelected = selectedProtocols.includes(protocol);
+            return (
+              <button
+                key={protocol}
+                type="button"
+                className={cn(
+                  'flex w-full items-center justify-between rounded-md px-2 py-2 text-sm transition-colors',
+                  isSelected ? 'bg-primary/10 text-primary' : 'hover:bg-muted',
+                )}
+                onClick={() => handleProtocolToggle(protocol)}
+              >
+                <span>{protocol.toUpperCase()}</span>
+                {isSelected && <Check className="h-4 w-4" />}
+              </button>
+            );
+          })}
+        </div>
+      </FilterPopover>
 
-      <div className="flex items-center gap-2">
-        <Network className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium">{t('analytics.disputes.filters.chain')}:</span>
-        <Select value={selectedChains[0] || 'all'} onValueChange={handleChainSelect}>
-          <SelectTrigger className="w-32">
-            <SelectValue placeholder={t('analytics.disputes.filters.allChains')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('analytics.disputes.filters.allChains')}</SelectItem>
-            {chains.map((chain) => (
-              <SelectItem key={chain} value={chain}>
-                {chain.charAt(0).toUpperCase() + chain.slice(1)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <FilterPopover
+        icon={<Network className="h-4 w-4" />}
+        label={t('analytics.disputes.filters.chain')}
+        count={selectedChains.length}
+      >
+        <div className="space-y-1">
+          {chains.map((chain) => {
+            const isSelected = selectedChains.includes(chain);
+            return (
+              <button
+                key={chain}
+                type="button"
+                className={cn(
+                  'flex w-full items-center justify-between rounded-md px-2 py-2 text-sm transition-colors',
+                  isSelected ? 'bg-primary/10 text-primary' : 'hover:bg-muted',
+                )}
+                onClick={() => handleChainToggle(chain)}
+              >
+                <span>{chain.charAt(0).toUpperCase() + chain.slice(1)}</span>
+                {isSelected && <Check className="h-4 w-4" />}
+              </button>
+            );
+          })}
+        </div>
+      </FilterPopover>
 
       {hasFilters && (
         <div className="flex flex-wrap items-center gap-1">
@@ -126,11 +132,8 @@ export function ProtocolChainFilter({
               </button>
             </Badge>
           ))}
-          <Button variant="ghost" size="sm" onClick={handleClearAll} className="h-6 px-2 text-xs">
-            {t('common.clearAll')}
-          </Button>
         </div>
       )}
-    </div>
+    </FilterBar>
   );
 }

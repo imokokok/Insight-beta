@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { CHART_GRID } from '@/lib/chart-config';
 import { formatPrice, formatInterval, formatLatency } from '@/shared/utils/format';
 
 import type { CrossChainComparisonData } from '../types/api3';
@@ -161,7 +162,11 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={priceComparisonData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <CartesianGrid
+                    strokeDasharray={CHART_GRID.strokeDasharray}
+                    className={CHART_GRID.className}
+                    vertical={CHART_GRID.vertical}
+                  />
                   <XAxis
                     dataKey="chain"
                     tick={{ fontSize: 12 }}
@@ -195,7 +200,11 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={updateIntervalData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <CartesianGrid
+                    strokeDasharray={CHART_GRID.strokeDasharray}
+                    className={CHART_GRID.className}
+                    vertical={CHART_GRID.vertical}
+                  />
                   <XAxis
                     dataKey="chain"
                     tick={{ fontSize: 12 }}
@@ -225,7 +234,11 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={latencyData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <CartesianGrid
+                    strokeDasharray={CHART_GRID.strokeDasharray}
+                    className={CHART_GRID.className}
+                    vertical={CHART_GRID.vertical}
+                  />
                   <XAxis
                     dataKey="chain"
                     tick={{ fontSize: 12 }}
@@ -255,7 +268,11 @@ export function CrossChainMetrics({ data, chainColors, className }: CrossChainMe
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={gasCostData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <CartesianGrid
+                    strokeDasharray={CHART_GRID.strokeDasharray}
+                    className={CHART_GRID.className}
+                    vertical={CHART_GRID.vertical}
+                  />
                   <XAxis
                     dataKey="chain"
                     tick={{ fontSize: 12 }}

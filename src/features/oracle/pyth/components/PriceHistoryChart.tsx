@@ -21,6 +21,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import {
+  CHART_COLORS,
+  CHART_GRID,
+  CHART_TOOLTIP,
+  CHART_AXIS,
+  getPriceColor,
+  formatChartValue,
+} from '@/lib/chart-config';
 import { fetchApiData } from '@/shared/utils';
 import { formatPrice } from '@/shared/utils/format';
 import { cn } from '@/shared/utils/ui';
@@ -238,10 +246,8 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
                 变化率
               </div>
               <p
-                className={cn(
-                  'mt-1 text-lg font-semibold',
-                  stats.priceChange >= 0 ? 'text-green-500' : 'text-red-500',
-                )}
+                className={cn('mt-1 text-lg font-semibold')}
+                style={{ color: getPriceColor(stats.priceChange) }}
               >
                 {stats.priceChange >= 0 ? '+' : ''}
                 {stats.priceChange.toFixed(2)}%
@@ -268,24 +274,28 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={formattedData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <CartesianGrid
+                    strokeDasharray={CHART_GRID.strokeDasharray}
+                    className={CHART_GRID.className}
+                    vertical={CHART_GRID.vertical}
+                  />
                   <XAxis
                     dataKey="time"
-                    tick={{ fontSize: 11 }}
-                    className="text-muted-foreground"
+                    tick={CHART_AXIS.tick}
+                    className={CHART_AXIS.className}
                     interval="preserveStartEnd"
                   />
                   <YAxis
                     domain={['auto', 'auto']}
-                    tick={{ fontSize: 11 }}
-                    className="text-muted-foreground"
-                    tickFormatter={(value) => formatPrice(value)}
+                    tick={CHART_AXIS.tick}
+                    className={CHART_AXIS.className}
+                    tickFormatter={(value) => formatChartValue(value, 'price')}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
+                      backgroundColor: CHART_TOOLTIP.backgroundColor,
+                      border: CHART_TOOLTIP.border,
+                      borderRadius: CHART_TOOLTIP.borderRadius,
                     }}
                     formatter={(value) => [formatPrice(value as number), '价格']}
                     labelFormatter={(label) => `时间: ${label}`}
@@ -295,20 +305,20 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
                     type="monotone"
                     dataKey="price"
                     name="价格"
-                    stroke="#f59e0b"
-                    fill="#f59e0b"
+                    stroke={CHART_COLORS.warning}
+                    fill={CHART_COLORS.warning}
                     fillOpacity={0.1}
                     strokeWidth={2}
                   />
                   {formattedData.length > 0 && (
                     <ReferenceLine
                       y={stats.avgPrice}
-                      stroke="#6366f1"
+                      stroke={CHART_COLORS.indigo}
                       strokeDasharray="5 5"
                       label={{
                         value: `均值: ${formatPrice(stats.avgPrice)}`,
                         position: 'right',
-                        fill: '#6366f1',
+                        fill: CHART_COLORS.indigo,
                         fontSize: 11,
                       }}
                     />

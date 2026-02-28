@@ -26,6 +26,7 @@ import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
+import { CHART_GRID } from '@/lib/chart-config';
 import { cn } from '@/shared/utils';
 import { getDeviationColor } from '@/shared/utils/format/percentage';
 
@@ -143,7 +144,11 @@ function TrendExpandableContent({
                 <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid
+              strokeDasharray={CHART_GRID.strokeDasharray}
+              className={CHART_GRID.className}
+              vertical={CHART_GRID.vertical}
+            />
             <XAxis
               dataKey="time"
               tick={{ fontSize: isMobile ? 8 : 10 }}

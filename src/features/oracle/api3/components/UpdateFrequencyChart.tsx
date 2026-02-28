@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { SkeletonList } from '@/components/ui';
 import { TIME_RANGE_OPTIONS } from '@/config/constants';
 import { useI18n } from '@/i18n';
+import { CHART_GRID } from '@/lib/chart-config';
 import { cn } from '@/shared/utils';
 
 import type {
@@ -280,7 +281,11 @@ export function UpdateFrequencyChart({
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <CartesianGrid
+                strokeDasharray={CHART_GRID.strokeDasharray}
+                className={CHART_GRID.className}
+                vertical={CHART_GRID.vertical}
+              />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 10 }}

@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui';
 import { usePriceHistory } from '@/features/oracle/analytics/deviation/hooks/usePriceHistory';
 import { useI18n } from '@/i18n';
+import { CHART_GRID, CHART_AXIS, formatChartValue } from '@/lib/chart-config';
 import { cn, formatPrice } from '@/shared/utils';
 
 type TimeRangeKey = '1h' | '24h' | '7d' | '30d';
@@ -503,28 +504,26 @@ export function ChainlinkPriceHistory({ className }: ChainlinkPriceHistoryProps)
                     })}
                   </defs>
                   <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="rgba(148, 163, 184, 0.15)"
-                    vertical={false}
+                    strokeDasharray={CHART_GRID.strokeDasharray}
+                    stroke={CHART_GRID.stroke}
+                    vertical={CHART_GRID.vertical}
                   />
                   <XAxis
                     dataKey="timestamp"
                     tickFormatter={formatXAxisTime}
-                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                    tickLine={false}
-                    axisLine={{ stroke: 'rgba(148, 163, 184, 0.2)' }}
+                    tick={CHART_AXIS.tick}
+                    tickLine={CHART_AXIS.tickLine}
+                    axisLine={{ stroke: CHART_AXIS.stroke }}
                     minTickGap={50}
                   />
                   <YAxis
                     domain={getAxisDomain()}
-                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                    tickLine={false}
-                    axisLine={{ stroke: 'rgba(148, 163, 184, 0.2)' }}
-                    tickFormatter={(value: number) => {
-                      if (value >= 1000) return `$${(value / 1000).toFixed(1)}k`;
-                      if (value >= 1) return `$${value.toFixed(0)}`;
-                      return `$${value.toFixed(2)}`;
-                    }}
+                    tick={CHART_AXIS.tick}
+                    tickLine={CHART_AXIS.tickLine}
+                    axisLine={{ stroke: CHART_AXIS.stroke }}
+                    tickFormatter={(value: number) =>
+                      formatChartValue(value, 'price', { compact: true })
+                    }
                     width={60}
                   />
                   <Tooltip content={<CustomTooltip selectedAssets={selectedAssets} />} />

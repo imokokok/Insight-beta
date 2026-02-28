@@ -8,7 +8,14 @@ import { Button } from '@/components/ui';
 import { StatusBadge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { cn, formatTime } from '@/shared/utils';
+import {
+  PRICE_COLORS,
+  getDeviationColor,
+  getPriceColor,
+  formatChartValue,
+  getGradientColors,
+} from '@/lib/chart-config';
+import { formatTime } from '@/shared/utils';
 
 export interface PriceDataPoint {
   timestamp: string;
@@ -89,14 +96,6 @@ function setToCache(key: string, data: CachedPriceData): void {
   }
 }
 
-const getDeviationColor = (deviation: number): string => {
-  const absDeviation = Math.abs(deviation);
-  if (absDeviation >= 5) return '#dc2626';
-  if (absDeviation >= 2) return '#ea580c';
-  if (absDeviation >= 1) return '#f97316';
-  return '#22c55e';
-};
-
 interface SVGPriceChartProps {
   data: PriceDataPoint[];
   width: number;
@@ -139,10 +138,8 @@ function SVGPriceChart({ data, width, height, priceStats, onPointHover }: SVGPri
 
   const areaPath = `${pathData} L ${getX(data.length - 1)} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`;
 
-  const isPositive = priceStats.priceChangePercent >= 0;
-  const lineColor = isPositive ? '#22c55e' : '#ef4444';
-  const gradientStart = isPositive ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)';
-  const gradientEnd = isPositive ? 'rgba(34, 197, 94, 0)' : 'rgba(239, 68, 68, 0)';
+  const lineColor = getPriceColor(priceStats.priceChangePercent);
+  const gradientColors = getGradientColors(lineColor);
 
   const yTicks = 5;
   const yTickValues = Array.from({ length: yTicks }, (_, i) => {
@@ -192,8 +189,8 @@ function SVGPriceChart({ data, width, height, priceStats, onPointHover }: SVGPri
     >
       <defs>
         <linearGradient id="priceGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor={gradientStart} />
-          <stop offset="100%" stopColor={gradientEnd} />
+          <stop offset="0%" stopColor={gradientColors.start} />
+          <stop offset="100%" stopColor={gradientColors.end} />
         </linearGradient>
       </defs>
 
@@ -471,10 +468,8 @@ export function BandPriceChart({
             {priceStats && (
               <CardDescription className="mt-1">
                 <span
-                  className={cn(
-                    'font-mono font-medium',
-                    priceStats.priceChangePercent >= 0 ? 'text-emerald-500' : 'text-red-500',
-                  )}
+                  className="font-mono font-medium"
+                  style={{ color: getPriceColor(priceStats.priceChangePercent) }}
                 >
                   {priceStats.priceChangePercent >= 0 ? '+' : ''}
                   {priceStats.priceChangePercent.toFixed(2)}%
@@ -508,19 +503,25 @@ export function BandPriceChart({
             <div className="rounded-lg bg-muted/30 p-3">
               <p className="text-xs text-muted-foreground">{t('band.priceChart.currentPrice')}</p>
               <p className="mt-1 font-mono text-lg font-semibold">
-                ${priceStats.currentPrice.toFixed(4)}
+                {formatChartValue(priceStats.currentPrice, 'price', { decimals: 4 })}
               </p>
             </div>
             <div className="rounded-lg bg-muted/30 p-3">
               <p className="text-xs text-muted-foreground">{t('band.priceChart.high')}</p>
-              <p className="mt-1 font-mono text-lg font-semibold text-emerald-500">
-                ${priceStats.highPrice.toFixed(4)}
+              <p
+                className="mt-1 font-mono text-lg font-semibold"
+                style={{ color: PRICE_COLORS.up }}
+              >
+                {formatChartValue(priceStats.highPrice, 'price', { decimals: 4 })}
               </p>
             </div>
             <div className="rounded-lg bg-muted/30 p-3">
               <p className="text-xs text-muted-foreground">{t('band.priceChart.low')}</p>
-              <p className="mt-1 font-mono text-lg font-semibold text-red-500">
-                ${priceStats.lowPrice.toFixed(4)}
+              <p
+                className="mt-1 font-mono text-lg font-semibold"
+                style={{ color: PRICE_COLORS.down }}
+              >
+                {formatChartValue(priceStats.lowPrice, 'price', { decimals: 4 })}
               </p>
             </div>
             <div className="rounded-lg bg-muted/30 p-3">
@@ -529,7 +530,7 @@ export function BandPriceChart({
                 className="mt-1 font-mono text-lg font-semibold"
                 style={{ color: getDeviationColor(priceStats.avgDeviation) }}
               >
-                {(priceStats.avgDeviation * 100).toFixed(2)}%
+                {formatChartValue(priceStats.avgDeviation * 100, 'percent')}
               </p>
             </div>
           </div>
@@ -539,7 +540,9 @@ export function BandPriceChart({
           <div className="rounded-lg border bg-muted/50 p-2 text-sm">
             <div className="flex items-center justify-between gap-4">
               <span className="text-muted-foreground">{formatTime(hoveredPoint.timestamp)}</span>
-              <span className="font-mono font-semibold">${hoveredPoint.price.toFixed(4)}</span>
+              <span className="font-mono font-semibold">
+                {formatChartValue(hoveredPoint.price, 'price', { decimals: 4 })}
+              </span>
             </div>
           </div>
         )}

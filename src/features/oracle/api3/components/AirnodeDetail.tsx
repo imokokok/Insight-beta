@@ -35,6 +35,7 @@ import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { CHART_GRID } from '@/lib/chart-config';
 import { formatTime, cn, copyToClipboard } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
 
@@ -313,7 +314,11 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <CartesianGrid
+                      strokeDasharray={CHART_GRID.strokeDasharray}
+                      className={CHART_GRID.className}
+                      vertical={CHART_GRID.vertical}
+                    />
                     <XAxis
                       dataKey="time"
                       tick={{ fontSize: 11 }}

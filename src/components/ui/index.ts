@@ -101,6 +101,9 @@ export { Switch } from './Switch';
 // Table
 export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './Table';
 
+// ResponsiveTable
+export { ResponsiveTable, type ResponsiveTableProps, type ColumnDef } from './ResponsiveTable';
+
 // Tabs
 export { Tabs, TabsList, TabsTrigger, TabsContent, type TabsProps } from './Tabs';
 

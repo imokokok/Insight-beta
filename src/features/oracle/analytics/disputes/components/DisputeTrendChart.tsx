@@ -16,6 +16,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { CHART_GRID } from '@/lib/chart-config';
 import type { DisputeTrend } from '@/types/oracle/dispute';
 
 interface DisputeTrendChartProps {
@@ -125,7 +126,11 @@ export function DisputeTrendChart({ trends }: DisputeTrendChartProps) {
                   <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid
+                strokeDasharray={CHART_GRID.strokeDasharray}
+                className={CHART_GRID.className}
+                vertical={CHART_GRID.vertical}
+              />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 10 }}

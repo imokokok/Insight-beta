@@ -20,6 +20,7 @@ import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
+import { CHART_GRID } from '@/lib/chart-config';
 
 import type { DeviationTrend } from '../types/deviation';
 
@@ -246,7 +247,11 @@ export function DeviationDistributionChart({ trends }: DeviationDistributionChar
         <div className="h-64 sm:h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} barCategoryGap="15%">
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid
+                strokeDasharray={CHART_GRID.strokeDasharray}
+                className={CHART_GRID.className}
+                vertical={CHART_GRID.vertical}
+              />
               <XAxis
                 dataKey="symbol"
                 tick={{ fontSize: isMobile ? 9 : 11 }}

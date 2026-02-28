@@ -15,6 +15,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { CHART_GRID } from '@/lib/chart-config';
 import { formatNumber } from '@/shared/utils';
 import type { Dispute, DisputeTrend } from '@/types/oracle/dispute';
 
@@ -155,7 +156,11 @@ export function BondDistributionChart({ disputes, trends }: BondDistributionChar
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={distributionData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+              <CartesianGrid
+                strokeDasharray={CHART_GRID.strokeDasharray}
+                className={CHART_GRID.className}
+                vertical={CHART_GRID.vertical}
+              />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis
                 tick={{ fontSize: 11 }}

@@ -24,7 +24,7 @@ import { Badge, StatusBadge } from '@/components/ui';
 import { Input } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
+import { ResponsiveTable, type ColumnDef } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, formatTime, fetchApiData } from '@/shared/utils';
 
@@ -309,6 +309,93 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
     return publishers.find((p) => p.name === selectedPublisher);
   }, [publishers, selectedPublisher]);
 
+  const publisherColumns: ColumnDef<Publisher>[] = useMemo(
+    () => [
+      {
+        key: 'name',
+        header: t('pyth.publisher.name'),
+        priority: 'primary',
+        render: (value, row) => (
+          <div className="flex items-center gap-2">
+            <span className="truncate font-semibold">{value as string}</span>
+            {publisherAnomalyMap.get(row.name) && (
+              <AlertTriangle className="h-4 w-4 text-amber-500" />
+            )}
+          </div>
+        ),
+      },
+      {
+        key: 'trustScore',
+        header: t('pyth.publisher.trustScore'),
+        priority: 'primary',
+        render: (_value, row) => (
+          <div className="flex items-center gap-2">
+            <div className="relative h-2 w-20 overflow-hidden rounded-full bg-muted">
+              <span
+                className={cn(
+                  'absolute inset-y-0 left-0 rounded-full transition-all',
+                  getTrustScoreColor(row.trustScore),
+                )}
+                style={{ width: `${row.trustScore}%` }}
+              />
+            </div>
+            <span className={cn('text-sm font-medium', getTrustScoreTextColor(row.trustScore))}>
+              {row.trustScore}%
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: 'publishFrequency',
+        header: t('pyth.publisher.frequency'),
+        priority: 'secondary',
+        render: (value) => (
+          <span className="font-mono text-sm">{(value as number).toFixed(1)}s</span>
+        ),
+      },
+      {
+        key: 'supportedSymbols',
+        header: t('pyth.publisher.symbols'),
+        priority: 'secondary',
+        render: (value) => (
+          <div className="flex flex-wrap gap-1">
+            {(value as string[]).slice(0, 3).map((symbol) => (
+              <Badge key={symbol} variant="outline" className="text-xs">
+                {symbol}
+              </Badge>
+            ))}
+            {(value as string[]).length > 3 && (
+              <Badge variant="secondary" className="text-xs">
+                +{(value as string[]).length - 3}
+              </Badge>
+            )}
+          </div>
+        ),
+      },
+      {
+        key: 'status',
+        header: t('pyth.publisher.status'),
+        priority: 'primary',
+        render: (value) => (
+          <StatusBadge
+            status={value === 'active' ? 'active' : 'inactive'}
+            text={value === 'active' ? t('common.active') : t('common.inactive')}
+            size="sm"
+          />
+        ),
+      },
+      {
+        key: 'lastPublish',
+        header: t('pyth.publisher.lastPublish'),
+        priority: 'tertiary',
+        render: (value) => (
+          <span className="text-sm text-muted-foreground">{formatTime(value as string)}</span>
+        ),
+      },
+    ],
+    [t, publisherAnomalyMap],
+  );
+
   if (isLoading) {
     return (
       <ContentSection className={className}>
@@ -561,94 +648,15 @@ export function PublisherMonitor({ className }: PublisherMonitorProps) {
         </div>
 
         <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('pyth.publisher.name')}</TableHead>
-                <TableHead>{t('pyth.publisher.trustScore')}</TableHead>
-                <TableHead>{t('pyth.publisher.frequency')}</TableHead>
-                <TableHead>{t('pyth.publisher.symbols')}</TableHead>
-                <TableHead>{t('pyth.publisher.status')}</TableHead>
-                <TableHead>{t('pyth.publisher.lastPublish')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredPublishers.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    <p className="text-muted-foreground">{t('common.noResults')}</p>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredPublishers.map((publisher) => (
-                  <TableRow key={publisher.name} className="group cursor-pointer hover:bg-muted/50">
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="truncate font-semibold">{publisher.name}</span>
-                        {publisherAnomalyMap.get(publisher.name) && (
-                          <AlertTriangle className="h-4 w-4 text-amber-500" />
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="relative h-2 w-20 overflow-hidden rounded-full bg-muted">
-                          <span
-                            className={cn(
-                              'absolute inset-y-0 left-0 rounded-full transition-all',
-                              getTrustScoreColor(publisher.trustScore),
-                            )}
-                            style={{ width: `${publisher.trustScore}%` }}
-                          />
-                        </div>
-                        <span
-                          className={cn(
-                            'text-sm font-medium',
-                            getTrustScoreTextColor(publisher.trustScore),
-                          )}
-                        >
-                          {publisher.trustScore}%
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono text-sm">
-                        {publisher.publishFrequency.toFixed(1)}s
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {publisher.supportedSymbols.slice(0, 3).map((symbol) => (
-                          <Badge key={symbol} variant="outline" className="text-xs">
-                            {symbol}
-                          </Badge>
-                        ))}
-                        {publisher.supportedSymbols.length > 3 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{publisher.supportedSymbols.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge
-                        status={publisher.status === 'active' ? 'active' : 'inactive'}
-                        text={
-                          publisher.status === 'active' ? t('common.active') : t('common.inactive')
-                        }
-                        size="sm"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {formatTime(publisher.lastPublish)}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <ResponsiveTable
+            columns={publisherColumns}
+            data={filteredPublishers}
+            breakpoint="md"
+            cardTitleField="name"
+            cardSubtitleField="trustScore"
+            rowKeyField="name"
+            emptyMessage={t('common.noResults')}
+          />
         </div>
       </div>
     </ContentSection>

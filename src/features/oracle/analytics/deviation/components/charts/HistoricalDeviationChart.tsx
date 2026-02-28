@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import type { PriceHistoryRecord } from '@/features/oracle/analytics/deviation/hooks/usePriceHistory';
 import { useI18n } from '@/i18n';
+import { CHART_GRID } from '@/lib/chart-config';
 
 interface HistoricalDeviationChartProps {
   data: PriceHistoryRecord[];
@@ -86,7 +87,11 @@ export function HistoricalDeviationChart({ data, isLoading }: HistoricalDeviatio
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <CartesianGrid
+                strokeDasharray={CHART_GRID.strokeDasharray}
+                className={CHART_GRID.className}
+                vertical={CHART_GRID.vertical}
+              />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 10 }}

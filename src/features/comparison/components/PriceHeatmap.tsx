@@ -77,10 +77,10 @@ export const PriceHeatmap = memo(function PriceHeatmap({
 
     return {
       ...data,
-      protocols: data.protocols.filter((p) => selectedProtocols.includes(p)),
-      rows: data.rows.map((row) => ({
+      protocols: (data.protocols || []).filter((p) => selectedProtocols.includes(p)),
+      rows: (data.rows || []).map((row) => ({
         ...row,
-        cells: row.cells.filter((cell) => selectedProtocols.includes(cell.protocol)),
+        cells: (row.cells || []).filter((cell) => selectedProtocols.includes(cell.protocol)),
       })),
     };
   }, [data, selectedProtocols]);
@@ -202,7 +202,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                   <div className="w-20 flex-shrink-0 border-b border-r bg-muted/30 p-1.5 sm:w-28 sm:p-2">
                     <div className="text-xs font-medium sm:text-sm">{row.symbol}</div>
                     <div className="hidden text-xs text-muted-foreground sm:block">
-                      {formatHeatmapPrice(row.consensusPrice)}
+                      {row.consensusPrice && formatHeatmapPrice(row.consensusPrice)}
                     </div>
                   </div>
 

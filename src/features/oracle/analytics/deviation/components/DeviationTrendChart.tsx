@@ -19,6 +19,7 @@ import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
+import { CHART_GRID } from '@/lib/chart-config';
 import { getDeviationColor } from '@/shared/utils/format/percentage';
 
 import type { PriceDeviationPoint } from '../types/deviation';
@@ -329,7 +330,11 @@ export function DeviationTrendChart({ dataPoints }: DeviationTrendChartProps) {
                     <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <CartesianGrid
+                  strokeDasharray={CHART_GRID.strokeDasharray}
+                  className={CHART_GRID.className}
+                  vertical={CHART_GRID.vertical}
+                />
                 <XAxis
                   dataKey="time"
                   tick={{ fontSize: isMobile ? 9 : 11 }}
