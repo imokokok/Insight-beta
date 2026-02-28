@@ -114,8 +114,8 @@ export const defaultNavConfig: SidebarConfig = {
   defaultCollapsed: false,
   groups: [
     {
-      id: 'oracleMonitoring',
-      label: 'nav.groups.oracleMonitoring',
+      id: 'comprehensiveView',
+      label: 'nav.groups.comprehensiveView',
       collapsible: false,
       items: [
         {
@@ -139,18 +139,11 @@ export const defaultNavConfig: SidebarConfig = {
           icon: Shield,
           description: 'nav.descriptions.reliability',
         },
-        {
-          id: 'explore',
-          label: 'nav.explore',
-          href: '/explore',
-          icon: Compass,
-          description: 'nav.descriptions.explore',
-        },
       ],
     },
     {
-      id: 'protocolAnalysis',
-      label: 'nav.groups.protocolAnalysis',
+      id: 'protocolMonitor',
+      label: 'nav.groups.protocolMonitor',
       collapsible: false,
       items: [
         {
@@ -191,10 +184,17 @@ export const defaultNavConfig: SidebarConfig = {
       ],
     },
     {
-      id: 'tools',
-      label: 'nav.groups.tools',
+      id: 'exploreTools',
+      label: 'nav.groups.exploreTools',
       collapsible: false,
       items: [
+        {
+          id: 'explore',
+          label: 'nav.explore',
+          href: '/explore',
+          icon: Compass,
+          description: 'nav.descriptions.explore',
+        },
         {
           id: 'alerts',
           label: 'nav.alertsCenter',

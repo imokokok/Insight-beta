@@ -3,8 +3,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 import {
-  BarChart3,
-  Layers,
   User,
   Sparkles,
   TrendingUp,
@@ -16,7 +14,6 @@ import {
 import { Button } from '@/components/ui';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import {
-  MarketOverview,
   TrendingFeeds,
   DataDiscovery,
   GlobalSearch,
@@ -24,35 +21,20 @@ import {
 } from '@/features/explore/components';
 import { MobileFilterSheet } from '@/features/explore/components/MobileFilterSheet';
 import type { TrendingSortBy } from '@/features/explore/types';
-import { ProtocolExplorer, AddressExplorer } from '@/features/oracle/components';
+import { AddressExplorer } from '@/features/oracle/components';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useI18n } from '@/i18n';
 
 export default function ExplorePage() {
   const { t } = useI18n();
   const isMobile = useIsMobile();
-  const [activeTab, setActiveTab] = useState('market-overview');
+  const [activeTab, setActiveTab] = useState('address');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState<TrendingSortBy>('volume');
   const tabsListRef = useRef<HTMLDivElement>(null);
   const [showScrollButtons, setShowScrollButtons] = useState(false);
 
   const tabs = [
-    {
-      value: 'market-overview',
-      label: t('explore.tabs.marketOverview'),
-      icon: BarChart3,
-    },
-    {
-      value: 'trending',
-      label: t('explore.tabs.trending'),
-      icon: TrendingUp,
-    },
-    {
-      value: 'protocols',
-      label: t('explore.tabs.protocols'),
-      icon: Layers,
-    },
     {
       value: 'address',
       label: t('explore.tabs.address'),
@@ -62,6 +44,11 @@ export default function ExplorePage() {
       value: 'discovery',
       label: t('explore.tabs.discovery'),
       icon: Sparkles,
+    },
+    {
+      value: 'trending',
+      label: t('explore.tabs.trending'),
+      icon: TrendingUp,
     },
   ];
 
@@ -203,24 +190,16 @@ export default function ExplorePage() {
             </div>
           )}
 
-          <TabsContent value="market-overview" className="mt-0">
-            <MarketOverview />
-          </TabsContent>
-
-          <TabsContent value="trending" className="mt-0">
-            <TrendingFeeds initialSortBy={sortBy} />
-          </TabsContent>
-
-          <TabsContent value="protocols" className="mt-0">
-            <ProtocolExplorer />
-          </TabsContent>
-
           <TabsContent value="address" className="mt-0">
             <AddressExplorer />
           </TabsContent>
 
           <TabsContent value="discovery" className="mt-0">
             <DataDiscovery />
+          </TabsContent>
+
+          <TabsContent value="trending" className="mt-0">
+            <TrendingFeeds initialSortBy={sortBy} />
           </TabsContent>
         </Tabs>
       </div>
