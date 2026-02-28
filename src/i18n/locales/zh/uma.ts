@@ -1,0 +1,52 @@
+export const uma = {
+  title: 'UMA 乐观预言机',
+  description: '乐观预言机争议仲裁与断言验证分析',
+  tabs: {
+    overview: '概览',
+    assertions: '断言',
+    voters: '投票者',
+    analysis: '分析',
+  },
+  kpi: {
+    totalAssertions: '总断言数',
+    totalAssertionsDesc: '所有时间的断言总数',
+    pending: '待处理',
+    pendingDesc: '等待解决的断言',
+    disputed: '争议中',
+    disputedDesc: '正在争议的断言',
+    tvl: '总锁定价值',
+    tvlDesc: 'UMA 协议中的总锁定价值',
+  },
+  overview: {
+    recentActivity: '近期活动',
+    stats: '统计数据',
+    totalResolved: '已解决总数',
+    successRate: '成功率',
+    avgBond: '平均保证金',
+  },
+  assertions: {
+    title: '断言列表',
+    identifier: '标识符',
+    status: '状态',
+    bond: '保证金',
+    chain: '链',
+    timestamp: '时间',
+  },
+  voters: {
+    title: '投票者排行',
+    address: '地址',
+    totalVotes: '总投票数',
+    successRate: '成功率',
+    reputation: '信誉值',
+  },
+  analysis: {
+    statusDistribution: '状态分布',
+    chainDistribution: '链分布',
+  },
+  status: {
+    pending: '待处理',
+    disputed: '争议中',
+    resolved: '已解决',
+    settled: '已结算',
+  },
+};

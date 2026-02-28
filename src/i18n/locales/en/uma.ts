@@ -1,0 +1,52 @@
+export const uma = {
+  title: 'UMA Optimistic Oracle',
+  description: 'Optimistic oracle dispute resolution and assertion verification analysis',
+  tabs: {
+    overview: 'Overview',
+    assertions: 'Assertions',
+    voters: 'Voters',
+    analysis: 'Analysis',
+  },
+  kpi: {
+    totalAssertions: 'Total Assertions',
+    totalAssertionsDesc: 'Total assertions of all time',
+    pending: 'Pending',
+    pendingDesc: 'Assertions awaiting resolution',
+    disputed: 'Disputed',
+    disputedDesc: 'Assertions currently in dispute',
+    tvl: 'Total Value Locked',
+    tvlDesc: 'Total value locked in UMA protocol',
+  },
+  overview: {
+    recentActivity: 'Recent Activity',
+    stats: 'Statistics',
+    totalResolved: 'Total Resolved',
+    successRate: 'Success Rate',
+    avgBond: 'Average Bond',
+  },
+  assertions: {
+    title: 'Assertions List',
+    identifier: 'Identifier',
+    status: 'Status',
+    bond: 'Bond',
+    chain: 'Chain',
+    timestamp: 'Timestamp',
+  },
+  voters: {
+    title: 'Voters Leaderboard',
+    address: 'Address',
+    totalVotes: 'Total Votes',
+    successRate: 'Success Rate',
+    reputation: 'Reputation',
+  },
+  analysis: {
+    statusDistribution: 'Status Distribution',
+    chainDistribution: 'Chain Distribution',
+  },
+  status: {
+    pending: 'Pending',
+    disputed: 'Disputed',
+    resolved: 'Resolved',
+    settled: 'Settled',
+  },
+};

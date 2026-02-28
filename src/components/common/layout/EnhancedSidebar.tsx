@@ -30,6 +30,7 @@ import {
   GitBranch,
   Link2,
   Zap,
+  Gavel,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui';
@@ -165,6 +166,13 @@ export const defaultNavConfig: SidebarConfig = {
               href: '/protocols/band',
               icon: GitBranch,
               description: 'nav.descriptions.bandAnalysis',
+            },
+            {
+              id: 'uma',
+              label: 'nav.uma',
+              href: '/protocols/uma',
+              icon: Gavel,
+              description: 'nav.descriptions.umaAnalysis',
             },
           ],
         },

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { logger } from '@/shared/logger';
 
-export type ProtocolType = 'chainlink' | 'pyth' | 'api3' | 'band' | 'umapro' | 'dia';
+export type ProtocolType = 'chainlink' | 'pyth' | 'api3' | 'band' | 'uma' | 'umapro' | 'dia';
 
 export interface ProtocolDataConfig<T> {
   protocol: ProtocolType;

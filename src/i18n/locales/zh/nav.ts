@@ -26,6 +26,7 @@ export const nav = {
   band: 'Band Protocol',
   chainlink: 'Chainlink',
   pyth: 'Pyth Network',
+  uma: 'UMA',
   api3Analysis: 'API3 分析',
   bandAnalysis: 'Band 分析',
   chainlinkAnalysis: 'Chainlink 分析',

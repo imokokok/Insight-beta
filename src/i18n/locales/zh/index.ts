@@ -19,6 +19,7 @@ import { protocol } from './protocol';
 import { protocols } from './protocols';
 import { pyth } from './pyth';
 import { security } from './security';
+import { uma } from './uma';
 import { wallet } from './wallet';
 
 export const zhTranslations = {
@@ -43,6 +44,7 @@ export const zhTranslations = {
   protocols,
   pyth,
   security,
+  uma,
   wallet,
 };
 

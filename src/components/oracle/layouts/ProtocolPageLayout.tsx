@@ -448,7 +448,7 @@ function useTabNavigation({
 }
 
 export interface ProtocolPageLayoutProps {
-  protocol: 'chainlink' | 'pyth' | 'api3' | 'band';
+  protocol: 'chainlink' | 'pyth' | 'api3' | 'band' | 'uma';
   title: string;
   icon: React.ReactNode;
   description: string;
@@ -477,6 +477,7 @@ const PROTOCOL_COLORS: Record<string, { primary: string; bg: string }> = {
   pyth: { primary: 'text-purple-600', bg: 'bg-purple-500/10' },
   api3: { primary: 'text-green-600', bg: 'bg-green-500/10' },
   band: { primary: 'text-orange-600', bg: 'bg-orange-500/10' },
+  uma: { primary: 'text-pink-600', bg: 'bg-pink-500/10' },
 };
 
 export function ProtocolPageLayout({
