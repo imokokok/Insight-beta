@@ -8,18 +8,19 @@ import { parseAndValidate } from '@/lib/api/validation/validate';
 export async function GET() {
   try {
     const channels = await fetchChannels();
-    if (channels.length === 0) {
-      return ok({
-        channels: mockChannels,
-        total: mockChannels.length,
-        timestamp: new Date().toISOString(),
-      });
-    }
-    return ok({
-      channels,
-      total: channels.length,
-      timestamp: new Date().toISOString(),
-    });
+
+    const isDev = process.env.NODE_ENV === 'development';
+    const responseData =
+      channels.length === 0 && isDev
+        ? {
+            channels: mockChannels,
+            total: mockChannels.length,
+            isMock: true,
+            timestamp: new Date().toISOString(),
+          }
+        : { channels, total: channels.length, timestamp: new Date().toISOString() };
+
+    return ok(responseData);
   } catch (err) {
     console.error('Failed to fetch channels:', err);
     return error({ code: 'FETCH_ERROR', message: 'Failed to fetch channels' }, 500);

@@ -33,12 +33,15 @@ export interface ProtocolRanking {
 }
 
 export function calculateAccuracyScore(avgDeviation: number): number {
-  const score = 100 - avgDeviation * 1000;
+  const absDeviation = Math.abs(avgDeviation);
+  const score = 100 - absDeviation * 1000;
   return Math.max(0, Math.min(100, score));
 }
 
 export function calculateLatencyScore(avgLatencyMs: number): number {
-  const score = 100 - Math.min(avgLatencyMs / 10, 100);
+  if (avgLatencyMs <= 0) return 100;
+  if (avgLatencyMs >= 1000) return 0;
+  const score = 100 - (Math.log10(avgLatencyMs + 1) / Math.log10(1001)) * 100;
   return Math.max(0, Math.min(100, score));
 }
 
@@ -111,11 +114,16 @@ export async function calculateReliabilityMetrics(
   const deviationMax = row.deviation_max ? parseFloat(row.deviation_max) : 0;
   const deviationMin = row.deviation_min ? parseFloat(row.deviation_min) : 0;
   const latencyAvgMs = row.latency_avg_ms ? parseFloat(row.latency_avg_ms) : 0;
-  const successCount = parseInt(row.success_count, 10);
-  const totalCount = parseInt(row.total_count, 10);
+  const successCount = parseInt(row.success_count, 10) || 0;
+  const totalCount = parseInt(row.total_count, 10) || 0;
 
-  const accuracyScore = calculateAccuracyScore(deviationAvg);
-  const latencyScore = calculateLatencyScore(latencyAvgMs);
+  const safeDeviationAvg = Number.isNaN(deviationAvg) ? 0 : deviationAvg;
+  const safeDeviationMax = Number.isNaN(deviationMax) ? 0 : deviationMax;
+  const safeDeviationMin = Number.isNaN(deviationMin) ? 0 : deviationMin;
+  const safeLatencyAvgMs = Number.isNaN(latencyAvgMs) ? 0 : latencyAvgMs;
+
+  const accuracyScore = calculateAccuracyScore(safeDeviationAvg);
+  const latencyScore = calculateLatencyScore(safeLatencyAvgMs);
   const availabilityScore = calculateAvailabilityScore(successCount, totalCount);
   const overallScore = calculateOverallScore(accuracyScore, latencyScore, availabilityScore);
 
@@ -129,10 +137,10 @@ export async function calculateReliabilityMetrics(
     accuracyScore: Math.round(accuracyScore * 100) / 100,
     latencyScore: Math.round(latencyScore * 100) / 100,
     availabilityScore: Math.round(availabilityScore * 100) / 100,
-    deviationAvg,
-    deviationMax,
-    deviationMin,
-    latencyAvgMs,
+    deviationAvg: safeDeviationAvg,
+    deviationMax: safeDeviationMax,
+    deviationMin: safeDeviationMin,
+    latencyAvgMs: safeLatencyAvgMs,
     successCount,
     totalCount,
     sampleCount: totalCount,
@@ -187,7 +195,10 @@ export async function insertReliabilityScore(
     ],
   );
 
-  return result.rows[0]!.id;
+  if (!result.rows[0]) {
+    throw new Error('Failed to insert reliability score: no result returned');
+  }
+  return result.rows[0].id;
 }
 
 export async function calculateAndStoreReliabilityScores(

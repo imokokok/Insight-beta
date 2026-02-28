@@ -10,6 +10,92 @@ import type { OracleProtocol } from '@/types/oracle/protocol';
 
 const SUPPORTED_CHAIN_IDS = SUPPORTED_CHAINS.map((c) => c.id);
 
+const VALID_ALERT_EVENTS: readonly AlertEvent[] = [
+  'price_deviation',
+  'price_stale',
+  'price_volatility_spike',
+  'price_update_failed',
+  'assertion_created',
+  'assertion_expiring',
+  'assertion_disputed',
+  'assertion_settled',
+  'dispute_created',
+  'dispute_resolved',
+  'voting_period_ending',
+  'sync_error',
+  'sync_stale',
+  'rpc_failure',
+  'contract_error',
+  'high_latency',
+  'low_uptime',
+  'rate_limit_hit',
+  'liveness_expiring',
+  'contract_paused',
+  'sync_backlog',
+  'backlog_assertions',
+  'backlog_disputes',
+  'market_stale',
+  'execution_delayed',
+  'low_participation',
+  'high_vote_divergence',
+  'high_dispute_rate',
+  'slow_api_request',
+  'high_error_rate',
+  'database_slow_query',
+  'low_gas',
+] as const;
+
+const VALID_ALERT_SEVERITIES: readonly AlertSeverity[] = [
+  'low',
+  'medium',
+  'high',
+  'critical',
+  'info',
+  'warning',
+  'emergency',
+] as const;
+
+const VALID_CHANNELS = ['webhook', 'email', 'telegram', 'slack', 'pagerduty'] as const;
+
+function validateAlertEvent(event: string): AlertEvent {
+  if (VALID_ALERT_EVENTS.includes(event as AlertEvent)) {
+    return event as AlertEvent;
+  }
+  logger.warn(`Invalid alert event: ${event}, falling back to default 'price_deviation'`);
+  return 'price_deviation';
+}
+
+function validateAlertSeverity(severity: string): AlertSeverity {
+  if (VALID_ALERT_SEVERITIES.includes(severity as AlertSeverity)) {
+    return severity as AlertSeverity;
+  }
+  logger.warn(`Invalid alert severity: ${severity}, falling back to default 'warning'`);
+  return 'warning';
+}
+
+function validateProtocols(protocols: unknown): OracleProtocol[] | undefined {
+  if (!Array.isArray(protocols)) return undefined;
+  if (protocols.length === 0) return undefined;
+  return protocols.filter((p): p is OracleProtocol => typeof p === 'string');
+}
+
+function validateChains(chains: unknown): SupportedChain[] | undefined {
+  if (!Array.isArray(chains)) return undefined;
+  const validChains = chains.filter(
+    (c): c is SupportedChain =>
+      typeof c === 'string' && SUPPORTED_CHAIN_IDS.includes(c as SupportedChain),
+  );
+  return validChains.length > 0 ? validChains : undefined;
+}
+
+function validateChannels(channels: unknown): AlertRule['channels'] | undefined {
+  if (!Array.isArray(channels)) return undefined;
+  const validChannels = channels.filter((c): c is (typeof VALID_CHANNELS)[number] =>
+    VALID_CHANNELS.includes(c as (typeof VALID_CHANNELS)[number]),
+  );
+  return validChannels.length > 0 ? (validChannels as AlertRule['channels']) : undefined;
+}
+
 function generateId(): string {
   return `rule-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
@@ -99,13 +185,13 @@ export async function createAlertRule(data: CreateRuleData): Promise<AlertRule> 
     id,
     name: data.name,
     enabled,
-    event: data.event as AlertEvent,
-    severity: severity as AlertSeverity,
-    protocols: data.protocols as OracleProtocol[] | undefined,
-    chains: data.chains as SupportedChain[] | undefined,
+    event: validateAlertEvent(data.event),
+    severity: validateAlertSeverity(severity),
+    protocols: validateProtocols(data.protocols),
+    chains: validateChains(data.chains),
     symbols: data.symbols,
     params: data.params,
-    channels: data.channels as AlertRule['channels'],
+    channels: validateChannels(data.channels),
     recipients: data.recipients,
     cooldownMinutes: data.cooldownMinutes ?? 5,
     maxNotificationsPerHour: data.maxNotificationsPerHour ?? 10,
@@ -186,14 +272,14 @@ export async function updateAlertRule(id: string, data: UpdateRuleData): Promise
         id,
         name: updatedRule.name,
         enabled: updatedRule.enabled,
-        event: updatedRule.event as AlertEvent,
-        severity: updatedRule.severity as AlertSeverity,
-        protocols: (updatedRule.protocols as OracleProtocol[]) ?? undefined,
-        chains: (updatedRule.chains as SupportedChain[]) ?? undefined,
+        event: validateAlertEvent(updatedRule.event),
+        severity: validateAlertSeverity(updatedRule.severity),
+        protocols: validateProtocols(updatedRule.protocols),
+        chains: validateChains(updatedRule.chains),
         instances: updatedRule.instances ?? undefined,
         symbols: updatedRule.symbols ?? undefined,
         params: updatedRule.params ? JSON.parse(updatedRule.params as string) : undefined,
-        channels: (updatedRule.channels as AlertRule['channels']) ?? undefined,
+        channels: validateChannels(updatedRule.channels),
         recipients: updatedRule.recipients ?? undefined,
         cooldownMinutes: updatedRule.cooldown_minutes ?? undefined,
         maxNotificationsPerHour: updatedRule.max_notifications_per_hour ?? undefined,

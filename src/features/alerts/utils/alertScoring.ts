@@ -55,12 +55,21 @@ export function calculateFreshnessScore(timestamp: string): number {
   const now = Date.now();
   const hoursDiff = (now - alertTime) / (1000 * 60 * 60);
 
-  if (hoursDiff <= 1) {
+  if (hoursDiff <= 0) {
     return 50;
   }
 
-  const score = 50 - Math.floor(hoursDiff - 1) * 5;
-  return Math.max(0, score);
+  if (hoursDiff >= 24) {
+    return 0;
+  }
+
+  // 使用指数衰减: score = 50 * e^(-k * hours)
+  // 其中 k 选择使得 12 小时时得分约为 10
+  // 50 * e^(-k * 12) = 10 => k ≈ 0.134
+  const k = 0.134;
+  const score = 50 * Math.exp(-k * hoursDiff);
+
+  return Math.max(0, Math.round(score));
 }
 
 export function calculateAlertScore(alert: UnifiedAlert): AlertScore {

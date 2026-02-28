@@ -86,9 +86,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (!realtimePriceService.listenerCount('started')) {
-    realtimePriceService.start();
-  }
+  realtimePriceService.start();
 
   const response = new Response(
     new ReadableStream({

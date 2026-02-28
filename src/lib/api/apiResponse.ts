@@ -208,9 +208,15 @@ export async function requireAdminWithToken(
   const aBuf = Buffer.from(token);
   const bBuf = Buffer.from(adminToken);
 
+  const maxLen = Math.max(aBuf.length, bBuf.length);
+  const aPadded = Buffer.alloc(maxLen);
+  const bPadded = Buffer.alloc(maxLen);
+  aBuf.copy(aPadded);
+  bBuf.copy(bPadded);
+
   let isValid = false;
   try {
-    isValid = aBuf.length === bBuf.length && crypto.timingSafeEqual(aBuf, bBuf);
+    isValid = crypto.timingSafeEqual(aPadded, bPadded) && aBuf.length === bBuf.length;
   } catch {
     return error(
       new AppError('Unauthorized', {

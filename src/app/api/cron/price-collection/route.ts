@@ -10,35 +10,44 @@ import { AppError } from '@/lib/errors';
 import { logger } from '@/shared/logger';
 
 const CRON_SECRET = process.env.CRON_SECRET;
+const isDevelopment = process.env.NODE_ENV === 'development';
 
-function verifyCronRequest(request: NextRequest): boolean {
+function verifyCronRequest(request: NextRequest): { valid: boolean; reason?: string } {
   const authHeader = request.headers.get('authorization');
 
   if (CRON_SECRET) {
     const expectedAuth = `Bearer ${CRON_SECRET}`;
     if (authHeader !== expectedAuth) {
-      return false;
+      return { valid: false, reason: 'invalid_bearer_token' };
     }
-    return true;
+    return { valid: true };
   }
 
-  const isVercelCron = request.headers.get('x-vercel-cron') === 'true';
+  if (isDevelopment) {
+    const isLocalRequest =
+      request.headers.get('host')?.includes('localhost') ||
+      request.headers.get('x-forwarded-for') === '127.0.0.1';
 
-  if (isVercelCron) {
-    return true;
+    if (isLocalRequest) {
+      return { valid: true };
+    }
+    return { valid: false, reason: 'non_local_request_in_dev' };
   }
 
-  return false;
+  return { valid: false, reason: 'cron_secret_not_configured' };
 }
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    if (!verifyCronRequest(request)) {
+    const verification = verifyCronRequest(request);
+    if (!verification.valid) {
       logger.warn('Unauthorized cron request attempt', {
+        reason: verification.reason,
         hasAuthHeader: !!request.headers.get('authorization'),
-        isVercelCron: request.headers.get('x-vercel-cron'),
+        host: request.headers.get('host'),
+        xForwardedFor: request.headers.get('x-forwarded-for'),
       });
       return error(
         new AppError('Unauthorized', {

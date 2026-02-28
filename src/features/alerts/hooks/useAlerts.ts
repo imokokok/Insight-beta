@@ -98,23 +98,19 @@ export function useAlerts(options: UseAlertsOptions = {}): UseAlertsReturn {
     setTimeUntilRefresh(refreshInterval);
   }, [mutate, showToast, showError, refreshInterval]);
 
-  useEffect(() => {
-    if (!autoEnabled) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      if (countdownRef.current) {
-        clearInterval(countdownRef.current);
-        countdownRef.current = null;
-      }
-      return;
+  const clearAllIntervals = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
+  }, []);
 
-    intervalRef.current = setInterval(() => {
-      refresh();
-    }, refreshInterval);
-
+  const startIntervals = useCallback(() => {
+    intervalRef.current = setInterval(refresh, refreshInterval);
     countdownRef.current = setInterval(() => {
       setTimeUntilRefresh((prev) => {
         if (prev <= 1000) {
@@ -123,45 +119,33 @@ export function useAlerts(options: UseAlertsOptions = {}): UseAlertsReturn {
         return prev - 1000;
       });
     }, 1000);
+  }, [refresh, refreshInterval]);
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      if (countdownRef.current) {
-        clearInterval(countdownRef.current);
-      }
-    };
-  }, [autoEnabled, refreshInterval, refresh]);
+  useEffect(() => {
+    clearAllIntervals();
+
+    if (!autoEnabled) {
+      return;
+    }
+
+    startIntervals();
+
+    return clearAllIntervals;
+  }, [autoEnabled, clearAllIntervals, startIntervals]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-        if (countdownRef.current) {
-          clearInterval(countdownRef.current);
-          countdownRef.current = null;
-        }
+        clearAllIntervals();
       } else if (autoEnabled) {
         refresh();
-        intervalRef.current = setInterval(refresh, refreshInterval);
-        countdownRef.current = setInterval(() => {
-          setTimeUntilRefresh((prev) => {
-            if (prev <= 1000) {
-              return refreshInterval;
-            }
-            return prev - 1000;
-          });
-        }, 1000);
+        startIntervals();
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [autoEnabled, refreshInterval, refresh]);
+  }, [autoEnabled, clearAllIntervals, startIntervals, refresh]);
 
   return {
     loading: isLoading,

@@ -1,6 +1,8 @@
 import type { AlertStatus } from '@/features/alerts/types';
-import { query } from '@/lib/database/db';
+import { getClient } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
+
+import type pg from 'pg';
 
 export interface BatchActionRequest {
   action: 'acknowledge' | 'resolve' | 'silence';
@@ -14,6 +16,7 @@ export interface BatchResult {
   alertId: string;
   success: boolean;
   error?: string;
+  source?: 'main' | 'override' | 'none';
 }
 
 export interface BatchActionResult {
@@ -21,6 +24,12 @@ export interface BatchActionResult {
   failed: number;
   results: BatchResult[];
   message: string;
+}
+
+export interface UpdateResult {
+  success: boolean;
+  source: 'main' | 'override' | 'none';
+  message?: string;
 }
 
 function getBatchActionMessage(action: string, processed: number, failed: number): string {
@@ -56,7 +65,8 @@ function mapStatusToDb(status: AlertStatus): string {
   return statusMap[status] || 'open';
 }
 
-async function upsertAlertStatusOverride(
+async function upsertAlertStatusOverrideWithClient(
+  client: pg.PoolClient,
   alertId: string,
   status: string,
   note?: string,
@@ -65,7 +75,7 @@ async function upsertAlertStatusOverride(
 ): Promise<void> {
   const now = new Date().toISOString();
 
-  await query(
+  await client.query(
     `INSERT INTO alert_status_overrides (alert_id, status, note, silenced_until, updated_by, updated_at, created_at)
      VALUES ($1, $2, $3, $4, $5, $6, $6)
      ON CONFLICT (alert_id) DO UPDATE SET
@@ -78,7 +88,8 @@ async function upsertAlertStatusOverride(
   );
 }
 
-async function updateAlertInDb(
+async function updateAlertInDbWithClient(
+  client: pg.PoolClient,
   alertId: string,
   action: string,
   dbStatus: string,
@@ -86,25 +97,25 @@ async function updateAlertInDb(
   silencedUntil: string | undefined,
   userId: string | undefined,
   now: string,
-): Promise<boolean> {
+): Promise<UpdateResult> {
   let updateResult;
 
   if (action === 'acknowledge') {
-    updateResult = await query(
+    updateResult = await client.query(
       `UPDATE unified_alerts 
        SET status = $1, acknowledged_by = $2, acknowledged_at = $3, updated_at = $3
        WHERE id = $4`,
       [dbStatus, userId || null, now, alertId],
     );
   } else if (action === 'resolve') {
-    updateResult = await query(
+    updateResult = await client.query(
       `UPDATE unified_alerts 
        SET status = $1, resolved_by = $2, resolved_at = $3, updated_at = $3
        WHERE id = $4`,
       [dbStatus, userId || null, now, alertId],
     );
   } else {
-    updateResult = await query(
+    updateResult = await client.query(
       `UPDATE unified_alerts 
        SET status = $1, updated_at = $2
        WHERE id = $3`,
@@ -112,11 +123,20 @@ async function updateAlertInDb(
     );
   }
 
-  if (!updateResult.rowCount || updateResult.rowCount === 0) {
-    await upsertAlertStatusOverride(alertId, dbStatus, note, silencedUntil, userId);
+  if (updateResult.rowCount && updateResult.rowCount > 0) {
+    return {
+      success: true,
+      source: 'main',
+      message: `Updated alert ${alertId} in main table`,
+    };
   }
 
-  return true;
+  await upsertAlertStatusOverrideWithClient(client, alertId, dbStatus, note, silencedUntil, userId);
+  return {
+    success: true,
+    source: 'override',
+    message: `Alert ${alertId} not found in main table, created/updated override record`,
+  };
 }
 
 export async function processBatchAction(request: BatchActionRequest): Promise<BatchActionResult> {
@@ -133,31 +153,67 @@ export async function processBatchAction(request: BatchActionRequest): Promise<B
     silencedUntil = new Date(Date.now() + duration * 60 * 1000).toISOString();
   }
 
-  const results: BatchResult[] = [];
-  let processed = 0;
-  let failed = 0;
+  const client = await getClient();
 
-  for (const alertId of alertIds) {
-    try {
-      await updateAlertInDb(alertId, action, dbStatus, note, silencedUntil, userId, now);
-      results.push({ alertId, success: true });
-      processed++;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      results.push({ alertId, success: false, error: errorMessage });
-      failed++;
-      logger.warn(`Failed to process alert ${alertId}`, { error: err });
+  try {
+    await client.query('BEGIN');
+
+    const results: BatchResult[] = [];
+    let processed = 0;
+    let failed = 0;
+
+    for (const alertId of alertIds) {
+      try {
+        const result = await updateAlertInDbWithClient(
+          client,
+          alertId,
+          action,
+          dbStatus,
+          note,
+          silencedUntil,
+          userId,
+          now,
+        );
+        results.push({
+          alertId,
+          success: result.success,
+          source: result.source,
+        });
+        if (result.success) {
+          processed++;
+        } else {
+          failed++;
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        results.push({
+          alertId,
+          success: false,
+          error: errorMessage,
+          source: 'none',
+        });
+        failed++;
+        logger.warn(`Failed to process alert ${alertId}`, { error: err });
+      }
     }
+
+    await client.query('COMMIT');
+
+    const message = getBatchActionMessage(action, processed, failed);
+
+    return {
+      processed,
+      failed,
+      results,
+      message,
+    };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    logger.error('Batch action transaction failed, rolling back', { error: err });
+    throw err;
+  } finally {
+    client.release();
   }
-
-  const message = getBatchActionMessage(action, processed, failed);
-
-  return {
-    processed,
-    failed,
-    results,
-    message,
-  };
 }
 
 export function validateBatchRequest(request: unknown): request is BatchActionRequest {

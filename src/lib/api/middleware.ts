@@ -121,7 +121,6 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
       const startTime = Date.now();
       const requestId = crypto.randomUUID();
       const method = request.method;
-      const url = request.nextUrl.pathname;
 
       try {
         if (options.validate?.allowedMethods && !options.validate.allowedMethods.includes(method)) {
@@ -184,6 +183,10 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
           response.headers.set('X-RateLimit-Remaining', String(rateLimitRemaining));
         }
 
+        // 安全策略：日志记录前对敏感数据进行脱敏处理
+        // - URL 参数中的敏感字段（api_key, token, secret, password 等）会被替换为 '***'
+        // - 请求头中的敏感信息（authorization, cookie 等）不会被记录
+        // - 仅记录必要的请求元数据，不记录请求体内容
         if (options.log?.enabled) {
           const duration = Date.now() - startTime;
           logger.info('API Request', {
@@ -201,7 +204,7 @@ export function withMiddleware(options: ApiMiddlewareOptions) {
         logger.error('API Error', {
           requestId,
           method,
-          url,
+          url: sanitizeUrl(request.url),
           error: error instanceof Error ? error.message : String(error),
           duration: Date.now() - startTime,
         });

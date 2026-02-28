@@ -30,6 +30,18 @@ export interface FetchRealtimeOptions {
   protocols?: string;
 }
 
+function calculateMedian(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 0) {
+    const left = sorted[mid - 1] ?? 0;
+    const right = sorted[mid] ?? 0;
+    return (left + right) / 2;
+  }
+  return sorted[mid] ?? 0;
+}
+
 export async function fetchRealtime(
   options: FetchRealtimeOptions = {},
 ): Promise<RealtimeSymbolData[]> {
@@ -88,8 +100,7 @@ export async function fetchRealtime(
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
-    const sortedPrices = [...prices].sort((a, b) => a - b);
-    const median = sortedPrices[Math.floor(sortedPrices.length / 2)] ?? mean;
+    const median = calculateMedian(prices);
 
     return {
       symbol: comparison.symbol,
@@ -103,7 +114,7 @@ export async function fetchRealtime(
         min,
         max,
         absolute: max - min,
-        percent: (max - min) / median,
+        percent: median !== 0 ? (max - min) / median : 0,
       },
       lastUpdated: comparison.timestamp,
     };

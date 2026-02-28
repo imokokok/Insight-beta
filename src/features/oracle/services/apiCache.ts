@@ -112,10 +112,30 @@ class APICacheService {
     }
   }
 
+  private sortObjectKeys(obj: unknown): unknown {
+    if (obj === null || typeof obj !== 'object') {
+      return obj;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.sortObjectKeys(item));
+    }
+
+    const sorted: Record<string, unknown> = {};
+    const keys = Object.keys(obj as Record<string, unknown>).sort();
+    for (const key of keys) {
+      sorted[key] = this.sortObjectKeys((obj as Record<string, unknown>)[key]);
+    }
+    return sorted;
+  }
+
   generateCacheKey(params: Record<string, unknown>): string {
     const sorted = Object.keys(params)
       .sort()
-      .map((key) => `${key}=${JSON.stringify(params[key])}`)
+      .map((key) => {
+        const sortedValue = this.sortObjectKeys(params[key]);
+        return `${key}=${JSON.stringify(sortedValue)}`;
+      })
       .join('&');
     return sorted;
   }

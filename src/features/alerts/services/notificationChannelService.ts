@@ -190,6 +190,16 @@ export async function createChannel(
   }
 }
 
+export class OptimisticLockError extends Error {
+  constructor(
+    public channelId: string,
+    message: string = 'Concurrent update detected: the channel has been modified by another transaction',
+  ) {
+    super(message);
+    this.name = 'OptimisticLockError';
+  }
+}
+
 export async function updateChannel(
   input: UpdateNotificationChannelInput,
 ): Promise<NotificationChannel | null> {
@@ -201,6 +211,8 @@ export async function updateChannel(
   if (!existingChannel) {
     return null;
   }
+
+  const originalUpdatedAt = existingChannel.updatedAt;
 
   const updates: string[] = [];
   const values: (string | number | boolean | Date | null)[] = [];
@@ -240,12 +252,17 @@ export async function updateChannel(
   values.push(new Date());
 
   values.push(input.id);
+  values.push(new Date(originalUpdatedAt));
 
   try {
-    await query(
-      `UPDATE notification_channels SET ${updates.join(', ')} WHERE id = $${paramIndex}`,
+    const result = await query(
+      `UPDATE notification_channels SET ${updates.join(', ')} WHERE id = $${paramIndex++} AND updated_at = $${paramIndex}`,
       values,
     );
+
+    if (result.rowCount === null || result.rowCount === 0) {
+      throw new OptimisticLockError(input.id);
+    }
 
     const updatedChannel = await getChannelById(input.id);
 
@@ -256,6 +273,13 @@ export async function updateChannel(
 
     return updatedChannel;
   } catch (error) {
+    if (error instanceof OptimisticLockError) {
+      logger.warn('Optimistic lock conflict during channel update', {
+        channelId: input.id,
+        originalUpdatedAt,
+      });
+      throw error;
+    }
     logger.error('Failed to update notification channel', {
       error: error instanceof Error ? error.message : String(error),
       channelId: input.id,

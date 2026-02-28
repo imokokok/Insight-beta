@@ -21,6 +21,16 @@ export interface FetchAlertsResult {
   alerts: UnifiedAlert[];
   summary: AlertsSummary;
   timestamp: string;
+  partialFailure?: {
+    failedSymbols: string[];
+    hasPartialFailure: boolean;
+  };
+}
+
+interface CrossChainAlertsResult {
+  alerts: UnifiedAlert[];
+  failedSymbols: string[];
+  hasPartialFailure: boolean;
 }
 
 async function fetchPriceAnomalies(): Promise<UnifiedAlert[]> {
@@ -52,49 +62,68 @@ async function fetchPriceAnomalies(): Promise<UnifiedAlert[]> {
   }
 }
 
-async function fetchCrossChainAlerts(): Promise<UnifiedAlert[]> {
+async function fetchCrossChainAlerts(): Promise<CrossChainAlertsResult> {
   try {
     const symbols = [...SUPPORTED_SYMBOLS.TICKERS];
 
     const results = await Promise.allSettled(
       symbols.map(async (symbol) => {
         const alerts = await crossChainAnalysisService.detectDeviationAlerts(symbol);
-        return alerts.map((alert) => ({
-          id: `crosschain-${alert.id}`,
-          source: 'cross_chain' as AlertSource,
-          timestamp:
-            typeof alert.timestamp === 'string' ? alert.timestamp : alert.timestamp.toISOString(),
-          severity: normalizeSeverity(alert.severity),
-          status: normalizeStatus(alert.status),
-          title: `${alert.symbol} Cross-Chain Deviation`,
-          description: `Price deviation between ${alert.chainA} and ${alert.chainB}`,
-          symbol: alert.symbol,
-          chainA: alert.chainA,
-          chainB: alert.chainB,
-          deviation: alert.deviationPercent / 100,
-          priceA: alert.priceA,
-          priceB: alert.priceB,
-          avgPrice: alert.avgPrice,
-          reason: alert.reason,
-        }));
+        return { symbol, alerts };
       }),
     );
 
     const allAlerts: UnifiedAlert[] = [];
+    const failedSymbols: string[] = [];
+
     for (const result of results) {
       if (result.status === 'fulfilled') {
-        allAlerts.push(...result.value);
+        const { alerts } = result.value;
+        allAlerts.push(
+          ...alerts.map((alert) => ({
+            id: `crosschain-${alert.id}`,
+            source: 'cross_chain' as AlertSource,
+            timestamp:
+              typeof alert.timestamp === 'string' ? alert.timestamp : alert.timestamp.toISOString(),
+            severity: normalizeSeverity(alert.severity),
+            status: normalizeStatus(alert.status),
+            title: `${alert.symbol} Cross-Chain Deviation`,
+            description: `Price deviation between ${alert.chainA} and ${alert.chainB}`,
+            symbol: alert.symbol,
+            chainA: alert.chainA,
+            chainB: alert.chainB,
+            deviation: alert.deviationPercent / 100,
+            priceA: alert.priceA,
+            priceB: alert.priceB,
+            avgPrice: alert.avgPrice,
+            reason: alert.reason,
+          })),
+        );
       } else {
+        const resultIndex = results.indexOf(result);
+        if (resultIndex >= 0 && resultIndex < symbols.length) {
+          failedSymbols.push(symbols[resultIndex]!);
+        }
         logger.warn('Failed to fetch cross-chain alerts for a symbol', {
+          symbol:
+            resultIndex >= 0 && resultIndex < symbols.length ? symbols[resultIndex]! : 'unknown',
           error: result.reason instanceof Error ? result.reason.message : String(result.reason),
         });
       }
     }
 
-    return allAlerts;
+    return {
+      alerts: allAlerts,
+      failedSymbols,
+      hasPartialFailure: failedSymbols.length > 0,
+    };
   } catch (err) {
     logger.warn('Failed to fetch cross-chain alerts', { error: err });
-    return [];
+    return {
+      alerts: [],
+      failedSymbols: [...SUPPORTED_SYMBOLS.TICKERS],
+      hasPartialFailure: true,
+    };
   }
 }
 
@@ -132,12 +161,12 @@ function calculateSummary(alerts: UnifiedAlert[]): AlertsSummary {
 export async function fetchAlerts(options: FetchAlertsOptions = {}): Promise<FetchAlertsResult> {
   const { source, severity, status } = options;
 
-  const [priceAnomalies, crossChainAlerts] = await Promise.all([
+  const [priceAnomalies, crossChainResult] = await Promise.all([
     fetchPriceAnomalies(),
     fetchCrossChainAlerts(),
   ]);
 
-  let allAlerts: UnifiedAlert[] = [...priceAnomalies, ...crossChainAlerts];
+  let allAlerts: UnifiedAlert[] = [...priceAnomalies, ...crossChainResult.alerts];
 
   if (source && source !== 'all') {
     allAlerts = allAlerts.filter((a) => a.source === source);
@@ -155,9 +184,18 @@ export async function fetchAlerts(options: FetchAlertsOptions = {}): Promise<Fet
 
   const summary = calculateSummary(allAlerts);
 
-  return {
+  const result: FetchAlertsResult = {
     alerts: allAlerts,
     summary,
     timestamp: new Date().toISOString(),
   };
+
+  if (crossChainResult.hasPartialFailure) {
+    result.partialFailure = {
+      failedSymbols: crossChainResult.failedSymbols,
+      hasPartialFailure: crossChainResult.hasPartialFailure,
+    };
+  }
+
+  return result;
 }
