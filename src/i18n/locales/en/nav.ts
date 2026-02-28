@@ -33,6 +33,8 @@ export const nav = {
   umaAnalysis: 'UMA Analysis',
   address: 'Address Lookup',
   favorites: 'Favorites',
+  overview: 'Overview',
+  compare: 'Compare',
   groups: {
     main: 'Main',
     monitor: 'Analytics',
@@ -78,6 +80,9 @@ export const nav = {
     comprehensiveView: 'Comprehensive View - Global data overview and cross-protocol analysis',
     protocolMonitor: 'Protocol Monitor - Protocol-specific oracle data',
     exploreTools: 'Explore Tools - Address lookup and data discovery',
+    overview: 'Oracle Overview - Comprehensive status overview of all oracle networks',
+    compare: 'Comparison Center - Unified oracle comparison analysis hub',
+    protocols: 'Protocols - Explore and analyze oracle protocols',
   },
   labels: {
     search: 'Search navigation...',

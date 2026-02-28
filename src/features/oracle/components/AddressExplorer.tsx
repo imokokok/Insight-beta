@@ -150,21 +150,21 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
         ? undefined
         : inputAddressType;
     addToHistory(address, typeForHistory);
-    router.push(`/oracle/address/${address}`);
+    router.push(`/oracle/address/${address}` as any);
   };
 
   const handleHistoryClick = (item: AddressHistoryItem) => {
     setAddress(item.address);
     setInputAddressType(item.type || 'unknown');
     addToHistory(item.address, item.type, item.label);
-    router.push(`/oracle/address/${item.address}`);
+    router.push(`/oracle/address/${item.address}` as any);
   };
 
   const handlePopularClick = (item: PopularAddress) => {
     setAddress(item.address);
     setInputAddressType(item.type);
     addToHistory(item.address, item.type, item.label);
-    router.push(`/oracle/address/${item.address}`);
+    router.push(`/oracle/address/${item.address}` as any);
   };
 
   const handleClearHistory = () => {

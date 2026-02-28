@@ -576,7 +576,7 @@ export default function Api3Page() {
                                 key={index}
                                 className="flex cursor-pointer items-center justify-between border-b border-border/30 pb-3 pt-1 transition-colors hover:bg-muted/20"
                                 onClick={() =>
-                                  router.push(`/oracle/api3/airnode/${airnode.address}`)
+                                  router.push(`/oracle/api3/airnode/${airnode.address}` as any)
                                 }
                               >
                                 <div className="flex items-center gap-4">

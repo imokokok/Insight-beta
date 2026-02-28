@@ -210,6 +210,76 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
 
+  async redirects() {
+    return [
+      {
+        source: '/analytics',
+        destination: '/compare',
+        permanent: true,
+      },
+      {
+        source: '/oracle/dashboard',
+        destination: '/overview',
+        permanent: true,
+      },
+      {
+        source: '/oracle/comparison',
+        destination: '/compare',
+        permanent: true,
+      },
+      {
+        source: '/oracle/analytics/deviation',
+        destination: '/compare?tab=deviation',
+        permanent: true,
+      },
+      {
+        source: '/oracle/reliability',
+        destination: '/compare?tab=reliability',
+        permanent: true,
+      },
+      {
+        source: '/oracle/chainlink',
+        destination: '/protocols/chainlink',
+        permanent: true,
+      },
+      {
+        source: '/oracle/pyth',
+        destination: '/protocols/pyth',
+        permanent: true,
+      },
+      {
+        source: '/oracle/api3',
+        destination: '/protocols/api3',
+        permanent: true,
+      },
+      {
+        source: '/oracle/band',
+        destination: '/protocols/band',
+        permanent: true,
+      },
+      {
+        source: '/oracle/protocols',
+        destination: '/explore',
+        permanent: true,
+      },
+      {
+        source: '/cross-chain/overview',
+        destination: '/cross-chain',
+        permanent: true,
+      },
+      {
+        source: '/cross-chain/comparison',
+        destination: '/cross-chain?tab=comparison',
+        permanent: true,
+      },
+      {
+        source: '/cross-chain/history',
+        destination: '/cross-chain?tab=history',
+        permanent: true,
+      },
+    ];
+  },
+
   webpack: (config, { isServer, dev }) => {
     config.resolve = config.resolve || {};
     config.resolve.fallback = {

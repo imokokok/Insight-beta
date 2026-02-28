@@ -4,6 +4,7 @@ export * from './useAlertHistory';
 export * from './useAlertRules';
 export * from './useNotificationChannels';
 export * from './useAlertsPage';
+export * from './useUnreadAlertsCount';
 export {
   useAlertsFilter,
   type UseAlertsFilterOptions,

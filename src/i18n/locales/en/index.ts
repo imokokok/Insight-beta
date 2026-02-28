@@ -4,6 +4,7 @@ import { api3 } from './api3';
 import { app } from './app';
 import { band } from './band';
 import { common } from './common';
+import { compare } from './compare';
 import { comparison } from './comparison';
 import { crossChain } from './cross-chain';
 import { dashboard } from './dashboard';
@@ -13,7 +14,9 @@ import { explore } from './explore';
 import { favorites } from './favorites';
 import { nav } from './nav';
 import { oracle } from './oracle';
+import { overview } from './overview';
 import { protocol } from './protocol';
+import { protocols } from './protocols';
 import { pyth } from './pyth';
 import { security } from './security';
 import { wallet } from './wallet';
@@ -25,6 +28,7 @@ export const enTranslations = {
   app,
   band,
   common,
+  compare,
   comparison,
   crossChain,
   dashboard,
@@ -34,7 +38,9 @@ export const enTranslations = {
   favorites,
   nav,
   oracle,
+  overview,
   protocol,
+  protocols,
   pyth,
   security,
   wallet,

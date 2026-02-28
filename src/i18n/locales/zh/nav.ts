@@ -33,6 +33,8 @@ export const nav = {
   umaAnalysis: 'UMA 分析',
   address: '地址查询',
   favorites: '收藏夹',
+  overview: '概览',
+  compare: '比较',
   groups: {
     main: '主要',
     monitor: '分析',
@@ -78,6 +80,9 @@ export const nav = {
     comprehensiveView: '综合视图 - 全局数据概览与跨协议分析',
     protocolMonitor: '协议监控 - 各预言机协议专项数据',
     exploreTools: '探索工具 - 地址查询与数据发现',
+    overview: '预言机概览 - 整合所有预言机网络的全面状态概览',
+    compare: '比较中心 - 整合所有预言机比较分析功能',
+    protocols: '协议 - 探索和分析预言机协议',
   },
   labels: {
     search: '搜索导航...',

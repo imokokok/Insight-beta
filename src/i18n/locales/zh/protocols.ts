@@ -1,0 +1,47 @@
+export const protocols = {
+  title: '协议',
+  subtitle: '探索和分析预言机协议及其性能',
+  availableProtocols: '可用协议',
+  availableProtocolsDesc: '选择一个协议查看详细的分析和监控数据',
+  clickToViewDetails: '点击卡片查看详情',
+  viewDetails: '查看详情',
+  chainlink: {
+    name: 'Chainlink',
+    description: '去中心化预言机网络，为任何区块链上的复杂智能合约提供可靠的防篡改输入和输出',
+  },
+  pyth: {
+    name: 'Pyth Network',
+    description: '高频预言机网络，通过第一方发布者提供带置信区间的实时市场数据',
+  },
+  api3: {
+    name: 'API3',
+    description: '第一方预言机解决方案，通过 Airnode 技术将 API 直接连接到智能合约',
+  },
+  band: {
+    name: 'Band Protocol',
+    description: '跨链数据预言机平台，通过 Cosmos IBC 集成将现实世界数据和 API 连接到智能合约',
+  },
+  features: {
+    ocr: 'OCR',
+    vrf: 'VRF',
+    automation: '自动化',
+    ccip: 'CCIP',
+    highFrequency: '高频更新',
+    confidenceIntervals: '置信区间',
+    hermes: 'Hermes',
+    publishers: '发布者',
+    airnode: 'Airnode',
+    dapis: 'dAPIs',
+    oev: 'OEV',
+    firstParty: '第一方',
+    crossChain: '跨链',
+    ibc: 'IBC',
+    oracleScripts: '预言机脚本',
+    dataSources: '数据源',
+  },
+  status: {
+    active: '活跃',
+    maintenance: '维护中',
+    deprecated: '已弃用',
+  },
+};

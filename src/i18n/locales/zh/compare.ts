@@ -1,0 +1,41 @@
+export const compare = {
+  pageTitle: '比较中心',
+  pageDescription: '整合所有预言机比较分析功能，一站式对比分析',
+  filters: '筛选',
+  filterConditions: '筛选条件',
+  reset: '重置',
+  protocols: '协议',
+  selectAll: '全选',
+  clearAll: '清空',
+  tradingPairs: '交易对',
+  searchPairs: '搜索交易对...',
+  activeFilters: '已选筛选:',
+  tabs: {
+    price: '价格比较',
+    priceShort: '价格',
+    latency: '延迟分析',
+    latencyShort: '延迟',
+    cost: '成本效率',
+    costShort: '成本',
+    deviation: '偏差分析',
+    deviationShort: '偏差',
+    reliability: '可靠性',
+    reliabilityShort: '可靠',
+  },
+  price: {
+    title: '价格比较分析',
+    description: '实时价格对比、价格热力图、价格走势对比',
+  },
+  latency: {
+    title: '延迟分析',
+    description: '延迟对比图、延迟分布图',
+  },
+  cost: {
+    title: '成本效率分析',
+    description: 'Gas 成本对比、成本趋势图',
+  },
+  reliability: {
+    title: '可靠性分析',
+    description: '可靠性评分排名、可靠性趋势图',
+  },
+};

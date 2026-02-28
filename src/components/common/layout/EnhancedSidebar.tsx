@@ -25,9 +25,7 @@ import {
   Activity,
   AlertTriangle,
   Compass,
-  Gavel,
   Star,
-  Shield,
   Server,
   GitBranch,
   Link2,
@@ -38,6 +36,7 @@ import { Badge } from '@/components/ui';
 import { Input } from '@/components/ui';
 import { ScrollArea } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui';
+import { useUnreadAlertsCount } from '@/features/alerts/hooks';
 import { ConnectWallet } from '@/features/wallet/components/ConnectWallet';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useI18n } from '@/i18n';
@@ -114,16 +113,60 @@ export const defaultNavConfig: SidebarConfig = {
   defaultCollapsed: false,
   groups: [
     {
-      id: 'comprehensiveView',
-      label: 'nav.groups.comprehensiveView',
+      id: 'main',
+      label: 'nav.groups.main',
       collapsible: false,
       items: [
         {
-          id: 'analytics',
-          label: 'nav.dashboard',
-          href: '/analytics',
+          id: 'overview',
+          label: 'nav.overview',
+          href: '/overview',
           icon: Activity,
           description: 'nav.descriptions.dashboard',
+        },
+        {
+          id: 'compare',
+          label: 'nav.compare',
+          href: '/compare',
+          icon: Globe,
+          description: 'nav.descriptions.priceComparison',
+        },
+        {
+          id: 'protocols',
+          label: 'nav.protocols',
+          icon: Link2,
+          description: 'nav.descriptions.protocolList',
+          defaultExpanded: false,
+          items: [
+            {
+              id: 'chainlink',
+              label: 'nav.chainlink',
+              href: '/protocols/chainlink',
+              icon: Link2,
+              description: 'nav.descriptions.chainlinkAnalysis',
+            },
+            {
+              id: 'pyth',
+              label: 'nav.pyth',
+              href: '/protocols/pyth',
+              icon: Zap,
+              description: 'nav.descriptions.pythAnalysis',
+            },
+            {
+              id: 'api3',
+              label: 'nav.api3',
+              href: '/protocols/api3',
+              icon: Server,
+              description: 'nav.descriptions.api3Analysis',
+            },
+            {
+              id: 'band',
+              label: 'nav.band',
+              href: '/protocols/band',
+              icon: GitBranch,
+              description: 'nav.descriptions.bandAnalysis',
+            },
+          ],
         },
         {
           id: 'crossChain',
@@ -132,62 +175,6 @@ export const defaultNavConfig: SidebarConfig = {
           icon: Globe,
           description: 'nav.descriptions.crossChain',
         },
-        {
-          id: 'reliability',
-          label: 'nav.reliability',
-          href: '/oracle/reliability',
-          icon: Shield,
-          description: 'nav.descriptions.reliability',
-        },
-      ],
-    },
-    {
-      id: 'protocolMonitor',
-      label: 'nav.groups.protocolMonitor',
-      collapsible: false,
-      items: [
-        {
-          id: 'chainlink',
-          label: 'nav.chainlinkAnalysis',
-          href: '/oracle/chainlink',
-          icon: Link2,
-          description: 'nav.descriptions.chainlinkAnalysis',
-        },
-        {
-          id: 'pyth',
-          label: 'nav.pythAnalysis',
-          href: '/oracle/pyth',
-          icon: Zap,
-          description: 'nav.descriptions.pythAnalysis',
-        },
-        {
-          id: 'api3',
-          label: 'nav.api3Analysis',
-          href: '/oracle/api3',
-          icon: Server,
-          description: 'nav.descriptions.api3Analysis',
-        },
-        {
-          id: 'band',
-          label: 'nav.bandAnalysis',
-          href: '/oracle/band',
-          icon: GitBranch,
-          description: 'nav.descriptions.bandAnalysis',
-        },
-        {
-          id: 'uma',
-          label: 'nav.umaAnalysis',
-          href: '/oracle/analytics/disputes',
-          icon: Gavel,
-          description: 'nav.descriptions.umaAnalysis',
-        },
-      ],
-    },
-    {
-      id: 'exploreTools',
-      label: 'nav.groups.exploreTools',
-      collapsible: false,
-      items: [
         {
           id: 'explore',
           label: 'nav.explore',
@@ -201,12 +188,6 @@ export const defaultNavConfig: SidebarConfig = {
           href: '/alerts',
           icon: AlertTriangle,
           description: 'nav.descriptions.alertsCenter',
-        },
-        {
-          id: 'favorites',
-          label: 'nav.favorites',
-          icon: Star,
-          description: 'nav.descriptions.favorites',
         },
       ],
     },
@@ -227,6 +208,7 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
   const prefersReducedMotion = useReducedMotion();
   const { t } = useI18n();
   const [isExpanded, setIsExpanded] = useState(item.defaultExpanded ?? false);
+  const unreadAlerts = useUnreadAlertsCount();
 
   const isActive = useMemo(() => {
     if (!pathname || !item.href) return false;
@@ -235,6 +217,13 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
 
   const hasChildren = item.items && item.items.length > 0;
   const hasHref = item.href !== undefined && item.href !== null && item.href !== '';
+
+  const dynamicBadge = useMemo(() => {
+    if (item.id === 'alerts' && unreadAlerts.total > 0) {
+      return unreadAlerts.total > 99 ? '99+' : unreadAlerts.total;
+    }
+    return item.badge;
+  }, [item.id, item.badge, unreadAlerts.total]);
 
   const handleClick = useCallback(() => {
     if (hasChildren) {
@@ -262,12 +251,12 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
         {t(item.label)}
       </span>
 
-      {item.badge !== undefined && item.badge !== 0 && (
+      {dynamicBadge !== undefined && dynamicBadge !== 0 && (
         <Badge
           variant={item.badgeVariant || 'default'}
           className="ml-2 flex-shrink-0 px-1.5 py-0 text-xs"
         >
-          {item.badge}
+          {dynamicBadge}
         </Badge>
       )}
 

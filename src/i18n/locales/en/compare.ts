@@ -1,0 +1,41 @@
+export const compare = {
+  pageTitle: 'Comparison Center',
+  pageDescription: 'Unified oracle comparison analysis hub for all protocols',
+  filters: 'Filters',
+  filterConditions: 'Filter Conditions',
+  reset: 'Reset',
+  protocols: 'Protocols',
+  selectAll: 'Select All',
+  clearAll: 'Clear All',
+  tradingPairs: 'Trading Pairs',
+  searchPairs: 'Search trading pairs...',
+  activeFilters: 'Active Filters:',
+  tabs: {
+    price: 'Price Comparison',
+    priceShort: 'Price',
+    latency: 'Latency Analysis',
+    latencyShort: 'Latency',
+    cost: 'Cost Efficiency',
+    costShort: 'Cost',
+    deviation: 'Deviation Analysis',
+    deviationShort: 'Deviation',
+    reliability: 'Reliability',
+    reliabilityShort: 'Reliability',
+  },
+  price: {
+    title: 'Price Comparison Analysis',
+    description: 'Real-time price comparison, price heatmap, and price trend comparison',
+  },
+  latency: {
+    title: 'Latency Analysis',
+    description: 'Latency comparison chart and latency distribution',
+  },
+  cost: {
+    title: 'Cost Efficiency Analysis',
+    description: 'Gas cost comparison and cost trend charts',
+  },
+  reliability: {
+    title: 'Reliability Analysis',
+    description: 'Reliability score rankings and reliability trend charts',
+  },
+};
