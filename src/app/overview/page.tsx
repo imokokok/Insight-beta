@@ -101,25 +101,25 @@ const protocolConfigs: Array<{
     name: 'Chainlink',
     icon: <Link2 className="h-5 w-5" />,
     color: 'text-blue-500',
-    href: '/oracle/chainlink',
+    href: '/protocols/chainlink',
   },
   {
     name: 'Pyth',
     icon: <Zap className="h-5 w-5" />,
     color: 'text-yellow-500',
-    href: '/oracle/pyth',
+    href: '/protocols/pyth',
   },
   {
     name: 'API3',
     icon: <Activity className="h-5 w-5" />,
     color: 'text-green-500',
-    href: '/oracle/api3',
+    href: '/protocols/api3',
   },
   {
     name: 'Band',
     icon: <Globe className="h-5 w-5" />,
     color: 'text-purple-500',
-    href: '/oracle/band',
+    href: '/protocols/band',
   },
 ];
 
@@ -128,7 +128,7 @@ const quickLinks = [
     title: '价格对比',
     description: '对比不同预言机价格',
     icon: <BarChart3 className="h-5 w-5" />,
-    href: '/oracle/comparison',
+    href: '/compare',
     color: 'bg-blue-500/10 text-blue-500',
   },
   {
@@ -149,7 +149,7 @@ const quickLinks = [
     title: '可靠性评分',
     description: '预言机可靠性排名',
     icon: <Shield className="h-5 w-5" />,
-    href: '/oracle/reliability',
+    href: '/compare?tab=reliability',
     color: 'bg-purple-500/10 text-purple-500',
   },
 ];

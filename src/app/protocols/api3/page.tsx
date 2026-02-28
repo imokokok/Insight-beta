@@ -111,6 +111,35 @@ interface Api3DashboardData {
   dapisData: DapisResponse | null;
 }
 
+function transformApi3Data(raw: unknown): Api3DashboardData {
+  const response = raw as {
+    airnodes?: AirnodesResponse;
+    oev?: OevResponse;
+    dapis?: DapisResponse;
+  };
+
+  const airnodesData = response.airnodes ?? null;
+  const oevData = response.oev ?? null;
+  const dapisData = response.dapis ?? null;
+
+  const overviewStats =
+    airnodesData || oevData || dapisData
+      ? {
+          totalAirnodes: airnodesData?.metadata?.total ?? 0,
+          onlineAirnodes: airnodesData?.metadata?.online ?? 0,
+          priceUpdateEvents: oevData?.metadata?.total ?? 0,
+          totalDapis: dapisData?.metadata?.total ?? 0,
+        }
+      : null;
+
+  return {
+    overviewStats,
+    airnodesData,
+    oevData,
+    dapisData,
+  };
+}
+
 const getTabs = (t: (key: string) => string): TabItem[] => [
   { id: 'overview', label: t('api3.tabs.overview'), icon: <LayoutDashboard className="h-4 w-4" /> },
   { id: 'airnodes', label: t('api3.tabs.airnodes'), icon: <Server className="h-4 w-4" /> },
@@ -133,34 +162,7 @@ export default function Api3Page() {
       endpoint: '/api/oracle/api3/dashboard',
       refreshInterval: autoRefreshEnabled ? refreshInterval : 0,
       enabled: true,
-      transformData: (raw: unknown): Api3DashboardData => {
-        const response = raw as {
-          airnodes?: AirnodesResponse;
-          oev?: OevResponse;
-          dapis?: DapisResponse;
-        };
-
-        const airnodesData = response.airnodes ?? null;
-        const oevData = response.oev ?? null;
-        const dapisData = response.dapis ?? null;
-
-        const overviewStats =
-          airnodesData || oevData || dapisData
-            ? {
-                totalAirnodes: airnodesData?.metadata?.total ?? 0,
-                onlineAirnodes: airnodesData?.metadata?.online ?? 0,
-                priceUpdateEvents: oevData?.metadata?.total ?? 0,
-                totalDapis: dapisData?.metadata?.total ?? 0,
-              }
-            : null;
-
-        return {
-          overviewStats,
-          airnodesData,
-          oevData,
-          dapisData,
-        };
-      },
+      transformData: transformApi3Data,
     });
 
   const healthStatus: NetworkHealthStatus = useMemo(() => {

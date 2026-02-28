@@ -81,6 +81,22 @@ interface UmaDashboardData {
   healthStatus: NetworkHealthStatus | null;
 }
 
+function transformUmaData(raw: unknown): UmaDashboardData {
+  const response = raw as {
+    assertions?: AssertionsResponse;
+    tvl?: TvlResponse;
+    voters?: VotersResponse;
+    health?: NetworkHealthStatus;
+  };
+
+  return {
+    assertionsData: response.assertions ?? null,
+    tvlData: response.tvl ?? null,
+    votersData: response.voters ?? null,
+    healthStatus: response.health ?? null,
+  };
+}
+
 const getTabs = (t: (key: string) => string): TabItem[] => [
   { id: 'overview', label: t('uma.tabs.overview'), icon: <LayoutDashboard className="h-4 w-4" /> },
   { id: 'assertions', label: t('uma.tabs.assertions'), icon: <Gavel className="h-4 w-4" /> },
@@ -101,21 +117,7 @@ export default function UmaPage() {
       endpoint: '/api/oracle/uma/dashboard',
       refreshInterval: autoRefreshEnabled ? refreshInterval : 0,
       enabled: true,
-      transformData: (raw: unknown): UmaDashboardData => {
-        const response = raw as {
-          assertions?: AssertionsResponse;
-          tvl?: TvlResponse;
-          voters?: VotersResponse;
-          health?: NetworkHealthStatus;
-        };
-
-        return {
-          assertionsData: response.assertions ?? null,
-          tvlData: response.tvl ?? null,
-          votersData: response.voters ?? null,
-          healthStatus: response.health ?? null,
-        };
-      },
+      transformData: transformUmaData,
     });
 
   const healthStatus: NetworkHealthStatus = useMemo(() => {

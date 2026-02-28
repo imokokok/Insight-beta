@@ -135,10 +135,17 @@ export function useProtocolData<T = unknown>(config: ProtocolDataConfig<T>): Pro
     maxRetries = 3,
     retryDelay = 1000,
     enabled = true,
-    transformData,
-    onError,
-    onSuccess,
   } = config;
+
+  const transformDataRef = useRef(config.transformData);
+  const onErrorRef = useRef(config.onError);
+  const onSuccessRef = useRef(config.onSuccess);
+
+  useEffect(() => {
+    transformDataRef.current = config.transformData;
+    onErrorRef.current = config.onError;
+    onSuccessRef.current = config.onSuccess;
+  }, [config.transformData, config.onError, config.onSuccess]);
 
   const [state, setState] = useState<ProtocolDataState<T>>({
     data: null,
@@ -172,13 +179,13 @@ export function useProtocolData<T = unknown>(config: ProtocolDataConfig<T>): Pro
         throw new Error('Failed to parse response JSON');
       }
 
-      if (transformData) {
-        return transformData(rawData);
+      if (transformDataRef.current) {
+        return transformDataRef.current(rawData);
       }
 
       return rawData as T;
     },
-    [endpoint, params, transformData],
+    [endpoint, params],
   );
 
   const executeFetch = useCallback(
@@ -239,7 +246,7 @@ export function useProtocolData<T = unknown>(config: ProtocolDataConfig<T>): Pro
           }));
 
           if (data !== null) {
-            onSuccess?.(data);
+            onSuccessRef.current?.(data);
           }
           return;
         } catch (error) {
@@ -287,10 +294,10 @@ export function useProtocolData<T = unknown>(config: ProtocolDataConfig<T>): Pro
       }));
 
       if (lastError) {
-        onError?.(lastError);
+        onErrorRef.current?.(lastError);
       }
     },
-    [fetchData, maxRetries, retryDelay, cacheKey, protocol, endpoint, onError, onSuccess],
+    [fetchData, maxRetries, retryDelay, cacheKey, protocol, endpoint],
   );
 
   const refresh = useCallback(async () => {
