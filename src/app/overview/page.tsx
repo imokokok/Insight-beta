@@ -25,6 +25,8 @@ import {
   ErrorBoundary,
   KPIOverviewBar,
   type KPIItem,
+  TimeRangeSelector,
+  type TimeRange,
 } from '@/components/common';
 import { ChartCard } from '@/components/common';
 import { Badge } from '@/components/ui';
@@ -89,6 +91,7 @@ interface OverviewPageState {
   autoRefreshEnabled: boolean;
   refreshInterval: number;
   timeUntilRefresh: number;
+  timeRange: TimeRange;
 }
 
 const protocolConfigs: Array<{
@@ -168,6 +171,7 @@ export default function OverviewPage() {
     autoRefreshEnabled: false,
     refreshInterval: 30000,
     timeUntilRefresh: 0,
+    timeRange: '24H',
   });
 
   const updateState = useCallback((partial: Partial<OverviewPageState>) => {
@@ -478,6 +482,13 @@ export default function OverviewPage() {
                   title={t('overview.priceTrend') || '聚合价格趋势'}
                   description={t('overview.priceTrendDesc') || '主要资产价格走势'}
                   icon={<TrendingUp className="h-5 w-5" />}
+                  extraActions={
+                    <TimeRangeSelector
+                      value={state.timeRange}
+                      onChange={(range) => updateState({ timeRange: range })}
+                      showCustom={false}
+                    />
+                  }
                 >
                   <EnhancedAreaChart
                     data={state.priceTrendData.map((d) => ({

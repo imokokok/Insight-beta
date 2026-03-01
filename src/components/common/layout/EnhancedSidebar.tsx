@@ -31,6 +31,13 @@ import {
   Link2,
   Zap,
   Gavel,
+  DollarSign,
+  Clock,
+  Gauge,
+  TrendingUp,
+  Shield,
+  PanelLeftClose,
+  PanelLeft,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui';
@@ -128,9 +135,46 @@ export const defaultNavConfig: SidebarConfig = {
         {
           id: 'compare',
           label: 'nav.compare',
-          href: '/compare',
           icon: Globe,
           description: 'nav.descriptions.priceComparison',
+          defaultExpanded: false,
+          items: [
+            {
+              id: 'compare-price',
+              label: 'compare.tabs.price',
+              href: '/compare/price',
+              icon: DollarSign,
+              description: 'compare.price.description',
+            },
+            {
+              id: 'compare-latency',
+              label: 'compare.tabs.latency',
+              href: '/compare/latency',
+              icon: Clock,
+              description: 'compare.latency.description',
+            },
+            {
+              id: 'compare-cost',
+              label: 'compare.tabs.cost',
+              href: '/compare/cost',
+              icon: Gauge,
+              description: 'compare.cost.description',
+            },
+            {
+              id: 'compare-deviation',
+              label: 'compare.tabs.deviation',
+              href: '/compare/deviation',
+              icon: TrendingUp,
+              description: 'compare.deviation.description',
+            },
+            {
+              id: 'compare-reliability',
+              label: 'compare.tabs.reliability',
+              href: '/compare/reliability',
+              icon: Shield,
+              description: 'compare.reliability.description',
+            },
+          ],
         },
         {
           id: 'protocols',
@@ -215,6 +259,7 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
   const pathname = usePathname();
   const prefersReducedMotion = useReducedMotion();
   const { t } = useI18n();
+  const { collapsed } = useSidebar();
   const [isExpanded, setIsExpanded] = useState(item.defaultExpanded ?? false);
   const unreadAlerts = useUnreadAlertsCount();
 
@@ -234,10 +279,10 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
   }, [item.id, item.badge, unreadAlerts.total]);
 
   const handleClick = useCallback(() => {
-    if (hasChildren) {
+    if (hasChildren && !collapsed) {
       setIsExpanded((prev) => !prev);
     }
-  }, [hasChildren]);
+  }, [hasChildren, collapsed]);
 
   const content = (
     <>
@@ -250,31 +295,35 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
         )}
       />
 
-      <span
-        className={cn(
-          'ml-3 flex-1 truncate text-sm font-medium transition-all duration-200',
-          isActive ? 'font-bold text-primary' : 'text-foreground group-hover:text-foreground',
-        )}
-      >
-        {t(item.label)}
-      </span>
+      {!collapsed && (
+        <>
+          <span
+            className={cn(
+              'ml-3 flex-1 truncate text-sm font-medium transition-all duration-200',
+              isActive ? 'font-bold text-primary' : 'text-foreground group-hover:text-foreground',
+            )}
+          >
+            {t(item.label)}
+          </span>
 
-      {dynamicBadge !== undefined && dynamicBadge !== 0 && (
-        <Badge
-          variant={item.badgeVariant || 'default'}
-          className="ml-2 flex-shrink-0 px-1.5 py-0 text-xs"
-        >
-          {dynamicBadge}
-        </Badge>
-      )}
-
-      {hasChildren && (
-        <ChevronRight
-          className={cn(
-            'ml-2 h-4 w-4 transition-transform duration-200',
-            isExpanded && 'rotate-90',
+          {dynamicBadge !== undefined && dynamicBadge !== 0 && (
+            <Badge
+              variant={item.badgeVariant || 'default'}
+              className="ml-2 flex-shrink-0 px-1.5 py-0 text-xs"
+            >
+              {dynamicBadge}
+            </Badge>
           )}
-        />
+
+          {hasChildren && (
+            <ChevronRight
+              className={cn(
+                'ml-2 h-4 w-4 transition-transform duration-200',
+                isExpanded && 'rotate-90',
+              )}
+            />
+          )}
+        </>
       )}
     </>
   );
@@ -285,10 +334,12 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
     isActive && [
       'bg-primary/12 hover:bg-primary/18 shadow-sm',
       'border border-primary/20',
-      'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2',
-      'before:h-8 before:w-1.5 before:rounded-r before:bg-primary before:shadow-[0_0_8px_rgba(0,0,0,0.1)]',
+      !collapsed && 'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2',
+      !collapsed &&
+        'before:h-8 before:w-1.5 before:rounded-r before:bg-primary before:shadow-[0_0_8px_rgba(0,0,0,0.1)]',
     ],
-    level > 0 && 'ml-4',
+    level > 0 && !collapsed && 'ml-4',
+    collapsed && 'justify-center px-2',
     item.disabled && 'cursor-not-allowed opacity-50',
   );
 
@@ -307,13 +358,17 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
     </button>
   );
 
+  const showTooltip = collapsed || item.description;
+
   return (
     <div className="group">
-      {item.description ? (
-        <Tooltip delayDuration={300}>
+      {showTooltip ? (
+        <Tooltip delayDuration={collapsed ? 0 : 300}>
           <TooltipTrigger asChild>{navItem}</TooltipTrigger>
           <TooltipContent side="right" className="max-w-xs">
-            <p className="text-sm">{t(item.description)}</p>
+            <p className="text-sm">
+              {collapsed ? t(item.label) : t(item.description || item.label)}
+            </p>
           </TooltipContent>
         </Tooltip>
       ) : (
@@ -322,7 +377,7 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
 
       {/* Submenu */}
       <AnimatePresence>
-        {hasChildren && isExpanded && (
+        {hasChildren && isExpanded && !collapsed && (
           <motion.div
             initial={prefersReducedMotion ? {} : { height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -351,7 +406,7 @@ interface NavGroupProps {
 }
 
 function NavGroupComponent({ group }: NavGroupProps) {
-  const { expandedGroups, toggleGroup, searchQuery } = useSidebar();
+  const { expandedGroups, toggleGroup, searchQuery, collapsed } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
   const { t } = useI18n();
   const isExpanded = expandedGroups.has(group.id);
@@ -373,7 +428,7 @@ function NavGroupComponent({ group }: NavGroupProps) {
 
   return (
     <div className="py-2">
-      {group.label && canCollapse && (
+      {group.label && canCollapse && !collapsed && (
         <button
           onClick={() => toggleGroup(group.id)}
           className="flex w-full items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
@@ -386,7 +441,7 @@ function NavGroupComponent({ group }: NavGroupProps) {
         </button>
       )}
 
-      {group.label && !canCollapse && (
+      {group.label && !canCollapse && !collapsed && (
         <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {group.icon && <group.icon className="mr-2 h-3.5 w-3.5" />}
           <span>{t(group.label)}</span>
@@ -394,7 +449,7 @@ function NavGroupComponent({ group }: NavGroupProps) {
       )}
 
       <AnimatePresence>
-        {(!canCollapse || isExpanded) && (
+        {(!canCollapse || isExpanded || collapsed) && (
           <motion.div
             initial={prefersReducedMotion ? {} : { height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -466,10 +521,29 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [isMounted, setIsMounted] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const stored = localStorage.getItem('sidebar-collapsed');
+      return stored === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('sidebar-collapsed', String(collapsed));
+      } catch {
+        // ignore
+      }
+    }
+  }, [collapsed]);
 
   const toggleGroup = useCallback((groupId: string) => {
     setExpandedGroups((prev) => {
@@ -483,17 +557,23 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
     });
   }, []);
 
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((prev) => !prev);
+  }, []);
+
   const contextValue = useMemo(
     () => ({
-      collapsed: false,
-      setCollapsed: () => {},
+      collapsed,
+      setCollapsed: setCollapsed,
       expandedGroups,
       toggleGroup,
       searchQuery,
       setSearchQuery,
     }),
-    [expandedGroups, searchQuery, toggleGroup],
+    [collapsed, expandedGroups, searchQuery, toggleGroup],
   );
+
+  const sidebarWidth = collapsed ? 64 : 280;
 
   if (!isMounted) {
     return (
@@ -503,7 +583,7 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
           'flex flex-col',
           className,
         )}
-        style={{ width: 280 }}
+        style={{ width: sidebarWidth }}
       />
     );
   }
@@ -514,23 +594,26 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
         <aside
           className={cn(
             'sticky top-0 h-screen border-r border-border bg-card',
-            'flex flex-col',
+            'flex flex-col transition-all duration-300',
             className,
           )}
-          style={{ width: 280 }}
+          style={{ width: sidebarWidth }}
           suppressHydrationWarning
         >
           {/* Header */}
-          <div className="flex h-16 flex-shrink-0 items-center border-b border-border px-4">
+          <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border px-4">
             <Link
               href="/"
-              className="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-all duration-200 hover:bg-muted/50"
+              className={cn(
+                'group flex items-center gap-2.5 rounded-lg py-1.5 transition-all duration-200 hover:bg-muted/50',
+                collapsed ? 'px-1.5' : 'px-2',
+              )}
             >
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="relative h-8 w-8 overflow-hidden rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 p-0.5"
+                className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 p-0.5"
               >
                 <Image
                   src="/logo-owl.png"
@@ -541,19 +624,31 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
                   priority
                 />
               </motion.div>
-              <div className="flex flex-col">
-                <span className="text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
-                  {t('app.brand')}
-                </span>
-                <span className="text-[10px] font-medium text-muted-foreground">
-                  {t('app.subtitle')}
-                </span>
-              </div>
+              {!collapsed && (
+                <div className="flex flex-col overflow-hidden">
+                  <span className="truncate text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                    {t('app.brand')}
+                  </span>
+                  <span className="truncate text-[10px] font-medium text-muted-foreground">
+                    {t('app.subtitle')}
+                  </span>
+                </div>
+              )}
             </Link>
+            <button
+              onClick={toggleCollapsed}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              {collapsed ? (
+                <PanelLeft className="h-4 w-4" />
+              ) : (
+                <PanelLeftClose className="h-4 w-4" />
+              )}
+            </button>
           </div>
 
           {/* Search */}
-          {config.showSearch && <SidebarSearch />}
+          {config.showSearch && !collapsed && <SidebarSearch />}
 
           {/* Scrollable Content */}
           <ScrollArea className="flex-1">
@@ -567,7 +662,7 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
 
           {/* Footer */}
           <div className="flex-shrink-0 border-t border-border">
-            <FavoritesSection />
+            {!collapsed && <FavoritesSection />}
             <div className="p-3">
               <ConnectWallet />
             </div>
