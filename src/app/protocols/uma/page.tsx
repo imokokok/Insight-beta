@@ -14,6 +14,11 @@ import {
   type TabItem,
   type KpiCardData,
 } from '@/components/oracle/layouts/ProtocolPageLayout';
+import {
+  DisputeDetailModal,
+  AssertionDetailModal,
+  VoterHistoryModal,
+} from '@/components/oracle/uma';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
@@ -202,6 +207,12 @@ export default function UmaPage() {
   const [refreshInterval, setRefreshInterval] = useState(30000);
   const [disputesData, setDisputesData] = useState<DisputesResponse | null>(null);
   const [disputesLoading, setDisputesLoading] = useState(false);
+  const [selectedDispute, setSelectedDispute] = useState<Dispute | null>(null);
+  const [selectedAssertion, setSelectedAssertion] = useState<Assertion | null>(null);
+  const [selectedVoterAddress, setSelectedVoterAddress] = useState<string | null>(null);
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const [assertionModalOpen, setAssertionModalOpen] = useState(false);
+  const [voterModalOpen, setVoterModalOpen] = useState(false);
 
   const urlFilter = searchParams?.get('filter') as FilterType | null;
   const urlTab = searchParams?.get('tab') as string | null;
@@ -389,397 +400,444 @@ export default function UmaPage() {
   };
 
   return (
-    <ProtocolPageLayout
-      protocol="uma"
-      title="UMA"
-      icon={<Gavel className="h-5 w-5" />}
-      description={t('uma.description')}
-      healthStatus={healthStatus}
-      kpiCards={kpiCards}
-      tabs={TABS}
-      breadcrumbItems={breadcrumbItems}
-      loading={isLoading}
-      error={isError ? (error?.message ?? 'Failed to load data') : null}
-      lastUpdated={lastUpdated}
-      autoRefreshEnabled={autoRefreshEnabled}
-      onToggleAutoRefresh={handleToggleAutoRefresh}
-      refreshInterval={refreshInterval}
-      onRefreshIntervalChange={handleRefreshIntervalChange}
-      onRefresh={refresh}
-      onExport={handleExport}
-    >
-      <TabPanelWrapper tabId="overview">
-        <div className="space-y-6">
-          <ContentSection title={t('uma.overview.recentActivity')}>
-            <div className="rounded-lg border border-border bg-card p-4">
-              {loading ? (
-                <Skeleton className="h-32 w-full" />
-              ) : allAssertions.length > 0 ? (
-                <div className="space-y-3">
-                  {allAssertions.slice(0, 5).map((assertion) => (
-                    <div
-                      key={assertion.id}
-                      className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={cn(
-                            'h-2 w-2 rounded-full',
-                            assertion.status === 'pending' && 'bg-yellow-500',
-                            assertion.status === 'disputed' && 'bg-red-500',
-                            assertion.status === 'resolved' && 'bg-green-500',
-                            assertion.status === 'settled' && 'bg-blue-500',
-                          )}
-                        />
-                        <div>
-                          <p className="text-sm font-medium">{assertion.identifier}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatTime(assertion.timestamp)}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge
-                        variant={
-                          assertion.status === 'disputed'
-                            ? 'destructive'
-                            : assertion.status === 'pending'
-                              ? 'secondary'
-                              : 'default'
-                        }
+    <>
+      <ProtocolPageLayout
+        protocol="uma"
+        title="UMA"
+        icon={<Gavel className="h-5 w-5" />}
+        description={t('uma.description')}
+        healthStatus={healthStatus}
+        kpiCards={kpiCards}
+        tabs={TABS}
+        breadcrumbItems={breadcrumbItems}
+        loading={isLoading}
+        error={isError ? (error?.message ?? 'Failed to load data') : null}
+        lastUpdated={lastUpdated}
+        autoRefreshEnabled={autoRefreshEnabled}
+        onToggleAutoRefresh={handleToggleAutoRefresh}
+        refreshInterval={refreshInterval}
+        onRefreshIntervalChange={handleRefreshIntervalChange}
+        onRefresh={refresh}
+        onExport={handleExport}
+      >
+        <TabPanelWrapper tabId="overview">
+          <div className="space-y-6">
+            <ContentSection title={t('uma.overview.recentActivity')}>
+              <div className="rounded-lg border border-border bg-card p-4">
+                {loading ? (
+                  <Skeleton className="h-32 w-full" />
+                ) : allAssertions.length > 0 ? (
+                  <div className="space-y-3">
+                    {allAssertions.slice(0, 5).map((assertion) => (
+                      <div
+                        key={assertion.id}
+                        className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0"
                       >
-                        {assertion.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-center text-muted-foreground">{t('common.noData')}</p>
-              )}
-            </div>
-          </ContentSection>
-
-          <ContentSection title={t('uma.overview.stats')}>
-            <ContentGrid columns={3}>
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="text-sm text-muted-foreground">{t('uma.overview.totalResolved')}</p>
-                <p className="text-2xl font-bold">{statusCounts.resolved + statusCounts.settled}</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="text-sm text-muted-foreground">{t('uma.overview.successRate')}</p>
-                <p className="text-2xl font-bold">
-                  {allAssertions.length > 0
-                    ? `${Math.round((statusCounts.settled / allAssertions.length) * 100)}%`
-                    : 'N/A'}
-                </p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="text-sm text-muted-foreground">{t('uma.overview.avgBond')}</p>
-                <p className="text-2xl font-bold">
-                  {allAssertions.length > 0
-                    ? `$${Math.round(
-                        allAssertions.reduce((sum, a) => sum + Number(a.bond), 0) /
-                          allAssertions.length,
-                      ).toLocaleString()}`
-                    : 'N/A'}
-                </p>
-              </div>
-            </ContentGrid>
-          </ContentSection>
-        </div>
-      </TabPanelWrapper>
-
-      <TabPanelWrapper tabId="assertions">
-        <ContentSection title={t('uma.assertions.title')}>
-          <FilterButtons
-            filter={assertionsFilter}
-            onFilterChange={handleAssertionsFilterChange}
-            allLabel={t('uma.filters.all')}
-            mineLabel={t('uma.filters.mine')}
-            isConnected={isConnected}
-          />
-          <div className="rounded-lg border border-border bg-card">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="border-b border-border bg-muted/50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.assertions.identifier')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.assertions.status')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.assertions.bond')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.assertions.chain')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.assertions.timestamp')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={5} className="px-4 py-8">
-                        <Skeleton className="h-8 w-full" />
-                      </td>
-                    </tr>
-                  ) : assertions.length > 0 ? (
-                    assertions.map((assertion) => (
-                      <tr key={assertion.id} className="hover:bg-muted/50">
-                        <td className="px-4 py-3 text-sm">{assertion.identifier}</td>
-                        <td className="px-4 py-3">
-                          <Badge
-                            variant={
-                              assertion.status === 'disputed'
-                                ? 'destructive'
-                                : assertion.status === 'pending'
-                                  ? 'secondary'
-                                  : 'default'
-                            }
-                          >
-                            {assertion.status}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          ${Number(assertion.bond).toLocaleString()}
-                        </td>
-                        <td className="px-4 py-3 text-sm capitalize">{assertion.chain}</td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">
-                          {formatTime(assertion.timestamp)}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                        {assertionsFilter === 'mine' && !isConnected
-                          ? t('wallet.connectToView')
-                          : t('common.noData')}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </ContentSection>
-      </TabPanelWrapper>
-
-      <TabPanelWrapper tabId="disputes">
-        <ContentSection title={t('uma.disputes.title')}>
-          <FilterButtons
-            filter={disputesFilter}
-            onFilterChange={handleDisputesFilterChange}
-            allLabel={t('uma.filters.all')}
-            mineLabel={t('uma.filters.mine')}
-            isConnected={isConnected}
-          />
-          <div className="rounded-lg border border-border bg-card">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="border-b border-border bg-muted/50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.disputes.assertionId')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.disputes.disputer')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.disputes.disputeBond')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.disputes.status')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.disputes.votingEnds')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {disputesLoading ? (
-                    <tr>
-                      <td colSpan={5} className="px-4 py-8">
-                        <Skeleton className="h-8 w-full" />
-                      </td>
-                    </tr>
-                  ) : disputes.length > 0 ? (
-                    disputes.map((dispute) => (
-                      <tr key={dispute.id} className="hover:bg-muted/50">
-                        <td className="px-4 py-3 font-mono text-sm">
-                          {dispute.assertionId.slice(0, 10)}...{dispute.assertionId.slice(-8)}
-                        </td>
-                        <td className="px-4 py-3 font-mono text-sm">
-                          {dispute.disputer.slice(0, 6)}...{dispute.disputer.slice(-4)}
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          ${Number(dispute.disputeBond).toLocaleString()}
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge
-                            variant={
-                              dispute.status === 'active'
-                                ? 'destructive'
-                                : dispute.status === 'pending'
-                                  ? 'secondary'
-                                  : 'default'
-                            }
-                          >
-                            {dispute.status}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">
-                          {dispute.votingEndsAt ? formatTime(dispute.votingEndsAt) : '-'}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                        {disputesFilter === 'mine' && !isConnected
-                          ? t('wallet.connectToView')
-                          : t('uma.disputes.noDisputes')}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </ContentSection>
-      </TabPanelWrapper>
-
-      <TabPanelWrapper tabId="voters">
-        <ContentSection title={t('uma.voters.title')}>
-          <div className="rounded-lg border border-border bg-card">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="border-b border-border bg-muted/50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.voters.address')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.voters.totalVotes')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.voters.successRate')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">
-                      {t('uma.voters.reputation')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={4} className="px-4 py-8">
-                        <Skeleton className="h-8 w-full" />
-                      </td>
-                    </tr>
-                  ) : voters.length > 0 ? (
-                    voters.map((voter) => (
-                      <tr key={voter.address} className="hover:bg-muted/50">
-                        <td className="px-4 py-3 font-mono text-sm">
-                          {voter.address.slice(0, 6)}...{voter.address.slice(-4)}
-                        </td>
-                        <td className="px-4 py-3 text-sm">{voter.totalVotes}</td>
-                        <td className="px-4 py-3 text-sm">
-                          {voter.totalVotes > 0
-                            ? `${Math.round((voter.successfulVotes / voter.totalVotes) * 100)}%`
-                            : 'N/A'}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-16 rounded-full bg-muted">
-                              <div
-                                className="h-full rounded-full bg-primary"
-                                style={{ width: `${Math.min(voter.reputation, 100)}%` }}
-                              />
-                            </div>
-                            <span className="text-sm">{voter.reputation}</span>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={cn(
+                              'h-2 w-2 rounded-full',
+                              assertion.status === 'pending' && 'bg-yellow-500',
+                              assertion.status === 'disputed' && 'bg-red-500',
+                              assertion.status === 'resolved' && 'bg-green-500',
+                              assertion.status === 'settled' && 'bg-blue-500',
+                            )}
+                          />
+                          <div>
+                            <p className="text-sm font-medium">{assertion.identifier}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatTime(assertion.timestamp)}
+                            </p>
                           </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                        {t('common.noData')}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </ContentSection>
-      </TabPanelWrapper>
-
-      <TabPanelWrapper tabId="analysis">
-        <div className="space-y-6">
-          <ContentSection title={t('uma.analysis.statusDistribution')}>
-            <ContentGrid columns={4}>
-              <div className="rounded-lg border border-border bg-card p-4 text-center">
-                <p className="text-3xl font-bold text-yellow-500">{statusCounts.pending}</p>
-                <p className="text-sm text-muted-foreground">{t('uma.status.pending')}</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4 text-center">
-                <p className="text-3xl font-bold text-red-500">{statusCounts.disputed}</p>
-                <p className="text-sm text-muted-foreground">{t('uma.status.disputed')}</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4 text-center">
-                <p className="text-3xl font-bold text-green-500">{statusCounts.resolved}</p>
-                <p className="text-sm text-muted-foreground">{t('uma.status.resolved')}</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4 text-center">
-                <p className="text-3xl font-bold text-blue-500">{statusCounts.settled}</p>
-                <p className="text-sm text-muted-foreground">{t('uma.status.settled')}</p>
-              </div>
-            </ContentGrid>
-          </ContentSection>
-
-          <ContentSection title={t('uma.analysis.chainDistribution')}>
-            <div className="rounded-lg border border-border bg-card p-4">
-              {loading ? (
-                <Skeleton className="h-32 w-full" />
-              ) : allAssertions.length > 0 ? (
-                <div className="space-y-2">
-                  {Object.entries(
-                    allAssertions.reduce(
-                      (acc, a) => {
-                        acc[a.chain] = (acc[a.chain] || 0) + 1;
-                        return acc;
-                      },
-                      {} as Record<string, number>,
-                    ),
-                  )
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([chain, count]) => (
-                      <div key={chain} className="flex items-center justify-between">
-                        <span className="capitalize">{chain}</span>
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-32 rounded-full bg-muted">
-                            <div
-                              className="h-full rounded-full bg-primary"
-                              style={{ width: `${(count / allAssertions.length) * 100}%` }}
-                            />
-                          </div>
-                          <span className="text-sm text-muted-foreground">{count}</span>
                         </div>
+                        <Badge
+                          variant={
+                            assertion.status === 'disputed'
+                              ? 'destructive'
+                              : assertion.status === 'pending'
+                                ? 'secondary'
+                                : 'default'
+                          }
+                        >
+                          {assertion.status}
+                        </Badge>
                       </div>
                     ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground">{t('common.noData')}</p>
+                )}
+              </div>
+            </ContentSection>
+
+            <ContentSection title={t('uma.overview.stats')}>
+              <ContentGrid columns={3}>
+                <div className="rounded-lg border border-border bg-card p-4">
+                  <p className="text-sm text-muted-foreground">{t('uma.overview.totalResolved')}</p>
+                  <p className="text-2xl font-bold">
+                    {statusCounts.resolved + statusCounts.settled}
+                  </p>
                 </div>
-              ) : (
-                <p className="text-center text-muted-foreground">{t('common.noData')}</p>
-              )}
+                <div className="rounded-lg border border-border bg-card p-4">
+                  <p className="text-sm text-muted-foreground">{t('uma.overview.successRate')}</p>
+                  <p className="text-2xl font-bold">
+                    {allAssertions.length > 0
+                      ? `${Math.round((statusCounts.settled / allAssertions.length) * 100)}%`
+                      : 'N/A'}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4">
+                  <p className="text-sm text-muted-foreground">{t('uma.overview.avgBond')}</p>
+                  <p className="text-2xl font-bold">
+                    {allAssertions.length > 0
+                      ? `$${Math.round(
+                          allAssertions.reduce((sum, a) => sum + Number(a.bond), 0) /
+                            allAssertions.length,
+                        ).toLocaleString()}`
+                      : 'N/A'}
+                  </p>
+                </div>
+              </ContentGrid>
+            </ContentSection>
+          </div>
+        </TabPanelWrapper>
+
+        <TabPanelWrapper tabId="assertions">
+          <ContentSection title={t('uma.assertions.title')}>
+            <FilterButtons
+              filter={assertionsFilter}
+              onFilterChange={handleAssertionsFilterChange}
+              allLabel={t('uma.filters.all')}
+              mineLabel={t('uma.filters.mine')}
+              isConnected={isConnected}
+            />
+            <div className="rounded-lg border border-border bg-card">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="border-b border-border bg-muted/50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.assertions.identifier')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.assertions.status')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.assertions.bond')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.assertions.chain')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.assertions.timestamp')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-8">
+                          <Skeleton className="h-8 w-full" />
+                        </td>
+                      </tr>
+                    ) : assertions.length > 0 ? (
+                      assertions.map((assertion) => (
+                        <tr
+                          key={assertion.id}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => {
+                            setSelectedAssertion(assertion);
+                            setAssertionModalOpen(true);
+                          }}
+                        >
+                          <td className="px-4 py-3 text-sm">{assertion.identifier}</td>
+                          <td className="px-4 py-3">
+                            <Badge
+                              variant={
+                                assertion.status === 'disputed'
+                                  ? 'destructive'
+                                  : assertion.status === 'pending'
+                                    ? 'secondary'
+                                    : 'default'
+                              }
+                            >
+                              {assertion.status}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            ${Number(assertion.bond).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 text-sm capitalize">{assertion.chain}</td>
+                          <td className="px-4 py-3 text-sm text-muted-foreground">
+                            {formatTime(assertion.timestamp)}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                          {assertionsFilter === 'mine' && !isConnected
+                            ? t('wallet.connectToView')
+                            : t('common.noData')}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </ContentSection>
-        </div>
-      </TabPanelWrapper>
-    </ProtocolPageLayout>
+        </TabPanelWrapper>
+
+        <TabPanelWrapper tabId="disputes">
+          <ContentSection title={t('uma.disputes.title')}>
+            <FilterButtons
+              filter={disputesFilter}
+              onFilterChange={handleDisputesFilterChange}
+              allLabel={t('uma.filters.all')}
+              mineLabel={t('uma.filters.mine')}
+              isConnected={isConnected}
+            />
+            <div className="rounded-lg border border-border bg-card">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="border-b border-border bg-muted/50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.disputes.assertionId')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.disputes.disputer')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.disputes.disputeBond')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.disputes.status')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.disputes.votingEnds')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {disputesLoading ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-8">
+                          <Skeleton className="h-8 w-full" />
+                        </td>
+                      </tr>
+                    ) : disputes.length > 0 ? (
+                      disputes.map((dispute) => (
+                        <tr
+                          key={dispute.id}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => {
+                            setSelectedDispute(dispute);
+                            setDisputeModalOpen(true);
+                          }}
+                        >
+                          <td className="px-4 py-3 font-mono text-sm">
+                            {dispute.assertionId.slice(0, 10)}...{dispute.assertionId.slice(-8)}
+                          </td>
+                          <td className="px-4 py-3 font-mono text-sm">
+                            {dispute.disputer.slice(0, 6)}...{dispute.disputer.slice(-4)}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            ${Number(dispute.disputeBond).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge
+                              variant={
+                                dispute.status === 'active'
+                                  ? 'destructive'
+                                  : dispute.status === 'pending'
+                                    ? 'secondary'
+                                    : 'default'
+                              }
+                            >
+                              {dispute.status}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-muted-foreground">
+                            {dispute.votingEndsAt ? formatTime(dispute.votingEndsAt) : '-'}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                          {disputesFilter === 'mine' && !isConnected
+                            ? t('wallet.connectToView')
+                            : t('uma.disputes.noDisputes')}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </ContentSection>
+        </TabPanelWrapper>
+
+        <TabPanelWrapper tabId="voters">
+          <ContentSection title={t('uma.voters.title')}>
+            <div className="rounded-lg border border-border bg-card">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="border-b border-border bg-muted/50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.voters.address')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.voters.totalVotes')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.voters.successRate')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        {t('uma.voters.reputation')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8">
+                          <Skeleton className="h-8 w-full" />
+                        </td>
+                      </tr>
+                    ) : voters.length > 0 ? (
+                      voters.map((voter) => (
+                        <tr key={voter.address} className="hover:bg-muted/50">
+                          <td className="px-4 py-3">
+                            <button
+                              className="cursor-pointer font-mono text-sm text-primary hover:underline"
+                              onClick={() => {
+                                setSelectedVoterAddress(voter.address);
+                                setVoterModalOpen(true);
+                              }}
+                            >
+                              {voter.address.slice(0, 6)}...{voter.address.slice(-4)}
+                            </button>
+                          </td>
+                          <td className="px-4 py-3 text-sm">{voter.totalVotes}</td>
+                          <td className="px-4 py-3 text-sm">
+                            {voter.totalVotes > 0
+                              ? `${Math.round((voter.successfulVotes / voter.totalVotes) * 100)}%`
+                              : 'N/A'}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-16 rounded-full bg-muted">
+                                <div
+                                  className="h-full rounded-full bg-primary"
+                                  style={{ width: `${Math.min(voter.reputation, 100)}%` }}
+                                />
+                              </div>
+                              <span className="text-sm">{voter.reputation}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                          {t('common.noData')}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </ContentSection>
+        </TabPanelWrapper>
+
+        <TabPanelWrapper tabId="analysis">
+          <div className="space-y-6">
+            <ContentSection title={t('uma.analysis.statusDistribution')}>
+              <ContentGrid columns={4}>
+                <div className="rounded-lg border border-border bg-card p-4 text-center">
+                  <p className="text-3xl font-bold text-yellow-500">{statusCounts.pending}</p>
+                  <p className="text-sm text-muted-foreground">{t('uma.status.pending')}</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4 text-center">
+                  <p className="text-3xl font-bold text-red-500">{statusCounts.disputed}</p>
+                  <p className="text-sm text-muted-foreground">{t('uma.status.disputed')}</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4 text-center">
+                  <p className="text-3xl font-bold text-green-500">{statusCounts.resolved}</p>
+                  <p className="text-sm text-muted-foreground">{t('uma.status.resolved')}</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4 text-center">
+                  <p className="text-3xl font-bold text-blue-500">{statusCounts.settled}</p>
+                  <p className="text-sm text-muted-foreground">{t('uma.status.settled')}</p>
+                </div>
+              </ContentGrid>
+            </ContentSection>
+
+            <ContentSection title={t('uma.analysis.chainDistribution')}>
+              <div className="rounded-lg border border-border bg-card p-4">
+                {loading ? (
+                  <Skeleton className="h-32 w-full" />
+                ) : allAssertions.length > 0 ? (
+                  <div className="space-y-2">
+                    {Object.entries(
+                      allAssertions.reduce(
+                        (acc, a) => {
+                          acc[a.chain] = (acc[a.chain] || 0) + 1;
+                          return acc;
+                        },
+                        {} as Record<string, number>,
+                      ),
+                    )
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([chain, count]) => (
+                        <div key={chain} className="flex items-center justify-between">
+                          <span className="capitalize">{chain}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-32 rounded-full bg-muted">
+                              <div
+                                className="h-full rounded-full bg-primary"
+                                style={{ width: `${(count / allAssertions.length) * 100}%` }}
+                              />
+                            </div>
+                            <span className="text-sm text-muted-foreground">{count}</span>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground">{t('common.noData')}</p>
+                )}
+              </div>
+            </ContentSection>
+          </div>
+        </TabPanelWrapper>
+      </ProtocolPageLayout>
+      {selectedDispute && (
+        <DisputeDetailModal
+          dispute={selectedDispute}
+          open={disputeModalOpen}
+          onOpenChange={setDisputeModalOpen}
+        />
+      )}
+      {selectedAssertion && (
+        <AssertionDetailModal
+          assertion={selectedAssertion}
+          open={assertionModalOpen}
+          onOpenChange={setAssertionModalOpen}
+        />
+      )}
+      {selectedVoterAddress && (
+        <VoterHistoryModal
+          voterAddress={selectedVoterAddress}
+          open={voterModalOpen}
+          onOpenChange={setVoterModalOpen}
+        />
+      )}
+    </>
   );
 }

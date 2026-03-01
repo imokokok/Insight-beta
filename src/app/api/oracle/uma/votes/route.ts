@@ -129,8 +129,14 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const assertionId = searchParams.get('assertionId') || undefined;
+    const voter = searchParams.get('voter') || undefined;
 
-    const votes = generateMockVotes(assertionId);
+    let votes = generateMockVotes(assertionId);
+
+    if (voter) {
+      votes = votes.filter((v) => v.voter.toLowerCase() === voter.toLowerCase());
+    }
+
     const voterStats = calculateVoterStats(votes);
     const summary = calculateSummary(votes);
 
