@@ -4,6 +4,7 @@ export const uma = {
   tabs: {
     overview: '概览',
     assertions: '断言',
+    disputes: '争议',
     voters: '投票者',
     analysis: '分析',
   },
@@ -42,6 +43,24 @@ export const uma = {
   analysis: {
     statusDistribution: '状态分布',
     chainDistribution: '链分布',
+  },
+  disputes: {
+    title: '争议列表',
+    assertionId: '关联断言',
+    disputer: '争议发起人',
+    disputeBond: '争议保证金',
+    status: '状态',
+    votesFor: '支持票',
+    votesAgainst: '反对票',
+    votingEnds: '投票截止',
+    noDisputes: '暂无争议数据',
+  },
+  filters: {
+    mine: '我的',
+    all: '全部',
+    pending: '待处理',
+    active: '进行中',
+    resolved: '已解决',
   },
   status: {
     pending: '待处理',

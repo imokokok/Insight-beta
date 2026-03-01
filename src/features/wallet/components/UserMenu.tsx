@@ -163,7 +163,7 @@ export function UserMenu() {
           {/* Menu Items */}
           <div className="space-y-1">
             <Link
-              href={attachInstanceId('/my-assertions') as Route}
+              href={attachInstanceId('/protocols/uma?tab=assertions&filter=mine') as Route}
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-primary/5 hover:text-primary"
               onClick={() => setIsOpen(false)}
             >
@@ -171,7 +171,7 @@ export function UserMenu() {
               {t('nav.myAssertions')}
             </Link>
             <Link
-              href={attachInstanceId('/my-disputes') as Route}
+              href={attachInstanceId('/protocols/uma?tab=disputes&filter=mine') as Route}
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-primary/5 hover:text-primary"
               onClick={() => setIsOpen(false)}
             >

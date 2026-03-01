@@ -4,6 +4,7 @@ export const uma = {
   tabs: {
     overview: 'Overview',
     assertions: 'Assertions',
+    disputes: 'Disputes',
     voters: 'Voters',
     analysis: 'Analysis',
   },
@@ -42,6 +43,24 @@ export const uma = {
   analysis: {
     statusDistribution: 'Status Distribution',
     chainDistribution: 'Chain Distribution',
+  },
+  disputes: {
+    title: 'Disputes List',
+    assertionId: 'Related Assertion',
+    disputer: 'Disputer',
+    disputeBond: 'Dispute Bond',
+    status: 'Status',
+    votesFor: 'Votes For',
+    votesAgainst: 'Votes Against',
+    votingEnds: 'Voting Ends',
+    noDisputes: 'No disputes data available',
+  },
+  filters: {
+    mine: 'Mine',
+    all: 'All',
+    pending: 'Pending',
+    active: 'Active',
+    resolved: 'Resolved',
   },
   status: {
     pending: 'Pending',
