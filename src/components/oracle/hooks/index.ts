@@ -1,10 +1,4 @@
 export {
-  useAutoRefresh,
-  type UseAutoRefreshOptions,
-  type UseAutoRefreshReturn,
-} from './useAutoRefresh';
-
-export {
   useProtocolData,
   type ProtocolType,
   type ProtocolDataConfig,

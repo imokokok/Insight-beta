@@ -37,9 +37,6 @@ export {
   AlertListSkeleton,
 } from './Skeleton';
 
-// Empty State - 通用空状态组件
-export { EmptyState, type EmptyStateProps } from './EmptyState';
-
 // Enhanced Empty States - 增强版空状态（直接从common导入）
 export {
   EnhancedEmptyState,
