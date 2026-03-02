@@ -15,4 +15,3 @@ export { PriceTrendTab } from './PriceTrendTab';
 export { QualityAnalysisTab } from './QualityAnalysisTab';
 export { PriceComparisonTab } from './PriceComparisonTab';
 export { BandKpiOverview, BandTopStatusBar, type BandKpiStats } from './dashboard';
-export type { NetworkHealthStatus } from '@/types/common';

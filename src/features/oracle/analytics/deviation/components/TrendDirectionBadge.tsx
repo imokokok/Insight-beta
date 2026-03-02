@@ -15,7 +15,7 @@ interface TrendDirectionBadgeProps {
 
 export function TrendDirectionBadge({ direction, strength }: TrendDirectionBadgeProps) {
   const { t } = useI18n();
-  const config = {
+  const config: Record<string, { icon: typeof TrendingUp; color: string; label: string }> = {
     increasing: {
       icon: TrendingUp,
       color: 'bg-red-500',
@@ -31,9 +31,24 @@ export function TrendDirectionBadge({ direction, strength }: TrendDirectionBadge
       color: 'bg-blue-500',
       label: t('common.trendStable'),
     },
+    up: {
+      icon: TrendingUp,
+      color: 'bg-green-500',
+      label: t('common.trendUp'),
+    },
+    down: {
+      icon: TrendingDown,
+      color: 'bg-red-500',
+      label: t('common.trendDown'),
+    },
+    neutral: {
+      icon: Minus,
+      color: 'bg-gray-500',
+      label: t('common.trendNeutral'),
+    },
   };
 
-  const { icon: Icon, color, label } = config[direction];
+  const { icon: Icon, color, label } = config[direction] ?? config.stable!;
 
   return (
     <Badge className={cn('gap-1', color)}>

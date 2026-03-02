@@ -17,25 +17,11 @@ import {
 import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import { CHART_TIME_RANGE_CONFIG, type ChartTimeRangeKey } from '@/config/constants';
 import { usePriceHistory } from '@/features/oracle/analytics/deviation/hooks/usePriceHistory';
 import { useI18n } from '@/i18n';
 import { CHART_GRID, CHART_AXIS, formatChartValue } from '@/lib/chart-config';
 import { cn, formatPrice } from '@/shared/utils';
-
-type TimeRangeKey = '1h' | '24h' | '7d' | '30d';
-
-interface TimeRangeConfig {
-  label: string;
-  hours: number;
-  limit: number;
-}
-
-const TIME_RANGE_CONFIG: Record<TimeRangeKey, TimeRangeConfig> = {
-  '1h': { label: '1H', hours: 1, limit: 60 },
-  '24h': { label: '24H', hours: 24, limit: 96 },
-  '7d': { label: '7D', hours: 168, limit: 168 },
-  '30d': { label: '30D', hours: 720, limit: 180 },
-};
 
 const ASSET_CONFIG = {
   'ETH/USD': { displaySymbol: 'ETH', color: '#3b82f6', gradientId: 'gradient-eth' },
@@ -137,12 +123,12 @@ const CustomLegend = ({
 
 export function ChainlinkPriceHistory({ className }: ChainlinkPriceHistoryProps) {
   const { t } = useI18n();
-  const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRangeKey>('24h');
+  const [selectedTimeRange, setSelectedTimeRange] = useState<ChartTimeRangeKey>('24h');
   const [selectedAssets, setSelectedAssets] = useState<AssetSymbol[]>(['ETH/USD']);
   const [compareMode, setCompareMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const timeRangeConfig = TIME_RANGE_CONFIG[selectedTimeRange];
+  const timeRangeConfig = CHART_TIME_RANGE_CONFIG[selectedTimeRange];
   const startTime = useMemo(() => {
     const now = new Date();
     now.setHours(now.getHours() - timeRangeConfig.hours);
@@ -367,7 +353,7 @@ export function ChainlinkPriceHistory({ className }: ChainlinkPriceHistoryProps)
               })}
             </div>
             <div className="flex items-center gap-1">
-              {(Object.keys(TIME_RANGE_CONFIG) as TimeRangeKey[]).map((key) => (
+              {(Object.keys(CHART_TIME_RANGE_CONFIG) as ChartTimeRangeKey[]).map((key) => (
                 <Button
                   key={key}
                   variant={selectedTimeRange === key ? 'default' : 'outline'}
@@ -375,7 +361,7 @@ export function ChainlinkPriceHistory({ className }: ChainlinkPriceHistoryProps)
                   onClick={() => setSelectedTimeRange(key)}
                   className="h-7 px-2 text-xs"
                 >
-                  {TIME_RANGE_CONFIG[key].label}
+                  {CHART_TIME_RANGE_CONFIG[key].label}
                 </Button>
               ))}
             </div>

@@ -15,10 +15,8 @@ export {
   TabNavigation,
   useTabNavigation,
   StatusIndicator,
-  type TrendDirection,
   type TabNavigationProps,
   type TabItem,
   type UseTabNavigationOptions,
   type UseTabNavigationReturn,
 } from './dashboard';
-export type { NetworkHealthStatus } from '@/types/common';

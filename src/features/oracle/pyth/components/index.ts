@@ -4,5 +4,4 @@ export { ConfidenceIntervalChart } from './ConfidenceIntervalChart';
 export { ConfidenceComparisonChart } from './ConfidenceComparisonChart';
 export { PythCrossChainComparison } from './CrossChainPriceComparison';
 export { PriceHistoryChart } from './PriceHistoryChart';
-export { PythKpiOverview, PythTopStatusBar, type TrendDirection } from './dashboard';
-export type { NetworkHealthStatus } from '@/types/common';
+export { PythKpiOverview, PythTopStatusBar } from './dashboard';

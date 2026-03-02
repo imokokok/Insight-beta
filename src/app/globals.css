@@ -875,7 +875,23 @@ body::before {
 }
 
 .animate-shimmer {
+  position: relative;
+  overflow: hidden;
   animation: shimmer 2s infinite;
+}
+
+.animate-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
 }
 
 .animate-slide-in-right {
@@ -938,26 +954,6 @@ body::before {
 .transition-card:active {
   transform: scale(0.98) translateY(-2px);
   transition-duration: 150ms;
-}
-
-/* 骨架屏 Shimmer 效果 */
-.animate-shimmer {
-  position: relative;
-  overflow: hidden;
-}
-
-.animate-shimmer::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite linear;
 }
 
 /* 价格闪烁工具类 - 使用统一的动画 */

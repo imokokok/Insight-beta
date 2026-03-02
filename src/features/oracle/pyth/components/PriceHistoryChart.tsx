@@ -20,6 +20,11 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import {
+  CHART_TIME_RANGE_CONFIG,
+  type ChartTimeRangeKey,
+  type ChartTimeRangeConfig,
+} from '@/config/constants';
 import { useI18n } from '@/i18n';
 import {
   CHART_COLORS,
@@ -34,21 +39,6 @@ import { formatPrice } from '@/shared/utils/format';
 import { cn } from '@/shared/utils/ui';
 
 import type { PriceHistoryPoint, PriceHistoryResponse } from '../types/pyth';
-
-type TimeRangeKey = '1h' | '24h' | '7d' | '30d';
-
-interface TimeRangeConfig {
-  label: string;
-  hours: number;
-  limit: number;
-}
-
-const TIME_RANGE_CONFIG: Record<TimeRangeKey, TimeRangeConfig> = {
-  '1h': { label: '1小时', hours: 1, limit: 60 },
-  '24h': { label: '24小时', hours: 24, limit: 1440 },
-  '7d': { label: '7天', hours: 168, limit: 1000 },
-  '30d': { label: '30天', hours: 720, limit: 2000 },
-};
 
 const POPULAR_SYMBOLS = [
   'BTC/USD',
@@ -67,13 +57,13 @@ interface PriceHistoryChartProps {
 
 export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryChartProps) {
   useI18n();
-  const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRangeKey>('24h');
+  const [selectedTimeRange, setSelectedTimeRange] = useState<ChartTimeRangeKey>('24h');
   const [selectedSymbol, setSelectedSymbol] = useState<string>(POPULAR_SYMBOLS[0] ?? 'BTC/USD');
   const [chartData, setChartData] = useState<PriceHistoryPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [_error, setError] = useState<string | null>(null);
 
-  const timeRangeConfig = TIME_RANGE_CONFIG[selectedTimeRange];
+  const timeRangeConfig = CHART_TIME_RANGE_CONFIG[selectedTimeRange];
 
   const fetchPriceHistory = useCallback(async () => {
     try {
@@ -219,7 +209,7 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
 
             <Tabs
               value={selectedTimeRange}
-              onValueChange={(value) => setSelectedTimeRange(value as TimeRangeKey)}
+              onValueChange={(value) => setSelectedTimeRange(value as ChartTimeRangeKey)}
             >
               <TabsList>
                 <TabsTrigger value="1h">1小时</TabsTrigger>
@@ -337,7 +327,7 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
   );
 }
 
-function generateMockData(symbol: string, timeRange: TimeRangeConfig): PriceHistoryPoint[] {
+function generateMockData(symbol: string, timeRange: ChartTimeRangeConfig): PriceHistoryPoint[] {
   const data: PriceHistoryPoint[] = [];
   const now = Date.now();
   const basePrice = getBasePrice(symbol);

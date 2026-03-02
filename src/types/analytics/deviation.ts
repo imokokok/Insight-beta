@@ -5,10 +5,11 @@
  */
 
 import type { OracleProtocol } from '@/types/oracle';
+import type { TrendDirection } from '@/types/stats';
 
 export type DeviationSeverity = 'low' | 'medium' | 'high' | 'critical';
 
-export type TrendDirection = 'increasing' | 'decreasing' | 'stable';
+export { TrendDirection };
 
 export interface DeviationThresholds {
   low: number;

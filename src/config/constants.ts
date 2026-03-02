@@ -278,6 +278,21 @@ export const TIME_RANGE_OPTIONS = [
 
 export type TimeRange = (typeof TIME_RANGE_OPTIONS)[number]['value'];
 
+export interface ChartTimeRangeConfig {
+  label: string;
+  hours: number;
+  limit: number;
+}
+
+export type ChartTimeRangeKey = '1h' | '24h' | '7d' | '30d';
+
+export const CHART_TIME_RANGE_CONFIG: Record<ChartTimeRangeKey, ChartTimeRangeConfig> = {
+  '1h': { label: '1H', hours: 1, limit: 60 },
+  '24h': { label: '24H', hours: 24, limit: 96 },
+  '7d': { label: '7D', hours: 168, limit: 168 },
+  '30d': { label: '30D', hours: 720, limit: 180 },
+} as const;
+
 // ============================================================================
 // 跨链功能常量
 // ============================================================================
