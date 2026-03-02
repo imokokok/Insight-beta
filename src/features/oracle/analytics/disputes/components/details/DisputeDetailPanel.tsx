@@ -219,7 +219,7 @@ export function DisputeDetailPanel({
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-background/95 p-4 backdrop-blur">
           <h2 className="text-lg font-semibold">{t('analytics:disputes.disputes.details')}</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label={t('common.close')}>
             <X className="h-5 w-5" />
           </Button>
         </div>

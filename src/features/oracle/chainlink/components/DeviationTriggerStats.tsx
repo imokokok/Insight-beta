@@ -128,7 +128,7 @@ export function DeviationTriggerStats({
     return (
       <div className={className}>
         <div className="flex flex-col items-center justify-center gap-4 py-12">
-          <AlertTriangle className="h-12 w-12 text-amber-500" />
+          <AlertTriangle className="h-12 w-12 text-warning" />
           <div className="text-center">
             <p className="font-medium text-foreground">{t('common.error') || '加载数据失败'}</p>
             <p className="text-sm text-muted-foreground">{error}</p>
@@ -158,7 +158,7 @@ export function DeviationTriggerStats({
           </button>
         ))}
       </div>
-      <Button variant="outline" size="icon" onClick={fetchData}>
+      <Button variant="outline" size="icon" onClick={fetchData} aria-label={t('common.refresh')}>
         <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
       </Button>
     </div>
@@ -371,7 +371,12 @@ export function DeviationTriggerStats({
                   </button>
                 ))}
               </div>
-              <Button variant="outline" size="icon" onClick={fetchData}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={fetchData}
+                aria-label={t('common.refresh')}
+              >
                 <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
               </Button>
             </div>

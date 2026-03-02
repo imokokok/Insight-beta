@@ -259,7 +259,12 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
                 className="w-full pl-8 sm:w-64"
               />
             </div>
-            <Button variant="outline" size="icon" onClick={fetchFeeds}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={fetchFeeds}
+              aria-label={t('common.refresh')}
+            >
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>

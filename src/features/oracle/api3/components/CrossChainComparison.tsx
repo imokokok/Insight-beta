@@ -175,7 +175,12 @@ export function CrossChainComparison({
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" onClick={handleRefresh}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRefresh}
+            aria-label={t('common.refresh')}
+          >
             <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
           </Button>
         </div>

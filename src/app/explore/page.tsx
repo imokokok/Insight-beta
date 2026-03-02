@@ -105,7 +105,7 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="min-h-screen p-4 sm:p-6">
+    <div className="container mx-auto min-h-screen p-4 sm:p-6">
       <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
         <div className="px-4 py-3">
           <GlobalSearch />

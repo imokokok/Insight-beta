@@ -428,7 +428,7 @@ export function NotificationChannels({
                               size="icon"
                               onClick={() => handleTest(channel.id)}
                               disabled={isTesting || !channel.enabled}
-                              title={t('alerts.channels.test')}
+                              aria-label={t('alerts.channels.test')}
                             >
                               {isTesting ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -440,7 +440,7 @@ export function NotificationChannels({
                               variant="ghost"
                               size="icon"
                               onClick={() => handleEdit(channel)}
-                              title={t('common.edit')}
+                              aria-label={t('common.edit')}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -449,7 +449,7 @@ export function NotificationChannels({
                               size="icon"
                               onClick={() => handleDelete(channel.id)}
                               disabled={deletingId === channel.id}
-                              title={t('common.delete')}
+                              aria-label={t('common.delete')}
                               className="text-destructive hover:text-destructive"
                             >
                               <Trash2 className="h-4 w-4" />

@@ -25,12 +25,12 @@ const buttonVariants = cva(
         glow: 'text-primary-foreground bg-primary shadow-[0_0_20px_rgba(59,130,246,0.5)] hover:bg-primary-600 hover:shadow-[0_0_30px_rgba(59,130,246,0.7)]',
       },
       size: {
-        default: 'h-10 px-4 py-2',
-        sm: 'h-9 rounded-md px-3 text-xs',
-        lg: 'h-11 rounded-md px-8 text-base',
-        icon: 'h-10 w-10',
-        'icon-sm': 'h-8 w-8',
-        'icon-lg': 'h-12 w-12',
+        default: 'h-10 px-4 py-2 min-[0px]:min-h-[44px]',
+        sm: 'h-9 rounded-md px-3 text-xs min-[0px]:min-h-[44px]',
+        lg: 'h-11 rounded-md px-8 text-base min-[0px]:min-h-[44px]',
+        icon: 'h-10 w-10 min-[0px]:min-h-[44px] min-[0px]:min-w-[44px]',
+        'icon-sm': 'h-8 w-8 min-[0px]:min-h-[44px] min-[0px]:min-w-[44px]',
+        'icon-lg': 'h-12 w-12 min-[0px]:min-h-[44px] min-[0px]:min-w-[44px]',
       },
     },
     defaultVariants: {

@@ -187,7 +187,13 @@ export function AlertRuleForm({ rule, onSubmit, onCancel }: AlertRuleFormProps) 
         <h2 className="text-xl font-semibold">
           {rule ? t('alerts.rules.editRule') : t('alerts.rules.createRule')}
         </h2>
-        <Button type="button" variant="ghost" size="icon" onClick={onCancel}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={onCancel}
+          aria-label={t('common.close')}
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>

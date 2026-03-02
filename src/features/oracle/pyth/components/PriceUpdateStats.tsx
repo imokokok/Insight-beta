@@ -330,7 +330,7 @@ export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
       className={className}
       title={
         <span className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-amber-500" />
+          <BarChart3 className="h-5 w-5 text-warning" />
           {t('pyth.updates.title')}
           <Badge variant="secondary" className="ml-2">
             {filteredUpdates.length}
@@ -362,7 +362,12 @@ export function PriceUpdateStats({ className }: PriceUpdateStatsProps) {
               className="w-full pl-8 sm:w-48"
             />
           </div>
-          <Button variant="outline" size="icon" onClick={handleRefresh}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRefresh}
+            aria-label={t('common.refresh')}
+          >
             <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
           </Button>
         </div>

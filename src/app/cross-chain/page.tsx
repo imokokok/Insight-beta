@@ -120,7 +120,7 @@ export default function CrossChainAnalysisPage() {
   );
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
+    <div className="container mx-auto space-y-6 p-4 sm:p-6">
       <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl">

@@ -2,7 +2,7 @@
 // 统一的 UI 组件导出
 
 // Buttons - 统一版（合并了 button 和 button-enhanced）
-export { Button, buttonVariants, type ButtonProps } from './Button';
+export { Button, buttonVariants, type ButtonProps } from './button';
 
 // Cards - 统一版（合并了 card 和 card-enhanced）
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardEnhanced } from './Card';
@@ -72,7 +72,7 @@ export {
 } from './DropdownMenu';
 
 // Input
-export { Input, type InputProps } from './Input';
+export { Input, type InputProps } from './input';
 
 // Label
 export { Label, type LabelProps } from './Label';
@@ -110,3 +110,6 @@ export { EnhancedInput, type EnhancedInputProps } from './EnhancedInput';
 // Error Banner
 export { ErrorBanner } from './ErrorBanner';
 export type { ErrorBannerProps } from './ErrorBanner';
+
+// Optimized Image
+export { OptimizedImage, IconImage, AvatarImage } from './OptimizedImage';

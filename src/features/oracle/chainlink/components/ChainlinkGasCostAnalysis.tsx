@@ -342,7 +342,7 @@ export function ChainlinkGasCostAnalysis({
     return (
       <div className={className}>
         <div className="flex flex-col items-center justify-center gap-4 py-12">
-          <Fuel className="h-12 w-12 text-amber-500" />
+          <Fuel className="h-12 w-12 text-warning" />
           <div className="text-center">
             <p className="font-medium text-foreground">加载数据失败</p>
             <p className="text-sm text-muted-foreground">{error}</p>
@@ -386,7 +386,12 @@ export function ChainlinkGasCostAnalysis({
           </button>
         ))}
       </div>
-      <Button variant="outline" size="icon" onClick={handleRefresh}>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleRefresh}
+        aria-label={t('common.refresh')}
+      >
         <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
       </Button>
     </div>
@@ -602,7 +607,12 @@ export function ChainlinkGasCostAnalysis({
                   </button>
                 ))}
               </div>
-              <Button variant="outline" size="icon" onClick={handleRefresh}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleRefresh}
+                aria-label={t('common.refresh')}
+              >
                 <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
               </Button>
             </div>

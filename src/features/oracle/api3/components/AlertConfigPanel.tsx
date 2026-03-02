@@ -21,67 +21,70 @@ import { Input } from '@/components/ui';
 import { Label } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Switch } from '@/components/ui';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 import type { API3AlertConfig, API3AlertType, API3AlertsResponse } from '../types/api3';
-
-const ALERT_TYPE_INFO: Record<
-  API3AlertType,
-  {
-    label: string;
-    description: string;
-    icon: typeof AlertTriangle;
-    thresholdLabel: string;
-    defaultThreshold: number;
-  }
-> = {
-  price_deviation: {
-    label: '价格偏差告警',
-    description: '当价格偏差超过设定阈值时触发告警',
-    icon: TrendingUp,
-    thresholdLabel: '偏差阈值 (%)',
-    defaultThreshold: 5,
-  },
-  update_frequency: {
-    label: '更新频率异常',
-    description: '当更新间隔超过设定时间时触发告警',
-    icon: Clock,
-    thresholdLabel: '最大更新间隔 (秒)',
-    defaultThreshold: 300,
-  },
-  airnode_offline: {
-    label: 'Airnode 离线',
-    description: '当 Airnode 离线时自动触发告警',
-    icon: Server,
-    thresholdLabel: '离线检测延迟 (秒)',
-    defaultThreshold: 60,
-  },
-};
-
-const CHAIN_OPTIONS = [
-  { value: 'ethereum', label: 'Ethereum' },
-  { value: 'arbitrum', label: 'Arbitrum' },
-  { value: 'optimism', label: 'Optimism' },
-  { value: 'polygon', label: 'Polygon' },
-  { value: 'bsc', label: 'BSC' },
-  { value: 'avalanche', label: 'Avalanche' },
-];
-
-const DAPI_OPTIONS = [
-  { value: 'BTC/USD', label: 'BTC/USD' },
-  { value: 'ETH/USD', label: 'ETH/USD' },
-  { value: 'LINK/USD', label: 'LINK/USD' },
-  { value: 'MATIC/USD', label: 'MATIC/USD' },
-  { value: 'BNB/USD', label: 'BNB/USD' },
-  { value: 'AVAX/USD', label: 'AVAX/USD' },
-  { value: 'EUR/USD', label: 'EUR/USD' },
-];
 
 interface AlertConfigPanelProps {
   className?: string;
 }
 
 export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
+  const { t } = useI18n();
+
+  const ALERT_TYPE_INFO: Record<
+    API3AlertType,
+    {
+      label: string;
+      description: string;
+      icon: typeof AlertTriangle;
+      thresholdLabel: string;
+      defaultThreshold: number;
+    }
+  > = {
+    price_deviation: {
+      label: t('api3:alertConfig.priceDeviation.label'),
+      description: t('api3:alertConfig.priceDeviation.description'),
+      icon: TrendingUp,
+      thresholdLabel: t('api3:alertConfig.priceDeviation.thresholdLabel'),
+      defaultThreshold: 5,
+    },
+    update_frequency: {
+      label: t('api3:alertConfig.updateFrequency.label'),
+      description: t('api3:alertConfig.updateFrequency.description'),
+      icon: Clock,
+      thresholdLabel: t('api3:alertConfig.updateFrequency.thresholdLabel'),
+      defaultThreshold: 300,
+    },
+    airnode_offline: {
+      label: t('api3:alertConfig.airnodeOffline.label'),
+      description: t('api3:alertConfig.airnodeOffline.description'),
+      icon: Server,
+      thresholdLabel: t('api3:alertConfig.airnodeOffline.thresholdLabel'),
+      defaultThreshold: 60,
+    },
+  };
+
+  const CHAIN_OPTIONS = [
+    { value: 'ethereum', label: 'Ethereum' },
+    { value: 'arbitrum', label: 'Arbitrum' },
+    { value: 'optimism', label: 'Optimism' },
+    { value: 'polygon', label: 'Polygon' },
+    { value: 'bsc', label: 'BSC' },
+    { value: 'avalanche', label: 'Avalanche' },
+  ];
+
+  const DAPI_OPTIONS = [
+    { value: 'BTC/USD', label: 'BTC/USD' },
+    { value: 'ETH/USD', label: 'ETH/USD' },
+    { value: 'LINK/USD', label: 'LINK/USD' },
+    { value: 'MATIC/USD', label: 'MATIC/USD' },
+    { value: 'BNB/USD', label: 'BNB/USD' },
+    { value: 'AVAX/USD', label: 'AVAX/USD' },
+    { value: 'EUR/USD', label: 'EUR/USD' },
+  ];
+
   const [alerts, setAlerts] = useState<API3AlertConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -235,20 +238,20 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg">告警配置</CardTitle>
+              <CardTitle className="text-lg">{t('api3:alertConfig.title')}</CardTitle>
             </div>
             <div className="flex items-center gap-3">
               <Badge variant="secondary" className="gap-1">
                 <span className="h-2 w-2 rounded-full bg-green-500" />
-                {enabledCount} 启用
+                {enabledCount} {t('api3:alertConfig.enabled')}
               </Badge>
               <Badge variant="outline" className="gap-1">
                 <span className="h-2 w-2 rounded-full bg-gray-400" />
-                {disabledCount} 禁用
+                {disabledCount} {t('api3:alertConfig.disabled')}
               </Badge>
             </div>
           </div>
-          <CardDescription>配置 API3 dAPI 监控告警规则</CardDescription>
+          <CardDescription>{t('api3:alertConfig.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
@@ -259,13 +262,15 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
             <div className="flex justify-end">
               <Button onClick={() => setShowForm(true)} className="gap-2">
                 <Plus className="h-4 w-4" />
-                添加告警规则
+                {t('api3:alertConfig.addRule')}
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border p-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-medium">{editingAlert ? '编辑告警规则' : '新建告警规则'}</h3>
+                <h3 className="font-medium">
+                  {editingAlert ? t('api3:alertConfig.editRule') : t('api3:alertConfig.newRule')}
+                </h3>
                 <Button
                   type="button"
                   variant="ghost"
@@ -279,7 +284,7 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="alertType">告警类型</Label>
+                  <Label htmlFor="alertType">{t('api3:alertConfig.alertType')}</Label>
                   <Select
                     value={formData.type}
                     onValueChange={(value) =>
@@ -293,7 +298,7 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
                     }
                   >
                     <SelectTrigger id="alertType">
-                      <SelectValue placeholder="选择告警类型" />
+                      <SelectValue placeholder={t('api3:alertConfig.selectAlertType')} />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(ALERT_TYPE_INFO).map(([key, info]) => (
@@ -309,10 +314,10 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="alertName">告警名称</Label>
+                  <Label htmlFor="alertName">{t('api3:alertConfig.alertName')}</Label>
                   <Input
                     id="alertName"
-                    placeholder="输入告警名称"
+                    placeholder={t('api3:alertConfig.enterAlertName')}
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
@@ -331,13 +336,13 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
               <div className="grid gap-4 md:grid-cols-2">
                 {(formData.type === 'price_deviation' || formData.type === 'update_frequency') && (
                   <div className="space-y-2">
-                    <Label htmlFor="targetDapi">目标 dAPI</Label>
+                    <Label htmlFor="targetDapi">{t('api3:alertConfig.targetDapi')}</Label>
                     <Select
                       value={formData.targetDapi}
                       onValueChange={(value) => setFormData({ ...formData, targetDapi: value })}
                     >
                       <SelectTrigger id="targetDapi">
-                        <SelectValue placeholder="选择 dAPI" />
+                        <SelectValue placeholder={t('api3:alertConfig.selectDapi')} />
                       </SelectTrigger>
                       <SelectContent>
                         {DAPI_OPTIONS.map((option) => (
@@ -352,10 +357,10 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
 
                 {formData.type === 'airnode_offline' && (
                   <div className="space-y-2">
-                    <Label htmlFor="targetAirnode">目标 Airnode</Label>
+                    <Label htmlFor="targetAirnode">{t('api3:alertConfig.targetAirnode')}</Label>
                     <Input
                       id="targetAirnode"
-                      placeholder="输入 Airnode 地址"
+                      placeholder={t('api3:alertConfig.enterAirnodeAddress')}
                       value={formData.targetAirnode}
                       onChange={(e) => setFormData({ ...formData, targetAirnode: e.target.value })}
                     />
@@ -363,13 +368,13 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="chain">区块链网络</Label>
+                  <Label htmlFor="chain">{t('api3:alertConfig.blockchainNetwork')}</Label>
                   <Select
                     value={formData.chain}
                     onValueChange={(value) => setFormData({ ...formData, chain: value })}
                   >
                     <SelectTrigger id="chain">
-                      <SelectValue placeholder="选择网络" />
+                      <SelectValue placeholder={t('api3:alertConfig.selectNetwork')} />
                     </SelectTrigger>
                     <SelectContent>
                       {CHAIN_OPTIONS.map((option) => (
@@ -383,14 +388,15 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="threshold">
-                    {ALERT_TYPE_INFO[formData.type as API3AlertType]?.thresholdLabel || '阈值'}
+                    {ALERT_TYPE_INFO[formData.type as API3AlertType]?.thresholdLabel ||
+                      t('api3:alertConfig.threshold')}
                   </Label>
                   <Input
                     id="threshold"
                     type="number"
                     min="0"
                     step="1"
-                    placeholder="输入阈值"
+                    placeholder={t('api3:alertConfig.enterThreshold')}
                     value={formData.threshold}
                     onChange={(e) => setFormData({ ...formData, threshold: e.target.value })}
                     required
@@ -406,14 +412,18 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
                     onCheckedChange={(checked) => setFormData({ ...formData, enabled: checked })}
                   />
                   <Label htmlFor="enabled" className="cursor-pointer">
-                    启用告警
+                    {t('api3:alertConfig.enableAlert')}
                   </Label>
                 </div>
                 <div className="flex gap-2">
                   <Button type="button" variant="outline" onClick={resetForm}>
-                    取消
+                    {t('api3:alertConfig.cancel')}
                   </Button>
-                  <Button type="submit">{editingAlert ? '保存' : '创建'}</Button>
+                  <Button type="submit">
+                    {editingAlert
+                      ? t('api3:alertConfig.updateAlert')
+                      : t('api3:alertConfig.createAlert')}
+                  </Button>
                 </div>
               </div>
             </form>
@@ -423,8 +433,10 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">告警规则列表</CardTitle>
-          <CardDescription>已配置的告警规则 ({alerts.length})</CardDescription>
+          <CardTitle className="text-base">{t('api3:alertConfig.alertRulesList')}</CardTitle>
+          <CardDescription>
+            {t('api3:alertConfig.configuredAlertRules', { count: alerts.length })}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -436,8 +448,8 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
           ) : alerts.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground">
               <Bell className="mx-auto h-8 w-8 opacity-50" />
-              <p className="mt-2">暂无告警规则</p>
-              <p className="text-sm">点击上方按钮添加第一个告警规则</p>
+              <p className="mt-2">{t('api3:alertConfig.noAlertRules')}</p>
+              <p className="text-sm">{t('api3:alertConfig.clickToAddAlert')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -470,12 +482,12 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>
-                          阈值:{' '}
+                          {t('api3:alertConfig.threshold')}:{' '}
                           {alert.type === 'price_deviation'
                             ? `${alert.threshold}%`
                             : alert.type === 'update_frequency'
-                              ? `${alert.threshold}秒`
-                              : `${alert.threshold}秒`}
+                              ? `${alert.threshold}${t('api3:alertConfig.seconds')}`
+                              : `${alert.threshold}${t('api3:alertConfig.seconds')}`}
                         </span>
                         {alert.targetDapi && <span>dAPI: {alert.targetDapi}</span>}
                         {alert.targetAirnode && <span>Airnode: {alert.targetAirnode}</span>}
@@ -492,6 +504,7 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
                       size="icon"
                       className="h-8 w-8"
                       onClick={() => handleEdit(alert)}
+                      aria-label={t('common.edit')}
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>
@@ -500,6 +513,7 @@ export function AlertConfigPanel({ className }: AlertConfigPanelProps) {
                       size="icon"
                       className="text-destructive hover:text-destructive h-8 w-8"
                       onClick={() => handleDelete(alert.id)}
+                      aria-label={t('common.delete')}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

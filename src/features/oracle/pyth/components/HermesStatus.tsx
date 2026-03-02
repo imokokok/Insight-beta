@@ -111,9 +111,9 @@ export function HermesStatus({ className }: HermesStatusProps) {
   const getStatusIcon = (status: HermesService['status']) => {
     switch (status) {
       case 'healthy':
-        return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-success" />;
       case 'degraded':
-        return <AlertCircle className="h-4 w-4 text-amber-500" />;
+        return <AlertCircle className="h-4 w-4 text-warning" />;
       case 'down':
         return <AlertCircle className="h-4 w-4 text-red-500" />;
     }
@@ -181,27 +181,32 @@ export function HermesStatus({ className }: HermesStatusProps) {
               {services.length}
             </Badge>
           </CardTitle>
-          <Button variant="outline" size="icon" onClick={handleRefresh}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRefresh}
+            aria-label={t('common.refresh')}
+          >
             <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
           </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-          <div className="rounded-lg bg-emerald-500/10 p-3">
+          <div className="rounded-lg bg-success/10 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <CheckCircle2 className="h-3 w-3" />
               {t('pyth.hermes.healthy')}
             </div>
-            <p className="mt-1 text-lg font-bold text-emerald-500">{stats.healthyCount}</p>
+            <p className="mt-1 text-lg font-bold text-success">{stats.healthyCount}</p>
           </div>
 
-          <div className="rounded-lg bg-amber-500/10 p-3">
+          <div className="rounded-lg bg-warning/10 p-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <AlertCircle className="h-3 w-3" />
               {t('pyth.hermes.degraded')}
             </div>
-            <p className="mt-1 text-lg font-bold text-amber-500">{stats.degradedCount}</p>
+            <p className="mt-1 text-lg font-bold text-warning">{stats.degradedCount}</p>
           </div>
 
           <div className="rounded-lg bg-red-500/10 p-3">

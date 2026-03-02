@@ -139,7 +139,7 @@ const protocolColors = {
 };
 
 export function CrossProtocolComparison({ className }: { className?: string }) {
-  useI18n();
+  const { t } = useI18n();
   const [data, setData] = useState<ComparisonData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ComparisonTab>('latency');
@@ -942,7 +942,13 @@ export function CrossProtocolComparison({ className }: { className?: string }) {
               从延迟、可用性、Gas 成本和数据质量等维度对比两大预言机协议
             </CardDescription>
           </div>
-          <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isLoading}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={isLoading}
+            aria-label={t('common.refresh')}
+          >
             <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
           </Button>
         </div>
