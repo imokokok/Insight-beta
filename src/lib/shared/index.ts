@@ -2,15 +2,10 @@
  * Shared Modules - 共享模块统一导出
  *
  * 提供项目级别的代码复用：
- * - 数据库工具
  * - 区块链抽象
  * - 错误处理（已迁移到 lib/errors）
  * - 日志工具
  */
-
-// 数据库工具
-export { BatchInserter, createBatchInserter } from './database/BatchInserter';
-export type { BatchInserterConfig } from './database/BatchInserter';
 
 // 区块链抽象
 export { EvmOracleClient } from './blockchain/EvmOracleClient';

@@ -1,18 +1,5 @@
 export const protocol = {
-  pageTitle: 'Protocols',
-  pageDescription: 'Analyze oracle protocols and their performance',
-  stats: {
-    totalProtocols: 'Total Protocols',
-    active: 'Active',
-    totalFeeds: 'Total Feeds',
-  },
   searchPlaceholder: 'Search protocols...',
-  tableHeaders: {
-    priceFeeds: 'Price Feeds',
-    avgLatency: 'Avg Latency',
-    uptime: 'Uptime',
-    lastUpdate: 'Last Update',
-  },
   priceFeeds: {
     pageTitle: 'Price Feeds',
     pageDescription: 'Real-time price data from multiple oracle protocols',
@@ -25,31 +12,6 @@ export const protocol = {
     hours24: '24h',
     vol: 'Vol',
   },
-  emptyStates: {
-    exploreProtocols: 'Explore Oracle Protocols',
-    exploreProtocolsDesc:
-      'View real-time data and performance metrics from Chainlink, Pyth, Band, and other major oracle protocols.',
-    noDataAvailable: 'No Data Available',
-    noDataDesc: 'There is no data to display at the moment.',
-    dataUnavailable: '{{pair}} Data Unavailable',
-    selectTradingPair: 'Select a Trading Pair',
-    dataSynchronizing: 'Data for this pair is being synchronized. Please try again later.',
-    selectPairDesc: 'Select a trading pair to view real-time price data and analysis charts.',
-  },
-  health: {
-    title: 'Protocol Health',
-    excellent: 'Excellent',
-    good: 'Good',
-    degraded: 'Degraded',
-    critical: 'Critical',
-    metrics: {
-      healthScore: 'Health Score',
-      accuracy: 'Accuracy',
-      uptime: 'Uptime',
-      latency: 'Latency',
-      feeds: 'Feeds',
-    },
-  },
   comparison: {
     title: 'Protocol Comparison',
     description: 'Performance metrics by protocol',
@@ -58,8 +20,6 @@ export const protocol = {
   error: {
     failedToLoad: 'Failed to Load Protocol',
   },
-  nodesTitle: 'Nodes',
-  nodesDescription: '{{active}} active / {{total}} total',
   nodesAccuracy: 'accuracy',
   priceFeedsTitle: 'Price Feeds',
   priceFeedsDescription: '{{active}} active / {{total}} total',

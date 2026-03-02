@@ -25,27 +25,7 @@ export const protocols = {
     description:
       'Cross-chain data oracle platform connecting real-world data and APIs to smart contracts with Cosmos IBC integration',
   },
-  features: {
-    ocr: 'OCR',
-    vrf: 'VRF',
-    automation: 'Automation',
-    ccip: 'CCIP',
-    highFrequency: 'High Frequency',
-    confidenceIntervals: 'Confidence Intervals',
-    hermes: 'Hermes',
-    publishers: 'Publishers',
-    airnode: 'Airnode',
-    dapis: 'dAPIs',
-    oev: 'OEV',
-    firstParty: 'First-party',
-    crossChain: 'Cross-chain',
-    ibc: 'IBC',
-    oracleScripts: 'Oracle Scripts',
-    dataSources: 'Data Sources',
-  },
   status: {
     active: 'Active',
-    maintenance: 'Maintenance',
-    deprecated: 'Deprecated',
   },
 };

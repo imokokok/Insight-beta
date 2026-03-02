@@ -1,7 +1,6 @@
 export const dashboard = {
   pageTitle: 'Oracle Operations Overview',
   pageDescription: 'Real-time health and risk analytics',
-  loadingMessage: 'Loading dashboard data...',
   failedToLoad: 'Failed to load dashboard data',
   tabs: {
     overview: 'Overview',

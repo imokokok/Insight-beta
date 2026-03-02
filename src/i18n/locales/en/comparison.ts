@@ -187,7 +187,6 @@ export const comparison = {
     title: 'Protocol Comparison',
     description: 'Select 2-4 protocols for multi-dimensional comparison',
     selectProtocols: 'Select protocols to compare',
-    selectedCount: '{count}/{max} protocols selected',
     searchProtocol: 'Search protocol...',
     noProtocolFound: 'No protocol found',
     selected: 'Selected',

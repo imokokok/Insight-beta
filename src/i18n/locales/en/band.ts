@@ -69,20 +69,6 @@ export const band = {
   oracleScripts: {
     error: 'Error',
     empty: 'No Oracle Scripts found',
-    table: {
-      name: 'Name',
-      description: 'Description',
-      status: 'Status',
-      avgResponse: 'Avg Response',
-      successRate: 'Success Rate',
-      lastRequest: 'Last Request',
-    },
-    detail: {
-      scriptId: 'Script ID',
-      owner: 'Owner',
-      codeHash: 'Code Hash',
-      schema: 'Schema',
-    },
   },
   oracleScriptTypes: {
     priceFeed: {
@@ -102,21 +88,12 @@ export const band = {
       description: 'Get stock price data',
     },
   },
-  dataFreshness: {
-    threshold5min: '5-minute threshold',
-    threshold10min: '10-minute threshold',
-  },
-  validatorHealth: {
-    threshold85: '85% threshold',
-    threshold95: '95% threshold',
-  },
   qualityAnalysis: {
     title: 'Data Quality Overview',
     overallScore: 'Overall Score',
     dataIntegrity: 'Data Integrity',
     avgLatency: 'Avg Latency',
     consistencyScore: 'Consistency Score',
-    deviationFromMedian: 'Deviation from Median',
     responseTimeDistribution: 'Response Time Distribution',
     max: 'Max',
     dataConsistencyCheck: 'Data Consistency Check',
@@ -149,6 +126,5 @@ export const band = {
   priceTrend: {
     title: 'Price Trend Analysis',
     chartTitle: 'Price Chart',
-    noData: 'No price trend data available',
   },
 };

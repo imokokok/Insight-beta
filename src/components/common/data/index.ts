@@ -50,13 +50,6 @@ export {
   type InlineDataRowProps,
   type InlineDataItem,
 } from './InlineDataDisplay';
-export {
-  TableSection,
-  DataPanel,
-  type TableSectionProps,
-  type TableSectionColumn,
-  type DataPanelProps,
-} from './TableSection';
 export { KpiCard, KpiGrid, DEFAULT_KPI_DATA, TREND_COLORS, STATUS_COLORS } from './KpiCard';
 export type { KpiCardData, TrendDirection, KpiStatus } from './KpiCard';
 export { MiniTrend } from './MiniTrend';

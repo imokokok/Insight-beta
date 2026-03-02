@@ -10,21 +10,13 @@ export { DeviationTriggerStats } from './DeviationTriggerStats';
 export { ChainlinkCrossChainComparison } from './CrossChainPriceComparison';
 
 export {
-  DashboardLayout,
-  LeftNavSection,
-  MainContentSection,
-  RightStatusSection,
   TopStatusBar,
   KpiOverview,
-  CollapsibleDataPanel,
   TabNavigation,
-  TabContent,
-  TabPanelWrapper,
   useTabNavigation,
+  StatusIndicator,
   type TrendDirection,
   type TabNavigationProps,
-  type TabContentProps,
-  type TabPanelWrapperProps,
   type TabItem,
   type UseTabNavigationOptions,
   type UseTabNavigationReturn,

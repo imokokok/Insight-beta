@@ -4,7 +4,7 @@
  * 安全模块的公共类型定义
  */
 
-export type { ThreatLevel } from '@/features/security/components/ThreatLevelBadge';
+export type ThreatLevel = 'critical' | 'high' | 'medium' | 'low';
 
 export interface SecurityAlert {
   id: string;

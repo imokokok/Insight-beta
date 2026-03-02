@@ -1,7 +1,6 @@
 export const dashboard = {
   pageTitle: '预言机运营概览',
   pageDescription: '实时健康和风险分析',
-  loadingMessage: '加载仪表板数据...',
   failedToLoad: '加载仪表板数据失败',
   tabs: {
     overview: '概览',

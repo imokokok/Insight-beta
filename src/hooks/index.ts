@@ -25,7 +25,7 @@ export { usePageOptimizations } from './usePageOptimizations';
 
 // ==================== 响应式 Hooks ====================
 
-export { useMediaQuery, useIsLargeScreen, useIsMobile } from './useMediaQuery';
+export { useMediaQuery, useIsMobile } from './useMediaQuery';
 
 // ==================== 无障碍 Hooks ====================
 export { useReducedMotion } from './useReducedMotion';

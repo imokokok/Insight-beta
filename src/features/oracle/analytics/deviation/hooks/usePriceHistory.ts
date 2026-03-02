@@ -58,27 +58,3 @@ export function usePriceHistory(
     refresh: mutate,
   };
 }
-
-export function useLatestPrices(protocol?: string, symbol?: string) {
-  const params = new URLSearchParams();
-  params.set('latest', 'true');
-  if (protocol) params.set('protocol', protocol);
-  if (symbol) params.set('symbol', symbol);
-
-  const { data, error, isLoading, mutate } = useSWR<PriceHistoryResponse>(
-    `/api/oracle/history/prices?${params.toString()}`,
-    fetcher,
-    {
-      refreshInterval: 30000,
-      revalidateOnFocus: false,
-    },
-  );
-
-  return {
-    data: data?.data ?? [],
-    isLoading,
-    isError: !!error,
-    error: error?.message,
-    refresh: mutate,
-  };
-}

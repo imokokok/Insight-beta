@@ -61,7 +61,6 @@ export const pyth = {
     title: 'Price Status Overview',
     totalFeeds: 'Total Feeds',
     activeFeeds: 'Active Feeds',
-    staleFeeds: 'Stale Feeds',
     avgUpdateFrequency: 'Avg Update Frequency',
     avgLatency: 'Avg Latency',
     statistics: 'Price Feed Statistics',

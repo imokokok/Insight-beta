@@ -63,8 +63,6 @@ export const comparison = {
     records: '条记录',
     search: '搜索',
     lastUpdated: '最后更新',
-    priceHistory: '价格历史',
-    noData: '暂无数据',
   },
   heatmap: {
     title: '价格偏离热力图',
@@ -185,7 +183,6 @@ export const comparison = {
     title: '协议对比',
     description: '选择2-4个协议进行多维度对比分析',
     selectProtocols: '选择协议进行对比',
-    selectedCount: '已选择 {count}/{max} 个协议',
     searchProtocol: '搜索协议...',
     noProtocolFound: '未找到协议',
     selected: '已选',

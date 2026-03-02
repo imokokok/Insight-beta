@@ -16,28 +16,4 @@ export const overview = {
   noAnomalies: 'No Anomalies',
   quickAccess: 'Quick Access',
   quickAccessDesc: 'Quick links to common features',
-  stats: {
-    totalTVL: 'Total TVL',
-    activeProtocols: 'Active Protocols',
-    avgLatency: 'Avg Latency',
-    healthScore: 'Health Score',
-    totalFeeds: 'Total Feeds',
-    activeFeeds: 'Active Feeds',
-    totalUpdates24h: '24h Updates',
-  },
-  quickLinks: {
-    priceComparison: 'Price Comparison',
-    priceComparisonDesc: 'Compare oracle prices',
-    crossChain: 'Cross-Chain Analysis',
-    crossChainDesc: 'Cross-chain price difference analysis',
-    alertsCenter: 'Alerts Center',
-    alertsCenterDesc: 'Manage alert rules',
-    reliability: 'Reliability Scores',
-    reliabilityDesc: 'Oracle reliability rankings',
-  },
-  empty: {
-    noData: 'No data available',
-    noProtocols: 'No protocol data available',
-    loadingData: 'Loading data...',
-  },
 };

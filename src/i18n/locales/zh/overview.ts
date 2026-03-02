@@ -16,28 +16,4 @@ export const overview = {
   noAnomalies: '暂无异常',
   quickAccess: '快速入口',
   quickAccessDesc: '常用功能快速访问',
-  stats: {
-    totalTVL: '总TVL',
-    activeProtocols: '活跃协议',
-    avgLatency: '平均延迟',
-    healthScore: '健康评分',
-    totalFeeds: '总价格源',
-    activeFeeds: '活跃价格源',
-    totalUpdates24h: '24小时更新',
-  },
-  quickLinks: {
-    priceComparison: '价格对比',
-    priceComparisonDesc: '对比不同预言机价格',
-    crossChain: '跨链分析',
-    crossChainDesc: '跨链价格差异分析',
-    alertsCenter: '告警中心',
-    alertsCenterDesc: '管理告警规则',
-    reliability: '可靠性评分',
-    reliabilityDesc: '预言机可靠性排名',
-  },
-  empty: {
-    noData: '暂无数据',
-    noProtocols: '暂无协议数据',
-    loadingData: '加载数据中...',
-  },
 };

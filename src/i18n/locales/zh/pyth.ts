@@ -61,7 +61,6 @@ export const pyth = {
     title: '价格状态概览',
     totalFeeds: '总价格源',
     activeFeeds: '活跃价格源',
-    staleFeeds: '陈旧价格源',
     avgUpdateFrequency: '平均更新频率',
     avgLatency: '平均延迟',
     statistics: '价格推送统计',

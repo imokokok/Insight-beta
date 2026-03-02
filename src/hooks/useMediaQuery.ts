@@ -48,13 +48,6 @@ export function useMediaQuery(query: string): boolean {
 }
 
 /**
- * 大屏幕检测 Hook (1280px+)
- */
-export function useIsLargeScreen(): boolean {
-  return useMediaQuery('(min-width: 1280px)');
-}
-
-/**
  * 移动设备检测 Hook (768px-)
  */
 export function useIsMobile(): boolean {

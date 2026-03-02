@@ -1,18 +1,5 @@
 export const protocol = {
-  pageTitle: '协议',
-  pageDescription: '分析预言机协议及其性能',
-  stats: {
-    totalProtocols: '总协议数',
-    active: '活跃',
-    totalFeeds: '总价格源',
-  },
   searchPlaceholder: '搜索协议...',
-  tableHeaders: {
-    priceFeeds: '价格源',
-    avgLatency: '平均延迟',
-    uptime: '正常运行时间',
-    lastUpdate: '最后更新',
-  },
   priceFeeds: {
     title: '价格源',
     pageTitle: '价格源',
@@ -26,30 +13,6 @@ export const protocol = {
     hours24: '24小时',
     vol: '交易量',
   },
-  emptyStates: {
-    exploreProtocols: '探索预言机协议',
-    exploreProtocolsDesc: '查看 Chainlink、Pyth、Band 和其他主要预言机协议的实时数据和性能指标。',
-    noDataAvailable: '暂无数据',
-    noDataDesc: '目前没有可显示的数据。',
-    dataUnavailable: '{{pair}} 数据不可用',
-    selectTradingPair: '选择交易对',
-    dataSynchronizing: '该交易对的数据正在同步中。请稍后再试。',
-    selectPairDesc: '选择一个交易对以查看实时价格数据和分析图表。',
-  },
-  health: {
-    title: '协议健康',
-    excellent: '优秀',
-    good: '良好',
-    degraded: '降级',
-    critical: '严重',
-    metrics: {
-      healthScore: '健康评分',
-      accuracy: '准确性',
-      uptime: '正常运行时间',
-      latency: '延迟',
-      feeds: '价格源数',
-    },
-  },
   comparison: {
     title: '协议比较',
     description: '各协议性能指标',
@@ -58,8 +21,6 @@ export const protocol = {
   error: {
     failedToLoad: '加载协议失败',
   },
-  nodesTitle: '节点',
-  nodesDescription: '{{active}} 活跃 / {{total}} 总计',
   nodesAccuracy: '准确性',
   priceFeedsTitle: '价格源',
   priceFeedsDescription: '{{active}} 活跃 / {{total}} 总计',

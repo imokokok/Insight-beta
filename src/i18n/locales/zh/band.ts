@@ -69,20 +69,6 @@ export const band = {
   oracleScripts: {
     error: '错误',
     empty: '暂无 Oracle 脚本',
-    table: {
-      name: '名称',
-      description: '描述',
-      status: '状态',
-      avgResponse: '平均响应',
-      successRate: '成功率',
-      lastRequest: '最后请求',
-    },
-    detail: {
-      scriptId: '脚本 ID',
-      owner: '所有者',
-      codeHash: '代码哈希',
-      schema: '模式',
-    },
   },
   oracleScriptTypes: {
     priceFeed: {
@@ -102,21 +88,12 @@ export const band = {
       description: '获取股票价格数据',
     },
   },
-  dataFreshness: {
-    threshold5min: '5分钟阈值',
-    threshold10min: '10分钟阈值',
-  },
-  validatorHealth: {
-    threshold85: '85%阈值',
-    threshold95: '95%阈值',
-  },
   qualityAnalysis: {
     title: '数据质量概览',
     overallScore: '总体评分',
     dataIntegrity: '数据完整性',
     avgLatency: '平均延迟',
     consistencyScore: '一致性评分',
-    deviationFromMedian: '偏差: {{value}}%',
     responseTimeDistribution: '响应时间分布',
     max: '最大:',
     dataConsistencyCheck: '数据一致性校验',
@@ -149,6 +126,5 @@ export const band = {
   priceTrend: {
     title: '价格趋势分析',
     chartTitle: '价格走势图',
-    noData: '暂无价格趋势数据',
   },
 };
