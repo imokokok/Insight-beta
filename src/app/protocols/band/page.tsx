@@ -30,9 +30,9 @@ import type {
 import { useI18n } from '@/i18n';
 import { fetchApiData, cn } from '@/shared/utils';
 
-const BridgeStatusCard = lazy(() =>
+const BandBridgeStatusCard = lazy(() =>
   import('@/features/oracle/band/components/BridgeStatusCard').then((mod) => ({
-    default: mod.BridgeStatusCard,
+    default: mod.BandBridgeStatusCard,
   })),
 );
 const DataSourceList = lazy(() =>
@@ -656,7 +656,7 @@ export default function BandProtocolPage() {
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {state.bridgesData?.bridges.map((bridge) => (
                   <Suspense key={bridge.bridgeId} fallback={<Skeleton className="h-40 w-full" />}>
-                    <BridgeStatusCard
+                    <BandBridgeStatusCard
                       bridge={bridge}
                       onClick={(b) => setSelectedBridge(b)}
                       className={cn(

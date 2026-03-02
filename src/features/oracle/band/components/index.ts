@@ -1,4 +1,4 @@
-export { BridgeStatusCard } from './BridgeStatusCard';
+export { BandBridgeStatusCard } from './BridgeStatusCard';
 export { DataSourceList } from './DataSourceList';
 export { TransferHistory } from './TransferHistory';
 export { CosmosChainSelector } from './CosmosChainSelector';

@@ -22,22 +22,12 @@ import {
   Legend,
   Line,
   LineChart,
-  Pie,
-  PieChart,
-  Radar,
-  RadarChart,
-  RadialBar,
-  RadialBarChart,
   ReferenceLine,
   ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
-  Cell,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
 } from 'recharts';
 
 import {
@@ -435,219 +425,6 @@ export const EnhancedBarChart = memo(function EnhancedBarChart({
 });
 
 // ============================================================================
-// Pie Chart Component
-// ============================================================================
-
-interface EnhancedPieChartProps {
-  data: Array<{
-    name: string;
-    value: number;
-    color?: string;
-  }>;
-  height?: number;
-  className?: string;
-  innerRadius?: number;
-  outerRadius?: number;
-  showLegend?: boolean;
-  showLabels?: boolean;
-  valueFormatter?: (value: number) => string;
-}
-
-export const EnhancedPieChart = memo(function EnhancedPieChart({
-  data,
-  height = CHART_DIMENSIONS.height.md,
-  className,
-  innerRadius = 0,
-  outerRadius = 80,
-  showLegend = true,
-  showLabels = true,
-  valueFormatter = (v) => formatNumber(v, 0),
-  ariaLabel,
-}: EnhancedPieChartProps & { ariaLabel?: string }) {
-  const total = useMemo(() => data.reduce((sum, item) => sum + item.value, 0), [data]);
-
-  return (
-    <div className={cn('w-full', className)} role="img" aria-label={ariaLabel || '饼图'}>
-      <ResponsiveContainer width="100%" height={height}>
-        <PieChart>
-          {showLegend && <Legend layout="vertical" align="right" verticalAlign="middle" />}
-
-          <Tooltip
-            content={({ active, payload }) => {
-              if (!active || !payload?.length) return null;
-              const item = payload[0];
-              const percentage = ((item.value as number) / total) * 100;
-              return (
-                <div className="rounded-xl border border-border/50 bg-card p-3 shadow-xl backdrop-blur-sm">
-                  <p className="text-sm font-semibold text-foreground">{item.name}</p>
-                  <p className="text-lg font-bold" style={{ color: item.payload.color }}>
-                    {valueFormatter(item.value as number)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{percentage.toFixed(1)}%</p>
-                </div>
-              );
-            }}
-          />
-
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={innerRadius}
-            outerRadius={outerRadius}
-            paddingAngle={2}
-            dataKey="value"
-            animationDuration={CHART_ANIMATIONS.chart.animationDuration}
-            label={
-              showLabels
-                ? ({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`
-                : false
-            }
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color || getSeriesColor(index)} />
-            ))}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  );
-});
-
-// ============================================================================
-// Radar Chart Component
-// ============================================================================
-
-interface EnhancedRadarChartProps {
-  data: Array<{
-    metric: string;
-    value: number;
-    fullMark?: number;
-  }>;
-  height?: number;
-  className?: string;
-  color?: string;
-  showGrid?: boolean;
-}
-
-export const EnhancedRadarChart = memo(function EnhancedRadarChart({
-  data,
-  height = CHART_DIMENSIONS.height.md,
-  className,
-  color = CHART_COLORS.primary.DEFAULT,
-  showGrid = true,
-  ariaLabel,
-}: EnhancedRadarChartProps & { ariaLabel?: string }) {
-  return (
-    <div className={cn('w-full', className)} role="img" aria-label={ariaLabel || '雷达图'}>
-      <ResponsiveContainer width="100%" height={height}>
-        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
-          {showGrid && <PolarGrid stroke={CHART_COLORS.grid.line} />}
-          <PolarAngleAxis dataKey="metric" tick={{ fill: CHART_COLORS.grid.text, fontSize: 12 }} />
-          <PolarRadiusAxis
-            angle={30}
-            domain={[0, 'auto']}
-            tick={{ fill: CHART_COLORS.grid.text, fontSize: 10 }}
-          />
-          <Radar
-            name="Score"
-            dataKey="value"
-            stroke={color}
-            fill={color}
-            fillOpacity={0.3}
-            animationDuration={CHART_ANIMATIONS.chart.animationDuration}
-          />
-          <Tooltip
-            content={({ active, payload }) => {
-              if (!active || !payload?.length) return null;
-              const item = payload[0];
-              return (
-                <div className="rounded-xl border border-border/50 bg-card p-3 shadow-xl backdrop-blur-sm">
-                  <p className="text-sm font-semibold text-foreground">{item.payload.metric}</p>
-                  <p className="text-lg font-bold" style={{ color }}>
-                    {formatNumber(item.value as number, 1)}
-                  </p>
-                </div>
-              );
-            }}
-          />
-        </RadarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-});
-
-// ============================================================================
-// Gauge Chart Component (Radial Bar)
-// ============================================================================
-
-interface EnhancedGaugeChartProps {
-  value: number;
-  max?: number;
-  height?: number;
-  className?: string;
-  title?: string;
-  unit?: string;
-  thresholds?: {
-    warning: number;
-    critical: number;
-  };
-}
-
-export const EnhancedGaugeChart = memo(function EnhancedGaugeChart({
-  value,
-  max = 100,
-  height = CHART_DIMENSIONS.height.sm,
-  className,
-  title,
-  unit = '%',
-  thresholds = { warning: 70, critical: 90 },
-  ariaLabel,
-}: EnhancedGaugeChartProps & { ariaLabel?: string }) {
-  const percentage = Math.min((value / max) * 100, 100);
-  const color = getStatusColorByValue(percentage, thresholds);
-
-  const data = useMemo(
-    () => [{ name: 'Value', value: percentage, fill: color }],
-    [percentage, color],
-  );
-
-  return (
-    <div
-      className={cn('flex w-full flex-col items-center', className)}
-      role="img"
-      aria-label={ariaLabel || '仪表图'}
-    >
-      {title && <p className="mb-2 text-sm font-medium text-muted-foreground">{title}</p>}
-      <ResponsiveContainer width="100%" height={height}>
-        <RadialBarChart
-          cx="50%"
-          cy="100%"
-          innerRadius="60%"
-          outerRadius="100%"
-          data={data}
-          startAngle={180}
-          endAngle={0}
-        >
-          <RadialBar
-            background={{ fill: 'var(--muted)' }}
-            dataKey="value"
-            cornerRadius={10}
-            animationDuration={CHART_ANIMATIONS.chart.animationDuration}
-          />
-        </RadialBarChart>
-      </ResponsiveContainer>
-      <div className="-mt-8 text-center">
-        <span className="text-3xl font-bold" style={{ color }}>
-          {formatNumber(value, 1)}
-        </span>
-        <span className="ml-1 text-sm text-muted-foreground">{unit}</span>
-      </div>
-    </div>
-  );
-});
-
-// ============================================================================
 // Sparkline Component
 // ============================================================================
 
@@ -808,9 +585,6 @@ export type {
   EnhancedAreaChartProps,
   EnhancedLineChartProps,
   EnhancedBarChartProps,
-  EnhancedPieChartProps,
-  EnhancedRadarChartProps,
-  EnhancedGaugeChartProps,
   SparklineProps,
   StatComparisonProps,
 };

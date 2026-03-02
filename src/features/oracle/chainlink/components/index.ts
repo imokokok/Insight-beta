@@ -7,7 +7,7 @@ export { FeedQualityAnalysis } from './FeedQualityAnalysis';
 export { HeartbeatMonitor } from './HeartbeatMonitor';
 export { ChainlinkGasCostAnalysis } from './ChainlinkGasCostAnalysis';
 export { DeviationTriggerStats } from './DeviationTriggerStats';
-export { CrossChainPriceComparison } from './CrossChainPriceComparison';
+export { ChainlinkCrossChainComparison } from './CrossChainPriceComparison';
 
 export {
   DashboardLayout,

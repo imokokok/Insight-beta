@@ -1,25 +1,4 @@
 export const security = {
-  pageTitle: 'Security Dashboard',
-  pageDescription: 'Analyze security alerts and anomaly detection',
-  stats: {
-    totalAlerts: 'Total Alerts',
-    critical: 'Critical',
-    active: 'Active',
-    resolved: 'Resolved',
-  },
-  tabs: {
-    overview: 'Overview',
-    alerts: 'Alerts',
-    trends: 'Trends',
-  },
-  cards: {
-    alertTrend: 'Alert Trend',
-    alertsOverTime: 'Alerts over time',
-    recentAlerts: 'Recent Alerts',
-    latestAlerts: 'Latest 5 alerts',
-  },
-  searchPlaceholder: 'Search alerts...',
-  trendsComingSoon: 'Trends analysis coming soon',
   emptyStates: {
     systemSecure: 'System Secure',
     systemSecureDesc:

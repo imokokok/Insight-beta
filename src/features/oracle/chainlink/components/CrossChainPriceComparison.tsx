@@ -54,15 +54,15 @@ const generateMockData = (symbol: string, chains: string[]) => {
   return { symbol, prices, stats };
 };
 
-interface CrossChainPriceComparisonProps {
+interface ChainlinkCrossChainComparisonProps {
   collapsible?: boolean;
   className?: string;
 }
 
-export function CrossChainPriceComparison({
+export function ChainlinkCrossChainComparison({
   collapsible = false,
   className,
-}: CrossChainPriceComparisonProps) {
+}: ChainlinkCrossChainComparisonProps) {
   const fetchData = useCallback(async (symbol: string, chains: string[]) => {
     await new Promise((resolve) => setTimeout(resolve, 600));
     return generateMockData(symbol, chains);

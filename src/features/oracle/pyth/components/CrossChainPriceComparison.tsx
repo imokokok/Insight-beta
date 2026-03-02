@@ -55,11 +55,11 @@ const generateMockData = (symbol: string, chains: string[]) => {
   return { symbol, prices, stats };
 };
 
-interface CrossChainPriceComparisonProps {
+interface PythCrossChainComparisonProps {
   isLoading?: boolean;
 }
 
-export function CrossChainPriceComparison({ isLoading = false }: CrossChainPriceComparisonProps) {
+export function PythCrossChainComparison({ isLoading = false }: PythCrossChainComparisonProps) {
   const availableSymbols = getAvailablePythSymbols();
 
   const fetchData = useCallback(async (symbol: string, chains: string[]) => {

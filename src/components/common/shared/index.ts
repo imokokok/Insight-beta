@@ -19,7 +19,6 @@ export type {
   ChartExportButtonProps,
   DataExportButtonProps,
 } from './ExportButton';
-export { createExportButton, type CreateExportButtonOptions } from './ExportButtonFactory';
 export { FavoritesPanel } from './FavoritesPanel';
 export { QuickSearch, useQuickSearch } from './QuickSearch';
 export { escapeCSV, escapeXML } from '@/utils/chartExport';

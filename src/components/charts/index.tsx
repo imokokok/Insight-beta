@@ -18,9 +18,6 @@ export {
   EnhancedAreaChart,
   EnhancedLineChart,
   EnhancedBarChart,
-  EnhancedPieChart,
-  EnhancedRadarChart,
-  EnhancedGaugeChart,
 
   // 辅助组件
   Sparkline,
@@ -46,9 +43,6 @@ export type {
   EnhancedAreaChartProps,
   EnhancedLineChartProps,
   EnhancedBarChartProps,
-  EnhancedPieChartProps,
-  EnhancedRadarChartProps,
-  EnhancedGaugeChartProps,
   SparklineProps,
   StatComparisonProps,
 } from './EnhancedChartComponents';

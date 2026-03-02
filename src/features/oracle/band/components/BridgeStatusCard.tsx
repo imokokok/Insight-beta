@@ -26,7 +26,7 @@ const EXTENDED_CHAIN_DISPLAY_NAMES: Record<string, string> = {
   kujira: 'Kujira',
 };
 
-interface BridgeStatusCardProps {
+interface BandBridgeStatusCardProps {
   bridge: Bridge;
   onClick?: (bridge: Bridge) => void;
   className?: string;
@@ -38,7 +38,7 @@ const getSuccessRateColor = (rate: number): string => {
   return 'text-red-500';
 };
 
-export function BridgeStatusCard({ bridge, onClick, className }: BridgeStatusCardProps) {
+export function BandBridgeStatusCard({ bridge, onClick, className }: BandBridgeStatusCardProps) {
   const { t } = useI18n();
   const statusConfig = getBridgeStatusConfig(bridge.status);
 

@@ -54,9 +54,9 @@ const DeviationTriggerStats = lazy(() =>
     default: mod.DeviationTriggerStats,
   })),
 );
-const CrossChainPriceComparison = lazy(() =>
+const ChainlinkCrossChainComparison = lazy(() =>
   import('@/features/oracle/chainlink/components/CrossChainPriceComparison').then((mod) => ({
-    default: mod.CrossChainPriceComparison,
+    default: mod.ChainlinkCrossChainComparison,
   })),
 );
 const FeedAggregation = lazy(() =>
@@ -519,7 +519,7 @@ export default function ChainlinkPage() {
             <FeedQualityAnalysis collapsible />
           </Suspense>
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-            <CrossChainPriceComparison collapsible />
+            <ChainlinkCrossChainComparison collapsible />
           </Suspense>
         </div>
       </TabPanelWrapper>

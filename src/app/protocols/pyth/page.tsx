@@ -42,9 +42,9 @@ const ConfidenceComparisonChart = lazy(() =>
   })),
 );
 
-const CrossChainPriceComparison = lazy(() =>
+const PythCrossChainComparison = lazy(() =>
   import('@/features/oracle/pyth/components').then((mod) => ({
-    default: mod.CrossChainPriceComparison,
+    default: mod.PythCrossChainComparison,
   })),
 );
 
@@ -956,7 +956,7 @@ export default function PythPage() {
       <TabPanelWrapper tabId="analysis">
         <div className="space-y-4">
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-            <CrossChainPriceComparison isLoading={isLoading} />
+            <PythCrossChainComparison isLoading={isLoading} />
           </Suspense>
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>
             <ConfidenceComparisonChart isLoading={isLoading} />
