@@ -1,6 +1,7 @@
 export const compare = {
   pageTitle: '比较中心',
   pageDescription: '整合所有预言机比较分析功能，一站式对比分析',
+  redirecting: '正在跳转到价格比较...',
   filters: '筛选',
   filterConditions: '筛选条件',
   reset: '重置',

@@ -125,7 +125,7 @@ export default function ExplorePage() {
         <div className="md:hidden">
           <details className="group">
             <summary className="flex cursor-pointer list-none items-center justify-between rounded-lg bg-muted/50 p-3">
-              <span className="text-sm font-medium">快捷入口</span>
+              <span className="text-sm font-medium">{t('explore.quickAccess')}</span>
               <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
             </summary>
             <div className="mt-2">
@@ -185,7 +185,7 @@ export default function ExplorePage() {
                 className="min-h-[44px] px-4"
               >
                 <SlidersHorizontal className="mr-2 h-4 w-4" />
-                筛选
+                {t('explore.filter')}
               </Button>
             </div>
           )}

@@ -1,6 +1,7 @@
 export const compare = {
   pageTitle: 'Comparison Center',
   pageDescription: 'Unified oracle comparison analysis hub for all protocols',
+  redirecting: 'Redirecting to price comparison...',
   filters: 'Filters',
   filterConditions: 'Filter Conditions',
   reset: 'Reset',

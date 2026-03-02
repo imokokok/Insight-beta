@@ -126,33 +126,33 @@ const protocolConfigs: Array<{
   },
 ];
 
-const quickLinks = [
+const getQuickLinks = (t: (key: string) => string) => [
   {
-    title: '价格对比',
-    description: '对比不同预言机价格',
+    title: t('overview.quickLinks.priceComparison.title'),
+    description: t('overview.quickLinks.priceComparison.description'),
     icon: <BarChart3 className="h-5 w-5" />,
     href: '/compare',
     color: 'bg-blue-500/10 text-blue-500',
   },
   {
-    title: '跨链分析',
-    description: '跨链价格差异分析',
+    title: t('overview.quickLinks.crossChain.title'),
+    description: t('overview.quickLinks.crossChain.description'),
     icon: <Globe className="h-5 w-5" />,
     href: '/cross-chain',
     color: 'bg-green-500/10 text-green-500',
   },
   {
-    title: '告警中心',
-    description: '管理告警规则',
+    title: t('overview.quickLinks.alerts.title'),
+    description: t('overview.quickLinks.alerts.description'),
     icon: <AlertTriangle className="h-5 w-5" />,
     href: '/alerts',
     color: 'bg-orange-500/10 text-orange-500',
   },
   {
-    title: '可靠性评分',
-    description: '预言机可靠性排名',
+    title: t('overview.quickLinks.reliability.title'),
+    description: t('overview.quickLinks.reliability.description'),
     icon: <Shield className="h-5 w-5" />,
-    href: '/compare?tab=reliability',
+    href: '/compare/reliability',
     color: 'bg-purple-500/10 text-purple-500',
   },
 ];
@@ -340,7 +340,12 @@ export default function OverviewPage() {
     [state.stats, t],
   );
 
-  const breadcrumbItems = [{ label: t('nav.oracle'), href: '/oracle' }, { label: '概览' }];
+  const breadcrumbItems = [
+    { label: t('nav.oracle'), href: '/oracle' },
+    { label: t('nav.overview') },
+  ];
+
+  const quickLinks = useMemo(() => getQuickLinks(t), [t]);
 
   const getStatusColor = (status: ProtocolHealth['status']) => {
     switch (status) {

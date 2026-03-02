@@ -16,4 +16,22 @@ export const overview = {
   noAnomalies: '暂无异常',
   quickAccess: '快速入口',
   quickAccessDesc: '常用功能快速访问',
+  quickLinks: {
+    priceComparison: {
+      title: '价格对比',
+      description: '对比不同预言机价格',
+    },
+    crossChain: {
+      title: '跨链分析',
+      description: '跨链价格差异分析',
+    },
+    alerts: {
+      title: '告警中心',
+      description: '管理告警规则',
+    },
+    reliability: {
+      title: '可靠性评分',
+      description: '预言机可靠性排名',
+    },
+  },
 };

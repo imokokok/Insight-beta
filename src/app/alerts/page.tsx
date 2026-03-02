@@ -176,7 +176,9 @@ function TopStatusBar({
           )}
         >
           <Activity className="h-4 w-4" />
-          <span className="hidden sm:inline">{isAutoRefreshEnabled ? '自动' : '手动'}</span>
+          <span className="hidden sm:inline">
+            {isAutoRefreshEnabled ? t('alerts.autoMode') : t('alerts.manualMode')}
+          </span>
         </Button>
 
         <Button
@@ -187,12 +189,12 @@ function TopStatusBar({
           className="gap-1.5 text-xs"
         >
           <Activity className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
-          <span className="hidden sm:inline">刷新</span>
+          <span className="hidden sm:inline">{t('alerts.refreshBtn')}</span>
         </Button>
 
         <Button variant="outline" size="sm" onClick={onExport} className="gap-1.5 text-xs">
           <Activity className="h-4 w-4" />
-          <span className="hidden sm:inline">导出</span>
+          <span className="hidden sm:inline">{t('alerts.exportBtn')}</span>
         </Button>
       </div>
     </div>
@@ -349,7 +351,11 @@ export default function AlertsCenterPage() {
                       : 'bg-error/20 text-error',
                 )}
               >
-                {healthStatus === 'healthy' ? '正常' : healthStatus === 'warning' ? '警告' : '异常'}
+                {healthStatus === 'healthy'
+                  ? t('alerts.statusLabels.healthy')
+                  : healthStatus === 'warning'
+                    ? t('alerts.statusLabels.warning')
+                    : t('alerts.statusLabels.critical')}
               </Badge>
             </h1>
             <p className="mt-0.5 text-xs text-muted-foreground">

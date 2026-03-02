@@ -1,6 +1,18 @@
 export const alerts = {
   pageTitle: '告警中心',
   pageDescription: '统一管理所有来源的告警信息',
+  systemStatus: '系统状态',
+  connection: '连接状态',
+  updatedAt: '更新时间',
+  autoMode: '自动',
+  manualMode: '手动',
+  refreshBtn: '刷新',
+  exportBtn: '导出',
+  statusLabels: {
+    healthy: '正常',
+    warning: '警告',
+    critical: '异常',
+  },
   stats: {
     total: '总告警数',
     critical: '严重',

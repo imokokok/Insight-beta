@@ -16,4 +16,22 @@ export const overview = {
   noAnomalies: 'No Anomalies',
   quickAccess: 'Quick Access',
   quickAccessDesc: 'Quick links to common features',
+  quickLinks: {
+    priceComparison: {
+      title: 'Price Comparison',
+      description: 'Compare oracle prices',
+    },
+    crossChain: {
+      title: 'Cross-Chain',
+      description: 'Cross-chain price analysis',
+    },
+    alerts: {
+      title: 'Alerts Center',
+      description: 'Manage alert rules',
+    },
+    reliability: {
+      title: 'Reliability Scores',
+      description: 'Oracle reliability rankings',
+    },
+  },
 };

@@ -1,6 +1,18 @@
 export const alerts = {
   pageTitle: 'Alerts Center',
   pageDescription: 'Unified management of alerts from all sources',
+  systemStatus: 'System Status',
+  connection: 'Connection',
+  updatedAt: 'Updated at',
+  autoMode: 'Auto',
+  manualMode: 'Manual',
+  refreshBtn: 'Refresh',
+  exportBtn: 'Export',
+  statusLabels: {
+    healthy: 'Healthy',
+    warning: 'Warning',
+    critical: 'Critical',
+  },
   stats: {
     total: 'Total Alerts',
     critical: 'Critical',
