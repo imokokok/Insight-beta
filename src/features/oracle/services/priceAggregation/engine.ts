@@ -9,7 +9,7 @@
 
 import pLimit from 'p-limit';
 
-import { defaultCache } from '@/lib/api/optimization/cache';
+import { defaultCache } from '@/lib/api/optimization/memoryCache';
 import { query } from '@/lib/database/db';
 import { priceMetrics } from '@/lib/monitoring/priceMetrics';
 import { logger } from '@/shared/logger';

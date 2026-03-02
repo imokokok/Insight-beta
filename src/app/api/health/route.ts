@@ -1,6 +1,6 @@
 import { env, getEnvReport } from '@/config/env';
 import { error, handleApi, rateLimit, requireAdmin } from '@/lib/api/apiResponse';
-import { withCacheHeadersResponse, CACHE_PRESETS } from '@/lib/api/cache';
+import { withCacheHeadersResponse, CACHE_PRESETS } from '@/lib/api/cacheHeaders';
 import { hasDatabase, query } from '@/lib/database/db';
 
 /**

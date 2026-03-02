@@ -1,5 +1,5 @@
 import { ok } from '@/lib/api/apiResponse';
-import { withCacheHeaders, CACHE_PRESETS } from '@/lib/api/cache';
+import { withCacheHeaders, CACHE_PRESETS } from '@/lib/api/cacheHeaders';
 
 export async function GET() {
   const response = ok({

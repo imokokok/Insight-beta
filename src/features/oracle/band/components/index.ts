@@ -3,7 +3,6 @@ export { DataSourceList } from './DataSourceList';
 export { TransferHistory } from './TransferHistory';
 export { CosmosChainSelector } from './CosmosChainSelector';
 export { BandPriceChart } from './BandPriceChart';
-export { BandExportButton } from './export';
 export { AggregationValidationCard } from './AggregationValidationCard';
 export type { AggregationResult } from './AggregationValidationCard';
 export { DataFreshnessCard } from './DataFreshnessCard';

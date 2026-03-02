@@ -22,6 +22,7 @@ import {
   useToast,
   UnifiedStatsPanel,
   StatCardSkeleton,
+  ExportButton,
 } from '@/components/common';
 import { Button } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
@@ -41,7 +42,6 @@ import {
 } from '@/features/oracle/analytics/deviation';
 import { HistoricalDeviationChart } from '@/features/oracle/analytics/deviation/components/charts/HistoricalDeviationChart';
 import { HistoricalPriceChart } from '@/features/oracle/analytics/deviation/components/charts/HistoricalPriceChart';
-import { ExportButton } from '@/features/oracle/analytics/deviation/components/export';
 import {
   ProtocolFilter,
   TimeRangeSelector,
@@ -50,6 +50,7 @@ import {
   WelcomeGuide,
   HelpTooltip,
 } from '@/features/oracle/analytics/deviation/components/onboarding';
+import { deviationExportConfig } from '@/features/oracle/analytics/deviation/exportConfig';
 import {
   useDeviationAnalytics,
   usePriceHistory,
@@ -191,7 +192,7 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
               <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
               {t('common.refresh')}
             </Button>
-            <ExportButton data={report} disabled={loading} />
+            <ExportButton data={report} config={deviationExportConfig} disabled={loading} />
             <AutoRefreshControl
               isEnabled={autoRefreshEnabled}
               onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}

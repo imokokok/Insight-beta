@@ -3,7 +3,6 @@ export { OperatorList } from './OperatorList';
 export { FeedAggregation } from './FeedAggregation';
 export { FeedDetail } from './FeedDetail';
 export { ChainlinkPriceHistory } from './ChainlinkPriceHistory';
-export { ChainlinkExportButton } from './export';
 export { FeedQualityAnalysis } from './FeedQualityAnalysis';
 export { HeartbeatMonitor } from './HeartbeatMonitor';
 export { ChainlinkGasCostAnalysis } from './ChainlinkGasCostAnalysis';

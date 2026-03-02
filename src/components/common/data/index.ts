@@ -42,17 +42,7 @@ export {
   type TrendIndicatorProps,
 } from './TrendIndicator';
 
-export { StatsBar, type StatsBarProps, type StatsBarItem, type ProgressSegment } from './StatsBar';
-export { FeatureTags, type FeatureTagsProps, type FeatureTag } from './FeatureTags';
 export { Gauge, type GaugeProps } from './Gauge';
-export { GaugeGroup, type GaugeGroupProps } from './GaugeGroup';
-export {
-  CompactList,
-  DualColumnList,
-  type CompactListProps,
-  type CompactListItem,
-  type DualColumnListProps,
-} from './CompactList';
 export {
   InlineDataDisplay,
   InlineDataRow,
@@ -67,15 +57,11 @@ export {
   type TableSectionColumn,
   type DataPanelProps,
 } from './TableSection';
-export { AnimatedNumber } from './AnimatedNumber';
 export { KpiCard, KpiGrid, DEFAULT_KPI_DATA, TREND_COLORS, STATUS_COLORS } from './KpiCard';
 export type { KpiCardData, TrendDirection, KpiStatus } from './KpiCard';
 export { MiniTrend } from './MiniTrend';
 export type { MiniTrendProps } from './MiniTrend';
 export { MiniChart } from './MiniChart';
-export { VirtualList } from './VirtualList';
-export { ProtocolHealthBadge } from './ProtocolHealthBadge';
-export type { ProtocolHealthBadgeProps, ProtocolHealthStatus } from './ProtocolHealthBadge';
 export {
   SortableTableHeader,
   type SortState,

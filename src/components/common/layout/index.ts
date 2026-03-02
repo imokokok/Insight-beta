@@ -21,5 +21,4 @@ export {
   type DynamicPageHeaderProps,
 } from './PageHeader';
 export { PageProgress } from './PageProgress';
-export { HoverCard } from './PageTransitions';
 export { ResponsiveGrid as Responsive } from './Responsive';

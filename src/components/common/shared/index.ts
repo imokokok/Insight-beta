@@ -21,6 +21,5 @@ export type {
 } from './ExportButton';
 export { createExportButton, type CreateExportButtonOptions } from './ExportButtonFactory';
 export { FavoritesPanel } from './FavoritesPanel';
-export { PullToRefresh, type PullToRefreshProps } from './PullToRefresh';
 export { QuickSearch, useQuickSearch } from './QuickSearch';
 export { escapeCSV, escapeXML } from '@/utils/chartExport';
