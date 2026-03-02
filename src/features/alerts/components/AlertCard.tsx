@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 
-import { AlertTriangle, Network, Shield, Activity, Clock, TrendingUp } from 'lucide-react';
+import { Network, Shield, Activity, Clock, TrendingUp, Inbox } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui';
 import { Badge } from '@/components/ui';
@@ -13,6 +13,7 @@ import { AlertActionButtons } from './AlertActionButtons';
 import { getSeverityConfig } from '../constants';
 
 import type { UnifiedAlert, AlertSource } from '../hooks/useAlerts';
+import type { AlertTriangle } from 'lucide-react';
 
 const sourceConfig: Record<AlertSource, { icon: typeof AlertTriangle; label: string }> = {
   price_anomaly: { icon: TrendingUp, label: 'Price Anomaly' },
@@ -196,9 +197,10 @@ export function AlertDetailPanel({ alert, onAlertUpdate }: AlertDetailPanelProps
     return (
       <div className="rounded-xl border border-border/50 bg-card/30 p-4">
         <div className="flex h-64 items-center justify-center">
-          <div className="text-center text-muted-foreground">
-            <AlertTriangle className="mx-auto h-8 w-8 opacity-50" />
-            <p className="mt-2">{t('alerts.selectAlert')}</p>
+          <div className="text-center">
+            <Inbox className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
+            <p className="mb-1 text-sm font-medium text-foreground">{t('alerts.selectAlert')}</p>
+            <p className="mb-4 text-xs text-muted-foreground">{t('alerts.selectAlertDesc')}</p>
           </div>
         </div>
       </div>

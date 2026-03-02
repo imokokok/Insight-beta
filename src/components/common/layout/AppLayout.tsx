@@ -111,7 +111,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           <main id="main-content" className="min-w-0 flex-1">
             <ErrorBoundary>
-              <div className="container mx-auto max-w-7xl p-4 md:p-8">
+              <div className="container mx-auto max-w-7xl p-4 sm:p-6">
                 <header className={cn('sticky top-0 z-20 mb-6 flex flex-col gap-3', 'px-1 py-5')}>
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">

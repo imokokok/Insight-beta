@@ -88,7 +88,7 @@ export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProp
     (selectedSymbols.length > 0 ? 1 : 0);
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 p-4 sm:space-y-6 sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h1 className="text-xl font-bold sm:text-2xl lg:text-3xl">

@@ -60,3 +60,6 @@ export {
   type SortState,
   type SortableTableHeaderProps,
 } from './SortableTableHeader';
+
+export { ResponsiveTable } from './ResponsiveTable';
+export type { Column, ResponsiveTableProps } from './ResponsiveTable';

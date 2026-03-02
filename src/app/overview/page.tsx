@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 
+import { motion } from 'framer-motion';
 import {
   Activity,
   Shield,
@@ -29,6 +30,7 @@ import {
   type TimeRange,
 } from '@/components/common';
 import { ChartCard } from '@/components/common';
+import { MiniTrend } from '@/components/common/data/MiniTrend';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
@@ -52,6 +54,7 @@ interface ProtocolHealth {
   icon: React.ReactNode;
   color: string;
   href: string;
+  latencyTrend: number[];
 }
 
 interface OverviewStats {
@@ -202,10 +205,17 @@ export default function OverviewPage() {
         const feedsValues = [156, 150, 45, 85] as const;
         const activeFeedsValues = [152, 148, 44, 82] as const;
         const avgLatencyValues = [180, 95, 320, 280] as const;
+        const latencyTrendValues = [
+          [175, 178, 182, 176, 180, 185, 180],
+          [90, 92, 95, 88, 93, 97, 95],
+          [310, 325, 315, 330, 320, 340, 320],
+          [275, 280, 285, 278, 282, 290, 280],
+        ] as const;
 
         const feeds = feedsValues[index] ?? 0;
         const activeFeeds = activeFeedsValues[index] ?? 0;
         const avgLatency = avgLatencyValues[index] ?? 0;
+        const latencyTrend = [...(latencyTrendValues[index] ?? [])];
         const status: 'healthy' | 'warning' | 'critical' =
           avgLatency < 200 ? 'healthy' : avgLatency < 300 ? 'warning' : 'critical';
 
@@ -216,6 +226,7 @@ export default function OverviewPage() {
           activeFeeds,
           avgLatency,
           lastUpdate: new Date().toISOString(),
+          latencyTrend,
         };
       });
 
@@ -433,10 +444,13 @@ export default function OverviewPage() {
               >
                 <ContentGrid columns={4} gap="sm">
                   {state.protocols.map((protocol) => (
-                    <a
+                    <motion.a
                       key={protocol.name}
                       href={protocol.href}
-                      className="group rounded-xl border border-border/30 bg-card/30 p-4 transition-all hover:border-primary/30 hover:shadow-md"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.2 }}
+                      className="group rounded-xl border border-border/30 bg-card/30 p-4 transition-all hover:border-primary/30 hover:shadow-lg"
                     >
                       <div className="mb-3 flex items-start justify-between">
                         <div className={cn('rounded-lg bg-muted p-2', protocol.color)}>
@@ -473,11 +487,27 @@ export default function OverviewPage() {
                           </span>
                         </div>
                       </div>
-                      <div className="mt-3 flex items-center gap-1 text-xs text-primary opacity-0 transition-opacity group-hover:opacity-100">
-                        <span>{t('common.viewDetails') || '查看详情'}</span>
-                        <ArrowRight className="h-3 w-3" />
+                      <div className="mt-3 flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-xs text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                          <span>{t('common.viewDetails') || '查看详情'}</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </div>
+                        {protocol.latencyTrend.length >= 2 && (
+                          <MiniTrend
+                            data={protocol.latencyTrend}
+                            width={48}
+                            height={16}
+                            color={
+                              protocol.status === 'healthy'
+                                ? 'success'
+                                : protocol.status === 'warning'
+                                  ? 'neutral'
+                                  : 'error'
+                            }
+                          />
+                        )}
                       </div>
-                    </a>
+                    </motion.a>
                   ))}
                 </ContentGrid>
               </ContentSection>

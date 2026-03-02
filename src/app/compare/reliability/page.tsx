@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import { RefreshCw } from 'lucide-react';
 
 import { Breadcrumb } from '@/components/common';
@@ -135,15 +136,25 @@ export default function ReliabilityComparePage() {
                 </TabsTrigger>
               ))}
             </TabsList>
-            {rankings.map((r) => (
-              <TabsContent key={r.protocol} value={r.protocol}>
-                <ReliabilityTrendChart
-                  data={trendData}
-                  protocol={r.protocol}
-                  isLoading={trendLoading}
-                />
-              </TabsContent>
-            ))}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedProtocol}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+              >
+                {rankings.map((r) => (
+                  <TabsContent key={r.protocol} value={r.protocol}>
+                    <ReliabilityTrendChart
+                      data={trendData}
+                      protocol={r.protocol}
+                      isLoading={trendLoading}
+                    />
+                  </TabsContent>
+                ))}
+              </motion.div>
+            </AnimatePresence>
           </Tabs>
         </CardContent>
       </Card>

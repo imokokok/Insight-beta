@@ -62,6 +62,7 @@ export const alerts = {
   },
   searchPlaceholder: '搜索告警...',
   selectAlert: '选择一条告警查看详情',
+  selectAlertDesc: '从左侧列表中选择一条告警以查看详细信息',
   statusActive: '活跃',
   statusResolved: '已解决',
   statusInvestigating: '调查中',

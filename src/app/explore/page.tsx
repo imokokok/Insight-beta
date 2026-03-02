@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   User,
   Sparkles,
@@ -104,7 +105,7 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen p-4 sm:p-6">
       <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
         <div className="px-4 py-3">
           <GlobalSearch />
@@ -190,17 +191,27 @@ export default function ExplorePage() {
             </div>
           )}
 
-          <TabsContent value="address" className="mt-0">
-            <AddressExplorer />
-          </TabsContent>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.15 }}
+            >
+              <TabsContent value="address" className="mt-0">
+                <AddressExplorer />
+              </TabsContent>
 
-          <TabsContent value="discovery" className="mt-0">
-            <DataDiscovery />
-          </TabsContent>
+              <TabsContent value="discovery" className="mt-0">
+                <DataDiscovery />
+              </TabsContent>
 
-          <TabsContent value="trending" className="mt-0">
-            <TrendingFeeds initialSortBy={sortBy} />
-          </TabsContent>
+              <TabsContent value="trending" className="mt-0">
+                <TrendingFeeds initialSortBy={sortBy} />
+              </TabsContent>
+            </motion.div>
+          </AnimatePresence>
         </Tabs>
       </div>
 

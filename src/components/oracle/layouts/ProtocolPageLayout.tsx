@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
+import { AnimatePresence, motion } from 'framer-motion';
+
 import { Breadcrumb, AutoRefreshControl } from '@/components/common';
 import { KpiGrid } from '@/components/common';
 import { Badge } from '@/components/ui';
@@ -39,47 +41,41 @@ interface TabPanelProps {
 
 function TabPanel({ id, children, isActive, className }: TabPanelProps) {
   const [shouldRender, setShouldRender] = useState(isActive);
-  const [isVisible, setIsVisible] = useState(isActive);
   const prevIsActive = useRef(isActive);
 
   useEffect(() => {
     if (isActive && !prevIsActive.current) {
       setShouldRender(true);
-      requestAnimationFrame(() => {
-        setIsVisible(true);
-      });
-    } else if (!isActive && prevIsActive.current) {
-      setIsVisible(false);
     }
     prevIsActive.current = isActive;
   }, [isActive]);
 
   useEffect(() => {
-    if (!isVisible && shouldRender && !isActive) {
+    if (!isActive && shouldRender) {
       const timer = setTimeout(() => {
         setShouldRender(false);
       }, 150);
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [isVisible, shouldRender, isActive]);
+  }, [isActive, shouldRender]);
 
   if (!shouldRender) return null;
 
   return (
-    <div
+    <motion.div
       id={`tabpanel-${id}`}
       role="tabpanel"
       aria-labelledby={`tab-${id}`}
       hidden={!isActive}
-      className={cn(
-        'transition-opacity duration-150 ease-in-out',
-        isVisible ? 'opacity-100' : 'opacity-0',
-        className,
-      )}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : -8 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.15 }}
+      className={className}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -597,7 +593,7 @@ export function ProtocolPageLayout({
         onExport={onExport || handleDefaultExport}
       />
 
-      <div className="container mx-auto space-y-3 p-4 sm:p-5">
+      <div className="container mx-auto space-y-3 p-4 sm:p-6">
         <Breadcrumb items={breadcrumbItems || defaultBreadcrumbItems} />
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -672,33 +668,35 @@ export function ProtocolPageLayout({
         <TabNavigation tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div className="relative">
-          {childArray.map((child, index) => {
-            if (React.isValidElement(child)) {
-              const props = child.props as Record<string, unknown>;
-              if (props && 'tabId' in props) {
-                const tabId = props.tabId as string;
-                const tab = tabs.find((t) => t.id === tabId);
-                const shouldLazyLoad = tab?.lazy && !loadedTabs.has(tabId);
+          <AnimatePresence mode="wait">
+            {childArray.map((child, index) => {
+              if (React.isValidElement(child)) {
+                const props = child.props as Record<string, unknown>;
+                if (props && 'tabId' in props) {
+                  const tabId = props.tabId as string;
+                  const tab = tabs.find((t) => t.id === tabId);
+                  const shouldLazyLoad = tab?.lazy && !loadedTabs.has(tabId);
 
-                return (
-                  <TabPanel key={tabId} id={tabId} isActive={activeTab === tabId}>
-                    {shouldLazyLoad ? (
-                      <div className="space-y-4">
-                        <Skeleton className="h-64 w-full" />
-                      </div>
-                    ) : (
-                      child
-                    )}
-                  </TabPanel>
-                );
+                  return (
+                    <TabPanel key={tabId} id={tabId} isActive={activeTab === tabId}>
+                      {shouldLazyLoad ? (
+                        <div className="space-y-4">
+                          <Skeleton className="h-64 w-full" />
+                        </div>
+                      ) : (
+                        child
+                      )}
+                    </TabPanel>
+                  );
+                }
               }
-            }
-            return (
-              <TabPanel key={index} id={activeTab} isActive={true}>
-                {child}
-              </TabPanel>
-            );
-          })}
+              return (
+                <TabPanel key={index} id={activeTab} isActive={true}>
+                  {child}
+                </TabPanel>
+              );
+            })}
+          </AnimatePresence>
         </div>
       </div>
     </div>

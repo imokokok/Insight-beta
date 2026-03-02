@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 
 import { GitCompare, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 
-import { ContentSection } from '@/components/common';
+import { ContentSection, EmptyDataState } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge, StatusBadge } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
 import { CHAIN_COLORS, API3_SUPPORTED_CHAINS } from '@/config/chains';
 import { formatPrice, formatInterval, formatLatency } from '@/features/cross-chain/utils';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 import { CrossChainMetrics } from './CrossChainMetrics';
@@ -88,6 +89,7 @@ export function CrossChainComparison({
   dapiName: initialDapiName,
   className,
 }: CrossChainComparisonProps) {
+  const { t } = useI18n();
   const [dapiName, setDapiName] = useState<string>(initialDapiName || 'ETH/USD');
   const [selectedChains, setSelectedChains] = useState<string[]>([
     'ethereum',
@@ -139,7 +141,12 @@ export function CrossChainComparison({
   if (!data) {
     return (
       <ContentSection className={className}>
-        <div className="py-8 text-center text-muted-foreground">暂无数据</div>
+        <EmptyDataState
+          icon={GitCompare}
+          title={t('common.empty.noData')}
+          description={t('common.empty.noDataDesc')}
+          onRefresh={handleRefresh}
+        />
       </ContentSection>
     );
   }

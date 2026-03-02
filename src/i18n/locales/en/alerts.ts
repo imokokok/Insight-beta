@@ -62,6 +62,7 @@ export const alerts = {
   },
   searchPlaceholder: 'Search alerts...',
   selectAlert: 'Select an alert to view details',
+  selectAlertDesc: 'Select an alert from the list on the left to view its details',
   statusActive: 'Active',
   statusResolved: 'Resolved',
   statusInvestigating: 'Investigating',

@@ -2,6 +2,7 @@
 
 import { RefreshCw, Compass } from 'lucide-react';
 
+import { EmptyDataState } from '@/components/common';
 import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
@@ -80,12 +81,16 @@ export function DataDiscovery() {
       </div>
 
       {!hasData && !isLoading && (
-        <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
-          <Compass className="mx-auto h-12 w-12 opacity-50" />
-          <p className="mt-4">
-            {lang === 'zh' ? '暂无数据发现内容' : 'No discovery data available'}
-          </p>
-        </div>
+        <EmptyDataState
+          icon={Compass}
+          title={lang === 'zh' ? '暂无数据发现内容' : 'No discovery data available'}
+          description={
+            lang === 'zh'
+              ? '当前没有发现任何数据模式或趋势'
+              : 'No data patterns or trends discovered at the moment'
+          }
+          onRefresh={() => mutate()}
+        />
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">

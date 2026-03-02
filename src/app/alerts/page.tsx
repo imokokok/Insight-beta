@@ -3,6 +3,7 @@
 import { forwardRef, lazy, Suspense, useMemo } from 'react';
 import type { ComponentPropsWithoutRef } from 'react';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   Search,
   Filter,
@@ -23,9 +24,16 @@ import { Badge } from '@/components/ui';
 import { Input } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { AlertListSkeleton } from '@/components/ui';
-import { AlertCard, AlertGroupSelector, AlertGroupList } from '@/features/alerts/components';
+import {
+  AlertCard,
+  AlertGroupSelector,
+  AlertGroupList,
+  MobileAlertCard,
+  MobileAlertDetailSheet,
+} from '@/features/alerts/components';
 import { useAlertsPage, sourceIcons } from '@/features/alerts/hooks';
 import type { AlertSeverity, AlertStatus } from '@/features/alerts/hooks/useAlerts';
+import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/shared/utils';
 import type { KpiCardData, KpiStatus } from '@/types/shared/kpi';
@@ -203,6 +211,7 @@ function TopStatusBar({
 
 export default function AlertsCenterPage() {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const {
     loading,
     data,
@@ -310,7 +319,7 @@ export default function AlertsCenterPage() {
 
   if (error && !loading && !data) {
     return (
-      <div className="min-h-screen p-6">
+      <div className="min-h-screen p-4 sm:p-6">
         <ErrorBanner
           error={new Error(error)}
           onRetry={() => refresh()}
@@ -334,7 +343,7 @@ export default function AlertsCenterPage() {
         isRefreshing={loading}
       />
 
-      <div className="container mx-auto space-y-3 p-4 sm:p-5">
+      <div className="container mx-auto space-y-3 p-4 sm:p-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="flex items-center gap-2 text-lg font-bold sm:text-xl lg:text-2xl">
@@ -486,164 +495,208 @@ export default function AlertsCenterPage() {
             </div>
           </div>
 
-          <TabsContent value={activeTab} className="space-y-3">
-            <Suspense fallback={<AlertListSkeleton className="h-12" />}>
-              <AlertBatchActions
-                selectedAlerts={selectedAlerts}
-                onClearSelection={deselectAll}
-                onBatchActionComplete={handleBatchActionComplete}
-              />
-            </Suspense>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.15 }}
+            >
+              {activeTab !== 'rules' && activeTab !== 'channels' && activeTab !== 'analysis' && (
+                <TabsContent value={activeTab} className="space-y-3">
+                  <Suspense fallback={<AlertListSkeleton className="h-12" />}>
+                    <AlertBatchActions
+                      selectedAlerts={selectedAlerts}
+                      onClearSelection={deselectAll}
+                      onBatchActionComplete={handleBatchActionComplete}
+                    />
+                  </Suspense>
 
-            <div className="grid gap-3 lg:grid-cols-2">
-              <div className="rounded-lg border border-border/30 backdrop-blur-sm">
-                <div className="border-b border-border/20 p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {(() => {
-                        const Icon = sourceIcons[activeTab as keyof typeof sourceIcons];
-                        return Icon ? (
-                          <Icon className="h-4 w-4" />
-                        ) : (
-                          <sourceIcons.all className="h-4 w-4" />
-                        );
-                      })()}
-                      <h3 className="text-sm font-semibold text-foreground">
-                        {t('alerts.cards.alertList')}
-                      </h3>
-                      <Badge variant="secondary" className="ml-1 text-xs">
-                        {filteredAlerts.length}
-                      </Badge>
-                    </div>
-                    {filteredAlerts.length > 0 && (
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          checked={isAllSelected}
-                          onCheckedChange={toggleSelectAll}
-                          className={cn(isIndeterminate && 'opacity-50')}
-                        />
-                        <span className="text-xs text-muted-foreground">
-                          {isAllSelected
-                            ? t('alerts.batchActions.deselectAll')
-                            : t('alerts.batchActions.selectAll')}
-                        </span>
+                  <div className={cn('grid gap-3', isMobile ? 'grid-cols-1' : 'lg:grid-cols-2')}>
+                    <div className="rounded-lg border border-border/30 backdrop-blur-sm">
+                      <div className="border-b border-border/20 p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {(() => {
+                              const Icon = sourceIcons[activeTab as keyof typeof sourceIcons];
+                              return Icon ? (
+                                <Icon className="h-4 w-4" />
+                              ) : (
+                                <sourceIcons.all className="h-4 w-4" />
+                              );
+                            })()}
+                            <h3 className="text-sm font-semibold text-foreground">
+                              {t('alerts.cards.alertList')}
+                            </h3>
+                            <Badge variant="secondary" className="ml-1 text-xs">
+                              {filteredAlerts.length}
+                            </Badge>
+                          </div>
+                          {filteredAlerts.length > 0 && (
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                checked={isAllSelected}
+                                onCheckedChange={toggleSelectAll}
+                                className={cn(isIndeterminate && 'opacity-50')}
+                              />
+                              <span className="text-xs text-muted-foreground">
+                                {isAllSelected
+                                  ? t('alerts.batchActions.deselectAll')
+                                  : t('alerts.batchActions.selectAll')}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {t('alerts.cards.showingAlerts', {
+                            count: filteredAlerts.length,
+                            total: data?.alerts.length || 0,
+                          })}
+                        </p>
                       </div>
+                      <div>
+                        {loading && !data ? (
+                          <AlertListSkeleton count={5} />
+                        ) : filteredAlerts.length === 0 ? (
+                          <div className="p-4">
+                            <EmptyAlertsListState
+                              isFiltered={
+                                searchQuery !== '' ||
+                                filterSeverity !== 'all' ||
+                                filterStatus !== 'all'
+                              }
+                              onClearFilters={() => {
+                                setSearchQuery('');
+                                setFilterSeverity('all');
+                                setFilterStatus('all');
+                              }}
+                              onRefresh={refresh}
+                            />
+                          </div>
+                        ) : groupMode !== 'none' && alertGroups.length > 0 ? (
+                          <div className="max-h-[600px] space-y-3 overflow-y-auto p-2 pr-2">
+                            <AlertGroupList
+                              groups={alertGroups}
+                              selectedAlertId={selectedAlert?.id}
+                              onAlertClick={setSelectedAlert}
+                              isSelected={isSelected}
+                              toggleSelection={toggleSelection}
+                            />
+                          </div>
+                        ) : isMobile ? (
+                          <div className="space-y-3 p-2">
+                            {filteredAlerts.map((alert) => (
+                              <MobileAlertCard
+                                key={alert.id}
+                                alert={alert}
+                                onClick={() => setSelectedAlert(alert)}
+                                isSelected={selectedAlert?.id === alert.id}
+                                showCheckbox
+                                isChecked={isSelected(alert.id)}
+                                onCheckChange={() => toggleSelection(alert.id)}
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="p-2">
+                            <Virtuoso
+                              data={filteredAlerts}
+                              style={{ height: '600px' }}
+                              components={{
+                                List: ListContainer,
+                              }}
+                              itemContent={(_index, alert) => (
+                                <AlertCard
+                                  key={alert.id}
+                                  alert={alert}
+                                  onClick={() => setSelectedAlert(alert)}
+                                  isSelected={selectedAlert?.id === alert.id}
+                                  showCheckbox
+                                  isChecked={isSelected(alert.id)}
+                                  onCheckChange={() => toggleSelection(alert.id)}
+                                />
+                              )}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {!isMobile && (
+                      <Suspense fallback={<LoadingFallback height="600px" />}>
+                        <AlertDetailPanel alert={selectedAlert} />
+                      </Suspense>
                     )}
                   </div>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {t('alerts.cards.showingAlerts', {
-                      count: filteredAlerts.length,
-                      total: data?.alerts.length || 0,
-                    })}
-                  </p>
-                </div>
-                <div>
-                  {loading && !data ? (
-                    <AlertListSkeleton count={5} />
-                  ) : filteredAlerts.length === 0 ? (
-                    <div className="p-4">
-                      <EmptyAlertsListState
-                        isFiltered={
-                          searchQuery !== '' || filterSeverity !== 'all' || filterStatus !== 'all'
-                        }
-                        onClearFilters={() => {
-                          setSearchQuery('');
-                          setFilterSeverity('all');
-                          setFilterStatus('all');
-                        }}
-                        onRefresh={refresh}
-                      />
-                    </div>
-                  ) : groupMode !== 'none' && alertGroups.length > 0 ? (
-                    <div className="max-h-[600px] space-y-3 overflow-y-auto p-2 pr-2">
-                      <AlertGroupList
-                        groups={alertGroups}
-                        selectedAlertId={selectedAlert?.id}
-                        onAlertClick={setSelectedAlert}
-                        isSelected={isSelected}
-                        toggleSelection={toggleSelection}
-                      />
-                    </div>
-                  ) : (
-                    <div className="p-2">
-                      <Virtuoso
-                        data={filteredAlerts}
-                        style={{ height: '600px' }}
-                        components={{
-                          List: ListContainer,
-                        }}
-                        itemContent={(_index, alert) => (
-                          <AlertCard
-                            key={alert.id}
-                            alert={alert}
-                            onClick={() => setSelectedAlert(alert)}
-                            isSelected={selectedAlert?.id === alert.id}
-                            showCheckbox
-                            isChecked={isSelected(alert.id)}
-                            onCheckChange={() => toggleSelection(alert.id)}
-                          />
-                        )}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
+                </TabsContent>
+              )}
 
-              <Suspense fallback={<LoadingFallback height="600px" />}>
-                <AlertDetailPanel alert={selectedAlert} />
-              </Suspense>
-            </div>
-          </TabsContent>
+              {activeTab === 'rules' && (
+                <TabsContent value="rules" className="space-y-3">
+                  <Suspense fallback={<LoadingFallback height="400px" />}>
+                    <AlertRulesList
+                      rules={rules}
+                      loading={rulesLoading}
+                      onToggle={toggleRule}
+                      onDelete={deleteRule}
+                      onCreate={createRule}
+                      onUpdate={updateRule}
+                    />
+                  </Suspense>
+                </TabsContent>
+              )}
 
-          <TabsContent value="rules" className="space-y-3">
-            <Suspense fallback={<LoadingFallback height="400px" />}>
-              <AlertRulesList
-                rules={rules}
-                loading={rulesLoading}
-                onToggle={toggleRule}
-                onDelete={deleteRule}
-                onCreate={createRule}
-                onUpdate={updateRule}
-              />
-            </Suspense>
-          </TabsContent>
+              {activeTab === 'channels' && (
+                <TabsContent value="channels" className="space-y-3">
+                  <Suspense fallback={<LoadingFallback height="400px" />}>
+                    <NotificationChannels
+                      channels={channels}
+                      loading={channelsLoading}
+                      fetchChannels={fetchChannels}
+                      createChannel={createChannel}
+                      updateChannel={updateChannel}
+                      deleteChannel={deleteChannel}
+                      toggleChannel={toggleChannel}
+                      testChannel={testChannel}
+                    />
+                  </Suspense>
+                </TabsContent>
+              )}
 
-          <TabsContent value="channels" className="space-y-3">
-            <Suspense fallback={<LoadingFallback height="400px" />}>
-              <NotificationChannels
-                channels={channels}
-                loading={channelsLoading}
-                fetchChannels={fetchChannels}
-                createChannel={createChannel}
-                updateChannel={updateChannel}
-                deleteChannel={deleteChannel}
-                toggleChannel={toggleChannel}
-                testChannel={testChannel}
-              />
-            </Suspense>
-          </TabsContent>
-
-          <TabsContent value="analysis" className="space-y-3">
-            <Suspense fallback={<LoadingFallback height="300px" />}>
-              <ResponseTimeStats />
-            </Suspense>
-            <Suspense fallback={<LoadingFallback height="400px" />}>
-              <AlertTrendChart
-                data={historyData?.trend || []}
-                stats={historyData?.stats || null}
-                timeRange={historyTimeRange}
-                groupBy={historyGroupBy}
-                onTimeRangeChange={setHistoryTimeRange}
-                onGroupByChange={setHistoryGroupBy}
-                loading={historyLoading}
-                previousStats={historyData?.previousStats}
-              />
-            </Suspense>
-            <Suspense fallback={<LoadingFallback height="400px" />}>
-              <AlertHeatmap data={historyData?.heatmap || []} loading={historyLoading} />
-            </Suspense>
-          </TabsContent>
+              {activeTab === 'analysis' && (
+                <TabsContent value="analysis" className="space-y-3">
+                  <Suspense fallback={<LoadingFallback height="300px" />}>
+                    <ResponseTimeStats />
+                  </Suspense>
+                  <Suspense fallback={<LoadingFallback height="400px" />}>
+                    <AlertTrendChart
+                      data={historyData?.trend || []}
+                      stats={historyData?.stats || null}
+                      timeRange={historyTimeRange}
+                      groupBy={historyGroupBy}
+                      onTimeRangeChange={setHistoryTimeRange}
+                      onGroupByChange={setHistoryGroupBy}
+                      loading={historyLoading}
+                      previousStats={historyData?.previousStats}
+                    />
+                  </Suspense>
+                  <Suspense fallback={<LoadingFallback height="400px" />}>
+                    <AlertHeatmap data={historyData?.heatmap || []} loading={historyLoading} />
+                  </Suspense>
+                </TabsContent>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </Tabs>
+
+        {isMobile && (
+          <MobileAlertDetailSheet
+            alert={selectedAlert}
+            isOpen={!!selectedAlert}
+            onClose={() => setSelectedAlert(null)}
+          />
+        )}
       </div>
     </div>
   );
