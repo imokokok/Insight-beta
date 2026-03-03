@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
+import Link from 'next/link';
+
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -12,12 +14,15 @@ import {
   Activity,
   TrendingUp,
   Zap,
+  Lightbulb,
+  X,
 } from 'lucide-react';
 
 import { KPIOverviewBar, AutoRefreshControl, type KPIItem } from '@/components/common';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import { Alert, AlertDescription } from '@/components/ui';
 import {
   CrossChainOverview,
   CrossChainComparison,
@@ -41,6 +46,7 @@ export default function CrossChainAnalysisPage() {
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(30000);
   const [timeUntilRefresh, setTimeUntilRefresh] = useState(0);
+  const [showCompareHint, setShowCompareHint] = useState(true);
 
   const fetchKPIData = useCallback(async () => {
     setLoading(true);
@@ -145,6 +151,31 @@ export default function CrossChainAnalysisPage() {
           />
         </div>
       </div>
+
+      {showCompareHint && (
+        <Alert className="border-primary/20 bg-primary/5">
+          <Lightbulb className="h-4 w-4 text-primary" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>
+              💡 {t('crossChain.compareHint')}{' '}
+              <Link
+                href="/compare/price"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                {t('crossChain.goToCompare')}
+              </Link>
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={() => setShowCompareHint(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {loading && !kpiData ? (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:gap-3">

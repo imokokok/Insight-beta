@@ -121,7 +121,7 @@ export const chainlink = {
   },
   deviation: {
     title: '偏差触发统计',
-    description: '分析喂价偏差阈值触发情况',
+    description: 'Chainlink 喂价偏差阈值触发情况分析',
     totalTriggers: '总触发次数',
     totalFeeds: '总喂价数',
     activeFeeds: '活跃喂价',

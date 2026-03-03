@@ -55,7 +55,7 @@ function Skeleton({ className, shimmer = true }: SkeletonProps) {
  */
 function CardSkeleton({ className }: SkeletonProps) {
   return (
-    <div className={cn('rounded-lg border border-gray-200 p-4', className)}>
+    <div className={cn('rounded-lg border border-gray-200 p-4 dark:border-gray-700', className)}>
       <Skeleton className="mb-4 h-4 w-1/3" />
       <Skeleton className="mb-2 h-8 w-2/3" />
       <Skeleton className="h-4 w-full" />
@@ -102,7 +102,7 @@ function TableRowSkeleton({ columns = 4, className }: SkeletonProps & { columns?
  */
 function StatCardSkeleton({ className }: SkeletonProps) {
   return (
-    <div className={cn('rounded-lg border border-gray-200 p-6', className)}>
+    <div className={cn('rounded-lg border border-gray-200 p-6 dark:border-gray-700', className)}>
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-8 w-8 rounded-full" />
@@ -119,7 +119,7 @@ function StatCardSkeleton({ className }: SkeletonProps) {
 function ChartSkeleton({ className }: SkeletonProps) {
   const heights = [45, 70, 55, 80, 40, 65, 50, 75, 60, 35, 85, 50];
   return (
-    <div className={cn('rounded-lg border border-gray-200 p-4', className)}>
+    <div className={cn('rounded-lg border border-gray-200 p-4 dark:border-gray-700', className)}>
       <Skeleton className="mb-4 h-6 w-1/4" />
       <div className="flex h-48 items-end gap-2">
         {Array.from({ length: 12 }).map((_, i) => (
@@ -200,7 +200,7 @@ function PageSkeleton() {
       </div>
 
       {/* List */}
-      <div className="rounded-lg border border-gray-200 p-4">
+      <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
         <Skeleton className="mb-4 h-6 w-1/4" />
         <div className="space-y-2">
           <ListItemSkeleton />
@@ -219,9 +219,9 @@ function PageSkeleton() {
  */
 function DataTableSkeleton({ rows = 5, columns = 4 }: { rows?: number; columns?: number }) {
   return (
-    <div className="rounded-lg border border-gray-200">
+    <div className="rounded-lg border border-gray-200 dark:border-gray-700">
       {/* Header */}
-      <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
+      <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
         <div className="flex gap-4">
           {Array.from({ length: columns }).map((_, i) => (
             <Skeleton key={i} className="h-4 flex-1" />
@@ -230,7 +230,7 @@ function DataTableSkeleton({ rows = 5, columns = 4 }: { rows?: number; columns?:
       </div>
 
       {/* Rows */}
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-gray-200 dark:divide-gray-700">
         {Array.from({ length: rows }).map((_, i) => (
           <div key={i} className="px-4 py-3">
             <TableRowSkeleton columns={columns} />
@@ -288,7 +288,7 @@ function DashboardSkeleton() {
  */
 function PriceCardSkeleton({ className }: SkeletonProps) {
   return (
-    <div className={cn('rounded-xl border border-gray-200 p-4', className)}>
+    <div className={cn('rounded-xl border border-gray-200 p-4 dark:border-gray-700', className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Skeleton className="h-10 w-10 rounded-full" />
@@ -312,7 +312,7 @@ function PriceCardSkeleton({ className }: SkeletonProps) {
  */
 function ProtocolCardSkeleton({ className }: SkeletonProps) {
   return (
-    <div className={cn('rounded-xl border border-gray-200 p-4', className)}>
+    <div className={cn('rounded-xl border border-gray-200 p-4 dark:border-gray-700', className)}>
       <div className="flex items-center gap-3">
         <Skeleton className="h-12 w-12 rounded-lg" />
         <div className="flex-1">
@@ -482,11 +482,14 @@ function TableSkeleton({
 }: TableSkeletonProps) {
   return (
     <motion.div
-      className={cn('rounded-xl border border-gray-200 bg-white', className)}
+      className={cn(
+        'rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800',
+        className,
+      )}
       variants={itemVariants.skeletonItem}
     >
       {showHeader && (
-        <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
+        <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
           <div className="flex gap-4">
             {Array.from({ length: columns }).map((_, i) => (
               <Skeleton key={i} className="h-4 flex-1" />
@@ -494,7 +497,7 @@ function TableSkeleton({
           </div>
         </div>
       )}
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-gray-200 dark:divide-gray-700">
         {Array.from({ length: rows }).map((_, rowIndex) => (
           <div key={rowIndex} className="px-4 py-3">
             <div className="flex gap-4">

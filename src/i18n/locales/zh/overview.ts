@@ -20,18 +20,22 @@ export const overview = {
     priceComparison: {
       title: '价格对比',
       description: '对比不同预言机价格',
+      scenario: '选择价格最准确的预言机',
     },
     crossChain: {
       title: '跨链分析',
       description: '跨链价格差异分析',
+      scenario: '查看同一资产在不同链上的价格',
     },
     alerts: {
       title: '告警中心',
       description: '管理告警规则',
+      scenario: '配置价格异常告警',
     },
     reliability: {
       title: '可靠性评分',
       description: '预言机可靠性排名',
+      scenario: '评估预言机整体可靠性',
     },
   },
 };

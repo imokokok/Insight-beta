@@ -133,13 +133,15 @@ const getQuickLinks = (t: (key: string) => string) => [
   {
     title: t('overview.quickLinks.priceComparison.title'),
     description: t('overview.quickLinks.priceComparison.description'),
+    scenario: t('overview.quickLinks.priceComparison.scenario'),
     icon: <BarChart3 className="h-5 w-5" />,
-    href: '/compare',
+    href: '/compare/price',
     color: 'bg-blue-500/10 text-blue-500',
   },
   {
     title: t('overview.quickLinks.crossChain.title'),
     description: t('overview.quickLinks.crossChain.description'),
+    scenario: t('overview.quickLinks.crossChain.scenario'),
     icon: <Globe className="h-5 w-5" />,
     href: '/cross-chain',
     color: 'bg-green-500/10 text-green-500',
@@ -147,6 +149,7 @@ const getQuickLinks = (t: (key: string) => string) => [
   {
     title: t('overview.quickLinks.alerts.title'),
     description: t('overview.quickLinks.alerts.description'),
+    scenario: t('overview.quickLinks.alerts.scenario'),
     icon: <AlertTriangle className="h-5 w-5" />,
     href: '/alerts',
     color: 'bg-orange-500/10 text-orange-500',
@@ -154,6 +157,7 @@ const getQuickLinks = (t: (key: string) => string) => [
   {
     title: t('overview.quickLinks.reliability.title'),
     description: t('overview.quickLinks.reliability.description'),
+    scenario: t('overview.quickLinks.reliability.scenario'),
     icon: <Shield className="h-5 w-5" />,
     href: '/compare/reliability',
     color: 'bg-purple-500/10 text-purple-500',
@@ -616,6 +620,7 @@ export default function OverviewPage() {
                       <div>
                         <h4 className="font-medium">{link.title}</h4>
                         <p className="mt-0.5 text-xs text-muted-foreground">{link.description}</p>
+                        <p className="mt-1 text-[10px] text-muted-foreground/70">{link.scenario}</p>
                       </div>
                     </a>
                   ))}

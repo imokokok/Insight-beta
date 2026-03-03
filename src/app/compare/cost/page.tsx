@@ -20,6 +20,13 @@ export default function CostComparePage() {
   return (
     <ComparePageLayout activeTab="cost">
       <Breadcrumb items={breadcrumbItems} />
+      <div className="mb-4">
+        <h1 className="text-xl font-semibold">{t('compare.cost.title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('compare.cost.description')}</p>
+        <p className="mt-1 text-sm text-blue-600 dark:text-blue-400">
+          🎯 {t('compare.cost.scenario')}
+        </p>
+      </div>
       <Suspense fallback={<ChartSkeleton className="h-96" />}>
         <ComparisonContent />
       </Suspense>

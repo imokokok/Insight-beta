@@ -17,6 +17,13 @@ export default function DeviationComparePage() {
   return (
     <ComparePageLayout activeTab="deviation">
       <Breadcrumb items={breadcrumbItems} />
+      <div className="mb-4">
+        <h1 className="text-xl font-semibold">{t('compare.deviation.title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('compare.deviation.description')}</p>
+        <p className="mt-1 text-sm text-blue-600 dark:text-blue-400">
+          🎯 {t('compare.deviation.scenario')}
+        </p>
+      </div>
       <DeviationContent />
     </ComparePageLayout>
   );

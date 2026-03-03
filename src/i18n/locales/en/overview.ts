@@ -20,18 +20,22 @@ export const overview = {
     priceComparison: {
       title: 'Price Comparison',
       description: 'Compare oracle prices',
+      scenario: 'Choose the most accurate oracle',
     },
     crossChain: {
       title: 'Cross-Chain',
       description: 'Cross-chain price analysis',
+      scenario: 'View prices of the same asset across chains',
     },
     alerts: {
       title: 'Alerts Center',
       description: 'Manage alert rules',
+      scenario: 'Configure price anomaly alerts',
     },
     reliability: {
       title: 'Reliability Scores',
       description: 'Oracle reliability rankings',
+      scenario: 'Evaluate overall oracle reliability',
     },
   },
 };

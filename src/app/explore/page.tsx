@@ -14,6 +14,7 @@ import {
 
 import { Button } from '@/components/ui';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui';
 import {
   TrendingFeeds,
   DataDiscovery,
@@ -39,16 +40,19 @@ export default function ExplorePage() {
     {
       value: 'address',
       label: t('explore.tabs.address'),
+      description: t('explore.tabs.addressDesc'),
       icon: User,
     },
     {
       value: 'discovery',
       label: t('explore.tabs.discovery'),
+      description: t('explore.tabs.discoveryDesc'),
       icon: Sparkles,
     },
     {
       value: 'trending',
       label: t('explore.tabs.trending'),
+      description: t('explore.tabs.trendingDesc'),
       icon: TrendingUp,
     },
   ];
@@ -152,18 +156,26 @@ export default function ExplorePage() {
               className="scrollbar-hide -mx-4 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0"
               onScroll={checkScrollButtons}
             >
-              <TabsList className="inline-flex h-auto min-w-max gap-1 bg-muted p-1 md:w-full md:min-w-0 md:justify-start">
-                {tabs.map((tab) => (
-                  <TabsTrigger
-                    key={tab.value}
-                    value={tab.value}
-                    className="flex h-auto min-h-[44px] items-center gap-2 rounded-md px-3 py-2.5 text-sm md:px-4 md:text-base"
-                  >
-                    <tab.icon className="h-4 w-4 flex-shrink-0" />
-                    <span className="whitespace-nowrap">{tab.label}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+              <TooltipProvider>
+                <TabsList className="inline-flex h-auto min-w-max gap-1 bg-muted p-1 md:w-full md:min-w-0 md:justify-start">
+                  {tabs.map((tab) => (
+                    <Tooltip key={tab.value}>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger
+                          value={tab.value}
+                          className="flex h-auto min-h-[44px] items-center gap-2 rounded-md px-3 py-2.5 text-sm md:px-4 md:text-base"
+                        >
+                          <tab.icon className="h-4 w-4 flex-shrink-0" />
+                          <span className="whitespace-nowrap">{tab.label}</span>
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>{tab.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TabsList>
+              </TooltipProvider>
             </div>
 
             {showScrollButtons && isMobile && (

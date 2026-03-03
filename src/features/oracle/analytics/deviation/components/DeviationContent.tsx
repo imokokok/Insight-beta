@@ -17,7 +17,6 @@ import {
 
 import {
   AutoRefreshControl,
-  Breadcrumb,
   ToastContainer,
   useToast,
   UnifiedStatsPanel,
@@ -109,15 +108,9 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
 
   const handleRefresh = onRefresh || refresh;
 
-  const breadcrumbItems = [
-    { label: t('nav.oracleAnalytics'), href: '/oracle/analytics' },
-    { label: t('analytics.deviation.pageName') },
-  ];
-
   if (error && !loading && !report) {
     return (
       <div className="space-y-6">
-        <Breadcrumb items={breadcrumbItems} />
         <ErrorBanner
           error={new Error(error)}
           onRetry={() => handleRefresh()}
@@ -165,8 +158,6 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <Breadcrumb items={breadcrumbItems} />
-
       <WelcomeGuide />
       <ToastContainer toasts={toasts} onRemove={removeToast} />
 

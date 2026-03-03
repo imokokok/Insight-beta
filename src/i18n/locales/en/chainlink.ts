@@ -126,7 +126,7 @@ export const chainlink = {
   },
   deviation: {
     title: 'Deviation Trigger Stats',
-    description: 'Analyze feed deviation threshold trigger status',
+    description: 'Chainlink feed deviation threshold trigger analysis',
     totalTriggers: 'Total Triggers',
     totalFeeds: 'Total Feeds',
     activeFeeds: 'Active Feeds',

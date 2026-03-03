@@ -116,8 +116,8 @@ export const ChartCard = memo(function ChartCard({
             </DropdownMenu>
           </div>
         </CardHeader>
-        <CardContent ref={chartRef} className={cn('pt-0', loading && 'opacity-50')}>
-          {children}
+        <CardContent ref={chartRef} className="pt-0">
+          {loading ? <ChartCardSkeleton className="border-0 shadow-none" /> : children}
         </CardContent>
       </Card>
 
@@ -144,13 +144,13 @@ export function ChartCardSkeleton({ className }: { className?: string }) {
     <Card className={cn('overflow-hidden', className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
-          <div className="h-5 w-32 animate-pulse rounded bg-gray-200" />
-          <div className="mt-1 h-3 w-48 animate-pulse rounded bg-gray-200" />
+          <div className="h-5 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+          <div className="mt-1 h-3 w-48 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
         </div>
-        <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
+        <div className="h-8 w-8 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
       </CardHeader>
       <CardContent>
-        <div className="h-64 animate-pulse rounded bg-gray-100" />
+        <div className="h-64 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
       </CardContent>
     </Card>
   );

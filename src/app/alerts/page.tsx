@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui';
 import { Input } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { AlertListSkeleton } from '@/components/ui';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import {
   AlertCard,
   AlertGroupSelector,
@@ -401,43 +402,103 @@ export default function AlertsCenterPage() {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3">
-          <div className="rounded-lg border border-border/30 p-2 backdrop-blur-sm">
-            <TabsList className="flex w-full gap-1 overflow-x-auto bg-transparent">
-              <TabsTrigger value="all" className="text-xs sm:text-sm">
-                <sourceIcons.all className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">{t('alerts.tabs.all')}</span>
-                <span className="sm:hidden">{t('alerts.tabs.allShort')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="price_anomaly" className="text-xs sm:text-sm">
-                <AlertTriangle className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">{t('alerts.tabs.priceAnomaly')}</span>
-                <span className="sm:hidden">{t('alerts.tabs.priceAnomalyShort')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="cross_chain" className="text-xs sm:text-sm">
-                <Activity className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">{t('alerts.tabs.crossChain')}</span>
-                <span className="sm:hidden">{t('alerts.tabs.crossChainShort')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="security" className="text-xs sm:text-sm">
-                <AlertCircle className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">{t('alerts.tabs.security')}</span>
-                <span className="sm:hidden">{t('alerts.tabs.securityShort')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="rules" className="text-xs sm:text-sm">
-                <CheckCircle className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">{t('alerts.tabs.rules')}</span>
-                <span className="sm:hidden">{t('alerts.tabs.rulesShort')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="channels" className="text-xs sm:text-sm">
-                <Bell className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">{t('alerts.tabs.channels')}</span>
-                <span className="sm:hidden">{t('alerts.tabs.channelsShort')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="analysis" className="text-xs sm:text-sm">
-                <Activity className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">{t('alerts.tabs.analysis')}</span>
-                <span className="sm:hidden">{t('alerts.tabs.analysisShort')}</span>
-              </TabsTrigger>
+          <div className="relative rounded-lg border border-border/30 p-2 backdrop-blur-sm">
+            <TabsList className="scrollbar-hide relative flex w-full gap-1 overflow-x-auto bg-transparent">
+              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-8 bg-gradient-to-l from-background to-transparent opacity-0 transition-opacity [.overflow-x-auto:hover>&]:opacity-100" />
+              <TooltipProvider>
+                <div className="flex items-center gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TabsTrigger value="all" className="text-xs sm:text-sm">
+                        <sourceIcons.all className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">{t('alerts.tabs.all')}</span>
+                        <span className="sm:hidden">{t('alerts.tabs.allShort')}</span>
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('alerts.tabs.allDesc')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TabsTrigger value="price_anomaly" className="text-xs sm:text-sm">
+                        <AlertTriangle className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">{t('alerts.tabs.priceAnomaly')}</span>
+                        <span className="sm:hidden">{t('alerts.tabs.priceAnomalyShort')}</span>
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('alerts.tabs.priceAnomalyDesc')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TabsTrigger value="cross_chain" className="text-xs sm:text-sm">
+                        <Activity className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">{t('alerts.tabs.crossChain')}</span>
+                        <span className="sm:hidden">{t('alerts.tabs.crossChainShort')}</span>
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('alerts.tabs.crossChainDesc')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TabsTrigger value="security" className="text-xs sm:text-sm">
+                        <AlertCircle className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">{t('alerts.tabs.security')}</span>
+                        <span className="sm:hidden">{t('alerts.tabs.securityShort')}</span>
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('alerts.tabs.securityDesc')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="mx-2 h-6 w-px self-center bg-border/50" />
+                <div className="flex items-center gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TabsTrigger value="rules" className="text-xs sm:text-sm">
+                        <CheckCircle className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">{t('alerts.tabs.rules')}</span>
+                        <span className="sm:hidden">{t('alerts.tabs.rulesShort')}</span>
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('alerts.tabs.rulesDesc')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TabsTrigger value="channels" className="text-xs sm:text-sm">
+                        <Bell className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">{t('alerts.tabs.channels')}</span>
+                        <span className="sm:hidden">{t('alerts.tabs.channelsShort')}</span>
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('alerts.tabs.channelsDesc')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="mx-2 h-6 w-px self-center bg-border/50" />
+                <div className="flex items-center gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TabsTrigger value="analysis" className="text-xs sm:text-sm">
+                        <Activity className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">{t('alerts.tabs.analysis')}</span>
+                        <span className="sm:hidden">{t('alerts.tabs.analysisShort')}</span>
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('alerts.tabs.analysisDesc')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
             </TabsList>
           </div>
 

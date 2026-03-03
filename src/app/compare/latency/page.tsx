@@ -20,6 +20,13 @@ export default function LatencyComparePage() {
   return (
     <ComparePageLayout activeTab="latency">
       <Breadcrumb items={breadcrumbItems} />
+      <div className="mb-4">
+        <h1 className="text-xl font-semibold">{t('compare.latency.title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('compare.latency.description')}</p>
+        <p className="mt-1 text-sm text-blue-600 dark:text-blue-400">
+          🎯 {t('compare.latency.scenario')}
+        </p>
+      </div>
       <Suspense fallback={<ChartSkeleton className="h-96" />}>
         <ComparisonContent />
       </Suspense>

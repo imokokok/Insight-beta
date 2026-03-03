@@ -63,4 +63,6 @@ export const crossChain = {
     description: 'Cross-chain price consistency analysis metrics',
   },
   priceAlerts: 'Price Deviation Alerts',
+  compareHint: 'Want to compare prices between different oracles?',
+  goToCompare: 'Go to Compare Center',
 };

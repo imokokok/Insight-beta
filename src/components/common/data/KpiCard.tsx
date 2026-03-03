@@ -120,7 +120,13 @@ export function KpiGrid({
         )}
       >
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-16 animate-pulse rounded border border-border/20 bg-muted/30" />
+          <div key={i} className="flex flex-col py-3">
+            <div className="mb-0.5 flex items-center justify-between">
+              <div className="h-3 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+              <div className="h-3 w-8 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+            </div>
+            <div className="mt-2 h-5 w-20 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+          </div>
         ))}
       </div>
     );

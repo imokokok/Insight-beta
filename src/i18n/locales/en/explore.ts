@@ -3,9 +3,13 @@ export const explore = {
   description: 'Explore blockchain data, protocols and address information',
   tabs: {
     trending: 'Trending Pairs',
+    trendingDesc: 'Popular price sources sorted by volume and volatility',
     protocols: 'Protocol Explorer',
+    protocolsDesc: 'Browse and search oracle protocols',
     address: 'Address Explorer',
-    discovery: 'Data Discovery',
+    addressDesc: 'Query oracle-related activities for on-chain addresses',
+    discovery: 'Recommended Sources',
+    discoveryDesc: 'Data sources recommended based on your interests',
   },
   sortOptions: {
     volume: 'Volume',

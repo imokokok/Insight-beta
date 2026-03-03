@@ -104,7 +104,7 @@ const MobileCard = React.memo(function MobileCard({
               onToggle();
             }}
             className={cn(
-              'ml-2 flex h-8 w-8 items-center justify-center rounded-full',
+              'ml-2 flex h-11 w-11 items-center justify-center rounded-full',
               'text-muted-foreground hover:bg-muted hover:text-foreground',
               'transition-all duration-200',
             )}

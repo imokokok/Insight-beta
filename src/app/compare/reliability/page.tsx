@@ -58,6 +58,13 @@ export default function ReliabilityComparePage() {
     <ComparePageLayout activeTab="reliability">
       <Breadcrumb items={breadcrumbItems} />
 
+      <div className="mb-4">
+        <h1 className="text-xl font-semibold">{t('compare.reliability.title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('compare.reliability.description')}</p>
+        <p className="mt-1 text-sm text-blue-600 dark:text-blue-400">
+          🎯 {t('compare.reliability.scenario')}
+        </p>
+      </div>
       <Card className="border-border/50">
         <CardContent className="p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

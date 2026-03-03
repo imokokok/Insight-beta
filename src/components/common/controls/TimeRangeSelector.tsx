@@ -128,7 +128,7 @@ export function TimeRangeSelector({
           size="sm"
           onClick={() => handlePresetClick(preset)}
           className={cn(
-            'h-8 min-w-[44px] px-3 text-xs font-medium transition-all',
+            'h-8 min-w-[36px] px-2 text-xs font-medium transition-all sm:min-w-[44px] sm:px-3',
             isPreset(value) && value === preset
               ? 'bg-primary text-white shadow-sm'
               : 'border-border/50 bg-card/50 text-muted-foreground hover:border-primary/30 hover:bg-primary/5 hover:text-foreground',
@@ -146,7 +146,7 @@ export function TimeRangeSelector({
               size="sm"
               onClick={handleCustomClick}
               className={cn(
-                'h-8 min-w-[44px] max-w-[120px] truncate px-3 text-xs font-medium transition-all',
+                'h-8 min-w-[36px] max-w-[120px] truncate px-2 text-xs font-medium transition-all sm:min-w-[44px] sm:px-3',
                 isCustom
                   ? 'bg-primary text-white shadow-sm'
                   : 'border-border/50 bg-card/50 text-muted-foreground hover:border-primary/30 hover:bg-primary/5 hover:text-foreground',

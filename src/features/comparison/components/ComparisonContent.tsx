@@ -283,14 +283,6 @@ export function ComparisonContent({ onRefresh: _onRefresh }: ComparisonContentPr
     <ErrorBoundary>
       <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {t('comparison.title')}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground sm:text-base">
-              {t('comparison.description')}
-            </p>
-          </div>
           <div className="flex items-center gap-2">
             {isLive && (
               <span className="flex items-center gap-1.5 text-xs text-emerald-600 sm:text-sm">

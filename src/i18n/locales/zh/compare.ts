@@ -1,4 +1,6 @@
 export const compare = {
+  crossChainHint: '查看同一预言机在不同链上的价格差异？',
+  goToCrossChain: '前往跨链分析',
   pageTitle: '比较中心',
   pageDescription: '整合所有预言机比较分析功能，一站式对比分析',
   redirecting: '正在跳转到价格比较...',
@@ -38,5 +40,9 @@ export const compare = {
   reliability: {
     title: '可靠性分析',
     description: '可靠性评分排名、可靠性趋势图',
+  },
+  deviation: {
+    title: '偏差分析',
+    description: '跨预言机价格偏差对比分析',
   },
 };

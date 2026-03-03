@@ -63,4 +63,6 @@ export const crossChain = {
     description: '跨链价格一致性分析指标',
   },
   priceAlerts: '价格偏差告警',
+  compareHint: '想对比不同预言机之间的价格差异？',
+  goToCompare: '前往比较中心',
 };
