@@ -232,7 +232,7 @@ export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProp
         transition={{ duration: 0.3 }}
         className="rounded-xl border border-border/30 bg-muted/50 p-1.5 backdrop-blur-sm"
       >
-        <TabsList className="grid w-full grid-cols-5 gap-1 bg-transparent">
+        <TabsList className="flex w-full gap-1 overflow-x-auto bg-transparent">
           <a href={tabRoutes.price}>
             <TabsTrigger
               value="price"

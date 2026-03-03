@@ -49,7 +49,10 @@ export function TrendIndicator({
 
   const formatValue = (val: number): string => {
     const sign = trend === 'up' ? '+' : trend === 'down' ? '-' : '';
-    return `${sign}${Math.abs(val).toFixed(2)}%`;
+    const absVal = Math.abs(val);
+    const formatted =
+      absVal % 1 === 0 ? absVal.toString() : absVal.toFixed(2).replace(/\.?0+$/, '');
+    return `${sign}${formatted}%`;
   };
 
   return (
@@ -82,7 +85,10 @@ export function TrendIndicatorCompact({
 
   const formatValue = (val: number): string => {
     const sign = trend === 'up' ? '+' : trend === 'down' ? '-' : '';
-    return `${sign}${Math.abs(val).toFixed(2)}%`;
+    const absVal = Math.abs(val);
+    const formatted =
+      absVal % 1 === 0 ? absVal.toString() : absVal.toFixed(2).replace(/\.?0+$/, '');
+    return `${sign}${formatted}%`;
   };
 
   return (
@@ -106,7 +112,10 @@ export function TrendIndicatorBadge({
 
   const formatValue = (val: number): string => {
     const sign = trend === 'up' ? '+' : trend === 'down' ? '-' : '';
-    return `${sign}${Math.abs(val).toFixed(2)}%`;
+    const absVal = Math.abs(val);
+    const formatted =
+      absVal % 1 === 0 ? absVal.toString() : absVal.toFixed(2).replace(/\.?0+$/, '');
+    return `${sign}${formatted}%`;
   };
 
   return (

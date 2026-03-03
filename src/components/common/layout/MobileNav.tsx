@@ -126,7 +126,8 @@ export function MobileSidebar({ children }: MobileSidebarProps) {
               <span className="text-xl font-bold text-foreground">{t('nav.labels.navMenu')}</span>
               <button
                 onClick={close}
-                className="group rounded-full p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95"
+                aria-label={t('common.close')}
+                className="group flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95"
               >
                 <X className="h-5 w-5 transition-transform group-hover:rotate-90" />
               </button>

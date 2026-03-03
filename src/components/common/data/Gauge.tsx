@@ -23,10 +23,10 @@ const sizeConfig = {
 };
 
 const colorMap = {
-  success: '#22c55e',
-  warning: '#f59e0b',
-  error: '#ef4444',
-  primary: '#3b82f6',
+  success: 'rgb(var(--color-success))',
+  warning: 'rgb(var(--color-warning))',
+  error: 'rgb(var(--color-error))',
+  primary: 'rgb(var(--color-primary))',
 };
 
 export const Gauge = memo(function Gauge({

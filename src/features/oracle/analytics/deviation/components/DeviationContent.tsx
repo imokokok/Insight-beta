@@ -262,7 +262,7 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
           transition={{ duration: 0.3 }}
           className="rounded-xl border border-border/30 bg-muted/50 p-1.5 backdrop-blur-sm"
         >
-          <TabsList className="grid w-full grid-cols-4 gap-1 bg-transparent">
+          <TabsList className="flex w-full gap-1 overflow-x-auto bg-transparent">
             <TabsTrigger
               value="overview"
               className="h-11 text-xs transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:h-10 sm:text-sm"

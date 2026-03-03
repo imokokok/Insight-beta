@@ -207,7 +207,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
         </div>
 
         <Tabs defaultValue="radar" className="w-full" value="radar" onValueChange={() => {}}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="flex w-full gap-1 overflow-x-auto">
             <TabsTrigger value="radar">{t('comparison.cost.tabs.overallScore')}</TabsTrigger>
             <TabsTrigger value="costs">{t('comparison.cost.tabs.costComparison')}</TabsTrigger>
             <TabsTrigger value="recommendations">
@@ -239,7 +239,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
             </div>
 
             {/* Score Table */}
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-x-auto rounded-lg border">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50">
                   <tr>

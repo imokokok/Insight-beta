@@ -402,7 +402,7 @@ export default function AlertsCenterPage() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3">
           <div className="rounded-lg border border-border/30 p-2 backdrop-blur-sm">
-            <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7">
+            <TabsList className="flex w-full gap-1 overflow-x-auto bg-transparent">
               <TabsTrigger value="all" className="text-xs sm:text-sm">
                 <sourceIcons.all className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{t('alerts.tabs.all')}</span>

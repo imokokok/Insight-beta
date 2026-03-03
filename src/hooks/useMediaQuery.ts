@@ -48,8 +48,9 @@ export function useMediaQuery(query: string): boolean {
 }
 
 /**
- * 移动设备检测 Hook (768px-)
+ * 移动设备检测 Hook (1024px-)
+ * 使用 lg 断点与 Tailwind CSS 保持一致
  */
 export function useIsMobile(): boolean {
-  return useMediaQuery('(max-width: 768px)');
+  return useMediaQuery('(max-width: 1023px)');
 }

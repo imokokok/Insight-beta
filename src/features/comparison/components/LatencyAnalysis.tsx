@@ -243,7 +243,7 @@ export function LatencyAnalysisView({
 
         {/* Tabs for different views */}
         <Tabs defaultValue="latency" className="w-full" value="latency" onValueChange={() => {}}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="flex w-full gap-1 overflow-x-auto">
             <TabsTrigger value="latency">{t('comparison.latency.tabs.distribution')}</TabsTrigger>
             <TabsTrigger value="frequency">{t('comparison.latency.tabs.frequency')}</TabsTrigger>
             <TabsTrigger value="trends">{t('comparison.latency.tabs.trends')}</TabsTrigger>
@@ -310,7 +310,7 @@ export function LatencyAnalysisView({
             </div>
 
             {/* Latency Table */}
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-x-auto rounded-lg border">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50">
                   <tr>

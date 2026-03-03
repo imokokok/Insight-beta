@@ -20,7 +20,7 @@ export const MiniChart = React.memo(function MiniChart({
   data,
   width = 120,
   height = 40,
-  color = '#10b981',
+  color = 'rgb(var(--color-success))',
   showArea = true,
   className,
   showGradient = true,
@@ -51,8 +51,8 @@ export const MiniChart = React.memo(function MiniChart({
   }, [data]);
 
   const chartColor = useMemo(() => {
-    if (trend === 'up') return '#10b981';
-    if (trend === 'down') return '#ef4444';
+    if (trend === 'up') return 'rgb(var(--color-success))';
+    if (trend === 'down') return 'rgb(var(--color-error))';
     return color;
   }, [trend, color]);
 

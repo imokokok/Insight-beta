@@ -72,7 +72,7 @@ export {
 } from './DropdownMenu';
 
 // Input
-export { Input, type InputProps } from './input';
+export { Input, type InputProps } from './Input';
 
 // Label
 export { Label, type LabelProps } from './Label';

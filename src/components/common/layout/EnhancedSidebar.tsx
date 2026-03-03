@@ -637,7 +637,8 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
             </Link>
             <button
               onClick={toggleCollapsed}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label={collapsed ? t('common.expand') : t('common.collapse')}
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               {collapsed ? (
                 <PanelLeft className="h-4 w-4" />

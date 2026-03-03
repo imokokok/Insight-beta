@@ -83,10 +83,15 @@ function ListItemSkeleton({ className }: SkeletonProps) {
  * 表格行骨架屏
  */
 function TableRowSkeleton({ columns = 4, className }: SkeletonProps & { columns?: number }) {
+  const widths = [75, 85, 70, 80, 65, 90];
   return (
     <div className={cn('flex gap-4 py-3', className)}>
       {Array.from({ length: columns }).map((_, i) => (
-        <Skeleton key={i} className="h-4 flex-1" style={{ width: `${Math.random() * 20 + 60}%` }} />
+        <Skeleton
+          key={i}
+          className="h-4 flex-1"
+          style={{ width: `${widths[i % widths.length]}%` }}
+        />
       ))}
     </div>
   );
@@ -112,16 +117,13 @@ function StatCardSkeleton({ className }: SkeletonProps) {
  * 图表骨架屏
  */
 function ChartSkeleton({ className }: SkeletonProps) {
+  const heights = [45, 70, 55, 80, 40, 65, 50, 75, 60, 35, 85, 50];
   return (
     <div className={cn('rounded-lg border border-gray-200 p-4', className)}>
       <Skeleton className="mb-4 h-6 w-1/4" />
       <div className="flex h-48 items-end gap-2">
         {Array.from({ length: 12 }).map((_, i) => (
-          <Skeleton
-            key={i}
-            className="flex-1 rounded-t"
-            style={{ height: `${Math.random() * 60 + 20}%` }}
-          />
+          <Skeleton key={i} className="flex-1 rounded-t" style={{ height: `${heights[i]}%` }} />
         ))}
       </div>
     </div>

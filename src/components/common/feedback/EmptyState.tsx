@@ -131,7 +131,7 @@ const sizeStyles = {
   md: {
     container: 'p-10',
     icon: 'h-10 w-10',
-    iconWrapper: 'h-18 w-18',
+    iconWrapper: 'h-16 w-16',
     title: 'text-lg font-semibold',
     description: 'text-sm',
   },
