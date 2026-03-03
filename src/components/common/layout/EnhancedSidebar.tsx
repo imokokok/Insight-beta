@@ -38,6 +38,7 @@ import {
   Shield,
   PanelLeftClose,
   PanelLeft,
+  GitCompare,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui';
@@ -135,7 +136,7 @@ export const defaultNavConfig: SidebarConfig = {
         {
           id: 'compare',
           label: 'nav.compare',
-          icon: Globe,
+          icon: GitCompare,
           description: 'nav.descriptions.priceComparison',
           defaultExpanded: false,
           items: [

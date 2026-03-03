@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { Network, Shield, Activity, Clock, TrendingUp, Inbox } from 'lucide-react';
 
@@ -19,6 +19,12 @@ const sourceConfig: Record<AlertSource, { icon: typeof AlertTriangle; label: str
   price_anomaly: { icon: TrendingUp, label: 'Price Anomaly' },
   cross_chain: { icon: Network, label: 'Cross-Chain' },
   security: { icon: Shield, label: 'Security' },
+};
+
+const statusConfig: Record<string, { color: string; label: string }> = {
+  active: { color: 'bg-red-500', label: 'alerts.statusActive' },
+  resolved: { color: 'bg-green-500', label: 'alerts.statusResolved' },
+  investigating: { color: 'bg-blue-500', label: 'alerts.statusInvestigating' },
 };
 
 interface AlertCardProps {
@@ -46,12 +52,8 @@ export function AlertCard({
   const source = sourceConfig[alert.source] || sourceConfig.price_anomaly;
   const SourceIcon = source.icon;
 
-  const deviationDisplay = useMemo(() => {
-    if (alert.deviation !== undefined) {
-      return `${(alert.deviation * 100).toFixed(2)}%`;
-    }
-    return null;
-  }, [alert.deviation]);
+  const deviationDisplay =
+    alert.deviation !== undefined ? `${(alert.deviation * 100).toFixed(2)}%` : null;
 
   if (compact) {
     return (
@@ -149,15 +151,10 @@ export function AlertCard({
             </div>
 
             <div className="shrink-0 text-right">
-              {alert.status === 'active' && (
-                <Badge className="bg-red-500">{t('alerts.statusActive')}</Badge>
-              )}
-              {alert.status === 'resolved' && (
-                <Badge className="bg-green-500">{t('alerts.statusResolved')}</Badge>
-              )}
-              {alert.status === 'investigating' && (
-                <Badge className="bg-blue-500">{t('alerts.statusInvestigating')}</Badge>
-              )}
+              {(() => {
+                const status = statusConfig[alert.status];
+                return status ? <Badge className={status.color}>{t(status.label)}</Badge> : null;
+              })()}
             </div>
           </div>
 
@@ -271,17 +268,10 @@ export function AlertDetailPanel({ alert, onAlertUpdate }: AlertDetailPanelProps
 
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('alerts.status')}</span>
-            <Badge
-              className={
-                currentAlert.status === 'active'
-                  ? 'bg-red-500'
-                  : currentAlert.status === 'resolved'
-                    ? 'bg-green-500'
-                    : 'bg-blue-500'
-              }
-            >
-              {currentAlert.status}
-            </Badge>
+            {(() => {
+              const status = statusConfig[currentAlert.status];
+              return status ? <Badge className={status.color}>{t(status.label)}</Badge> : null;
+            })()}
           </div>
         </div>
 

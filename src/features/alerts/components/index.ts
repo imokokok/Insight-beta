@@ -14,3 +14,4 @@ export * from './AlertGroup';
 export * from './AlertGroupSelector';
 export * from './AlertTrendChart';
 export * from './AlertHeatmap';
+export * from './TopStatusBar';

@@ -346,26 +346,26 @@ function AlertCardSkeleton({ className }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800',
+        'animate-pulse rounded-lg border border-border/30 bg-gradient-to-r from-background via-muted/10 to-background p-4',
         className,
       )}
     >
       <div className="flex items-start gap-3">
         <div className="flex-1 space-y-3">
           <div className="flex items-center gap-2">
-            <Skeleton className="h-4 w-4 rounded" />
-            <Skeleton className="h-5 w-24 rounded-full" />
-            <Skeleton className="h-5 w-16 rounded-full" />
+            <Skeleton className="h-4 w-4 rounded bg-primary/20" />
+            <Skeleton className="h-5 w-24 rounded-full bg-primary/15" />
+            <Skeleton className="h-5 w-16 rounded-full bg-primary/15" />
           </div>
-          <Skeleton className="h-5 w-3/4 rounded" />
-          <Skeleton className="h-4 w-full rounded" />
+          <Skeleton className="h-5 w-3/4 rounded bg-primary/10" />
+          <Skeleton className="h-4 w-full rounded bg-primary/10" />
           <div className="flex items-center gap-3">
-            <Skeleton className="h-3 w-20 rounded" />
-            <Skeleton className="h-3 w-16 rounded" />
+            <Skeleton className="h-3 w-20 rounded bg-primary/15" />
+            <Skeleton className="h-3 w-16 rounded bg-primary/15" />
           </div>
         </div>
         <div className="text-right">
-          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-5 w-16 rounded-full bg-primary/20" />
         </div>
       </div>
     </div>
@@ -379,7 +379,7 @@ function AlertListSkeleton({ count = 5, className }: SkeletonProps & { count?: n
   return (
     <div className={cn('space-y-3', className)}>
       {Array.from({ length: count }).map((_, i) => (
-        <AlertCardSkeleton key={i} />
+        <AlertCardSkeleton key={i} className="animate-[pulse_1.5s_ease-in-out_infinite]" />
       ))}
     </div>
   );
