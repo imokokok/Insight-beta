@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
 
 import { motion } from 'framer-motion';
-import { Search, Command } from 'lucide-react';
+import { Search, Command, RefreshCw } from 'lucide-react';
 
 import { Button } from '@/components/ui';
 import { SyncStatus } from '@/features/oracle/components/SyncStatus';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useI18n } from '@/i18n';
 import { FavoritesProvider } from '@/shared/contexts/FavoritesContext';
 import { cn } from '@/shared/utils';
@@ -17,6 +18,7 @@ import { Breadcrumb, type BreadcrumbItem } from './Breadcrumb';
 import { EnhancedSidebar as Sidebar } from './EnhancedSidebar';
 import { MobileMenuButton, MobileSidebar, MobileNavProvider } from './MobileNav';
 import { ErrorBoundary } from '../feedback/ErrorBoundary';
+import { KeyboardShortcutsHelp } from '../shared/KeyboardShortcutsHelp';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 import { QuickSearch, useQuickSearch } from '../shared/QuickSearch';
 
@@ -86,20 +88,42 @@ function generateBreadcrumbs(
 export function AppLayout({ children }: AppLayoutProps) {
   const { t } = useI18n();
   const pathname = usePathname();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const {
     isOpen: isQuickSearchOpen,
     close: closeQuickSearch,
     toggle: toggleQuickSearch,
+    open: openQuickSearch,
   } = useQuickSearch();
 
   const titleKey = useMemo(() => getPageTitle(pathname), [pathname]);
   const title = t(titleKey);
   const breadcrumbItems = useMemo(() => generateBreadcrumbs(pathname, t), [pathname, t]);
 
+  // 处理刷新
+  const handleRefresh = useMemo(() => {
+    return () => {
+      setIsRefreshing(true);
+      window.location.reload();
+      setTimeout(() => setIsRefreshing(false), 1000);
+    };
+  }, []);
+
+  // 键盘快捷键
+  useKeyboardShortcuts({
+    onSearch: openQuickSearch,
+    onRefresh: handleRefresh,
+    onClose: closeQuickSearch,
+    onHelp: () => setIsHelpOpen(true),
+    enabled: true,
+  });
+
   return (
     <FavoritesProvider>
       <MobileNavProvider>
         <QuickSearch isOpen={isQuickSearchOpen} onClose={closeQuickSearch} />
+        <KeyboardShortcutsHelp open={isHelpOpen} onOpenChange={setIsHelpOpen} />
         <div className="flex min-h-screen">
           <div className="hidden w-[280px] flex-shrink-0 lg:block">
             <Sidebar />
@@ -126,7 +150,31 @@ export function AppLayout({ children }: AppLayoutProps) {
                         {title}
                       </motion.h1>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        className="hidden items-center gap-2 text-muted-foreground hover:text-foreground md:flex"
+                        title={t('common.refresh')}
+                      >
+                        <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
+                        <span className="text-sm">{t('common.refresh')}</span>
+                        <kbd className="hidden h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] font-medium sm:flex">
+                          R
+                        </kbd>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        className="text-muted-foreground md:hidden"
+                        aria-label={t('common.refresh')}
+                      >
+                        <RefreshCw className={cn('h-5 w-5', isRefreshing && 'animate-spin')} />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -147,6 +195,17 @@ export function AppLayout({ children }: AppLayoutProps) {
                         aria-label={t('common.searchAriaLabel')}
                       >
                         <Search className="h-5 w-5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsHelpOpen(true)}
+                        className="hidden items-center gap-2 text-muted-foreground hover:text-foreground md:flex"
+                        title="快捷键帮助"
+                      >
+                        <kbd className="hidden h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] font-medium sm:flex">
+                          ?
+                        </kbd>
                       </Button>
                       <SyncStatus />
                       <LanguageSwitcher />

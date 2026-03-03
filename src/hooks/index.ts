@@ -22,6 +22,7 @@ export { useDataCache } from './useDataCache';
 export { fetcher } from './useFetcher';
 
 export { usePageOptimizations } from './usePageOptimizations';
+export { useKeyboardShortcuts } from './useKeyboardShortcuts';
 
 // ==================== 响应式 Hooks ====================
 
