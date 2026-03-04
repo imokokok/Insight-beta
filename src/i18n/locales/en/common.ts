@@ -235,6 +235,14 @@ export const common = {
     comfortable: 'Comfortable',
     current: 'Current: {{density}}',
   },
+  kpi: {
+    totalTVL: 'Total TVL',
+    volume24h: '24h Volume',
+    marketConcentration: 'Market Concentration',
+    healthScore: 'Health Score',
+    activeProtocols: 'Active Protocols',
+    avgLatency: 'Avg Latency',
+  },
   quickSearch: {
     navigate: 'Navigate',
     select: 'Select',

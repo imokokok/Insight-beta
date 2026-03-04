@@ -233,7 +233,15 @@ export const common = {
     compact: '紧凑',
     standard: '标准',
     comfortable: '宽松',
-    current: '当前: {{density}}',
+    current: '当前：{{density}}',
+  },
+  kpi: {
+    totalTVL: '总锁仓价值',
+    volume24h: '24h 交易量',
+    marketConcentration: '市场集中度',
+    healthScore: '健康评分',
+    activeProtocols: '活跃协议',
+    avgLatency: '平均延迟',
   },
   quickSearch: {
     navigate: '导航',

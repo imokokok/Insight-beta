@@ -140,3 +140,63 @@ export function formatRelativeTime(seconds: number): string {
   const days = Math.floor(hours / 24);
   return `${days}天前`;
 }
+
+export function formatFreshness(
+  lastUpdate: string | Date,
+  locale: 'zh' | 'en' = 'zh',
+): {
+  label: string;
+  color: 'success' | 'warning' | 'error';
+  seconds: number;
+} {
+  const now = new Date();
+  const then = typeof lastUpdate === 'string' ? new Date(lastUpdate) : lastUpdate;
+  const seconds = Math.floor((now.getTime() - then.getTime()) / 1000);
+
+  const labels = {
+    zh: {
+      fresh: '刚刚',
+      minutes: '分钟前',
+      hours: '小时前',
+    },
+    en: {
+      fresh: 'just now',
+      minutes: 'm ago',
+      hours: 'h ago',
+    },
+  }[locale];
+
+  if (seconds < 60) {
+    return { label: labels.fresh, color: 'success' as const, seconds };
+  }
+  if (seconds < 300) {
+    const minutes = Math.floor(seconds / 60);
+    return {
+      label: locale === 'zh' ? `${minutes}分钟前` : `${minutes}${labels.minutes}`,
+      color: 'success' as const,
+      seconds,
+    };
+  }
+  if (seconds < 900) {
+    const minutes = Math.floor(seconds / 60);
+    return {
+      label: locale === 'zh' ? `${minutes}分钟前` : `${minutes}${labels.minutes}`,
+      color: 'warning' as const,
+      seconds,
+    };
+  }
+  if (seconds < 3600) {
+    const minutes = Math.floor(seconds / 60);
+    return {
+      label: locale === 'zh' ? `${minutes}分钟前` : `${minutes}${labels.minutes}`,
+      color: 'error' as const,
+      seconds,
+    };
+  }
+  const hours = Math.floor(seconds / 3600);
+  return {
+    label: locale === 'zh' ? `${hours}小时前` : `${hours}${labels.hours}`,
+    color: 'error' as const,
+    seconds,
+  };
+}
