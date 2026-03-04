@@ -120,7 +120,7 @@ export function TimeRangeSelector({
   };
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-1', className)}>
+    <div className={cn('flex flex-wrap items-center gap-1.5', className)}>
       {PRESETS.map((preset) => (
         <Button
           key={preset}
@@ -128,7 +128,7 @@ export function TimeRangeSelector({
           size="sm"
           onClick={() => handlePresetClick(preset)}
           className={cn(
-            'h-8 min-w-[36px] px-2 text-xs font-medium transition-all sm:min-w-[44px] sm:px-3',
+            'h-8 min-w-[36px] px-2.5 text-xs font-medium transition-all sm:min-w-[44px] sm:px-3',
             isPreset(value) && value === preset
               ? 'bg-primary text-white shadow-sm'
               : 'border-border/50 bg-card/50 text-muted-foreground hover:border-primary/30 hover:bg-primary/5 hover:text-foreground',

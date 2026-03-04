@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useMemo } from 'react';
 
+import Link from 'next/link';
+
 import { motion } from 'framer-motion';
 import { DollarSign, Clock, Gauge, TrendingUp, Shield, Filter, X } from 'lucide-react';
 
@@ -233,7 +235,7 @@ export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProp
         className="rounded-xl border border-border/30 bg-muted/50 p-1.5 backdrop-blur-sm"
       >
         <TabsList className="flex w-full gap-1 overflow-x-auto bg-transparent">
-          <a href={tabRoutes.price}>
+          <Link href={tabRoutes.price}>
             <TabsTrigger
               value="price"
               className={cn(
@@ -245,8 +247,8 @@ export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProp
               <span className="hidden sm:inline">{t('compare.tabs.price') || '价格比较'}</span>
               <span className="sm:hidden">{t('compare.tabs.priceShort') || '价格'}</span>
             </TabsTrigger>
-          </a>
-          <a href={tabRoutes.latency}>
+          </Link>
+          <Link href={tabRoutes.latency}>
             <TabsTrigger
               value="latency"
               className={cn(
@@ -258,8 +260,8 @@ export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProp
               <span className="hidden sm:inline">{t('compare.tabs.latency') || '延迟分析'}</span>
               <span className="sm:hidden">{t('compare.tabs.latencyShort') || '延迟'}</span>
             </TabsTrigger>
-          </a>
-          <a href={tabRoutes.cost}>
+          </Link>
+          <Link href={tabRoutes.cost}>
             <TabsTrigger
               value="cost"
               className={cn(
@@ -271,8 +273,8 @@ export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProp
               <span className="hidden sm:inline">{t('compare.tabs.cost') || '成本效率'}</span>
               <span className="sm:hidden">{t('compare.tabs.costShort') || '成本'}</span>
             </TabsTrigger>
-          </a>
-          <a href={tabRoutes.deviation}>
+          </Link>
+          <Link href={tabRoutes.deviation}>
             <TabsTrigger
               value="deviation"
               className={cn(
@@ -284,8 +286,8 @@ export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProp
               <span className="hidden sm:inline">{t('compare.tabs.deviation') || '偏差分析'}</span>
               <span className="sm:hidden">{t('compare.tabs.deviationShort') || '偏差'}</span>
             </TabsTrigger>
-          </a>
-          <a href={tabRoutes.reliability}>
+          </Link>
+          <Link href={tabRoutes.reliability}>
             <TabsTrigger
               value="reliability"
               className={cn(
@@ -297,7 +299,7 @@ export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProp
               <span className="hidden sm:inline">{t('compare.tabs.reliability') || '可靠性'}</span>
               <span className="sm:hidden">{t('compare.tabs.reliabilityShort') || '可靠'}</span>
             </TabsTrigger>
-          </a>
+          </Link>
         </TabsList>
       </motion.div>
 

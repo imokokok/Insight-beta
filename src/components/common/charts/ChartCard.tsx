@@ -88,13 +88,13 @@ export const ChartCard = memo(function ChartCard({
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex shrink-0 items-center gap-2">
             <ExportButton
               chartRef={chartRef}
               data={data}
               filename={filename || title.toLowerCase().replace(/\s+/g, '-')}
             />
-            {extraActions}
+            {extraActions && <div className="flex items-center">{extraActions}</div>}
 
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={toggleFullscreen}>
               <Maximize2 className="h-4 w-4" />

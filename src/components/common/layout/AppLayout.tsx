@@ -18,7 +18,6 @@ import { Breadcrumb, type BreadcrumbItem } from './Breadcrumb';
 import { EnhancedSidebar as Sidebar } from './EnhancedSidebar';
 import { MobileMenuButton, MobileSidebar, MobileNavProvider } from './MobileNav';
 import { DensityProvider } from '../controls/DensityProvider';
-import { DensitySwitch } from '../controls/DensitySwitch';
 import { ErrorBoundary } from '../feedback/ErrorBoundary';
 import { KeyboardShortcutsHelp } from '../shared/KeyboardShortcutsHelp';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
@@ -124,7 +123,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <FavoritesProvider>
       <MobileNavProvider>
-        <DensityProvider defaultDensity="balanced">
+        <DensityProvider>
           <QuickSearch isOpen={isQuickSearchOpen} onClose={closeQuickSearch} />
           <KeyboardShortcutsHelp open={isHelpOpen} onOpenChange={setIsHelpOpen} />
           <div className="flex min-h-screen">
@@ -211,7 +210,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                           </kbd>
                         </Button>
                         <SyncStatus />
-                        <DensitySwitch />
                         <LanguageSwitcher />
                       </div>
                     </div>
