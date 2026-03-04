@@ -7,7 +7,7 @@ export const nav = {
   alertsCenter: '告警中心',
   priceComparison: '价格对比',
   oracleComparison: '预言机对比',
-  crossChain: '跨链监控',
+  crossChain: '跨链桥监控',
   explore: '数据探索',
   crossChainOverview: '总览',
   crossChainComparison: '跨链对比',
@@ -31,7 +31,7 @@ export const nav = {
   umaAnalysis: 'UMA 分析',
   address: '地址查询',
   overview: '总览',
-  compare: '比较',
+  compare: '预言机对比',
   groups: {
     main: '主要',
   },

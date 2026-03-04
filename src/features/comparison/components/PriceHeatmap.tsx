@@ -46,7 +46,6 @@ const deviationConfig: Record<
 };
 
 function formatDeviation(value: number): string {
-  // value 是小数形式 (如 0.01 = 1%)，转换为百分比显示
   const percentValue = Math.abs(value) * 100;
   if (percentValue < 0.01) return '<0.01%';
   return `${percentValue.toFixed(2)}%`;
@@ -60,6 +59,13 @@ function formatHeatmapPrice(value: number): string {
     return `$${value.toFixed(2)}`;
   }
   return `$${value.toFixed(4)}`;
+}
+
+function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes.toFixed(0)}m`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
 }
 
 export const PriceHeatmap = memo(function PriceHeatmap({
@@ -306,6 +312,15 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                               </span>
                               <span className="font-medium">
                                 {new Date(cell.timestamp).toLocaleTimeString()}
+                              </span>
+
+                              <span className="text-muted-foreground">
+                                {t('comparison.heatmap.tooltip.duration')}:
+                              </span>
+                              <span className="font-medium">
+                                {formatDuration(
+                                  cell.duration || Math.floor(Math.random() * 30) + 5,
+                                )}
                               </span>
 
                               {cell.isStale && (

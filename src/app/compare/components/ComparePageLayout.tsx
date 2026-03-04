@@ -32,19 +32,22 @@ const AVAILABLE_SYMBOLS = [
   'OP/USD',
 ];
 
-export type CompareTab = 'price' | 'latency' | 'cost' | 'deviation' | 'reliability';
+export type CompareTab = 'price' | 'latency' | 'cost' | 'deviation' | 'reliability' | 'crossChain';
 
 interface ComparePageLayoutProps {
   children: React.ReactNode;
   activeTab: CompareTab;
 }
 
-const tabRoutes: Record<CompareTab, string> = {
+import type { Route } from 'next';
+
+const tabRoutes: Record<CompareTab, Route> = {
   price: '/compare/price',
   latency: '/compare/latency',
   cost: '/compare/cost',
   deviation: '/compare/deviation',
   reliability: '/compare/reliability',
+  crossChain: '/compare/cross-chain',
 };
 
 export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProps) {
@@ -303,6 +306,19 @@ export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProp
                   {t('compare.tabs.reliability') || '可靠性'}
                 </span>
                 <span className="sm:hidden">{t('compare.tabs.reliabilityShort') || '可靠'}</span>
+              </TabsTrigger>
+            </Link>
+            <Link href={tabRoutes.crossChain}>
+              <TabsTrigger
+                value="crossChain"
+                className={cn(
+                  'h-11 w-full text-xs transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:h-10 sm:text-sm',
+                  activeTab === 'crossChain' && 'border-border/50 bg-background shadow-sm',
+                )}
+              >
+                <TrendingUp className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">{t('compare.tabs.crossChain') || '跨链'}</span>
+                <span className="sm:hidden">{t('compare.tabs.crossChainShort') || '跨链'}</span>
               </TabsTrigger>
             </Link>
           </TabsList>

@@ -3,8 +3,10 @@
 import { Suspense } from 'react';
 
 import { Breadcrumb } from '@/components/common';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import { ChartSkeleton } from '@/components/ui';
 import { ComparisonContent } from '@/features/comparison/components/ComparisonContent';
+import { CostDataSource } from '@/features/comparison/components/CostDataSource';
 import { useI18n } from '@/i18n';
 
 import { ComparePageLayout } from '../components/ComparePageLayout';
@@ -27,9 +29,25 @@ export default function CostComparePage() {
           🎯 {t('compare.cost.scenario')}
         </p>
       </div>
-      <Suspense fallback={<ChartSkeleton className="h-96" />}>
-        <ComparisonContent />
-      </Suspense>
+
+      <Tabs defaultValue="comparison" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="comparison">{t('compare.cost.radarTitle')}</TabsTrigger>
+          <TabsTrigger value="sources">{t('compare.cost.dataSourceTitle')}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="comparison">
+          <Suspense fallback={<ChartSkeleton className="h-96" />}>
+            <ComparisonContent />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="sources">
+          <Suspense fallback={<ChartSkeleton className="h-96" />}>
+            <CostDataSource />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
     </ComparePageLayout>
   );
 }

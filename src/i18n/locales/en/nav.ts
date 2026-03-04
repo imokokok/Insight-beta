@@ -7,7 +7,7 @@ export const nav = {
   alertsCenter: 'Alerts Center',
   priceComparison: 'Price Comparison',
   oracleComparison: 'Oracle Comparison',
-  crossChain: 'Cross-Chain Monitor',
+  crossChain: 'Cross-Chain Bridge Monitor',
   explore: 'Data Explorer',
   crossChainOverview: 'Overview',
   crossChainComparison: 'Cross-Chain Comparison',
@@ -31,7 +31,7 @@ export const nav = {
   umaAnalysis: 'UMA Analysis',
   address: 'Address Lookup',
   overview: 'Overview',
-  compare: 'Compare',
+  compare: 'Oracle Compare',
   groups: {
     main: 'Main',
   },

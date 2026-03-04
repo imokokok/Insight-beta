@@ -9,6 +9,7 @@ import { Breadcrumb } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
+import { ReliabilityScoreBreakdown } from '@/features/comparison/components/ReliabilityScoreBreakdown';
 import {
   ReliabilityScoreCard,
   ReliabilityComparisonTable,
@@ -31,6 +32,7 @@ export default function ReliabilityComparePage() {
   const { t } = useI18n();
   const [period, setPeriod] = useState<TimePeriod>('30d');
   const [selectedProtocol, setSelectedProtocol] = useState<string>('chainlink');
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   const {
     rankings,
@@ -48,6 +50,8 @@ export default function ReliabilityComparePage() {
     const date = new Date(dateStr);
     return date.toLocaleDateString();
   };
+
+  const selectedRanking = rankings.find((r) => r.protocol === selectedProtocol);
 
   const breadcrumbItems = [
     { label: t('nav.compare'), href: '/compare' },
@@ -77,6 +81,11 @@ export default function ReliabilityComparePage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowBreakdown(!showBreakdown)}>
+                {showBreakdown
+                  ? t('compare.reliability.hideBreakdown')
+                  : t('compare.reliability.showBreakdown')}
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -90,6 +99,20 @@ export default function ReliabilityComparePage() {
           </div>
         </CardContent>
       </Card>
+
+      {showBreakdown && selectedRanking && (
+        <div className="mt-4">
+          <ReliabilityScoreBreakdown
+            protocol={selectedRanking.protocol}
+            score={selectedRanking.score}
+            accuracyScore={selectedRanking.metrics.accuracyScore}
+            latencyScore={selectedRanking.metrics.latencyScore}
+            availabilityScore={selectedRanking.metrics.availabilityScore}
+            deviationAvg={selectedRanking.metrics.deviationAvg}
+            sampleCount={selectedRanking.metrics.sampleCount}
+          />
+        </div>
+      )}
 
       <div className="rounded-xl border border-border/30 bg-card/30 p-4">
         <Tabs value={period} onValueChange={(v) => setPeriod(v as TimePeriod)}>
