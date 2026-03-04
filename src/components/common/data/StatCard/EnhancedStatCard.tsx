@@ -316,10 +316,10 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
   if (variant === 'compact') {
     return (
       <motion.div
-        whileHover={{ y: -2 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={{ y: -1 }}
+        whileTap={{ scale: 0.99 }}
         className={cn(
-          'cursor-pointer rounded-xl border p-3 transition-shadow hover:shadow-md',
+          'cursor-pointer rounded-lg border p-2.5 transition-shadow hover:shadow-sm',
           config.bg,
           config.border,
           className,
@@ -328,12 +328,14 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
       >
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-500">{title}</p>
-            <p className={cn('mt-0.5 text-lg font-bold', config.text)}>{value}</p>
+            <p className="text-[11px] font-medium text-gray-500">{title}</p>
+            <p className={cn('mt-0.5 text-base font-bold', config.text)}>{value}</p>
           </div>
-          <div className={cn('rounded-lg bg-white/50 p-2', config.text)}>{icon || config.icon}</div>
+          <div className={cn('rounded-md bg-white/50 p-1.5', config.text)}>
+            {icon || config.icon}
+          </div>
         </div>
-        {trendDisplay && <div className="mt-1.5">{trendDisplay}</div>}
+        {trendDisplay && <div className="mt-1">{trendDisplay}</div>}
       </motion.div>
     );
   }

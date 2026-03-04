@@ -102,27 +102,27 @@ const KPICard = memo(function KPICard({ item, onItemClick, index }: KPICardProps
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
-      whileHover={{ y: -4, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ y: -2, scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
       className={cn(
-        'group relative overflow-hidden rounded-xl border backdrop-blur-sm',
+        'group relative overflow-hidden rounded-lg border backdrop-blur-sm',
         'bg-gradient-to-br',
         config.gradient,
         config.border,
-        'transition-all duration-300',
-        'hover:shadow-lg',
+        'transition-all duration-200',
+        'hover:shadow-md',
         onItemClick && 'cursor-pointer',
         config.glow,
       )}
       onClick={handleClick}
     >
-      <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-white/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-white/5 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
 
-      <div className="relative p-4">
-        <div className="mb-3 flex items-start justify-between">
+      <div className="relative p-3">
+        <div className="mb-2 flex items-start justify-between">
           <div
             className={cn(
-              'rounded-lg p-2.5 transition-transform duration-300 group-hover:scale-110',
+              'rounded-md p-2 transition-transform duration-200 group-hover:scale-105',
               config.iconBg,
               config.text,
             )}
@@ -132,29 +132,29 @@ const KPICard = memo(function KPICard({ item, onItemClick, index }: KPICardProps
           {item.trend && (
             <div
               className={cn(
-                'flex items-center gap-0.5 rounded-full px-2 py-1 text-xs font-medium',
+                'flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium',
                 item.trend.isPositive ? 'bg-success/15 text-success' : 'bg-error/15 text-error',
               )}
             >
               {item.trend.isPositive ? (
-                <ArrowUpRight className="h-3 w-3" />
+                <ArrowUpRight className="h-2.5 w-2.5" />
               ) : (
-                <ArrowDownRight className="h-3 w-3" />
+                <ArrowDownRight className="h-2.5 w-2.5" />
               )}
               {formatChangePercent(item.trend.value / 100, 0, false)}
             </div>
           )}
         </div>
 
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-muted-foreground">{item.label}</p>
-          <p className="text-2xl font-bold text-foreground">{item.value}</p>
+        <div className="space-y-0.5">
+          <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
+          <p className="text-xl font-bold text-foreground">{item.value}</p>
         </div>
 
         {onItemClick && (
-          <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <div className="mt-1.5 flex items-center gap-1 text-[10px] text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100">
             <span>查看详情</span>
-            <ArrowUpRight className="h-3 w-3" />
+            <ArrowUpRight className="h-2.5 w-2.5" />
           </div>
         )}
       </div>
@@ -168,7 +168,7 @@ export const KPIOverviewBar = memo(function KPIOverviewBar({
   className,
 }: KPIOverviewBarProps) {
   return (
-    <div className={cn('grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4', className)}>
+    <div className={cn('grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4', className)}>
       {items.map((item, index) => (
         <KPICard key={item.id} item={item} onItemClick={onItemClick} index={index} />
       ))}

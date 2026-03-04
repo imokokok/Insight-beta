@@ -32,7 +32,7 @@ interface KpiCardProps {
   compact?: boolean;
 }
 
-export function KpiCard({ data, compact }: KpiCardProps) {
+export function KpiCard({ data, compact = true }: KpiCardProps) {
   const { t } = useI18n();
   const {
     value,
@@ -50,7 +50,11 @@ export function KpiCard({ data, compact }: KpiCardProps) {
 
   return (
     <div
-      className={cn('flex flex-col', 'transition-colors duration-200', compact ? 'py-2' : 'py-3')}
+      className={cn(
+        'flex flex-col',
+        'transition-colors duration-200',
+        compact ? 'py-1.5' : 'py-2.5',
+      )}
     >
       <div className="mb-0.5 flex items-center justify-between">
         <span
@@ -71,7 +75,7 @@ export function KpiCard({ data, compact }: KpiCardProps) {
         )}
       </div>
 
-      <div className="flex items-baseline gap-2">
+      <div className="flex items-baseline gap-1.5">
         <span
           className={cn(
             'font-mono font-bold tracking-tight',
@@ -114,14 +118,14 @@ export function KpiGrid({
   kpis,
   labels,
   loading = false,
-  compact = false,
+  compact = true,
   className,
 }: KpiGridProps) {
   if (loading) {
     return (
       <div
         className={cn(
-          'grid gap-2 md:gap-3',
+          'grid gap-1.5 md:gap-2',
           compact ? 'grid-cols-2 xl:grid-cols-4' : 'grid-cols-2 sm:grid-cols-4',
           className,
         )}
@@ -129,15 +133,15 @@ export function KpiGrid({
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="relative flex flex-col overflow-hidden rounded-lg border border-border/30 bg-gradient-to-br from-background via-muted/5 to-background py-3"
+            className="relative flex flex-col overflow-hidden rounded-lg border border-border/30 bg-gradient-to-br from-background via-muted/5 to-background py-2.5"
           >
             <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
-            <div className="relative z-10 mb-0.5 flex items-center justify-between px-3">
-              <div className="h-3 w-16 animate-[pulse_1.5s_ease-in-out_infinite] rounded bg-primary/20" />
-              <div className="h-3 w-8 animate-[pulse_1.5s_ease-in-out_infinite] rounded bg-primary/15 [animation-delay:0.2s]" />
+            <div className="relative z-10 mb-0.5 flex items-center justify-between px-2.5">
+              <div className="h-2.5 w-14 animate-[pulse_1.5s_ease-in-out_infinite] rounded bg-primary/20" />
+              <div className="h-2.5 w-7 animate-[pulse_1.5s_ease-in-out_infinite] rounded bg-primary/15 [animation-delay:0.2s]" />
             </div>
-            <div className="relative z-10 mt-2 px-3">
-              <div className="h-5 w-20 animate-[pulse_1.5s_ease-in-out_infinite] rounded bg-primary/25 [animation-delay:0.1s]" />
+            <div className="relative z-10 mt-1.5 px-2.5">
+              <div className="w-18 h-4 animate-[pulse_1.5s_ease-in-out_infinite] rounded bg-primary/25 [animation-delay:0.1s]" />
             </div>
           </div>
         ))}
@@ -151,7 +155,7 @@ export function KpiGrid({
         'grid grid-cols-2 sm:grid-cols-4',
         'divide-x divide-y divide-border/30 sm:divide-y-0',
         'overflow-hidden rounded-lg border border-border/30',
-        'px-3',
+        'px-2.5',
         className,
       )}
     >
