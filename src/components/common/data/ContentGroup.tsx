@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useDensity } from '@/components/common/layout/Layout';
 import { cn } from '@/shared/utils';
 
 export interface ContentGroupProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -62,10 +63,19 @@ export function ContentSection({
   className,
   ...props
 }: ContentSectionProps) {
+  const { config } = useDensity();
+
   return (
-    <section className={cn('py-4', className)} {...props}>
+    <section
+      className={cn('py-3', className)}
+      style={{ paddingTop: config.spacing.md, paddingBottom: config.spacing.md }}
+      {...props}
+    >
       {(title || description || action) && (
-        <div className="mb-3 flex items-start justify-between border-b border-border/20 pb-2">
+        <div
+          className="mb-2 flex items-start justify-between border-b border-border/20 pb-2"
+          style={{ marginBottom: config.spacing.sm }}
+        >
           <div>
             {title && typeof title === 'string' ? (
               <h2 className="text-sm font-semibold text-foreground">{title}</h2>
@@ -89,16 +99,20 @@ export function ContentSection({
 export interface ContentGridProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   columns?: 1 | 2 | 3 | 4 | 6;
-  gap?: 'sm' | 'md' | 'lg';
+  gap?: 'none' | 'xs' | 'sm' | 'md' | 'lg';
+  densityAware?: boolean;
 }
 
 export function ContentGrid({
   children,
   columns = 4,
-  gap = 'md',
+  gap = 'sm',
+  densityAware = true,
   className,
   ...props
 }: ContentGridProps) {
+  const { config } = useDensity();
+
   const columnClasses = {
     1: 'grid-cols-1',
     2: 'grid-cols-1 md:grid-cols-2',
@@ -108,13 +122,21 @@ export function ContentGrid({
   };
 
   const gapClasses = {
-    sm: 'gap-2',
-    md: 'gap-3',
-    lg: 'gap-4',
+    none: 'gap-0',
+    xs: 'gap-1',
+    sm: densityAware ? 'gap-2' : 'gap-2',
+    md: densityAware ? 'gap-3' : 'gap-3',
+    lg: densityAware ? 'gap-4' : 'gap-4',
   };
 
+  const gapValue = densityAware ? { padding: config.gap.grid } : {};
+
   return (
-    <div className={cn('grid', columnClasses[columns], gapClasses[gap], className)} {...props}>
+    <div
+      className={cn('grid', columnClasses[columns], gapClasses[gap], className)}
+      style={gapValue}
+      {...props}
+    >
       {children}
     </div>
   );

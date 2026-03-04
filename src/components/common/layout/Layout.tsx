@@ -33,8 +33,8 @@ interface DensityContextType {
 }
 
 const DensityContext = createContext<DensityContextType>({
-  density: 'normal',
-  config: DENSITY_CONFIG.normal,
+  density: 'balanced',
+  config: DENSITY_CONFIG.balanced,
 });
 
 export function useDensity() {
@@ -46,7 +46,7 @@ interface DensityProviderProps {
   density?: Density;
 }
 
-export function DensityProvider({ children, density = 'normal' }: DensityProviderProps) {
+export function DensityProvider({ children, density = 'balanced' }: DensityProviderProps) {
   const config = getDensityConfig(density);
 
   return <DensityContext.Provider value={{ density, config }}>{children}</DensityContext.Provider>;
@@ -130,7 +130,7 @@ interface DensityLayoutProps {
   density?: Density;
 }
 
-export function DensityLayout({ children, className, density = 'normal' }: DensityLayoutProps) {
+export function DensityLayout({ children, className, density = 'balanced' }: DensityLayoutProps) {
   const config = getDensityConfig(density);
 
   return (
@@ -490,7 +490,7 @@ export function ContentSection({
   title,
   description,
   actions,
-  density = 'normal',
+  density = 'balanced',
 }: ContentSectionProps) {
   const config = getDensityConfig(density);
 

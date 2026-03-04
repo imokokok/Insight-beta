@@ -14,7 +14,7 @@ import {
   type CSSProperties,
 } from 'react';
 
-export type DensityMode = 'compact' | 'standard' | 'comfortable';
+export type DensityMode = 'compact' | 'balanced' | 'standard' | 'comfortable';
 
 export interface DensityConfig {
   mode: DensityMode;
@@ -47,6 +47,21 @@ const densityConfigs: Record<DensityMode, DensityConfig> = {
       large: '1rem',
     },
     borderRadius: '0.375rem',
+  },
+  balanced: {
+    mode: 'balanced',
+    spacing: {
+      section: '1.25rem',
+      item: '0.625rem',
+      padding: '0.625rem',
+      gap: '0.625rem',
+    },
+    fontSize: {
+      base: '0.8125rem',
+      small: '0.75rem',
+      large: '0.9375rem',
+    },
+    borderRadius: '0.4375rem',
   },
   standard: {
     mode: 'standard',
@@ -96,12 +111,12 @@ export function useDensity(): DensityContextValue {
   const context = useContext(DensityContext);
   if (!context) {
     return {
-      density: 'standard',
-      config: densityConfigs.standard,
+      density: 'balanced',
+      config: densityConfigs.balanced,
       setDensity: () => {},
       toggleDensity: () => {},
-      getSpacing: (key) => densityConfigs.standard.spacing[key],
-      getFontSize: (key) => densityConfigs.standard.fontSize[key],
+      getSpacing: (key) => densityConfigs.balanced.spacing[key],
+      getFontSize: (key) => densityConfigs.balanced.fontSize[key],
       densityStyles: {},
     };
   }
@@ -116,14 +131,20 @@ export interface DensityProviderProps {
 
 export function DensityProvider({
   children,
-  defaultDensity = 'compact',
+  defaultDensity = 'balanced',
   storageKey = 'insight-density-mode',
 }: DensityProviderProps) {
   const [density, setDensityState] = useState<DensityMode>(() => {
     if (typeof window === 'undefined') return defaultDensity;
     try {
       const stored = localStorage.getItem(storageKey);
-      if (stored && (stored === 'compact' || stored === 'standard' || stored === 'comfortable')) {
+      if (
+        stored &&
+        (stored === 'compact' ||
+          stored === 'balanced' ||
+          stored === 'standard' ||
+          stored === 'comfortable')
+      ) {
         return stored;
       }
     } catch {
@@ -147,7 +168,7 @@ export function DensityProvider({
   );
 
   const toggleDensity = useCallback(() => {
-    const modes: DensityMode[] = ['compact', 'standard', 'comfortable'];
+    const modes: DensityMode[] = ['compact', 'balanced', 'standard', 'comfortable'];
     const currentIndex = modes.indexOf(density);
     const safeIndex = currentIndex >= 0 ? currentIndex : 1;
     const nextIndex = (safeIndex + 1) % modes.length;

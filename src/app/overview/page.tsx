@@ -386,7 +386,7 @@ export default function OverviewPage() {
 
   if (state.error && !state.stats) {
     return (
-      <div className="container mx-auto space-y-6 p-4 sm:p-6">
+      <div className="container mx-auto space-y-4 p-3 sm:p-4">
         <Breadcrumb items={breadcrumbItems} />
         <ErrorBanner
           error={new Error(state.error)}
@@ -401,7 +401,7 @@ export default function OverviewPage() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen pb-16 md:pb-0">
-        <div className="space-y-4">
+        <div className="space-y-3">
           <Breadcrumb items={breadcrumbItems} />
 
           <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">

@@ -221,7 +221,7 @@ export default function AlertsCenterPage() {
 
   if (error && !loading && !data) {
     return (
-      <div className="min-h-screen p-4 sm:p-6">
+      <div className="min-h-screen p-3 sm:p-4">
         <ErrorBanner
           error={new Error(error)}
           onRetry={() => refresh()}
@@ -245,7 +245,7 @@ export default function AlertsCenterPage() {
         isRefreshing={loading}
       />
 
-      <div className="container mx-auto space-y-3 p-3 sm:p-6 lg:p-8">
+      <div className="container mx-auto space-y-3 p-3 sm:p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="flex items-center gap-2 text-base font-bold sm:text-xl lg:text-2xl">

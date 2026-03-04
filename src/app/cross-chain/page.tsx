@@ -126,7 +126,7 @@ export default function CrossChainAnalysisPage() {
   );
 
   return (
-    <div className="container mx-auto space-y-6 p-4 sm:p-6">
+    <div className="container mx-auto space-y-4 p-3 sm:p-4">
       <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl">
@@ -187,7 +187,7 @@ export default function CrossChainAnalysisPage() {
         <KPIOverviewBar items={kpiItems} />
       )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="h-auto bg-muted p-1">
           <TabsTrigger value="overview" className="flex h-auto items-center gap-2 px-4 py-2">
             <LayoutDashboard className="h-4 w-4" />

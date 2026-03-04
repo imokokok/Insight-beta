@@ -109,14 +109,14 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="container mx-auto min-h-screen p-4 sm:p-6">
+    <div className="container mx-auto min-h-screen p-3 sm:p-4">
       <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
         <div className="px-4 py-3">
           <GlobalSearch />
         </div>
       </div>
 
-      <div className="space-y-4 md:space-y-6">
+      <div className="space-y-3 md:space-y-4">
         <div className="hidden items-center justify-end md:flex">
           <div className="w-full md:w-auto md:min-w-[300px]">
             <GlobalSearch />
@@ -139,7 +139,7 @@ export default function ExplorePage() {
           </details>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 md:space-y-4">
           <div className="relative">
             {showScrollButtons && isMobile && (
               <button

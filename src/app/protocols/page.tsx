@@ -74,7 +74,7 @@ export default function ProtocolsListPage() {
   const breadcrumbItems = [{ label: t('nav.protocols'), href: '/protocols' }];
 
   return (
-    <div className="container mx-auto space-y-6 p-4 sm:p-6">
+    <div className="container mx-auto space-y-4 p-3 sm:p-4">
       <Breadcrumb items={breadcrumbItems} />
 
       <div className="flex flex-col gap-2">
@@ -86,7 +86,7 @@ export default function ProtocolsListPage() {
         title={t('protocols.availableProtocols')}
         description={t('protocols.availableProtocolsDesc')}
       >
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
           {PROTOCOLS.map((protocol) => (
             <Card
               key={protocol.id}

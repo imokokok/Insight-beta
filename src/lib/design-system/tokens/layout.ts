@@ -65,7 +65,7 @@ export const GRID_GAPS = {
 // Information Density
 // ============================================================================
 
-export type Density = 'compact' | 'normal' | 'comfortable';
+export type Density = 'compact' | 'balanced' | 'normal' | 'comfortable';
 
 export const DENSITY_CONFIG: Record<
   Density,
@@ -130,6 +130,37 @@ export const DENSITY_CONFIG: Record<
       tight: '1.2',
       normal: '1.3',
       relaxed: '1.4',
+    },
+  },
+  balanced: {
+    spacing: {
+      xs: '4px',
+      sm: '6px',
+      md: '10px',
+      lg: '14px',
+      xl: '20px',
+    },
+    padding: {
+      card: '14px',
+      section: '20px',
+      page: '20px',
+    },
+    gap: {
+      card: '10px',
+      section: '14px',
+      grid: '14px',
+    },
+    fontSize: {
+      xs: '11px',
+      sm: '12px',
+      base: '13px',
+      lg: '15px',
+      xl: '17px',
+    },
+    lineHeight: {
+      tight: '1.25',
+      normal: '1.4',
+      relaxed: '1.5',
     },
   },
   normal: {
