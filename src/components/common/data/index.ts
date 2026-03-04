@@ -34,32 +34,15 @@ export {
   type KPIOverviewBarProps,
 } from './KPIOverviewBar';
 
-export {
-  TrendIndicator,
-  TrendIndicatorCompact,
-  TrendIndicatorBadge,
-  type Trend,
-  type TrendIndicatorProps,
-} from './TrendIndicator';
+export { TrendIndicator, type Trend, type TrendIndicatorProps } from './TrendIndicator';
 
-export { Gauge, type GaugeProps } from './Gauge';
-export {
-  InlineDataDisplay,
-  InlineDataRow,
-  type InlineDataDisplayProps,
-  type InlineDataRowProps,
-  type InlineDataItem,
-} from './InlineDataDisplay';
-export { KpiCard, KpiGrid, DEFAULT_KPI_DATA, TREND_COLORS, STATUS_COLORS } from './KpiCard';
-export type { KpiCardData, TrendDirection, KpiStatus } from './KpiCard';
 export { MiniTrend } from './MiniTrend';
 export type { MiniTrendProps } from './MiniTrend';
+export { KpiCard, KpiGrid, DEFAULT_KPI_DATA, TREND_COLORS, STATUS_COLORS } from './KpiCard';
+export type { KpiCardData, TrendDirection, KpiStatus } from './KpiCard';
 export { MiniChart } from './MiniChart';
 export {
   SortableTableHeader,
   type SortState,
   type SortableTableHeaderProps,
 } from './SortableTableHeader';
-
-export { ResponsiveTable } from './ResponsiveTable';
-export type { Column, ResponsiveTableProps } from './ResponsiveTable';

@@ -11,46 +11,10 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import React, { createContext, useContext } from 'react';
+import React from 'react';
 
-import type { Density } from '@/lib/design-system/tokens/layout';
-import {
-  DENSITY_CONFIG,
-  GRID_COLUMNS,
-  GRID_GAPS,
-  RESPONSIVE_PADDING,
-  getDensityConfig,
-} from '@/lib/design-system/tokens/layout';
+import { GRID_COLUMNS, GRID_GAPS, RESPONSIVE_PADDING } from '@/lib/design-system/tokens/layout';
 import { cn } from '@/shared/utils';
-
-// ============================================================================
-// Density Context
-// ============================================================================
-
-interface DensityContextType {
-  density: Density;
-  config: ReturnType<typeof getDensityConfig>;
-}
-
-const DensityContext = createContext<DensityContextType>({
-  density: 'balanced',
-  config: DENSITY_CONFIG.balanced,
-});
-
-export function useDensity() {
-  return useContext(DensityContext);
-}
-
-interface DensityProviderProps {
-  children: ReactNode;
-  density?: Density;
-}
-
-export function DensityProvider({ children, density = 'balanced' }: DensityProviderProps) {
-  const config = getDensityConfig(density);
-
-  return <DensityContext.Provider value={{ density, config }}>{children}</DensityContext.Provider>;
-}
 
 // ============================================================================
 // Container
@@ -117,53 +81,6 @@ export function ResponsiveGrid({
     >
       {children}
     </div>
-  );
-}
-
-// ============================================================================
-// Density Layout
-// ============================================================================
-
-interface DensityLayoutProps {
-  children: ReactNode;
-  className?: string;
-  density?: Density;
-}
-
-export function DensityLayout({ children, className, density = 'balanced' }: DensityLayoutProps) {
-  const config = getDensityConfig(density);
-
-  return (
-    <DensityProvider density={density}>
-      <div
-        className={cn('density-layout', className)}
-        style={
-          {
-            '--density-spacing-xs': config.spacing.xs,
-            '--density-spacing-sm': config.spacing.sm,
-            '--density-spacing-md': config.spacing.md,
-            '--density-spacing-lg': config.spacing.lg,
-            '--density-spacing-xl': config.spacing.xl,
-            '--density-padding-card': config.padding.card,
-            '--density-padding-section': config.padding.section,
-            '--density-padding-page': config.padding.page,
-            '--density-gap-card': config.gap.card,
-            '--density-gap-section': config.gap.section,
-            '--density-gap-grid': config.gap.grid,
-            '--density-font-xs': config.fontSize.xs,
-            '--density-font-sm': config.fontSize.sm,
-            '--density-font-base': config.fontSize.base,
-            '--density-font-lg': config.fontSize.lg,
-            '--density-font-xl': config.fontSize.xl,
-            '--density-line-tight': config.lineHeight.tight,
-            '--density-line-normal': config.lineHeight.normal,
-            '--density-line-relaxed': config.lineHeight.relaxed,
-          } as React.CSSProperties
-        }
-      >
-        {children}
-      </div>
-    </DensityProvider>
   );
 }
 
@@ -468,74 +385,6 @@ export function DashboardGrid({
 
   return (
     <div className={cn('grid', columnClasses[columns], gapClasses[gap], className)}>{children}</div>
-  );
-}
-
-// ============================================================================
-// Content Section
-// ============================================================================
-
-interface ContentSectionProps {
-  children: ReactNode;
-  className?: string;
-  title?: string;
-  description?: string;
-  actions?: ReactNode;
-  density?: Density;
-}
-
-export function ContentSection({
-  children,
-  className,
-  title,
-  description,
-  actions,
-  density = 'balanced',
-}: ContentSectionProps) {
-  const config = getDensityConfig(density);
-
-  return (
-    <section
-      className={cn('content-section', className)}
-      style={{
-        padding: config.padding.section,
-        marginBottom: config.spacing.lg,
-      }}
-    >
-      {(title || description || actions) && (
-        <div
-          className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-          style={{ marginBottom: config.spacing.md }}
-        >
-          <div>
-            {title && (
-              <h2
-                className="font-semibold text-gray-900"
-                style={{
-                  fontSize: config.fontSize.lg,
-                  lineHeight: config.lineHeight.tight,
-                }}
-              >
-                {title}
-              </h2>
-            )}
-            {description && (
-              <p
-                className="mt-1 text-gray-500"
-                style={{
-                  fontSize: config.fontSize.sm,
-                  lineHeight: config.lineHeight.normal,
-                }}
-              >
-                {description}
-              </p>
-            )}
-          </div>
-          {actions && <div className="flex items-center gap-2">{actions}</div>}
-        </div>
-      )}
-      {children}
-    </section>
   );
 }
 

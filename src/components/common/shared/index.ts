@@ -12,15 +12,16 @@ export {
   AnimatedGridItem,
 } from './AnimatedContainer';
 export { ClientComponentsWrapper } from './ClientComponentsWrapper';
-export { ExportButton, downloadFile } from './ExportButton';
+export { ExportButton } from './ExportButton';
+export { EnhancedExportButton, ExportButton as EnhancedExport } from './EnhancedExportButton';
+export type { ExportData } from './EnhancedExportButton';
+export { downloadFile } from './EnhancedExportButton';
 export type {
-  ExportButtonProps,
   ExportConfig,
   ChartExportButtonProps,
   DataExportButtonProps,
-} from './ExportButton';
-export { EnhancedExportButton, ExportButton as EnhancedExport } from './EnhancedExportButton';
-export type { ExportData } from './EnhancedExportButton';
+  ExportButtonProps,
+} from './EnhancedExportButton';
 export { FavoritesPanel } from './FavoritesPanel';
 export { QuickSearch, useQuickSearch } from './QuickSearch';
 export { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp';

@@ -15,6 +15,13 @@ export interface TrendIndicatorProps {
   valueClassName?: string;
 }
 
+const formatTrendValue = (value: number, trend: Trend): string => {
+  const sign = trend === 'up' ? '+' : trend === 'down' ? '-' : '';
+  const absVal = Math.abs(value);
+  const formatted = absVal % 1 === 0 ? absVal.toString() : absVal.toFixed(2).replace(/\.?0+$/, '');
+  return `${sign}${formatted}%`;
+};
+
 const trendConfig = {
   up: {
     icon: TrendingUp,
@@ -47,14 +54,6 @@ export function TrendIndicator({
   const config = trendConfig[trend];
   const Icon = config.icon;
 
-  const formatValue = (val: number): string => {
-    const sign = trend === 'up' ? '+' : trend === 'down' ? '-' : '';
-    const absVal = Math.abs(val);
-    const formatted =
-      absVal % 1 === 0 ? absVal.toString() : absVal.toFixed(2).replace(/\.?0+$/, '');
-    return `${sign}${formatted}%`;
-  };
-
   return (
     <span
       className={cn(
@@ -67,7 +66,7 @@ export function TrendIndicator({
       <Icon className={cn('h-4 w-4', config.iconColor, iconClassName)} />
       {showValue && value !== undefined && (
         <span className={cn('text-sm font-medium', config.valueColor, valueClassName)}>
-          {formatValue(value)}
+          {formatTrendValue(value, trend)}
         </span>
       )}
     </span>
@@ -83,19 +82,11 @@ export function TrendIndicatorCompact({
   const config = trendConfig[trend];
   const Icon = config.icon;
 
-  const formatValue = (val: number): string => {
-    const sign = trend === 'up' ? '+' : trend === 'down' ? '-' : '';
-    const absVal = Math.abs(val);
-    const formatted =
-      absVal % 1 === 0 ? absVal.toString() : absVal.toFixed(2).replace(/\.?0+$/, '');
-    return `${sign}${formatted}%`;
-  };
-
   return (
     <span className={cn('inline-flex items-center gap-0.5', config.valueColor, className)}>
       <Icon className="h-3.5 w-3.5" />
       {showValue && value !== undefined && (
-        <span className="text-xs font-medium">{formatValue(value)}</span>
+        <span className="text-xs font-medium">{formatTrendValue(value, trend)}</span>
       )}
     </span>
   );
@@ -110,14 +101,6 @@ export function TrendIndicatorBadge({
   const config = trendConfig[trend];
   const Icon = config.icon;
 
-  const formatValue = (val: number): string => {
-    const sign = trend === 'up' ? '+' : trend === 'down' ? '-' : '';
-    const absVal = Math.abs(val);
-    const formatted =
-      absVal % 1 === 0 ? absVal.toString() : absVal.toFixed(2).replace(/\.?0+$/, '');
-    return `${sign}${formatted}%`;
-  };
-
   return (
     <span
       className={cn(
@@ -128,7 +111,7 @@ export function TrendIndicatorBadge({
       )}
     >
       <Icon className="h-3 w-3" />
-      {showValue && value !== undefined && formatValue(value)}
+      {showValue && value !== undefined && formatTrendValue(value, trend)}
     </span>
   );
 }

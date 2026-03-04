@@ -10,6 +10,7 @@
 
 'use client';
 
+import type { RefObject } from 'react';
 import { useState, useCallback } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -44,13 +45,54 @@ import {
   globalExportQueue,
 } from '@/lib/export/enhancedExport';
 import { cn } from '@/shared/utils';
+import {
+  exportChartAsPNG,
+  exportChartAsSVG,
+  exportDataAsCSV,
+  exportDataAsJSON,
+} from '@/utils/chartExport';
 
 export interface ExportData {
   data: unknown;
   filename: string;
 }
 
-interface ExportButtonProps {
+export function downloadFile(content: string, filename: string, mimeType: string): void {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export interface ExportConfig<T> {
+  filenamePrefix: string;
+  generateCSV: (data: T) => string;
+  generateExcel: (data: T) => string;
+}
+
+export interface ChartExportButtonProps {
+  chartRef: RefObject<HTMLElement | null>;
+  data?: object[];
+  filename?: string;
+  className?: string;
+  watermark?: string;
+  showTimestamp?: boolean;
+  disabled?: boolean;
+}
+
+export interface DataExportButtonProps<T> {
+  data: T | null;
+  config: ExportConfig<T>;
+  disabled?: boolean;
+  className?: string;
+}
+
+export type ExportButtonProps<T = unknown> = ChartExportButtonProps | DataExportButtonProps<T>;
+
+interface EnhancedExportButtonProps {
   data: ExportData | ExportData[];
   formats?: ExportFormat[];
   variant?: 'default' | 'outline' | 'ghost';
@@ -74,7 +116,7 @@ export function EnhancedExportButton({
   size = 'sm',
   showProgress = true,
   className,
-}: ExportButtonProps) {
+}: EnhancedExportButtonProps) {
   const { t } = useI18n();
   const [isExporting, setIsExporting] = useState(false);
   const [exportHistory, setExportHistory] = useState<ExportHistoryItem[]>([]);
@@ -294,6 +336,198 @@ export function EnhancedExportButton({
   );
 }
 
-export function ExportButton(props: ExportButtonProps) {
+export function ExportButton(props: ExportButtonProps | EnhancedExportButtonProps) {
+  if ('chartRef' in props || 'config' in props) {
+    return <LegacyExportButton {...props} />;
+  }
   return <EnhancedExportButton {...props} />;
+}
+
+function LegacyExportButton<T = unknown>(props: ExportButtonProps<T>) {
+  const { t } = useI18n();
+  const [isExporting, setIsExporting] = useState(false);
+
+  const hasConfig = 'config' in props;
+
+  const handleChartExport = useCallback(
+    async (format: 'png' | 'svg' | 'csv' | 'json') => {
+      const {
+        chartRef,
+        data,
+        filename = 'chart',
+        watermark = 'Insight Beta',
+        showTimestamp = true,
+      } = props as ChartExportButtonProps;
+
+      setIsExporting(true);
+
+      try {
+        switch (format) {
+          case 'png':
+            if (!chartRef.current) throw new Error('Chart element not found');
+            await exportChartAsPNG(chartRef.current, {
+              filename,
+              watermark,
+              timestamp: showTimestamp,
+            });
+            break;
+          case 'svg':
+            if (!chartRef.current) throw new Error('Chart element not found');
+            await exportChartAsSVG(chartRef.current, {
+              filename,
+              watermark,
+              timestamp: showTimestamp,
+            });
+            break;
+          case 'csv':
+            if (!data || data.length === 0) throw new Error('No data available for CSV export');
+            exportDataAsCSV(data, filename);
+            break;
+          case 'json':
+            if (!data || data.length === 0) throw new Error('No data available for JSON export');
+            exportDataAsJSON(data, filename);
+            break;
+        }
+      } catch (error) {
+        console.error('Export failed:', error);
+      } finally {
+        setIsExporting(false);
+      }
+    },
+    [props],
+  );
+
+  const handleDataExport = useCallback(
+    async (format: 'json' | 'csv' | 'excel') => {
+      const { data, config } = props as DataExportButtonProps<T>;
+      if (!data) return;
+
+      setIsExporting(true);
+
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        const timestamp = new Date().toISOString().split('T')[0];
+        const filename = `${config.filenamePrefix}-${timestamp}`;
+
+        switch (format) {
+          case 'json':
+            downloadFile(JSON.stringify(data, null, 2), `${filename}.json`, 'application/json');
+            break;
+          case 'csv':
+            downloadFile(config.generateCSV(data), `${filename}.csv`, 'text/csv;charset=utf-8');
+            break;
+          case 'excel':
+            downloadFile(config.generateExcel(data), `${filename}.xls`, 'application/vnd.ms-excel');
+            break;
+        }
+      } catch (error) {
+        console.error('Export failed:', error);
+      } finally {
+        setIsExporting(false);
+      }
+    },
+    [props],
+  );
+
+  if (hasConfig) {
+    const { data, disabled, className } = props as DataExportButtonProps<T>;
+    const hasData = !!data;
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={disabled || !hasData || isExporting}
+            className={cn(className)}
+          >
+            {isExporting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            {t('common.export')}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem
+            onClick={() => handleDataExport('json')}
+            disabled={!hasData || isExporting}
+            className="cursor-pointer"
+          >
+            <FileJson className="mr-2 h-4 w-4" /> JSON
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => handleDataExport('csv')}
+            disabled={!hasData || isExporting}
+            className="cursor-pointer"
+          >
+            <FileText className="mr-2 h-4 w-4" /> CSV
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => handleDataExport('excel')}
+            disabled={!hasData || isExporting}
+            className="cursor-pointer"
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4" /> Excel
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  const { chartRef, data, disabled, className } = props as ChartExportButtonProps;
+  const hasChart = !!chartRef?.current;
+  const hasData = !!data && data.length > 0;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={disabled || isExporting}
+          className={cn(className)}
+        >
+          {isExporting ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="mr-2 h-4 w-4" />
+          )}
+          {t('common.export')}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem
+          onClick={() => handleChartExport('png')}
+          disabled={!hasChart || isExporting}
+          className="cursor-pointer"
+        >
+          <Image className="mr-2 h-4 w-4" /> {t('common.exportAsPNG')}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => handleChartExport('svg')}
+          disabled={!hasChart || isExporting}
+          className="cursor-pointer"
+        >
+          <Image className="mr-2 h-4 w-4" /> {t('common.exportAsSVG')}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => handleChartExport('csv')}
+          disabled={!hasData || isExporting}
+          className="cursor-pointer"
+        >
+          <FileSpreadsheet className="mr-2 h-4 w-4" /> {t('common.exportAsCSV')}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => handleChartExport('json')}
+          disabled={!hasData || isExporting}
+          className="cursor-pointer"
+        >
+          <FileJson className="mr-2 h-4 w-4" /> {t('common.exportAsJSON')}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }

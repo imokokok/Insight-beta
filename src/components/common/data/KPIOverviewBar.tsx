@@ -5,6 +5,7 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
+import { useDensity } from '@/components/common/controls/DensityProvider';
 import { cn, formatChangePercent } from '@/shared/utils';
 
 export type KPIColor = 'blue' | 'green' | 'amber' | 'red' | 'purple';
@@ -89,6 +90,7 @@ interface KPICardProps {
 }
 
 const KPICard = memo(function KPICard({ item, onItemClick, index }: KPICardProps) {
+  const { config: densityConfig } = useDensity();
   const config = colorConfig[item.color || 'blue'];
 
   const handleClick = () => {
@@ -96,6 +98,8 @@ const KPICard = memo(function KPICard({ item, onItemClick, index }: KPICardProps
       onItemClick(item.id);
     }
   };
+
+  const cardPadding = densityConfig.spacing.item;
 
   return (
     <motion.div
@@ -118,7 +122,7 @@ const KPICard = memo(function KPICard({ item, onItemClick, index }: KPICardProps
     >
       <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-white/5 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
 
-      <div className="relative p-3">
+      <div className="relative" style={{ padding: cardPadding }}>
         <div className="mb-2 flex items-start justify-between">
           <div
             className={cn(
@@ -167,8 +171,11 @@ export const KPIOverviewBar = memo(function KPIOverviewBar({
   onItemClick,
   className,
 }: KPIOverviewBarProps) {
+  const { config: densityConfig } = useDensity();
+  const gridGap = densityConfig.gap.card;
+
   return (
-    <div className={cn('grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4', className)}>
+    <div className={cn('grid grid-cols-2 sm:grid-cols-4', className)} style={{ gap: gridGap }}>
       {items.map((item, index) => (
         <KPICard key={item.id} item={item} onItemClick={onItemClick} index={index} />
       ))}

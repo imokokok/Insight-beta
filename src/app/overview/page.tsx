@@ -191,8 +191,8 @@ export default function OverviewPage() {
 
       const [statsRes, trendRes, anomaliesRes] = await Promise.all([
         fetchApiData<OverviewStats>('/api/oracle/stats').catch(() => null),
-        fetchApiData<PriceTrendPoint[]>('/api/oracle/history/prices').catch(() => []),
-        fetchApiData<AnomalyData[]>('/api/oracle/analytics/deviation').catch(() => []),
+        fetchApiData<PriceTrendPoint[]>('/api/oracle/history/prices?latest=true').catch(() => []),
+        fetchApiData<AnomalyData[]>('/api/oracle/analytics/deviation?type=report').catch(() => []),
       ]);
 
       const mockStats: OverviewStats = statsRes ?? {

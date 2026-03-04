@@ -1,20 +1,35 @@
-export function formatNumber(value: number, options?: Intl.NumberFormatOptions): string {
-  return value.toLocaleString(undefined, {
-    maximumFractionDigits: 2,
-    ...options,
-  });
-}
+export {
+  formatNumber,
+  formatCurrencyIntl as formatCurrency,
+  formatNumberIntl,
+  formatPrice,
+  formatUsdCompact,
+  formatUsd,
+  truncateAddress,
+  calculatePercentage,
+} from './format/number';
+
+export {
+  formatTimeAgo,
+  formatTime,
+  formatDurationMinutes,
+  formatDateIntl,
+  formatRelativeTimeIntl,
+  formatRelativeTime,
+} from './format/date';
+
+export {
+  formatGas,
+  formatEth,
+  formatAddress,
+  formatHash,
+  formatBlockNumber,
+  getGasStatus,
+  getGasColor,
+} from './format/blockchain';
 
 export function formatPercent(value: number, decimals: number = 2): string {
   return `${value.toFixed(decimals)}%`;
-}
-
-export function formatCurrency(value: number, currency: string = 'USD'): string {
-  return value.toLocaleString(undefined, {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 2,
-  });
 }
 
 export function formatCompact(value: number): string {
@@ -28,10 +43,6 @@ export function formatCompact(value: number): string {
     return `${(value / 1e3).toFixed(1)}K`;
   }
   return value.toLocaleString();
-}
-
-export function formatGas(value: number): string {
-  return `${formatNumber(value)} gas`;
 }
 
 export function formatTimestamp(timestamp: number | Date): string {

@@ -17,6 +17,8 @@ import { cn } from '@/shared/utils';
 import { Breadcrumb, type BreadcrumbItem } from './Breadcrumb';
 import { EnhancedSidebar as Sidebar } from './EnhancedSidebar';
 import { MobileMenuButton, MobileSidebar, MobileNavProvider } from './MobileNav';
+import { DensityProvider } from '../controls/DensityProvider';
+import { DensitySwitch } from '../controls/DensitySwitch';
 import { ErrorBoundary } from '../feedback/ErrorBoundary';
 import { KeyboardShortcutsHelp } from '../shared/KeyboardShortcutsHelp';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
@@ -122,106 +124,109 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <FavoritesProvider>
       <MobileNavProvider>
-        <QuickSearch isOpen={isQuickSearchOpen} onClose={closeQuickSearch} />
-        <KeyboardShortcutsHelp open={isHelpOpen} onOpenChange={setIsHelpOpen} />
-        <div className="flex min-h-screen">
-          <div className="hidden w-[280px] flex-shrink-0 lg:block">
-            <Sidebar />
+        <DensityProvider defaultDensity="balanced">
+          <QuickSearch isOpen={isQuickSearchOpen} onClose={closeQuickSearch} />
+          <KeyboardShortcutsHelp open={isHelpOpen} onOpenChange={setIsHelpOpen} />
+          <div className="flex min-h-screen">
+            <div className="hidden w-[280px] flex-shrink-0 lg:block">
+              <Sidebar />
+            </div>
+
+            <MobileSidebar>
+              <Sidebar />
+            </MobileSidebar>
+
+            <main id="main-content" className="min-w-0 flex-1">
+              <ErrorBoundary>
+                <div className="container mx-auto max-w-7xl p-4 sm:p-6">
+                  <header className={cn('sticky top-0 z-20 mb-6 flex flex-col gap-3', 'px-1 py-5')}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <MobileMenuButton />
+                        <motion.h1
+                          key={title}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="text-xl font-bold text-foreground md:text-2xl"
+                        >
+                          {title}
+                        </motion.h1>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRefresh}
+                          disabled={isRefreshing}
+                          className="hidden items-center gap-2 text-muted-foreground hover:text-foreground md:flex"
+                          title={t('common.refresh')}
+                        >
+                          <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
+                          <span className="text-sm">{t('common.refresh')}</span>
+                          <kbd className="hidden h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] font-medium sm:flex">
+                            R
+                          </kbd>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleRefresh}
+                          disabled={isRefreshing}
+                          className="text-muted-foreground md:hidden"
+                          aria-label={t('common.refresh')}
+                        >
+                          <RefreshCw className={cn('h-5 w-5', isRefreshing && 'animate-spin')} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={toggleQuickSearch}
+                          className="hidden items-center gap-2 text-muted-foreground hover:text-foreground md:flex"
+                        >
+                          <Search className="h-4 w-4" />
+                          <span className="text-sm">{t('common.search')}</span>
+                          <kbd className="hidden h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] font-medium sm:flex">
+                            <Command className="h-3 w-3" />K
+                          </kbd>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={toggleQuickSearch}
+                          className="text-muted-foreground md:hidden"
+                          aria-label={t('common.searchAriaLabel')}
+                        >
+                          <Search className="h-5 w-5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsHelpOpen(true)}
+                          className="hidden items-center gap-2 text-muted-foreground hover:text-foreground md:flex"
+                          title="快捷键帮助"
+                        >
+                          <kbd className="hidden h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] font-medium sm:flex">
+                            ?
+                          </kbd>
+                        </Button>
+                        <SyncStatus />
+                        <DensitySwitch />
+                        <LanguageSwitcher />
+                      </div>
+                    </div>
+                    {breadcrumbItems.length > 0 && (
+                      <div className="ml-10 md:ml-14">
+                        <Breadcrumb items={breadcrumbItems} />
+                      </div>
+                    )}
+                  </header>
+                  {children}
+                </div>
+              </ErrorBoundary>
+            </main>
           </div>
-
-          <MobileSidebar>
-            <Sidebar />
-          </MobileSidebar>
-
-          <main id="main-content" className="min-w-0 flex-1">
-            <ErrorBoundary>
-              <div className="container mx-auto max-w-7xl p-4 sm:p-6">
-                <header className={cn('sticky top-0 z-20 mb-6 flex flex-col gap-3', 'px-1 py-5')}>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <MobileMenuButton />
-                      <motion.h1
-                        key={title}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="text-xl font-bold text-foreground md:text-2xl"
-                      >
-                        {title}
-                      </motion.h1>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleRefresh}
-                        disabled={isRefreshing}
-                        className="hidden items-center gap-2 text-muted-foreground hover:text-foreground md:flex"
-                        title={t('common.refresh')}
-                      >
-                        <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
-                        <span className="text-sm">{t('common.refresh')}</span>
-                        <kbd className="hidden h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] font-medium sm:flex">
-                          R
-                        </kbd>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleRefresh}
-                        disabled={isRefreshing}
-                        className="text-muted-foreground md:hidden"
-                        aria-label={t('common.refresh')}
-                      >
-                        <RefreshCw className={cn('h-5 w-5', isRefreshing && 'animate-spin')} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={toggleQuickSearch}
-                        className="hidden items-center gap-2 text-muted-foreground hover:text-foreground md:flex"
-                      >
-                        <Search className="h-4 w-4" />
-                        <span className="text-sm">{t('common.search')}</span>
-                        <kbd className="hidden h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] font-medium sm:flex">
-                          <Command className="h-3 w-3" />K
-                        </kbd>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={toggleQuickSearch}
-                        className="text-muted-foreground md:hidden"
-                        aria-label={t('common.searchAriaLabel')}
-                      >
-                        <Search className="h-5 w-5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsHelpOpen(true)}
-                        className="hidden items-center gap-2 text-muted-foreground hover:text-foreground md:flex"
-                        title="快捷键帮助"
-                      >
-                        <kbd className="hidden h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] font-medium sm:flex">
-                          ?
-                        </kbd>
-                      </Button>
-                      <SyncStatus />
-                      <LanguageSwitcher />
-                    </div>
-                  </div>
-                  {breadcrumbItems.length > 0 && (
-                    <div className="ml-10 md:ml-14">
-                      <Breadcrumb items={breadcrumbItems} />
-                    </div>
-                  )}
-                </header>
-                {children}
-              </div>
-            </ErrorBoundary>
-          </main>
-        </div>
+        </DensityProvider>
       </MobileNavProvider>
     </FavoritesProvider>
   );

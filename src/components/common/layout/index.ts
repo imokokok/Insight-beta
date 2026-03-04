@@ -20,5 +20,5 @@ export {
   type DashboardPageHeaderProps,
   type DynamicPageHeaderProps,
 } from './PageHeader';
-export { PageProgress } from './PageProgress';
 export { ResponsiveGrid as Responsive } from './Responsive';
+export { PageProgress } from './PageProgress';

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useDensity } from '@/components/common/layout/Layout';
+import { useDensity } from '@/components/common/controls/DensityProvider';
 import { cn } from '@/shared/utils';
 
 export interface ContentGroupProps extends React.HTMLAttributes<HTMLDivElement> {

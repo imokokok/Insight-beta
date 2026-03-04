@@ -14,7 +14,7 @@ import {
   type CSSProperties,
 } from 'react';
 
-export type DensityMode = 'compact' | 'balanced' | 'standard' | 'comfortable';
+export type DensityMode = 'compact' | 'balanced' | 'normal' | 'comfortable';
 
 export interface DensityConfig {
   mode: DensityMode;
@@ -23,6 +23,16 @@ export interface DensityConfig {
     item: string;
     padding: string;
     gap: string;
+    xs: string;
+    sm: string;
+    md: string;
+    lg: string;
+    xl: string;
+  };
+  gap: {
+    grid: string;
+    section: string;
+    card: string;
   };
   fontSize: {
     base: string;
@@ -40,6 +50,16 @@ const densityConfigs: Record<DensityMode, DensityConfig> = {
       item: '0.5rem',
       padding: '0.5rem',
       gap: '0.5rem',
+      xs: '0.25rem',
+      sm: '0.5rem',
+      md: '0.75rem',
+      lg: '1rem',
+      xl: '1.5rem',
+    },
+    gap: {
+      grid: '0.5rem',
+      section: '0.5rem',
+      card: '0.5rem',
     },
     fontSize: {
       base: '0.875rem',
@@ -55,6 +75,16 @@ const densityConfigs: Record<DensityMode, DensityConfig> = {
       item: '0.625rem',
       padding: '0.625rem',
       gap: '0.625rem',
+      xs: '0.375rem',
+      sm: '0.5rem',
+      md: '0.75rem',
+      lg: '1rem',
+      xl: '1.25rem',
+    },
+    gap: {
+      grid: '0.75rem',
+      section: '0.75rem',
+      card: '0.625rem',
     },
     fontSize: {
       base: '0.8125rem',
@@ -63,13 +93,23 @@ const densityConfigs: Record<DensityMode, DensityConfig> = {
     },
     borderRadius: '0.4375rem',
   },
-  standard: {
-    mode: 'standard',
+  normal: {
+    mode: 'normal',
     spacing: {
       section: '1.5rem',
       item: '0.75rem',
       padding: '0.75rem',
       gap: '0.75rem',
+      xs: '0.5rem',
+      sm: '0.75rem',
+      md: '1rem',
+      lg: '1.25rem',
+      xl: '1.5rem',
+    },
+    gap: {
+      grid: '1rem',
+      section: '1rem',
+      card: '0.75rem',
     },
     fontSize: {
       base: '1rem',
@@ -85,6 +125,16 @@ const densityConfigs: Record<DensityMode, DensityConfig> = {
       item: '1rem',
       padding: '1rem',
       gap: '1rem',
+      xs: '0.5rem',
+      sm: '0.75rem',
+      md: '1rem',
+      lg: '1.5rem',
+      xl: '2rem',
+    },
+    gap: {
+      grid: '1.5rem',
+      section: '1.5rem',
+      card: '1rem',
     },
     fontSize: {
       base: '1rem',
@@ -142,7 +192,7 @@ export function DensityProvider({
         stored &&
         (stored === 'compact' ||
           stored === 'balanced' ||
-          stored === 'standard' ||
+          stored === 'normal' ||
           stored === 'comfortable')
       ) {
         return stored;
@@ -168,7 +218,7 @@ export function DensityProvider({
   );
 
   const toggleDensity = useCallback(() => {
-    const modes: DensityMode[] = ['compact', 'balanced', 'standard', 'comfortable'];
+    const modes: DensityMode[] = ['compact', 'balanced', 'normal', 'comfortable'];
     const currentIndex = modes.indexOf(density);
     const safeIndex = currentIndex >= 0 ? currentIndex : 1;
     const nextIndex = (safeIndex + 1) % modes.length;
