@@ -96,7 +96,13 @@ const CONFIG = {
   },
 
   // 缓存时间（毫秒）
-  cacheTtlMs: 30000, // 30秒
+  cacheTtlMs: 30000, // 30 秒
+
+  // 陈旧阈值（秒）
+  stalenessThreshold: 300, // 5 分钟
+
+  // 陈旧预警阈值（80%）
+  stalenessWarningThreshold: 240, // 4 分钟
 };
 
 // ============================================================================
@@ -577,6 +583,14 @@ export async function generateRealRealtimeData(
       // 添加 Chainlink 数据
       const chainlinkPrice = chainlinkData.find((p) => p.symbol === symbol);
       if (chainlinkPrice) {
+        const stalenessSeconds = (Date.now() - new Date(chainlinkPrice.timestamp).getTime()) / 1000;
+        let status: 'active' | 'warning' | 'stale' = 'active';
+        if (stalenessSeconds > CONFIG.stalenessThreshold) {
+          status = 'stale';
+        } else if (stalenessSeconds > CONFIG.stalenessWarningThreshold) {
+          status = 'warning';
+        }
+
         protocolData.push({
           protocol: 'chainlink',
           price: chainlinkPrice.price,
@@ -585,13 +599,21 @@ export async function generateRealRealtimeData(
           latency: chainlinkPrice.latency,
           // 偏差百分比，小数形式 (0.01 = 1%)
           deviationFromConsensus: (chainlinkPrice.price - refPrice) / refPrice,
-          status: chainlinkPrice.latency > 60000 ? 'stale' : 'active',
+          status,
         });
       }
 
       // 添加 Pyth 数据
       const pythPrice = pythData.find((p) => p.symbol === symbol);
       if (pythPrice) {
+        const stalenessSeconds = (Date.now() - new Date(pythPrice.timestamp).getTime()) / 1000;
+        let status: 'active' | 'warning' | 'stale' = 'active';
+        if (stalenessSeconds > CONFIG.stalenessThreshold) {
+          status = 'stale';
+        } else if (stalenessSeconds > CONFIG.stalenessWarningThreshold) {
+          status = 'warning';
+        }
+
         protocolData.push({
           protocol: 'pyth',
           price: pythPrice.price,
@@ -600,7 +622,7 @@ export async function generateRealRealtimeData(
           latency: pythPrice.latency,
           // 偏差百分比，小数形式 (0.01 = 1%)
           deviationFromConsensus: (pythPrice.price - refPrice) / refPrice,
-          status: pythPrice.latency > 60000 ? 'stale' : 'active',
+          status,
         });
       }
 

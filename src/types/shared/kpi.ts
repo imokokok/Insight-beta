@@ -10,6 +10,11 @@ export interface KpiCardData {
   status?: KpiStatus;
   trendData?: number[];
   showTrend?: boolean;
+  metadata?: {
+    volatility?: number;
+    zScore?: number;
+    [key: string]: number | string | undefined;
+  };
 }
 
 export const DEFAULT_KPI_DATA: KpiCardData = {

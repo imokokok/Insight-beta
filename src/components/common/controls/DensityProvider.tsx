@@ -116,7 +116,7 @@ export interface DensityProviderProps {
 
 export function DensityProvider({
   children,
-  defaultDensity = 'standard',
+  defaultDensity = 'compact',
   storageKey = 'insight-density-mode',
 }: DensityProviderProps) {
   const [density, setDensityState] = useState<DensityMode>(() => {

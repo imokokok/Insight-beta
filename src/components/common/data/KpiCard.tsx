@@ -42,6 +42,7 @@ export function KpiCard({ data, compact }: KpiCardProps) {
     status = 'neutral',
     trendData,
     showTrend,
+    metadata,
   } = data;
   const colors = STATUS_COLORS[status] ?? STATUS_COLORS.neutral!;
 
@@ -89,6 +90,12 @@ export function KpiCard({ data, compact }: KpiCardProps) {
         <div className={cn('mt-0.5 text-[10px]', TREND_COLORS[trend])}>
           {t('common.kpi.comparedToLastPeriod')} {changePercent > 0 ? '+' : ''}
           {changePercent}%
+        </div>
+      )}
+
+      {metadata?.volatility && (
+        <div className={cn('mt-0.5 text-[10px] text-muted-foreground')}>
+          波动率：{metadata.volatility.toFixed(2)}%
         </div>
       )}
     </div>

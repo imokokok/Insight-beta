@@ -17,7 +17,10 @@ export const AGGREGATION_CONFIG = {
   severeDeviationThreshold: 0.05, // 5%
 
   // 数据新鲜度阈值（秒）
-  stalenessThreshold: 300, // 5分钟
+  stalenessThreshold: 300, // 5 分钟
+
+  // 陈旧预警阈值（80% 时触发预警）
+  stalenessWarningThreshold: 240, // 4 分钟 (300 * 0.8)
 
   // 最小数据源数量
   minDataSources: 2,

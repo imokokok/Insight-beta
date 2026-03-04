@@ -15,7 +15,7 @@ export interface TableRowData {
   spreadPercent: number;
   latency: number;
   confidence: number;
-  status: 'active' | 'stale' | 'error';
+  status: 'active' | 'warning' | 'stale' | 'error';
   lastUpdated: string;
 }
 

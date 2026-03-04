@@ -192,7 +192,7 @@ export type RealtimeProtocolData = {
   latency: number;
   /** 与共识价格的偏差百分比，小数形式 (如 0.01 = 1%) */
   deviationFromConsensus: number;
-  status: 'active' | 'stale' | 'error';
+  status: 'active' | 'warning' | 'stale' | 'error';
 };
 
 export type ComparisonFilter = {
