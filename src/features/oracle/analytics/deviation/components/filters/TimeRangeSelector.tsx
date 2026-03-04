@@ -100,7 +100,7 @@ export function TimeRangeSelector({
   };
 
   const getTimeRangeLabel = (presetValue: TimeRangePreset): string => {
-    const labels: Record<TimeRangePreset, string> = {
+    const labels: Partial<Record<TimeRangePreset, string>> = {
       '1h': t('analytics.deviation.timeRange.1h'),
       '6h': t('analytics.deviation.timeRange.6h'),
       '24h': t('analytics.deviation.timeRange.24h'),
@@ -108,7 +108,7 @@ export function TimeRangeSelector({
       '30d': t('analytics.deviation.timeRange.30d'),
       custom: t('analytics.deviation.timeRange.custom'),
     };
-    return labels[presetValue];
+    return labels[presetValue] ?? presetValue;
   };
 
   return (

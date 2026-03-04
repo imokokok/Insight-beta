@@ -1,4 +1,6 @@
-export interface ExportOptions {
+import { generateFilename } from '@/lib/export/enhancedExport';
+
+export interface ChartExportOptions {
   filename?: string;
   watermark?: string;
   timestamp?: boolean;
@@ -43,14 +45,9 @@ function downloadBlob(blob: Blob, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
-function generateFilename(baseName: string, extension: string): string {
-  const timestamp = new Date().toISOString().split('T')[0];
-  return `${baseName}-${timestamp}.${extension}`;
-}
-
 export async function exportChartAsPNG(
   element: HTMLElement,
-  options?: ExportOptions,
+  options?: ChartExportOptions,
 ): Promise<void> {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -119,7 +116,7 @@ export async function exportChartAsPNG(
 
 export async function exportChartAsSVG(
   element: HTMLElement,
-  options?: ExportOptions,
+  options?: ChartExportOptions,
 ): Promise<void> {
   const rect = element.getBoundingClientRect();
 

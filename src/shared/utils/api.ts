@@ -4,11 +4,7 @@
  * API 相关工具函数
  */
 
-import { getErrorMessage } from '@/lib/errors';
-
 import { getOracleInstanceId } from './storage';
-
-export { getErrorMessage };
 
 /**
  * API 响应的标准格式接口

@@ -276,7 +276,9 @@ export const TIME_RANGE_OPTIONS = [
   { value: '30d', label: '30D' },
 ] as const;
 
-export type TimeRange = (typeof TIME_RANGE_OPTIONS)[number]['value'];
+import type { TimeRangePreset } from '@/types/shared/timeRange';
+
+export type TimeRange = Exclude<TimeRangePreset, 'ALL' | 'custom'>;
 
 export interface ChartTimeRangeConfig {
   label: string;

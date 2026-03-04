@@ -99,7 +99,9 @@ function generateMockDisputeReport(): DisputeReport {
   };
 }
 
-export type TimeRangePreset = '1h' | '6h' | '24h' | '7d' | '30d' | 'custom';
+import type { TimeRangePreset } from '@/types/shared/timeRange';
+
+export type { TimeRangePreset };
 
 export function useDisputeAnalytics() {
   const [loading, setLoading] = useState(true);

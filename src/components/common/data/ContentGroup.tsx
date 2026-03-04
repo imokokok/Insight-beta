@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { useDensity } from '@/components/common/controls/DensityProvider';
+import { GAP_CLASSES } from '@/lib/design-system/tokens/layout';
 import { cn } from '@/shared/utils';
 
 export interface ContentGroupProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -99,7 +100,7 @@ export function ContentSection({
 export interface ContentGridProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   columns?: 1 | 2 | 3 | 4 | 6;
-  gap?: 'none' | 'xs' | 'sm' | 'md' | 'lg';
+  gap?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   densityAware?: boolean;
 }
 
@@ -121,19 +122,11 @@ export function ContentGrid({
     6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
   };
 
-  const gapClasses = {
-    none: 'gap-0',
-    xs: 'gap-1',
-    sm: densityAware ? 'gap-2' : 'gap-2',
-    md: densityAware ? 'gap-3' : 'gap-3',
-    lg: densityAware ? 'gap-4' : 'gap-4',
-  };
-
   const gapValue = densityAware ? { padding: config.gap.grid } : {};
 
   return (
     <div
-      className={cn('grid', columnClasses[columns], gapClasses[gap], className)}
+      className={cn('grid', columnClasses[columns], GAP_CLASSES[gap], className)}
       style={gapValue}
       {...props}
     >

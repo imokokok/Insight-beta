@@ -13,7 +13,12 @@
 import type { ReactNode } from 'react';
 import React from 'react';
 
-import { GRID_COLUMNS, GRID_GAPS, RESPONSIVE_PADDING } from '@/lib/design-system/tokens/layout';
+import {
+  GAP_CLASSES,
+  GRID_COLUMNS,
+  GRID_GAPS,
+  RESPONSIVE_PADDING,
+} from '@/lib/design-system/tokens/layout';
 import { cn } from '@/shared/utils';
 
 // ============================================================================
@@ -103,16 +108,6 @@ export function Stack({
   align = 'stretch',
   justify = 'start',
 }: StackProps) {
-  const gapClasses = {
-    none: 'gap-0',
-    xs: 'gap-1',
-    sm: 'gap-2',
-    md: 'gap-4',
-    lg: 'gap-6',
-    xl: 'gap-8',
-    '2xl': 'gap-12',
-  };
-
   const alignClasses = {
     start: 'items-start',
     center: 'items-center',
@@ -133,7 +128,7 @@ export function Stack({
     <div
       className={cn(
         'flex flex-col',
-        gapClasses[gap],
+        GAP_CLASSES[gap],
         alignClasses[align],
         justifyClasses[justify],
         className,
@@ -165,16 +160,6 @@ export function Row({
   justify = 'start',
   wrap = false,
 }: RowProps) {
-  const gapClasses = {
-    none: 'gap-0',
-    xs: 'gap-1',
-    sm: 'gap-2',
-    md: 'gap-4',
-    lg: 'gap-6',
-    xl: 'gap-8',
-    '2xl': 'gap-12',
-  };
-
   const alignClasses = {
     start: 'items-start',
     center: 'items-center',
@@ -196,7 +181,7 @@ export function Row({
     <div
       className={cn(
         'flex flex-row',
-        gapClasses[gap],
+        GAP_CLASSES[gap],
         alignClasses[align],
         justifyClasses[justify],
         wrap && 'flex-wrap',
@@ -229,15 +214,6 @@ export function SidebarLayout({
   gap = 'lg',
   collapseBreakpoint = 'lg',
 }: SidebarLayoutProps) {
-  const gapClasses = {
-    none: 'gap-0',
-    xs: 'gap-2',
-    sm: 'gap-4',
-    md: 'gap-6',
-    lg: 'gap-8',
-    xl: 'gap-12',
-  };
-
   const collapseClasses = {
     sm: 'sm:grid-cols-[280px_1fr]',
     md: 'md:grid-cols-[280px_1fr]',
@@ -249,7 +225,7 @@ export function SidebarLayout({
     <div
       className={cn(
         'grid grid-cols-1',
-        gapClasses[gap],
+        GAP_CLASSES[gap],
         collapseClasses[collapseBreakpoint],
         className,
       )}
@@ -292,21 +268,12 @@ export function SplitLayout({
     '3:1': 'grid-cols-1 lg:grid-cols-[3fr_1fr]',
   };
 
-  const gapClasses = {
-    none: 'gap-0',
-    xs: 'gap-2',
-    sm: 'gap-4',
-    md: 'gap-6',
-    lg: 'gap-8',
-    xl: 'gap-12',
-  };
-
   return (
     <div
       className={cn(
         'grid',
         direction === 'horizontal' ? ratioClasses[ratio] : 'grid-rows-2',
-        gapClasses[gap],
+        GAP_CLASSES[gap],
         className,
       )}
     >

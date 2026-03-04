@@ -12,14 +12,11 @@ import { createPublicClient, http, type PublicClient, type Address, formatUnits 
 
 import { VIEM_CHAIN_MAP } from '@/lib/blockchain/chainConfig';
 import { BaseOracleClient } from '@/lib/blockchain/core/BaseOracleClient';
-import type {
-  OracleClientConfig,
-  OracleHealthStatus,
-  HealthStatus,
-} from '@/lib/blockchain/core/types';
+import type { OracleClientConfig, OracleHealthStatus } from '@/lib/blockchain/core/types';
 import { normalizeSymbol } from '@/lib/blockchain/core/types';
 import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { LoggerFactory } from '@/lib/shared/logger/LoggerFactory';
+import type { HealthStatus } from '@/types/common/status';
 import type { SupportedChain, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 
 export interface EvmOracleClientConfig extends OracleClientConfig {

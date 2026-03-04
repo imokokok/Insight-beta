@@ -11,14 +11,11 @@
 import { Connection, type PublicKey, type Commitment } from '@solana/web3.js';
 
 import { BaseOracleClient } from '@/lib/blockchain/core/BaseOracleClient';
-import type {
-  OracleClientConfig,
-  OracleHealthStatus,
-  HealthStatus,
-} from '@/lib/blockchain/core/types';
+import type { OracleClientConfig, OracleHealthStatus } from '@/lib/blockchain/core/types';
 import { normalizeSymbol } from '@/lib/blockchain/core/types';
 import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { LoggerFactory } from '@/lib/shared/logger/LoggerFactory';
+import type { HealthStatus } from '@/types/common/status';
 import type { SupportedChain, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 
 export interface SolanaOracleClientConfig extends OracleClientConfig {

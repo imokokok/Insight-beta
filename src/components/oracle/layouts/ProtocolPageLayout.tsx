@@ -14,9 +14,11 @@ import { TopStatusBar } from '@/features/oracle/components/shared';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import type { NetworkHealthStatus } from '@/types/common';
+import type { BreadcrumbItem } from '@/types/common/breadcrumb';
 import type { KpiCardData } from '@/types/shared/kpi';
 
 export type { NetworkHealthStatus } from '@/types/common';
+export type { BreadcrumbItem } from '@/types/common/breadcrumb';
 export type { KpiCardData } from '@/types/shared/kpi';
 
 export interface TabItem {
@@ -25,11 +27,6 @@ export interface TabItem {
   icon?: React.ReactNode;
   badge?: number | string;
   lazy?: boolean;
-}
-
-export interface BreadcrumbItem {
-  label: string;
-  href?: string;
 }
 
 interface TabPanelProps {

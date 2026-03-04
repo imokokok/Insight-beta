@@ -10,10 +10,10 @@ export * from './shared';
 // 统计类型（Stats 相关）
 export * from './stats';
 
-// 领域类型（核心领域模型）- 优先级最高
-export * from './domain';
+// 领域类型（核心领域模型）- 使用 unifiedOracleTypes
+export * from './unifiedOracleTypes';
 
-// Oracle 协议类型（排除已在 domain 中定义的）
+// Oracle 协议类型（排除已在 unifiedOracleTypes 中定义的）
 export {
   PROTOCOL_DISPLAY_NAMES,
   PRICE_FEED_PROTOCOLS,

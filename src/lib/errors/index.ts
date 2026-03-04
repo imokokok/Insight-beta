@@ -44,7 +44,7 @@ export {
   apiErrors,
 } from './apiErrors';
 
-export type { ApiErrorResponse, ApiResponse, RequestOptions } from './apiErrors';
+export type { ApiResponse, RequestOptions } from './apiErrors';
 
 // ============================================================================
 // 从 walletErrors 导出

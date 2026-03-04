@@ -4,6 +4,7 @@
  * 提供统一的类型系统，支持所有预言机协议
  */
 
+import type { HealthStatus } from '@/types/common/status';
 import type { OracleProtocol, SupportedChain, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 
 import type { Address } from 'viem';
@@ -60,8 +61,6 @@ export interface RequiredOracleClientConfig {
 // ============================================================================
 // 健康状态类型
 // ============================================================================
-
-export type HealthStatus = 'healthy' | 'degraded' | 'unhealthy';
 
 export interface OracleHealthStatus {
   status: HealthStatus;

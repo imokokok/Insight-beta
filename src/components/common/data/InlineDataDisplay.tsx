@@ -3,6 +3,7 @@
 import { memo } from 'react';
 
 import { STATUS_TEXT_COLORS, TREND_COLORS } from '@/lib/design-system/tokens/colors';
+import { GAP_CLASSES } from '@/lib/design-system/tokens/layout';
 import { cn } from '@/shared/utils';
 
 export interface InlineDataItem {
@@ -18,7 +19,7 @@ export interface InlineDataItem {
 export interface InlineDataDisplayProps {
   items: InlineDataItem[];
   columns?: 2 | 3 | 4 | 6;
-  gap?: 'sm' | 'md' | 'lg';
+  gap?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   className?: string;
   showDividers?: boolean;
   compact?: boolean;
@@ -79,15 +80,9 @@ export const InlineDataDisplay = memo(function InlineDataDisplay({
     6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
   };
 
-  const gapClasses = {
-    sm: 'gap-2',
-    md: 'gap-4',
-    lg: 'gap-6',
-  };
-
   return (
     <div className={cn('rounded-xl border border-border/30 bg-card/30 p-4', className)}>
-      <div className={cn('grid', columnClasses[columns], gapClasses[gap])}>
+      <div className={cn('grid', columnClasses[columns], GAP_CLASSES[gap])}>
         {items.map((item, index) => (
           <div
             key={index}

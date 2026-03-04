@@ -45,13 +45,17 @@ export interface BatchExportOptions {
 /**
  * 生成带时间戳的文件名
  */
-function generateFilename(baseName: string, extension: string, includeTimestamp = true): string {
+export function generateFilename(
+  baseName: string,
+  extension: string,
+  includeTimestamp = true,
+): string {
   if (!includeTimestamp) {
     return `${baseName}.${extension}`;
   }
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
-  return `${baseName}_${timestamp}.${extension}`;
+  const timestamp = new Date().toISOString().split('T')[0];
+  return `${baseName}-${timestamp}.${extension}`;
 }
 
 /**
