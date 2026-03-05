@@ -122,3 +122,9 @@ export function getLatencyStatus(latency: number): 'excellent' | 'good' | 'fair'
   if (latency < 500) return 'fair';
   return 'poor';
 }
+
+export function formatFrequency(seconds: number): string {
+  if (seconds < 60) return `${seconds.toFixed(0)}s`;
+  if (seconds < 3600) return `${(seconds / 60).toFixed(0)}m`;
+  return `${(seconds / 3600).toFixed(1)}h`;
+}

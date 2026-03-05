@@ -141,6 +141,39 @@ export function formatRelativeTime(seconds: number): string {
   return `${days}天前`;
 }
 
+export function formatTimeAgoShort(timestamp: string): string {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffMins < 1440) {
+    const hours = Math.floor(diffMins / 60);
+    return `${hours}h ago`;
+  }
+  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+}
+
+export function formatFullTime(timestamp: string): string {
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}
+
+export function formatFullDate(timestamp: string): string {
+  const date = new Date(timestamp);
+  return date.toLocaleDateString('zh-CN', {
+    month: 'short',
+    day: 'numeric',
+    year: '2-digit',
+  });
+}
+
 export function formatFreshness(
   lastUpdate: string | Date,
   locale: 'zh' | 'en' = 'zh',

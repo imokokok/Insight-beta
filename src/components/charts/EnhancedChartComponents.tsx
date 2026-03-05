@@ -308,7 +308,7 @@ export const EnhancedAreaChart = memo(function EnhancedAreaChart({
                     position: 'top',
                     fontSize: 10,
                     fill: 'var(--muted-foreground)',
-                    formatter: valueFormatter,
+                    formatter: (value: unknown) => valueFormatter(value as number),
                   }
                 : false
             }
@@ -429,7 +429,7 @@ export const EnhancedLineChart = memo(function EnhancedLineChart({
                         position: 'top',
                         fontSize: 10,
                         fill: 'var(--muted-foreground)',
-                        formatter: valueFormatter,
+                        formatter: (value: unknown) => valueFormatter(value as number),
                       }
                     : false
                 }
@@ -538,7 +538,7 @@ export const EnhancedBarChart = memo(function EnhancedBarChart({
                       position: layout === 'horizontal' ? 'top' : 'right',
                       fontSize: 10,
                       fill: 'var(--muted-foreground)',
-                      formatter: valueFormatter,
+                      formatter: (value: unknown) => valueFormatter(value as number),
                     }
                   : false
               }

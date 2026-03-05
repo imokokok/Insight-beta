@@ -19,6 +19,13 @@ import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import { buildApiUrl } from '@/shared/utils';
+import {
+  formatDurationMinutes,
+  formatTimeAgoShort,
+  formatFullTime,
+  formatFullDate,
+} from '@/shared/utils/format';
+import { formatDeviationSmall } from '@/shared/utils/format';
 import type { PriceDeviationTimeline, PriceDeviationLevel } from '@/types/oracle/comparison';
 
 interface PriceDeviationTimelineProps {
@@ -73,52 +80,6 @@ const levelConfig: Record<
     levelLabel: 'Critical',
   },
 };
-
-function formatDeviation(value: number): string {
-  const percentValue = Math.abs(value) * 100;
-  if (percentValue < 0.01) return '<0.01%';
-  return `${percentValue.toFixed(2)}%`;
-}
-
-function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes.toFixed(0)}m`;
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-}
-
-function formatTime(timestamp: string): string {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffMins < 1440) {
-    const hours = Math.floor(diffMins / 60);
-    return `${hours}h ago`;
-  }
-  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
-}
-
-function formatFullTime(timestamp: string): string {
-  const date = new Date(timestamp);
-  return date.toLocaleTimeString('zh-CN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-}
-
-function formatFullDate(timestamp: string): string {
-  const date = new Date(timestamp);
-  return date.toLocaleDateString('zh-CN', {
-    month: 'short',
-    day: 'numeric',
-    year: '2-digit',
-  });
-}
 
 export function PriceDeviationTimeline({
   data: propData,
@@ -323,7 +284,7 @@ export function PriceDeviationTimeline({
                             className="text-xs font-semibold"
                           >
                             <Icon className="mr-1 h-3 w-3" />
-                            {formatDeviation(event.deviationPercent)}
+                            {formatDeviationSmall(event.deviationPercent)}
                           </Badge>
                         </div>
                         <div className="flex flex-col items-end gap-1">
@@ -350,7 +311,8 @@ export function PriceDeviationTimeline({
                               {formatFullTime(event.timestamp)}
                             </div>
                             <span className="text-[11px] text-muted-foreground/70">
-                              {formatFullDate(event.timestamp)} · {formatTime(event.timestamp)}
+                              {formatFullDate(event.timestamp)} ·{' '}
+                              {formatTimeAgoShort(event.timestamp)}
                             </span>
                           </div>
                         </div>
@@ -376,7 +338,9 @@ export function PriceDeviationTimeline({
                             <Clock className="h-3 w-3" />
                             {t('comparison.deviation.duration')}
                           </p>
-                          <p className="text-sm font-semibold">{formatDuration(event.duration)}</p>
+                          <p className="text-sm font-semibold">
+                            {formatDurationMinutes(event.duration)}
+                          </p>
                         </div>
                         <div className="rounded-lg border border-border/50 bg-background/50 p-3">
                           <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">

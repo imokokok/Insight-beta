@@ -33,18 +33,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
+import { formatCost } from '@/shared/utils/format';
 import type { CostComparison } from '@/types/oracle';
 
 interface CostEfficiencyProps {
   data?: CostComparison;
   isLoading?: boolean;
-}
-
-function formatCost(value: number, t: (key: string) => string): string {
-  if (value === 0) return t('comparison.cost.free');
-  if (value < 1) return `$${(value * 100).toFixed(0)}¢`;
-  if (value < 1000) return `$${value.toFixed(0)}`;
-  return `$${(value / 1000).toFixed(1)}k`;
 }
 
 function getCostLevelColor(score: number): string {
@@ -318,7 +312,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
                     formatter={(value: number | undefined, name: string | undefined) => {
                       if (value === undefined || name === undefined) return ['', name || ''];
                       if (name === 'roi') return [`${value.toFixed(1)}x`, 'ROI'];
-                      return [formatCost(value, t), name];
+                      return [formatCost(value, t('comparison.cost.free')), name];
                     }}
                   />
                   <Bar
@@ -349,13 +343,13 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t('comparison.cost.perFeed')}:</span>
-                      <span>{formatCost(protocol.costPerFeed, t)}</span>
+                      <span>{formatCost(protocol.costPerFeed, t('comparison.cost.free'))}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">
                         {t('comparison.cost.perUpdate')}:
                       </span>
-                      <span>{formatCost(protocol.costPerUpdate, t)}</span>
+                      <span>{formatCost(protocol.costPerUpdate, t('comparison.cost.free'))}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ROI:</span>
@@ -397,7 +391,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
                         <span className="text-muted-foreground">
                           {t('comparison.cost.estimatedMonthlyCost')}:{' '}
                           <span className="font-medium text-foreground">
-                            {formatCost(rec.estimatedMonthlyCost, t)}
+                            {formatCost(rec.estimatedMonthlyCost, t('comparison.cost.free'))}
                           </span>
                         </span>
                         <span className="text-muted-foreground">

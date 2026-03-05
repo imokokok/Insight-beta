@@ -7,6 +7,7 @@ import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 import type { DisputeReport, Dispute } from '@/types/oracle/dispute';
+import type { TimeRangePreset } from '@/types/shared/timeRange';
 
 function generateMockDisputeReport(): DisputeReport {
   const now = new Date();
@@ -98,8 +99,6 @@ function generateMockDisputeReport(): DisputeReport {
     recentActivity: disputes.slice(0, 5),
   };
 }
-
-import type { TimeRangePreset } from '@/types/shared/timeRange';
 
 export type { TimeRangePreset };
 

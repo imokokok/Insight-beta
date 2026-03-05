@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import { buildApiUrl } from '@/shared/utils';
-import { formatLatency } from '@/shared/utils/format';
+import { formatLatency, formatDurationMinutes, formatTimeAgoShort } from '@/shared/utils/format';
 import type { LatencyAnomalyTimeline } from '@/types/oracle/comparison';
 
 interface LatencyAnomalyEventsProps {
@@ -42,28 +42,6 @@ const severityConfig = {
     icon: Activity,
   },
 };
-
-function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes.toFixed(0)}m`;
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-}
-
-function formatTime(timestamp: string): string {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffMins < 1440) {
-    const hours = Math.floor(diffMins / 60);
-    return `${hours}h ago`;
-  }
-  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
-}
 
 export function LatencyAnomalyEvents({
   data: propData,
@@ -231,7 +209,7 @@ export function LatencyAnomalyEvents({
                           <XCircle className="h-4 w-4 text-red-600" />
                         )}
                         <span className="text-xs text-muted-foreground">
-                          {formatTime(event.timestamp)}
+                          {formatTimeAgoShort(event.timestamp)}
                         </span>
                       </div>
                     </div>
@@ -255,7 +233,7 @@ export function LatencyAnomalyEvents({
                         <p className="text-xs text-muted-foreground">
                           {t('comparison.latency.duration')}
                         </p>
-                        <p className="font-medium">{formatDuration(event.duration)}</p>
+                        <p className="font-medium">{formatDurationMinutes(event.duration)}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">

@@ -10,6 +10,8 @@ import { Skeleton } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
+import { formatDurationMinutes, formatHeatmapPrice } from '@/shared/utils/format';
+import { formatDeviationSmall } from '@/shared/utils/format';
 import type { PriceHeatmapData, PriceDeviationCell, PriceDeviationLevel } from '@/types/oracle';
 
 interface PriceHeatmapProps {
@@ -64,30 +66,6 @@ const deviationConfig: Record<
     icon: <AlertTriangle className="h-4 w-4" />,
   },
 };
-
-function formatDeviation(value: number): string {
-  const percentValue = Math.abs(value) * 100;
-  if (percentValue < 0.01) return '<0.01%';
-  return `${percentValue.toFixed(2)}%`;
-}
-
-function formatHeatmapPrice(value: number): string {
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(2)}k`;
-  }
-  if (value >= 1) {
-    return `$${value.toFixed(2)}`;
-  }
-  return `$${value.toFixed(4)}`;
-}
-
-function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes.toFixed(0)}m`;
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-}
-
 export const PriceHeatmap = memo(function PriceHeatmap({
   data,
   isLoading,
@@ -316,7 +294,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                                   className={cn('text-xs font-bold sm:text-sm', config.textColor)}
                                 >
                                   {isPositive ? '+' : ''}
-                                  {formatDeviation(cell.deviationPercent)}
+                                  {formatDeviationSmall(cell.deviationPercent)}
                                 </span>
                                 <span className="opacity-70">{config.icon}</span>
                               </div>
@@ -373,7 +351,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                                 </span>
                                 <span className={cn('font-bold', config.textColor)}>
                                   {isPositive ? '+' : ''}
-                                  {formatDeviation(cell.deviationPercent)}
+                                  {formatDeviationSmall(cell.deviationPercent)}
                                 </span>
                               </div>
 
@@ -401,7 +379,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                                   {t('comparison.heatmap.tooltip.duration')}
                                 </span>
                                 <span className="font-medium">
-                                  {formatDuration(
+                                  {formatDurationMinutes(
                                     cell.duration || Math.floor(Math.random() * 30) + 5,
                                   )}
                                 </span>
