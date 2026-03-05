@@ -9,6 +9,8 @@ import {
   TrendingDown,
   CheckCircle2,
   XCircle,
+  Circle,
+  Clock3,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui';
@@ -29,31 +31,46 @@ interface PriceDeviationTimelineProps {
 
 const levelConfig: Record<
   PriceDeviationLevel,
-  { color: string; bgColor: string; borderColor: string; icon: React.ElementType }
+  {
+    color: string;
+    bgColor: string;
+    borderColor: string;
+    icon: React.ElementType;
+    ringColor: string;
+    levelLabel: string;
+  }
 > = {
   low: {
     color: 'text-success',
-    bgColor: 'bg-success/10',
-    borderColor: 'border-success/20',
+    bgColor: 'bg-success/5',
+    borderColor: 'border-success/30',
     icon: CheckCircle2,
+    ringColor: 'ring-success/20',
+    levelLabel: 'Low',
   },
   medium: {
     color: 'text-warning',
-    bgColor: 'bg-warning/10',
-    borderColor: 'border-warning/20',
+    bgColor: 'bg-warning/5',
+    borderColor: 'border-warning/30',
     icon: TrendingUp,
+    ringColor: 'ring-warning/20',
+    levelLabel: 'Medium',
   },
   high: {
-    color: 'text-warning-dark',
-    bgColor: 'bg-warning/20',
-    borderColor: 'border-warning/30',
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-500/5',
+    borderColor: 'border-orange-500/30',
     icon: TrendingDown,
+    ringColor: 'ring-orange-500/20',
+    levelLabel: 'High',
   },
   critical: {
     color: 'text-error',
-    bgColor: 'bg-error/10',
-    borderColor: 'border-error/20',
+    bgColor: 'bg-error/5',
+    borderColor: 'border-error/30',
     icon: AlertTriangle,
+    ringColor: 'ring-error/20',
+    levelLabel: 'Critical',
   },
 };
 
@@ -83,6 +100,24 @@ function formatTime(timestamp: string): string {
     return `${hours}h ago`;
   }
   return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+}
+
+function formatFullTime(timestamp: string): string {
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}
+
+function formatFullDate(timestamp: string): string {
+  const date = new Date(timestamp);
+  return date.toLocaleDateString('zh-CN', {
+    month: 'short',
+    day: 'numeric',
+    year: '2-digit',
+  });
 }
 
 export function PriceDeviationTimeline({
@@ -143,9 +178,15 @@ export function PriceDeviationTimeline({
           <Skeleton className="h-4 w-72" />
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-24" />
+              <div key={i} className="flex gap-4">
+                <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-16 w-full" />
+                </div>
+              </div>
             ))}
           </div>
         </CardContent>
@@ -170,8 +211,8 @@ export function PriceDeviationTimeline({
 
   return (
     <Card className="w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
+      <CardHeader className="pb-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-lg font-semibold">
               {t('comparison.deviation.timelineTitle')}
@@ -181,7 +222,7 @@ export function PriceDeviationTimeline({
             </CardDescription>
           </div>
           {eventStats && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline" className="text-xs">
                 {eventStats.total} {t('comparison.deviation.events')}
               </Badge>
@@ -190,106 +231,173 @@ export function PriceDeviationTimeline({
                   {eventStats.critical} {t('comparison.deviation.critical')}
                 </Badge>
               )}
+              {eventStats.resolved > 0 && (
+                <Badge
+                  variant="outline"
+                  className="border-success/30 bg-success/5 text-xs text-success"
+                >
+                  {eventStats.resolved} Resolved
+                </Badge>
+              )}
             </div>
           )}
         </div>
       </CardHeader>
       <CardContent>
         <div className="relative">
-          <div className="absolute bottom-0 left-4 top-0 w-0.5 bg-border" />
+          <div className="absolute bottom-2 left-5 top-2 w-0.5 bg-gradient-to-b from-border via-muted-foreground/30 to-border" />
 
-          <div className="space-y-4">
-            {displayEvents.map((event) => {
+          <div className="space-y-8">
+            {displayEvents.map((event, index) => {
               const config = levelConfig[event.deviationLevel];
               const Icon = config.icon;
+              const isFirst = index === 0;
+              const isLast = index === displayEvents.length - 1;
 
               return (
-                <div key={event.id} className="relative pl-10">
-                  <div
-                    className={cn(
-                      'absolute left-2.5 top-1 flex h-4 w-4 items-center justify-center rounded-full',
-                      config.bgColor,
-                      config.borderColor,
-                      'border-2',
+                <div key={event.id} className="relative flex gap-4 sm:gap-6">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={cn(
+                        'relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300',
+                        config.bgColor,
+                        config.borderColor,
+                        config.ringColor,
+                        'ring-4',
+                        isFirst && 'scale-110',
+                      )}
+                    >
+                      <Icon className={cn('h-5 w-5', config.color)} />
+                    </div>
+                    {!isLast && (
+                      <div
+                        className={cn(
+                          'w-0.5 flex-1',
+                          event.deviationLevel === 'critical'
+                            ? 'bg-error/20'
+                            : event.deviationLevel === 'high'
+                              ? 'bg-orange-500/20'
+                              : event.deviationLevel === 'medium'
+                                ? 'bg-warning/20'
+                                : 'bg-success/20',
+                        )}
+                      />
                     )}
-                  >
-                    <div className={cn('h-2 w-2 rounded-full', config.color)} />
                   </div>
 
-                  <div
-                    className={cn(
-                      'rounded-lg border p-4 transition-all hover:shadow-md',
-                      config.bgColor,
-                      config.borderColor,
-                    )}
-                  >
-                    <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {event.protocol}
-                        </Badge>
-                        <Badge variant="secondary" className="text-xs">
-                          {event.symbol}
-                        </Badge>
-                        <Badge
-                          variant={
-                            event.deviationLevel === 'critical'
-                              ? 'destructive'
-                              : event.deviationLevel === 'high'
-                                ? 'default'
-                                : 'secondary'
-                          }
-                          className="text-xs"
-                        >
-                          <Icon className="mr-1 h-3 w-3" />
-                          {formatDeviation(event.deviationPercent)}
-                        </Badge>
+                  <div className="min-w-0 flex-1">
+                    <div
+                      className={cn(
+                        'group rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-5',
+                        config.bgColor,
+                        config.borderColor,
+                        'backdrop-blur-sm',
+                      )}
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'text-xs font-medium capitalize',
+                              config.borderColor,
+                              config.color,
+                            )}
+                          >
+                            {config.levelLabel}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {event.protocol}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {event.symbol}
+                          </Badge>
+                          <Badge
+                            variant={
+                              event.deviationLevel === 'critical'
+                                ? 'destructive'
+                                : event.deviationLevel === 'high'
+                                  ? 'default'
+                                  : 'secondary'
+                            }
+                            className="text-xs font-semibold"
+                          >
+                            <Icon className="mr-1 h-3 w-3" />
+                            {formatDeviation(event.deviationPercent)}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <div className="flex items-center gap-2">
+                            {event.resolved ? (
+                              <div className="flex items-center gap-1 text-success">
+                                <CheckCircle2 className="h-4 w-4" />
+                                <span className="hidden text-xs font-medium sm:inline">
+                                  Resolved
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="flex animate-pulse items-center gap-1 text-error">
+                                <XCircle className="h-4 w-4" />
+                                <span className="hidden text-xs font-medium sm:inline">
+                                  Ongoing
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Clock3 className="h-3 w-3" />
+                              {formatFullTime(event.timestamp)}
+                            </div>
+                            <span className="text-[11px] text-muted-foreground/70">
+                              {formatFullDate(event.timestamp)} · {formatTime(event.timestamp)}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {event.resolved ? (
-                          <CheckCircle2 className="h-4 w-4 text-success" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-error" />
-                        )}
-                        <span className="text-xs text-muted-foreground">
-                          {formatTime(event.timestamp)}
-                        </span>
-                      </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          {t('comparison.deviation.startPrice')}
-                        </p>
-                        <p className="font-medium">${event.startPrice.toFixed(4)}</p>
+                      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+                        <div className="rounded-lg border border-border/50 bg-background/50 p-3">
+                          <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <TrendingUp className="h-3 w-3" />
+                            {t('comparison.deviation.startPrice')}
+                          </p>
+                          <p className="text-sm font-semibold">${event.startPrice.toFixed(4)}</p>
+                        </div>
+                        <div className="rounded-lg border border-border/50 bg-background/50 p-3">
+                          <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <TrendingDown className="h-3 w-3" />
+                            {t('comparison.deviation.endPrice')}
+                          </p>
+                          <p className="text-sm font-semibold">${event.endPrice.toFixed(4)}</p>
+                        </div>
+                        <div className="rounded-lg border border-border/50 bg-background/50 p-3">
+                          <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            {t('comparison.deviation.duration')}
+                          </p>
+                          <p className="text-sm font-semibold">{formatDuration(event.duration)}</p>
+                        </div>
+                        <div className="rounded-lg border border-border/50 bg-background/50 p-3">
+                          <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <Circle className="h-3 w-3" />
+                            {t('comparison.referencePrice')}
+                          </p>
+                          <p className="text-sm font-semibold">
+                            ${event.referencePrice.toFixed(4)}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          {t('comparison.deviation.endPrice')}
-                        </p>
-                        <p className="font-medium">${event.endPrice.toFixed(4)}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          {t('comparison.deviation.duration')}
-                        </p>
-                        <p className="font-medium">{formatDuration(event.duration)}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          {t('comparison.referencePrice')}
-                        </p>
-                        <p className="font-medium">${event.referencePrice.toFixed(4)}</p>
-                      </div>
-                    </div>
 
-                    {!event.resolved && (
-                      <div className="mt-2 flex items-center gap-2 text-xs text-error">
-                        <AlertTriangle className="h-3 w-3" />
-                        <span>{t('comparison.deviation.ongoing')}</span>
-                      </div>
-                    )}
+                      {!event.resolved && (
+                        <div className="mt-4 flex items-center gap-2 rounded-lg border border-error/20 bg-error/5 p-3 text-error">
+                          <AlertTriangle className="h-4 w-4 animate-pulse" />
+                          <span className="text-sm font-medium">
+                            {t('comparison.deviation.ongoing')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -298,7 +406,8 @@ export function PriceDeviationTimeline({
         </div>
 
         {data.events.length > maxEvents && (
-          <div className="mt-4 text-center text-sm text-muted-foreground">
+          <div className="mt-6 flex items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-center text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
             {t('comparison.deviation.showingEvents', {
               count: maxEvents,
               total: data.events.length,

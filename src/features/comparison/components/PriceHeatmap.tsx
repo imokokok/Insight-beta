@@ -2,7 +2,7 @@
 
 import { memo, useMemo, useState } from 'react';
 
-import { ArrowUpRight, Minus, AlertTriangle, Info } from 'lucide-react';
+import { ArrowUpRight, Minus, AlertTriangle, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
@@ -21,27 +21,47 @@ interface PriceHeatmapProps {
 
 const deviationConfig: Record<
   PriceDeviationLevel,
-  { color: string; labelKey: string; icon: React.ReactNode }
+  {
+    bgColor: string;
+    hoverBgColor: string;
+    borderColor: string;
+    textColor: string;
+    labelKey: string;
+    icon: React.ReactNode;
+    pattern?: string;
+  }
 > = {
   low: {
-    color: 'bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/30',
+    bgColor: 'bg-emerald-100',
+    hoverBgColor: 'bg-emerald-200',
+    borderColor: 'border-emerald-300',
+    textColor: 'text-emerald-800',
     labelKey: 'comparison.status.normal',
     icon: <Minus className="h-3 w-3" />,
   },
   medium: {
-    color: 'bg-yellow-500/20 hover:bg-yellow-500/30 border-yellow-500/30',
+    bgColor: 'bg-blue-100',
+    hoverBgColor: 'bg-blue-200',
+    borderColor: 'border-blue-300',
+    textColor: 'text-blue-800',
     labelKey: 'comparison.status.slightDeviation',
     icon: <ArrowUpRight className="h-3 w-3" />,
   },
   high: {
-    color: 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/30',
+    bgColor: 'bg-orange-100',
+    hoverBgColor: 'bg-orange-200',
+    borderColor: 'border-orange-300',
+    textColor: 'text-orange-800',
     labelKey: 'comparison.status.significantDeviation',
-    icon: <ArrowUpRight className="h-3 w-3" />,
+    icon: <ArrowUpRight className="h-4 w-4" />,
   },
   critical: {
-    color: 'bg-red-500/20 hover:bg-red-500/30 border-red-500/30',
+    bgColor: 'bg-red-100',
+    hoverBgColor: 'bg-red-200',
+    borderColor: 'border-red-400',
+    textColor: 'text-red-800',
     labelKey: 'comparison.status.criticalDeviation',
-    icon: <AlertTriangle className="h-3 w-3" />,
+    icon: <AlertTriangle className="h-4 w-4" />,
   },
 };
 
@@ -76,10 +96,19 @@ export const PriceHeatmap = memo(function PriceHeatmap({
 }: PriceHeatmapProps) {
   const { t } = useI18n();
   const [hoveredCell, setHoveredCell] = useState<string | null>(null);
+  const [selectedCell, setSelectedCell] = useState<string | null>(null);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
 
   const filteredData = useMemo(() => {
     if (!data) return null;
-    if (!selectedProtocols || selectedProtocols.length === 0) return data;
+    if (!selectedProtocols || selectedProtocols.length === 0) {
+      return {
+        ...data,
+        protocols: data.protocols || [],
+        rows: data.rows || [],
+        criticalDeviations: data.criticalDeviations || 0,
+      };
+    }
 
     return {
       ...data,
@@ -88,6 +117,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
         ...row,
         cells: (row.cells || []).filter((cell) => selectedProtocols.includes(cell.protocol)),
       })),
+      criticalDeviations: data.criticalDeviations || 0,
     };
   }, [data, selectedProtocols]);
 
@@ -114,7 +144,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
     );
   }
 
-  if (!filteredData || filteredData.rows.length === 0) {
+  if (!filteredData || !filteredData.rows || filteredData.rows.length === 0) {
     return (
       <Card className="w-full">
         <CardHeader>
@@ -129,7 +159,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
     );
   }
 
-  const { rows, protocols, lastUpdated, criticalDeviations } = filteredData;
+  const { rows, protocols = [], lastUpdated, criticalDeviations = 0 } = filteredData;
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -160,42 +190,62 @@ export const PriceHeatmap = memo(function PriceHeatmap({
         <CardContent className="px-3 sm:px-6">
           {/* Legend */}
           <div className="mb-3 flex flex-wrap items-center gap-2 text-xs sm:mb-4 sm:gap-4">
-            <span className="hidden text-muted-foreground sm:inline">
-              {t('comparison.heatmap.deviationLevel')}
-            </span>
-            {(Object.keys(deviationConfig) as PriceDeviationLevel[]).map((level) => (
-              <div key={level} className="flex items-center gap-1 sm:gap-1.5">
-                <div
-                  className={cn(
-                    'h-2.5 w-2.5 rounded border sm:h-3 sm:w-3',
-                    deviationConfig[level].color,
-                  )}
-                />
-                <span className="text-xs text-muted-foreground">
-                  {t(deviationConfig[level].labelKey)}
-                </span>
-              </div>
-            ))}
+            <div className="mb-1 flex items-center gap-1 sm:mb-0 sm:gap-2">
+              <Info className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="font-medium text-muted-foreground">
+                {t('comparison.heatmap.deviationLevel')}:
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              {(Object.keys(deviationConfig) as PriceDeviationLevel[]).map((level) => (
+                <div key={level} className="flex items-center gap-1.5">
+                  <div
+                    className={cn(
+                      'flex h-4 w-4 items-center justify-center rounded border-2',
+                      deviationConfig[level].bgColor,
+                      deviationConfig[level].borderColor,
+                    )}
+                  >
+                    {deviationConfig[level].icon}
+                  </div>
+                  <span className={cn('text-xs font-medium', deviationConfig[level].textColor)}>
+                    {t(deviationConfig[level].labelKey)}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
+          {/* Scroll Indicator - Mobile Only */}
+          {showScrollIndicator && protocols.length > 3 && (
+            <div className="mb-2 flex animate-pulse items-center justify-center gap-2 text-xs text-muted-foreground sm:hidden">
+              <ChevronLeft className="h-3 w-3" />
+              <span>Scroll horizontally</span>
+              <ChevronRight className="h-3 w-3" />
+            </div>
+          )}
+
           {/* Heatmap Grid */}
-          <div className="-mx-3 overflow-x-auto px-3 sm:-mx-6 sm:px-6">
+          <div
+            className="scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent -mx-3 overflow-x-auto px-3 sm:-mx-6 sm:px-6"
+            onScroll={() => setShowScrollIndicator(false)}
+          >
             <div className="inline-block min-w-full">
               {/* Header Row */}
               <div className="flex">
-                <div className="w-20 flex-shrink-0 border-b p-1.5 text-xs font-medium text-muted-foreground sm:w-28 sm:p-2">
+                <div className="sticky left-0 z-10 w-20 flex-shrink-0 border-b border-r bg-muted/50 p-1.5 text-xs font-medium text-muted-foreground sm:w-28 sm:p-2">
                   {t('comparison.heatmap.assetPair')}
                 </div>
                 {protocols.map((protocol) => (
                   <div
                     key={protocol}
-                    className="w-16 flex-shrink-0 border-b p-1.5 text-center text-xs font-medium capitalize sm:w-24 sm:p-2"
+                    className="w-16 flex-shrink-0 border-b border-r bg-muted/30 p-1.5 text-center text-xs font-medium capitalize sm:w-24 sm:p-2"
                   >
                     <span className="hidden sm:inline">{protocol}</span>
                     <span className="sm:hidden">{protocol.slice(0, 4)}</span>
                   </div>
                 ))}
-                <div className="w-16 flex-shrink-0 border-b p-1.5 text-center text-xs font-medium text-muted-foreground sm:w-24 sm:p-2">
+                <div className="w-16 flex-shrink-0 border-b bg-muted/50 p-1.5 text-center text-xs font-medium text-muted-foreground sm:w-24 sm:p-2">
                   <span className="hidden sm:inline">{t('comparison.heatmap.maxDeviation')}</span>
                   <span className="sm:hidden">Max</span>
                 </div>
@@ -204,8 +254,8 @@ export const PriceHeatmap = memo(function PriceHeatmap({
               {/* Data Rows */}
               {rows.map((row) => (
                 <div key={row.symbol} className="group flex">
-                  {/* Symbol Cell */}
-                  <div className="w-20 flex-shrink-0 border-b border-r bg-muted/30 p-1.5 sm:w-28 sm:p-2">
+                  {/* Symbol Cell - Sticky on Mobile */}
+                  <div className="sticky left-0 z-10 w-20 flex-shrink-0 border-b border-r bg-muted/50 p-1.5 sm:w-28 sm:p-2">
                     <div className="text-xs font-medium sm:text-sm">{row.symbol}</div>
                     <div className="hidden text-xs text-muted-foreground sm:block">
                       {row.consensusPrice && formatHeatmapPrice(row.consensusPrice)}
@@ -214,9 +264,10 @@ export const PriceHeatmap = memo(function PriceHeatmap({
 
                   {/* Protocol Cells */}
                   {protocols.map((protocol) => {
-                    const cell = row.cells.find((c) => c.protocol === protocol);
+                    const cell = (row.cells || []).find((c) => c.protocol === protocol);
                     const cellKey = `${row.symbol}-${protocol}`;
                     const isHovered = hoveredCell === cellKey;
+                    const isSelected = selectedCell === cellKey;
 
                     if (!cell) {
                       return (
@@ -235,105 +286,136 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                         <TooltipTrigger asChild>
                           <button
                             className={cn(
-                              'w-16 flex-shrink-0 border-b border-r p-0.5 transition-all duration-200 sm:w-24 sm:p-1',
-                              config.color,
-                              isHovered && 'ring-2 ring-inset ring-primary',
-                              'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary',
+                              'w-16 flex-shrink-0 border-2 border-b border-r p-0.5 transition-all duration-200 sm:w-24 sm:p-1',
+                              config.bgColor,
+                              config.borderColor,
+                              isHovered && [
+                                config.hoverBgColor,
+                                'ring-2 ring-primary ring-offset-1',
+                                'scale-[1.02]',
+                                'z-10',
+                              ],
+                              isSelected && [
+                                config.hoverBgColor,
+                                'ring-2 ring-primary ring-offset-1',
+                                'ring-offset-background',
+                              ],
+                              'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1',
+                              'cursor-pointer',
                             )}
                             onMouseEnter={() => setHoveredCell(cellKey)}
                             onMouseLeave={() => setHoveredCell(null)}
-                            onClick={() => onCellClick?.(cell)}
+                            onClick={() => {
+                              setSelectedCell(isSelected ? null : cellKey);
+                              onCellClick?.(cell);
+                            }}
                           >
                             <div className="flex h-8 flex-col items-center justify-center sm:h-12">
                               <div className="flex items-center gap-0.5 sm:gap-1">
                                 <span
-                                  className={cn(
-                                    'text-xs font-semibold sm:text-sm',
-                                    isPositive ? 'text-emerald-600' : 'text-red-600',
-                                  )}
+                                  className={cn('text-xs font-bold sm:text-sm', config.textColor)}
                                 >
                                   {isPositive ? '+' : ''}
                                   {formatDeviation(cell.deviationPercent)}
                                 </span>
-                                <span className="hidden sm:inline">{config.icon}</span>
+                                <span className="opacity-70">{config.icon}</span>
                               </div>
-                              <span className="hidden text-xs text-muted-foreground sm:block">
+                              <span
+                                className={cn(
+                                  'hidden text-xs sm:block',
+                                  config.textColor,
+                                  'opacity-70',
+                                )}
+                              >
                                 {formatHeatmapPrice(cell.price)}
                               </span>
                             </div>
                           </button>
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs p-3">
-                          <div className="space-y-2">
-                            <div className="font-semibold">
-                              {row.symbol} - {protocol}
-                            </div>
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                              <span className="text-muted-foreground">
-                                {t('comparison.heatmap.tooltip.currentPrice')}:
-                              </span>
-                              <span className="font-medium">{formatHeatmapPrice(cell.price)}</span>
-
-                              <span className="text-muted-foreground">
-                                {t('comparison.heatmap.tooltip.referencePrice')}:
-                              </span>
-                              <span className="font-medium">
-                                {formatHeatmapPrice(cell.referencePrice)}
-                              </span>
-
-                              <span className="text-muted-foreground">
-                                {t('comparison.heatmap.tooltip.deviationValue')}:
-                              </span>
-                              <span
+                        <TooltipContent side="top" className="z-50 max-w-xs p-4">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between border-b pb-2">
+                              <div className="text-base font-bold">
+                                {row.symbol} - {protocol}
+                              </div>
+                              <Badge
                                 className={cn(
                                   'font-medium',
-                                  isPositive ? 'text-emerald-600' : 'text-red-600',
+                                  config.bgColor,
+                                  config.textColor,
+                                  config.borderColor,
+                                  'border',
                                 )}
                               >
-                                {isPositive ? '+' : ''}
-                                {cell.deviation.toFixed(4)}
-                              </span>
-
-                              <span className="text-muted-foreground">
-                                {t('comparison.heatmap.tooltip.deviationPercent')}:
-                              </span>
-                              <span
-                                className={cn(
-                                  'font-medium',
-                                  isPositive ? 'text-emerald-600' : 'text-red-600',
-                                )}
-                              >
-                                {isPositive ? '+' : ''}
-                                {formatDeviation(cell.deviationPercent)}
-                              </span>
-
-                              <span className="text-muted-foreground">
-                                {t('comparison.heatmap.tooltip.updateTime')}:
-                              </span>
-                              <span className="font-medium">
-                                {new Date(cell.timestamp).toLocaleTimeString()}
-                              </span>
-
-                              <span className="text-muted-foreground">
-                                {t('comparison.heatmap.tooltip.duration')}:
-                              </span>
-                              <span className="font-medium">
-                                {formatDuration(
-                                  cell.duration || Math.floor(Math.random() * 30) + 5,
-                                )}
-                              </span>
-
-                              {cell.isStale && (
-                                <>
-                                  <span className="text-muted-foreground">
-                                    {t('comparison.heatmap.tooltip.status')}:
-                                  </span>
-                                  <Badge variant="secondary" className="text-xs">
-                                    {t('comparison.status.stale')}
-                                  </Badge>
-                                </>
-                              )}
+                                {t(config.labelKey)}
+                              </Badge>
                             </div>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                              <div className="space-y-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {t('comparison.heatmap.tooltip.currentPrice')}
+                                </span>
+                                <span className="font-bold">{formatHeatmapPrice(cell.price)}</span>
+                              </div>
+
+                              <div className="space-y-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {t('comparison.heatmap.tooltip.referencePrice')}
+                                </span>
+                                <span className="font-bold">
+                                  {formatHeatmapPrice(cell.referencePrice)}
+                                </span>
+                              </div>
+
+                              <div className="space-y-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {t('comparison.heatmap.tooltip.deviationPercent')}
+                                </span>
+                                <span className={cn('font-bold', config.textColor)}>
+                                  {isPositive ? '+' : ''}
+                                  {formatDeviation(cell.deviationPercent)}
+                                </span>
+                              </div>
+
+                              <div className="space-y-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {t('comparison.heatmap.tooltip.deviationValue')}
+                                </span>
+                                <span className={cn('font-bold', config.textColor)}>
+                                  {isPositive ? '+' : ''}
+                                  {cell.deviation.toFixed(4)}
+                                </span>
+                              </div>
+
+                              <div className="space-y-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {t('comparison.heatmap.tooltip.updateTime')}
+                                </span>
+                                <span className="font-medium">
+                                  {new Date(cell.timestamp).toLocaleTimeString()}
+                                </span>
+                              </div>
+
+                              <div className="space-y-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {t('comparison.heatmap.tooltip.duration')}
+                                </span>
+                                <span className="font-medium">
+                                  {formatDuration(
+                                    cell.duration || Math.floor(Math.random() * 30) + 5,
+                                  )}
+                                </span>
+                              </div>
+                            </div>
+
+                            {cell.isStale && (
+                              <div className="border-t pt-2">
+                                <Badge variant="secondary" className="w-full justify-center">
+                                  <AlertTriangle className="mr-1 h-3 w-3" />
+                                  {t('comparison.status.stale')}
+                                </Badge>
+                              </div>
+                            )}
                           </div>
                         </TooltipContent>
                       </Tooltip>
@@ -341,7 +423,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                   })}
 
                   {/* Max Deviation Cell */}
-                  <div className="flex w-16 flex-shrink-0 items-center justify-center border-b p-1.5 sm:w-24 sm:p-2">
+                  <div className="flex w-16 flex-shrink-0 items-center justify-center border-b bg-muted/30 p-1.5 sm:w-24 sm:p-2">
                     <Badge
                       variant={
                         row.maxDeviation > 0.01
@@ -350,7 +432,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                             ? 'default'
                             : 'secondary'
                       }
-                      className="text-xs"
+                      className="text-xs font-bold"
                     >
                       ±{(row.maxDeviation * 100).toFixed(2)}%
                     </Badge>
@@ -363,7 +445,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
           {/* Summary Footer */}
           <div className="mt-3 flex flex-col gap-2 border-t pt-3 text-xs text-muted-foreground sm:mt-4 sm:flex-row sm:items-center sm:justify-between sm:pt-4 sm:text-sm">
             <div className="flex items-center gap-2 sm:gap-4">
-              <span>{filteredData.totalPairs} pairs</span>
+              <span>{filteredData.totalPairs || 0} pairs</span>
               <span>{protocols.length} protocols</span>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2">

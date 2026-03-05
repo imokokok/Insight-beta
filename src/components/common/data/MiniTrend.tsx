@@ -24,9 +24,9 @@ export function MiniTrend({
   }
 
   const colorClasses = {
-    success: 'stroke-success',
-    error: 'stroke-error',
-    neutral: 'stroke-muted-foreground',
+    success: { stroke: 'stroke-success', fill: 'fill-success/15' },
+    error: { stroke: 'stroke-error', fill: 'fill-error/15' },
+    neutral: { stroke: 'stroke-muted-foreground', fill: 'fill-muted-foreground/10' },
   };
 
   if (mode === 'arrow') {
@@ -52,7 +52,7 @@ export function MiniTrend({
             y1="10"
             x2="40"
             y2="10"
-            className={cn('stroke-muted-foreground', 'stroke-2')}
+            className={cn('stroke-muted-foreground', 'stroke-2.5')}
             strokeLinecap="round"
           />
         </svg>
@@ -66,7 +66,7 @@ export function MiniTrend({
       <svg width={width} height={height} viewBox="0 0 48 20" className={cn('fill-none', className)}>
         <path
           d={path}
-          className={cn(arrowColor, 'stroke-2')}
+          className={cn(arrowColor, 'stroke-2.5')}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -86,20 +86,33 @@ export function MiniTrend({
     })
     .join(' ');
 
+  const areaPoints = `${points} ${width - 2},${height - 2} 2,${height - 2}`;
+
   return (
-    <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
-      className={cn('fill-none', className)}
-    >
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className={cn(className)}>
+      <polygon points={areaPoints} className={cn(colorClasses[color].fill)} />
       <polyline
         points={points}
-        className={cn(colorClasses[color], 'stroke-1.5')}
+        className={cn(colorClasses[color].stroke, 'stroke-2.5')}
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+      {data.map((value, index) => {
+        if (index !== 0 && index !== data.length - 1) return null;
+        const x = (index / (data.length - 1)) * (width - 4) + 2;
+        const y = height - 2 - ((value - min) / range) * (height - 4);
+        return (
+          <circle
+            key={index}
+            cx={x}
+            cy={y}
+            r={2}
+            className={cn(colorClasses[color].stroke, 'fill-background')}
+            strokeWidth={2}
+          />
+        );
+      })}
     </svg>
   );
 }

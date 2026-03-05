@@ -732,47 +732,73 @@ export default function OverviewPage() {
               </ContentSection>
 
               <ContentSection>
-                <div className="grid gap-4 lg:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                   {state.protocols.map((protocol) => (
                     <a
                       key={protocol.name}
                       href={protocol.href}
-                      className="rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/50"
+                      className="group rounded-xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-md"
                     >
-                      <div className="mb-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className={cn('rounded-md p-2', protocol.color)}>
+                      <div className="mb-4 flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={cn(
+                              'rounded-xl p-3 transition-transform group-hover:scale-110',
+                              protocol.color,
+                              'bg-opacity-10',
+                            )}
+                          >
                             {protocol.icon}
                           </div>
-                          <span className="font-medium">{protocol.name}</span>
+                          <div>
+                            <h3 className="text-base font-semibold tracking-tight">
+                              {protocol.name}
+                            </h3>
+                            <div className="mt-1 flex items-center gap-2">
+                              <FreshnessBadge lastUpdate={protocol.lastUpdate} />
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  'border-0 px-2 py-0.5 text-xs font-medium',
+                                  getStatusColor(protocol.status),
+                                )}
+                              >
+                                {getStatusLabel(protocol.status)}
+                              </Badge>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <FreshnessBadge lastUpdate={protocol.lastUpdate} />
-                          {protocol.healthScore && <HealthScoreBadge protocol={protocol} t={t} />}
-                          <Badge
-                            variant="outline"
-                            className={cn('border-0', getStatusColor(protocol.status))}
-                          >
-                            {getStatusLabel(protocol.status)}
-                          </Badge>
-                        </div>
+                        {protocol.healthScore && (
+                          <div className="flex flex-col items-center gap-1">
+                            <HealthScoreBadge protocol={protocol} t={t} />
+                            <span className="text-[10px] font-medium text-muted-foreground">
+                              {t('overview.healthScore')}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <div className="text-xs text-muted-foreground">
-                            {t('overview.feeds') || 'Feeds'}
+
+                      <div className="mb-4 grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Layers className="h-3 w-3" />
+                            <span>{t('overview.feeds') || 'Feeds'}</span>
                           </div>
-                          <div className="font-mono font-medium">
-                            {protocol.activeFeeds}/{protocol.feeds}
+                          <div className="text-lg font-bold tracking-tight">
+                            <span className="text-foreground">{protocol.activeFeeds}</span>
+                            <span className="font-normal text-muted-foreground">
+                              /{protocol.feeds}
+                            </span>
                           </div>
                         </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">
-                            {t('overview.latency') || 'Latency'}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Zap className="h-3 w-3" />
+                            <span>{t('overview.latency') || 'Latency'}</span>
                           </div>
                           <div
                             className={cn(
-                              'font-mono font-medium',
+                              'text-lg font-bold tracking-tight',
                               protocol.avgLatency < 200
                                 ? 'text-success'
                                 : protocol.avgLatency < 300
@@ -780,35 +806,56 @@ export default function OverviewPage() {
                                   : 'text-error',
                             )}
                           >
-                            {protocol.avgLatency}ms
+                            {protocol.avgLatency}
+                            <span className="ml-0.5 text-sm font-normal text-muted-foreground">
+                              ms
+                            </span>
                           </div>
                         </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">TVL</div>
-                          <div className="font-mono font-medium">{protocol.tvl}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">
-                            {t('overview.volume24h') || '24h Vol'}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <TrendingUp className="h-3 w-3" />
+                            <span>TVL</span>
                           </div>
-                          <div className="font-mono font-medium">{protocol.volume24h}</div>
+                          <div className="text-lg font-bold tracking-tight">{protocol.tvl}</div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Activity className="h-3 w-3" />
+                            <span>{t('overview.volume24h') || '24h Vol'}</span>
+                          </div>
+                          <div className="text-lg font-bold tracking-tight">
+                            {protocol.volume24h}
+                          </div>
                         </div>
                       </div>
+
                       {protocol.latencyTrend.length >= 2 && (
-                        <div className="mt-3 flex items-center justify-between">
-                          {protocol.healthScore && <HealthScoreTrend protocol={protocol} t={t} />}
-                          <MiniTrend
-                            data={protocol.latencyTrend}
-                            width={64}
-                            height={20}
-                            color={
-                              protocol.status === 'healthy'
-                                ? 'success'
-                                : protocol.status === 'warning'
-                                  ? 'neutral'
-                                  : 'error'
-                            }
-                          />
+                        <div className="border-t border-border/50 pt-3">
+                          <div className="flex items-center justify-between">
+                            {protocol.healthScore && (
+                              <div className="flex items-center gap-2">
+                                <HealthScoreTrend protocol={protocol} t={t} />
+                              </div>
+                            )}
+                            <div className="flex flex-col items-end gap-1">
+                              <span className="text-[10px] font-medium text-muted-foreground">
+                                {t('overview.latencyTrend') || 'Latency Trend'}
+                              </span>
+                              <MiniTrend
+                                data={protocol.latencyTrend}
+                                width={96}
+                                height={28}
+                                color={
+                                  protocol.status === 'healthy'
+                                    ? 'success'
+                                    : protocol.status === 'warning'
+                                      ? 'neutral'
+                                      : 'error'
+                                }
+                              />
+                            </div>
+                          </div>
                         </div>
                       )}
                     </a>

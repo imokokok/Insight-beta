@@ -23,6 +23,7 @@ export {
   Sparkline,
   StatComparison,
   CustomTooltip,
+  CustomLegend,
 
   // 设计令牌
   CHART_COLORS,

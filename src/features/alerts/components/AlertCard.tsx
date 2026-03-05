@@ -50,10 +50,11 @@ export function AlertCard({
 
   const config = getSeverityConfig(alert.severity);
   const source = sourceConfig[alert.source] || sourceConfig.price_anomaly;
-  const SourceIcon = source.icon;
 
   const deviationDisplay =
     alert.deviation !== undefined ? `${(alert.deviation * 100).toFixed(2)}%` : null;
+
+  const isEmergency = alert.severity === 'emergency' || alert.severity === 'critical';
 
   if (compact) {
     return (
@@ -61,19 +62,37 @@ export function AlertCard({
         type="button"
         onClick={onClick}
         className={cn(
-          'w-full cursor-pointer rounded-lg border p-3 text-left transition-all hover:shadow-md',
+          'w-full cursor-pointer rounded-lg p-3 text-left transition-all duration-200 hover:shadow-md',
           config.borderColor,
           isSelected && 'ring-2 ring-primary',
+          isEmergency && 'animate-pulse',
         )}
       >
         <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <Badge className={config.bgColor}>{alert.severity}</Badge>
-            <span className="truncate font-medium">{alert.title}</span>
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <Badge className={cn(config.bgColor, 'font-bold uppercase text-white')}>
+              {alert.severity}
+            </Badge>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate font-semibold">{alert.title}</span>
+              {deviationDisplay && (
+                <span className={cn('font-mono text-xs font-medium', config.color)}>
+                  {deviationDisplay}
+                </span>
+              )}
+            </div>
           </div>
-          <span className="shrink-0 text-xs text-muted-foreground">
-            {formatTime(alert.timestamp)}
-          </span>
+          <div className="shrink-0 text-right">
+            {(() => {
+              const status = statusConfig[alert.status];
+              return status ? (
+                <Badge className={cn(status.color, 'mb-1')}>{t(status.label)}</Badge>
+              ) : null;
+            })()}
+            <div className="text-xs font-medium text-muted-foreground">
+              {formatTime(alert.timestamp)}
+            </div>
+          </div>
         </div>
       </button>
     );
@@ -82,10 +101,11 @@ export function AlertCard({
   return (
     <div
       className={cn(
-        'cursor-pointer rounded-xl p-4 transition-all duration-200 hover:bg-card/50',
-        isSelected && 'bg-primary/5 ring-2 ring-primary',
-        isChecked && 'bg-primary/5 ring-2 ring-primary/50',
-        'border-b border-border/30 last:border-b-0',
+        'cursor-pointer rounded-xl p-4 transition-all duration-200 hover:shadow-md',
+        config.borderColor,
+        isSelected && 'ring-2 ring-primary',
+        isChecked && 'ring-2 ring-primary/50',
+        isEmergency && 'animate-pulse',
       )}
       onClick={onClick}
     >
@@ -101,46 +121,48 @@ export function AlertCard({
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <SourceIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <Badge className={cn(config.bgColor, 'font-bold uppercase text-white')}>
+                  {alert.severity}
+                </Badge>
                 <Badge variant="outline" className="text-xs">
                   {source.label}
                 </Badge>
-                <Badge className={config.bgColor}>{alert.severity}</Badge>
-              </div>
-              <h4 className="truncate font-semibold">{alert.title}</h4>
-              <p className="line-clamp-2 text-sm text-muted-foreground">{alert.description}</p>
-
-              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {formatTime(alert.timestamp)}
-                </div>
-                {alert.symbol && (
-                  <div className="flex items-center gap-1">
-                    <Activity className="h-3 w-3" />
-                    {alert.symbol}
-                  </div>
-                )}
                 {deviationDisplay && (
-                  <span className={cn('font-mono font-medium', config.color)}>
+                  <span className={cn('font-mono text-sm font-bold', config.color)}>
                     {deviationDisplay}
                   </span>
                 )}
               </div>
 
-              {alert.chainA && alert.chainB && (
-                <div className="text-xs">
-                  <span className="font-medium">{alert.chainA}</span>
-                  <span className="mx-1">→</span>
-                  <span className="font-medium">{alert.chainB}</span>
+              <h4 className="text-lg font-semibold leading-tight">{alert.title}</h4>
+
+              <p className="line-clamp-2 text-sm text-muted-foreground">{alert.description}</p>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span className="font-medium">{formatTime(alert.timestamp)}</span>
                 </div>
-              )}
+                {alert.symbol && (
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Activity className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{alert.symbol}</span>
+                  </div>
+                )}
+                {alert.chainA && alert.chainB && (
+                  <div className="text-sm">
+                    <span className="font-medium">{alert.chainA}</span>
+                    <span className="mx-1 text-muted-foreground">→</span>
+                    <span className="font-medium">{alert.chainB}</span>
+                  </div>
+                )}
+              </div>
 
               {alert.outlierProtocols && alert.outlierProtocols.length > 0 && (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1.5">
                   {alert.outlierProtocols.map((p) => (
                     <Badge key={p} variant="secondary" className="text-xs">
                       {p}
@@ -153,14 +175,16 @@ export function AlertCard({
             <div className="shrink-0 text-right">
               {(() => {
                 const status = statusConfig[alert.status];
-                return status ? <Badge className={status.color}>{t(status.label)}</Badge> : null;
+                return status ? (
+                  <Badge className={cn(status.color, 'font-medium')}>{t(status.label)}</Badge>
+                ) : null;
               })()}
             </div>
           </div>
 
           {alert.reason && (
-            <div className="mt-3 rounded-lg bg-muted p-2">
-              <p className="text-xs text-muted-foreground">{alert.reason}</p>
+            <div className="mt-3 rounded-lg border border-border/30 bg-muted/50 p-3">
+              <p className="text-sm text-muted-foreground">{alert.reason}</p>
             </div>
           )}
         </div>

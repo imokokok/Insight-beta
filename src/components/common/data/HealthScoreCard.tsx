@@ -35,62 +35,79 @@ export const HealthScoreBadge: React.FC<ProtocolHealthCardProps> = ({ protocol, 
 
   const { totalScore, dimensions, rating, status } = protocol.healthScore;
 
+  const bgColor = totalScore >= 80 ? 'bg-success' : totalScore >= 60 ? 'bg-warning' : 'bg-error';
+
+  const textColor =
+    totalScore >= 80 ? 'text-success' : totalScore >= 60 ? 'text-warning' : 'text-error';
+
+  const ringColor =
+    totalScore >= 80 ? 'ring-success/20' : totalScore >= 60 ? 'ring-warning/20' : 'ring-error/20';
+
   return (
     <Tooltip delayDuration={0}>
       <TooltipTrigger asChild>
         <div
           className={cn(
-            'flex h-8 w-8 cursor-help items-center justify-center rounded-full text-sm font-bold transition-transform hover:scale-110',
-            totalScore >= 80
-              ? 'text-success-foreground bg-success'
-              : totalScore >= 60
-                ? 'text-warning-foreground bg-warning'
-                : 'text-error-foreground bg-error',
+            'hover:scale-115 relative flex h-10 w-10 cursor-help items-center justify-center rounded-xl text-sm font-black ring-2 transition-all',
+            bgColor,
+            'text-white',
+            ringColor,
+            'shadow-sm',
           )}
           title={t('overview.healthScore')}
         >
-          {Math.round(totalScore)}
+          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 36 36">
+            <path
+              d="M18 2.0845
+                a 15.9155 15.9155 0 0 1 0 31.831
+                a 15.9155 15.9155 0 0 1 0 -31.831"
+              fill="none"
+              stroke="rgba(255,255,255,0.2)"
+              strokeWidth="3"
+            />
+            <path
+              d="M18 2.0845
+                a 15.9155 15.9155 0 0 1 0 31.831"
+              fill="none"
+              stroke="rgba(255,255,255,0.9)"
+              strokeWidth="3"
+              strokeDasharray={`${totalScore}, 100`}
+              strokeLinecap="round"
+            />
+          </svg>
+          <span className="relative z-10">{Math.round(totalScore)}</span>
         </div>
       </TooltipTrigger>
       <TooltipContent side="top" className="w-80 p-4">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">{t('overview.healthScore')}</span>
-            <span
-              className={cn(
-                'text-sm font-bold',
-                totalScore >= 80
-                  ? 'text-success'
-                  : totalScore >= 60
-                    ? 'text-warning'
-                    : 'text-error',
-              )}
-            >
+            <span className={cn('text-lg font-black', textColor)}>
               {Math.round(totalScore)}/100
             </span>
           </div>
-          <Progress value={totalScore} className="h-2" />
-          <div className="text-xs text-muted-foreground">{rating}</div>
+          <Progress value={totalScore} className="h-2.5" />
+          <div className="text-xs font-medium text-muted-foreground">{rating}</div>
 
-          <div className="space-y-2 border-t pt-3">
+          <div className="space-y-2.5 border-t pt-3.5">
             {dimensions.map((dim) => (
-              <div key={dim.dimension} className="space-y-1">
+              <div key={dim.dimension} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">
                     {getDimensionLabel(dim.dimension, t)}
                   </span>
-                  <span className="font-medium">
+                  <span className="font-semibold">
                     {dim.score.toFixed(0)} ({(dim.weight * 100).toFixed(0)}%)
                   </span>
                 </div>
-                <Progress value={dim.score} className="h-1.5" />
+                <Progress value={dim.score} className="h-2" />
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">
                     {formatDimensionValue(dim.dimension, dim.rawValue)}
                   </span>
                   <span
                     className={cn(
-                      'rounded px-1.5 py-0.5 text-[10px]',
+                      'rounded-lg px-2 py-0.5 text-[10px] font-semibold',
                       getHealthStatusColor(status),
                     )}
                   >
