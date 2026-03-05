@@ -3,20 +3,19 @@
  *
  * This module provides comprehensive internationalization support:
  * - Type-safe translation keys
- * - Lazy loading of translation files
  * - Pluralization support
  * - Date/number/currency formatting
  * - SSR compatibility
  *
  * Quick Start:
  * ```tsx
- * import { LanguageProviderLazy, useI18n } from '@/i18n';
+ * import { LanguageProvider, useI18n } from '@/i18n';
  *
  * function App() {
  *   return (
- *     <LanguageProviderLazy initialLang="en">
+ *     <LanguageProvider initialLang="en">
  *       <YourApp />
- *     </LanguageProviderLazy>
+ *     </LanguageProvider>
  *   );
  * }
  *
@@ -80,16 +79,8 @@ export {
   getLoadedTranslations,
 } from './loader';
 
-// Eager-loaded Language Provider (used by layout.tsx)
+// Language Provider (used by layout.tsx)
 export { LanguageProvider, useI18n } from './LanguageProvider';
-
-// ⚡ Lazy-loaded Language Provider (alternative for better performance)
-// Use this for better performance - translations are loaded on demand
-export {
-  LanguageProviderLazy,
-  useI18n as useI18nLazy,
-  preloadTranslations as preloadTranslationsLazy,
-} from './LanguageProviderLazy';
 
 // Types
 export type { TranslationKey as TranslationKeyString } from './LanguageProvider';

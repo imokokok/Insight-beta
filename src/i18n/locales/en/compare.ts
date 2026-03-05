@@ -1,8 +1,9 @@
 export const compare = {
   crossChainHint: 'Want to see price differences of the same oracle across different chains?',
-  goToCrossChain: 'Go to Cross-Chain Analysis',
-  pageTitle: 'Comparison Center',
-  pageDescription: 'Unified oracle comparison analysis hub for all protocols',
+  goToCrossChain: 'Go to Cross-Chain Bridge Monitor',
+  pageTitle: 'Oracle Comparison Hub',
+  pageDescription:
+    'Unified oracle protocol comparison - Price, latency, cost, and reliability analysis',
   redirecting: 'Redirecting to price comparison...',
   filters: 'Filters',
   filterConditions: 'Filter Conditions',

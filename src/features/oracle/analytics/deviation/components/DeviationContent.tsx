@@ -183,7 +183,11 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
               <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
               {t('common.refresh')}
             </Button>
-            <ExportButton data={report} config={deviationExportConfig} disabled={loading} />
+            <ExportButton
+              data={report as any}
+              config={deviationExportConfig as any}
+              disabled={loading}
+            />
             <AutoRefreshControl
               isEnabled={autoRefreshEnabled}
               onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}

@@ -2,6 +2,8 @@
 
 import * as React from 'react';
 
+import { Slot } from '@radix-ui/react-slot';
+
 import { cn } from '@/shared/utils';
 
 const TabsContext = React.createContext<{
@@ -58,19 +60,21 @@ TabsList.displayName = 'TabsList';
 
 export interface TabsTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   value: string;
+  asChild?: boolean;
 }
 
 const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
-  ({ className, value, ...props }, ref) => {
+  ({ className, value, asChild, ...props }, ref) => {
     const context = React.useContext(TabsContext);
     if (!context) throw new Error('TabsTrigger must be used within Tabs');
 
     const isActive = context.value === value;
+    const Comp = asChild ? Slot : 'button';
 
     return (
-      <button
+      <Comp
         ref={ref}
-        type="button"
+        type={asChild ? undefined : 'button'}
         onClick={() => context.onValueChange(value)}
         className={cn(
           'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50',

@@ -41,7 +41,8 @@ export const nav = {
       'Price anomaly, cross-chain deviation, security event monitoring and alert configuration',
     priceComparison:
       'Cross-oracle price, latency, cost, and reliability multi-dimensional comparison',
-    crossChain: 'Monitor cross-chain price differences and bridge status for single oracle',
+    crossChain:
+      'Cross-chain bridge status, transaction volume, and inter-chain price deviation analysis',
     explore: 'On-chain address lookup, data discovery, and personalized recommendations',
     protocolList: 'Protocol list',
     api3Analysis: 'Airnode nodes, dAPI data sources, and signature verification tools',
@@ -50,7 +51,8 @@ export const nav = {
     pythAnalysis: 'Publisher, Hermes service, and confidence interval monitoring',
     umaAnalysis: 'Optimistic oracle dispute resolution and assertion verification',
     overview: 'Health status and performance overview of all oracle networks',
-    compare: 'Comparison Center - Unified oracle comparison analysis hub',
+    compare:
+      'Oracle Comparison Hub - Price, latency, cost, and reliability multi-dimensional analysis',
     protocols: 'Protocols - Explore and analyze oracle protocols',
   },
   labels: {

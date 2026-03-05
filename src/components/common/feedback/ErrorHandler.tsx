@@ -7,7 +7,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -233,7 +233,7 @@ export function ErrorFallback({
 
   const suggestions = error.suggestions || config.suggestions;
 
-  const handleRetry = async () => {
+  const handleRetry = useCallback(async () => {
     if (!onRetry) return;
 
     setIsRetrying(true);
@@ -250,7 +250,7 @@ export function ErrorFallback({
       type: 'info',
       duration: 2000,
     });
-  };
+  }, [onRetry, retryCount, toast]);
 
   const handleCopyError = () => {
     const errorText = `
@@ -282,7 +282,7 @@ ${error.stack ? `\nStack:\n${error.stack}` : ''}
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [retryCount, error.type]);
+  }, [retryCount, error.type, handleRetry]);
 
   return (
     <motion.div

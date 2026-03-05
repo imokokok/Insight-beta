@@ -39,7 +39,7 @@ export const nav = {
     dashboard: '全局系统概览与跨预言机价格对比',
     alertsCenter: '价格异常、跨链偏差、安全事件监控与告警配置',
     priceComparison: '跨预言机价格、延迟、成本、可靠性多维度对比分析',
-    crossChain: '监控单一预言机在不同区块链网络上的价格差异与跨链桥状态',
+    crossChain: '跨链桥状态监控、跨链交易量与链间价格差异分析',
     explore: '链上地址查询、数据发现与个性化推荐',
     protocolList: '协议列表',
     api3Analysis: 'Airnode 节点、dAPI 数据源与签名验证工具',
@@ -48,7 +48,7 @@ export const nav = {
     pythAnalysis: 'Publisher 数据发布者、Hermes 服务与置信区间监控',
     umaAnalysis: '乐观预言机争议仲裁与断言验证分析',
     overview: '所有预言机网络的健康状态与性能总览',
-    compare: '比较中心 - 整合所有预言机比较分析功能',
+    compare: '预言机对比中心 - 整合价格、延迟、成本、可靠性多维度对比分析',
     protocols: '协议 - 探索和分析预言机协议',
   },
   labels: {

@@ -1,8 +1,8 @@
 export const compare = {
   crossChainHint: '查看同一预言机在不同链上的价格差异？',
-  goToCrossChain: '前往跨链分析',
-  pageTitle: '比较中心',
-  pageDescription: '整合所有预言机比较分析功能，一站式对比分析',
+  goToCrossChain: '前往跨链桥监控',
+  pageTitle: '预言机对比中心',
+  pageDescription: '整合价格、延迟、成本、可靠性多维度对比分析，一站式对比预言机协议',
   redirecting: '正在跳转到价格比较...',
   filters: '筛选',
   filterConditions: '筛选条件',
