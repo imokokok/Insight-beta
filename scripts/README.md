@@ -50,32 +50,12 @@ Analyzes the Next.js bundle size.
 npm run analyze:bundle
 ```
 
-### extract-translation-keys.ts
-
-Extracts translation keys from source code.
-
-```bash
-npm run i18n:extract
-```
-
 ### validate-translations.ts
 
 Validates translation files for completeness.
 
 ```bash
 npm run i18n:validate
-```
-
-### chaos-test.ts
-
-Runs chaos engineering tests.
-
-```bash
-# Dry run
-npm run test:chaos:dry-run
-
-# Full chaos test
-npm run test:chaos
 ```
 
 ## Maintenance Commands
@@ -120,21 +100,9 @@ The CI pipeline includes:
 2. **Typecheck** - TypeScript compilation
 3. **Test** - Unit tests with coverage
 4. **Build** - Next.js production build
-5. **Contract Test** - Solidity smart contract tests
-6. **Performance** - Benchmark tests
-7. **API Docs** - Auto-generated API documentation
-8. **E2E Test** - Playwright browser tests
-9. **Quality Gate** - Final validation
-
-## Performance Monitoring
-
-Run performance benchmarks:
-
-```bash
-npm run bench
-```
-
-Results are uploaded to GitHub Artifacts and can be compared across commits.
+5. **API Docs** - Auto-generated API documentation
+6. **E2E Test** - Playwright browser tests
+7. **Quality Gate** - Final validation
 
 ## Database Maintenance
 
@@ -166,12 +134,6 @@ npm run db:seed
 
 ```bash
 npm run i18n:validate
-```
-
-### Extract Translation Keys
-
-```bash
-npm run i18n:extract
 ```
 
 ## Code Quality
