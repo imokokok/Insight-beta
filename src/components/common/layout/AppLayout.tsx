@@ -136,21 +136,26 @@ export function AppLayout({ children }: AppLayoutProps) {
           <main id="main-content" className="min-w-0 flex-1">
             <ErrorBoundary>
               <div className="container mx-auto max-w-7xl p-4 sm:p-6">
-                <header className={cn('sticky top-0 z-20 mb-6 flex flex-col gap-3', 'px-1 py-5')}>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
+                <header
+                  className={cn(
+                    'sticky top-0 z-20 mb-4 flex flex-col gap-2 sm:mb-6 sm:gap-3',
+                    'px-1 py-3 sm:py-5',
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       <MobileMenuButton />
                       <motion.h1
                         key={title}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="text-xl font-bold text-foreground md:text-2xl"
+                        className="text-lg font-bold text-foreground sm:text-xl md:text-2xl"
                       >
                         {title}
                       </motion.h1>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -212,7 +217,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                     </div>
                   </div>
                   {breadcrumbItems.length > 0 && (
-                    <div className="ml-10 md:ml-14">
+                    <div className="ml-8 sm:ml-10 md:ml-14">
                       <Breadcrumb items={breadcrumbItems} />
                     </div>
                   )}

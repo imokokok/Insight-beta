@@ -373,7 +373,10 @@ export default function UmaPage() {
     URL.revokeObjectURL(url);
   }, [data, lastUpdated]);
 
-  const allAssertions = data?.assertionsData?.assertions ?? [];
+  const allAssertions = useMemo(
+    () => data?.assertionsData?.assertions ?? [],
+    [data?.assertionsData?.assertions],
+  );
   const voters = data?.votersData?.voters ?? [];
   const loading = isLoading || isRefreshing;
 

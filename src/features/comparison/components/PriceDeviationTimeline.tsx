@@ -32,27 +32,27 @@ const levelConfig: Record<
   { color: string; bgColor: string; borderColor: string; icon: React.ElementType }
 > = {
   low: {
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-50',
-    borderColor: 'border-emerald-200',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
+    borderColor: 'border-success/20',
     icon: CheckCircle2,
   },
   medium: {
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-50',
-    borderColor: 'border-amber-200',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
+    borderColor: 'border-warning/20',
     icon: TrendingUp,
   },
   high: {
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50',
-    borderColor: 'border-orange-200',
+    color: 'text-warning-dark',
+    bgColor: 'bg-warning/20',
+    borderColor: 'border-warning/30',
     icon: TrendingDown,
   },
   critical: {
-    color: 'text-red-600',
-    bgColor: 'bg-red-50',
-    borderColor: 'border-red-200',
+    color: 'text-error',
+    bgColor: 'bg-error/10',
+    borderColor: 'border-error/20',
     icon: AlertTriangle,
   },
 };
@@ -223,8 +223,8 @@ export function PriceDeviationTimeline({
                       config.borderColor,
                     )}
                   >
-                    <div className="mb-2 flex items-start justify-between">
-                      <div className="flex items-center gap-2">
+                    <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="outline" className="text-xs capitalize">
                           {event.protocol}
                         </Badge>
@@ -247,9 +247,9 @@ export function PriceDeviationTimeline({
                       </div>
                       <div className="flex items-center gap-2">
                         {event.resolved ? (
-                          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                          <CheckCircle2 className="h-4 w-4 text-success" />
                         ) : (
-                          <XCircle className="h-4 w-4 text-red-600" />
+                          <XCircle className="h-4 w-4 text-error" />
                         )}
                         <span className="text-xs text-muted-foreground">
                           {formatTime(event.timestamp)}
@@ -285,7 +285,7 @@ export function PriceDeviationTimeline({
                     </div>
 
                     {!event.resolved && (
-                      <div className="mt-2 flex items-center gap-2 text-xs text-red-600">
+                      <div className="mt-2 flex items-center gap-2 text-xs text-error">
                         <AlertTriangle className="h-3 w-3" />
                         <span>{t('comparison.deviation.ongoing')}</span>
                       </div>

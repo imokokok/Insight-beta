@@ -250,7 +250,7 @@ export function ErrorFallback({
       type: 'info',
       duration: 2000,
     });
-  }, [onRetry, retryCount, toast]);
+  }, [onRetry, retryCount, toast, t]);
 
   const handleCopyError = () => {
     const errorText = `
