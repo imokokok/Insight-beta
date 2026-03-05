@@ -109,6 +109,8 @@ export const PageHeader = memo(function PageHeader({
   className,
   children,
 }: PageHeaderProps) {
+  const { t } = useI18n();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -5 }}
@@ -225,15 +227,13 @@ export const PageHeader = memo(function PageHeader({
                 {onRefresh && (
                   <DropdownMenuItem onClick={onRefresh} disabled={refreshDisabled || loading}>
                     <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
-                    Refresh
-                    <span className="ml-auto text-xs text-muted-foreground">⌘R</span>
+                    {t('common.refresh')}
                   </DropdownMenuItem>
                 )}
                 {onExport && (
                   <DropdownMenuItem onClick={onExport} disabled={exportDisabled}>
                     <Download className="mr-2 h-4 w-4" />
-                    Export
-                    <span className="ml-auto text-xs text-muted-foreground">⌘E</span>
+                    {t('common.export')}
                   </DropdownMenuItem>
                 )}
                 {(onRefresh || onExport) && <DropdownMenuSeparator />}

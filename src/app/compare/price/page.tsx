@@ -82,7 +82,7 @@ export default function PriceComparePage() {
                   <select
                     value={selectedSymbol}
                     onChange={(e) => setSelectedSymbol(e.target.value)}
-                    className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    className="rounded-md border border-border bg-card px-3 py-2 text-sm"
                   >
                     <option value="ETH/USD">ETH/USD</option>
                     <option value="BTC/USD">BTC/USD</option>
@@ -97,7 +97,7 @@ export default function PriceComparePage() {
                   <select
                     value={selectedProtocol}
                     onChange={(e) => setSelectedProtocol(e.target.value)}
-                    className="rounded-md border border-gray-300 px-3 py-2 text-sm capitalize"
+                    className="rounded-md border border-border bg-card px-3 py-2 text-sm capitalize"
                   >
                     <option value="chainlink">Chainlink</option>
                     <option value="pyth">Pyth</option>
