@@ -22,6 +22,9 @@ import {
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import { HistoricalDisputeStats } from '@/features/oracle/uma/components/HistoricalDisputeStats';
+import { TvlTrendAnalysis } from '@/features/oracle/uma/components/TvlTrendAnalysis';
+import { VotingAnalysisPanel } from '@/features/oracle/uma/components/VotingAnalysisPanel';
 import { useWallet } from '@/features/wallet/contexts/WalletContext';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
@@ -104,6 +107,28 @@ interface TvlResponse {
     source: string;
     lastUpdated: string;
   };
+}
+
+interface TvlDataPoint {
+  timestamp: string;
+  tvl: number;
+  assertionCount?: number;
+}
+
+interface Vote {
+  voter: string;
+  support: boolean;
+  votingPower: string;
+  timestamp: string;
+  txHash: string;
+}
+
+interface DisputeWithVotes {
+  id: string;
+  assertionId: string;
+  votes: Vote[];
+  votingEndsAt: string | null;
+  status: string;
 }
 
 interface VotersResponse {
@@ -399,6 +424,66 @@ export default function UmaPage() {
     resolved: allAssertions.filter((a) => a.status === 'resolved').length,
     settled: allAssertions.filter((a) => a.status === 'settled').length,
   };
+
+  const mockTvlData = useMemo<TvlDataPoint[]>(() => {
+    const data: TvlDataPoint[] = [];
+    const now = new Date();
+    for (let i = 30; i >= 0; i--) {
+      const timestamp = new Date(now.getTime() - i * 24 * 60 * 60 * 1000).toISOString();
+      const baseTvl = 50000000;
+      const randomFactor = Math.random() * 10000000 - 5000000;
+      const trend = i * 100000;
+      data.push({
+        timestamp,
+        tvl: baseTvl + randomFactor + trend,
+        assertionCount: Math.floor(Math.random() * 50) + 10,
+      });
+    }
+    return data;
+  }, []);
+
+  const mockDisputesWithVotes = useMemo<DisputeWithVotes[]>(() => {
+    return allAssertions
+      .filter((a) => a.status === 'disputed' || a.status === 'resolved')
+      .slice(0, 5)
+      .map((assertion) => ({
+        id: assertion.id,
+        assertionId: assertion.assertionId,
+        votingEndsAt: assertion.expirationTimestamp,
+        status: assertion.status,
+        votes: Array.from({ length: Math.floor(Math.random() * 20) + 5 }, (_, i) => ({
+          voter: `0x${Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+          support: Math.random() > 0.5,
+          votingPower: (Math.floor(Math.random() * 1000) + 100).toString(),
+          timestamp: new Date(new Date(assertion.timestamp).getTime() + i * 3600000).toISOString(),
+          txHash: `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+        })),
+      }));
+  }, [allAssertions]);
+
+  const transformAssertionToDispute = useCallback((assertion: Assertion): Dispute => {
+    return {
+      id: assertion.id,
+      assertionId: assertion.assertionId,
+      chain: assertion.chain,
+      identifier: null,
+      ancillaryData: null,
+      disputer: assertion.challenger || 'unknown',
+      disputeBond: assertion.challengeBond,
+      disputedAt: assertion.timestamp,
+      votingEndsAt: null,
+      status: assertion.status,
+      currentVotesFor: '0',
+      currentVotesAgainst: '0',
+      totalVotes: '0',
+      txHash: assertion.txHash,
+      blockNumber: assertion.blockNumber,
+      logIndex: 0,
+      version: '1.0',
+      createdAt: assertion.timestamp,
+      updatedAt: assertion.timestamp,
+    };
+  }, []);
 
   return (
     <>
@@ -757,26 +842,12 @@ export default function UmaPage() {
 
         <TabPanelWrapper tabId="analysis">
           <div className="space-y-6">
-            <ContentSection title={t('uma.analysis.statusDistribution')}>
-              <ContentGrid columns={4}>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-3xl font-bold text-yellow-500">{statusCounts.pending}</p>
-                  <p className="text-sm text-muted-foreground">{t('uma.status.pending')}</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-3xl font-bold text-red-500">{statusCounts.disputed}</p>
-                  <p className="text-sm text-muted-foreground">{t('uma.status.disputed')}</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-3xl font-bold text-green-500">{statusCounts.resolved}</p>
-                  <p className="text-sm text-muted-foreground">{t('uma.status.resolved')}</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-3xl font-bold text-blue-500">{statusCounts.settled}</p>
-                  <p className="text-sm text-muted-foreground">{t('uma.status.settled')}</p>
-                </div>
-              </ContentGrid>
-            </ContentSection>
+            <TvlTrendAnalysis tvlData={mockTvlData} isLoading={loading} />
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <VotingAnalysisPanel disputes={mockDisputesWithVotes} />
+              <HistoricalDisputeStats disputes={allAssertions.map(transformAssertionToDispute)} />
+            </div>
 
             <ContentSection title={t('uma.analysis.chainDistribution')}>
               <div className="rounded-lg border border-border bg-card p-4">
