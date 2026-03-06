@@ -62,7 +62,7 @@ export const ChartCard = memo(function ChartCard({
 
   return (
     <>
-      <Card className={cn('overflow-hidden', className)}>
+      <Card className={cn('overflow-hidden border-border/30 bg-background/50', className)}>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div className="flex min-w-0 items-center gap-2">
             <div>

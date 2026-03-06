@@ -120,20 +120,18 @@ const KPICard = memo(function KPICard({ item, onItemClick, index }: KPICardProps
         transition: { duration: 0.1 },
       }}
       className={cn(
-        'group relative overflow-hidden rounded-xl border backdrop-blur-sm',
-        'bg-gradient-to-br',
-        config.gradient,
-        config.border,
+        'group relative overflow-hidden rounded-xl border border-border/30 backdrop-blur-sm',
+        'bg-background/50',
         'transition-all duration-300',
         'hover:shadow-current/10 hover:shadow-lg',
         'active:shadow-sm',
         onItemClick && 'cursor-pointer',
-        config.glow,
+        'kpi-card-subtle',
       )}
       onClick={handleClick}
     >
       <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/5 opacity-0 transition-all duration-300 group-hover:scale-110 group-hover:opacity-100" />
-      <div className="bg-white/3 duration-400 absolute -bottom-8 -left-8 h-32 w-32 rounded-full opacity-0 transition-all group-hover:scale-110 group-hover:opacity-100" />
+      <div className="duration-400 absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/5 opacity-0 transition-all group-hover:scale-110 group-hover:opacity-100" />
 
       <div className="relative" style={{ padding: cardPadding }}>
         <div className="mb-3 flex items-start justify-between">
@@ -216,17 +214,13 @@ export const KPIOverviewBar = memo(function KPIOverviewBar({
   onItemClick,
   className,
 }: KPIOverviewBarProps) {
-  const { config: densityConfig } = useDensity();
-  const gridGap = densityConfig.gap.card;
-
   return (
     <div
       className={cn(
-        'xs:grid-cols-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
+        'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
         'gap-3 sm:gap-4',
         className,
       )}
-      style={{ gap: gridGap }}
     >
       {items.map((item, index) => (
         <KPICard key={item.id} item={item} onItemClick={onItemClick} index={index} />

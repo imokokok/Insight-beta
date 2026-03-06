@@ -581,7 +581,7 @@ export default function OverviewPage() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background pb-16 md:pb-0">
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
               <div className="flex items-center gap-3">
@@ -631,6 +631,7 @@ export default function OverviewPage() {
                       t('overview.marketShareDesc') || 'TVL distribution across protocols'
                     }
                     icon={<Layers className="h-5 w-5" />}
+                    className="grid-lines-light"
                   >
                     <div className="space-y-3">
                       {marketShareData.map((item) => (
@@ -728,7 +729,7 @@ export default function OverviewPage() {
                     <a
                       key={protocol.name}
                       href={protocol.href}
-                      className="group rounded-xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-md"
+                      className="group rounded-xl border border-border/30 bg-background/50 p-5 transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-md hover:shadow-primary/5"
                     >
                       <div className="mb-4 flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -736,7 +737,7 @@ export default function OverviewPage() {
                             className={cn(
                               'rounded-xl p-3 transition-transform group-hover:scale-110',
                               protocol.color,
-                              'bg-opacity-10',
+                              'bg-background/80',
                             )}
                           >
                             {protocol.icon}
@@ -946,7 +947,7 @@ export default function OverviewPage() {
                     <a
                       key={link.title}
                       href={link.href}
-                      className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:border-primary/50 hover:bg-accent"
+                      className="flex items-center gap-3 rounded-lg border border-border/30 bg-background/50 p-3 transition-colors hover:border-primary/50 hover:bg-background/80"
                     >
                       <div className={cn('rounded-md p-2', link.color)}>{link.icon}</div>
                       <div>
