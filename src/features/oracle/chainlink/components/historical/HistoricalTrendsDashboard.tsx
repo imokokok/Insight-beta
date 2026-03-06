@@ -12,7 +12,7 @@ import { FeedTrendChart } from './FeedTrendChart';
 import { NodePerformanceChart } from './NodePerformanceChart';
 import { OCRRoundChart } from './OCRRoundChart';
 import { AnomalyTimeline } from './AnomalyTimeline';
-import { useHistoricalTrends } from '../hooks/useHistoricalTrends';
+import { useHistoricalTrends } from '@/features/oracle/chainlink/hooks/useHistoricalTrends';
 import type { TimeRange } from '../types';
 
 export interface HistoricalTrendsDashboardProps {

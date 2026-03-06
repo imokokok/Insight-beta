@@ -24,14 +24,20 @@ export function useHistoricalTrends(
     refreshInterval?: number;
     dedupingInterval?: number;
     revalidateOnFocus?: boolean;
+    revalidateOnReconnect?: boolean;
     enableSampling?: boolean;
+    errorRetryInterval?: number;
+    errorRetryCount?: number;
   }
 ) {
   const {
-    refreshInterval = 60000,
-    dedupingInterval = 30000,
+    refreshInterval = 300000,
+    dedupingInterval = 60000,
     revalidateOnFocus = false,
+    revalidateOnReconnect = true,
     enableSampling = true,
+    errorRetryInterval = 30000,
+    errorRetryCount = 3,
   } = options || {};
 
   const buildUrl = useCallback(
@@ -56,7 +62,10 @@ export function useHistoricalTrends(
       refreshInterval,
       dedupingInterval,
       revalidateOnFocus,
+      revalidateOnReconnect,
       keepPreviousData: true,
+      errorRetryInterval,
+      errorRetryCount,
     }
   );
 

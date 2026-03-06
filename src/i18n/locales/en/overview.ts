@@ -27,6 +27,7 @@ export const overview = {
   onChainActivityDesc: 'Updates and active feeds',
   updates: 'Updates',
   activeFeeds: 'Active Feeds',
+  activityLoadError: 'Failed to load activity data, showing estimated data',
   dataSync: {
     syncing: 'Syncing data...',
     synced: 'Synced',

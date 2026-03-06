@@ -60,6 +60,20 @@ export { RefreshIndicator } from './RefreshIndicator';
 // Alert
 export { Alert, AlertTitle, AlertDescription } from './Alert';
 
+// Dialog
+export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogClose,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from './Dialog';
+
 // Dropdown Menu
 export {
   DropdownMenu,
@@ -76,6 +90,9 @@ export { Input, type InputProps } from './Input';
 
 // Label
 export { Label, type LabelProps } from './Label';
+
+// Textarea
+export { Textarea, type TextareaProps } from './Textarea';
 
 // Popover
 export { Popover, PopoverTrigger, PopoverContent } from './Popover';

@@ -17,6 +17,8 @@ import {
   CircleAlert,
   CheckCircle2,
   AlertCircle,
+  ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -41,6 +43,7 @@ import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { fetchApiData, formatNumber, cn, formatFreshness, formatTimeAgo } from '@/shared/utils';
 import { calculateHealthScore } from '@/shared/utils/math';
+import { useOnChainActivity } from '@/features/overview/hooks/useOnChainActivity';
 
 const AnomalyList = lazy(() =>
   import('@/features/oracle/analytics/deviation/components/AnomalyList').then((mod) => ({
@@ -107,6 +110,13 @@ interface OverviewPageState {
   timeRange: TimeRange;
   isSyncing: boolean;
   syncStatus: 'idle' | 'syncing' | 'success' | 'error';
+  selectedAsset: string;
+  priceDeviation?: {
+    minPrice: number;
+    maxPrice: number;
+    avgPrice: number;
+    deviationPercent: number;
+  } | null;
 }
 
 const protocolConfigs: Array<{
@@ -189,6 +199,8 @@ export default function OverviewPage() {
     timeRange: '24H',
     isSyncing: false,
     syncStatus: 'idle',
+    selectedAsset: 'BTC/USD',
+    priceDeviation: null,
   });
 
   const updateState = useCallback((partial: Partial<OverviewPageState>) => {
@@ -201,21 +213,11 @@ export default function OverviewPage() {
 
       const [statsRes, trendRes, anomaliesRes] = await Promise.all([
         fetchApiData<OverviewStats>('/api/oracle/stats').catch(() => null),
-        fetchApiData<PriceTrendPoint[]>('/api/oracle/history/prices?latest=true').catch(() => []),
+        fetchApiData<PriceTrendPoint[]>(
+          `/api/oracle/history/prices?latest=true&symbol=${encodeURIComponent(state.selectedAsset)}`,
+        ).catch(() => []),
         fetchApiData<AnomalyData[]>('/api/oracle/analytics/deviation?type=report').catch(() => []),
       ]);
-
-      const mockStats: OverviewStats = statsRes ?? {
-        totalTVL: '$45.2B',
-        totalProtocols: 4,
-        avgLatency: 245,
-        healthScore: 98.5,
-        totalFeeds: 256,
-        activeFeeds: 248,
-        totalUpdates24h: 125000,
-        marketConcentration: 0.68,
-        totalVolume24h: '$8.5B',
-      };
 
       const protocols: ProtocolHealth[] = protocolConfigs.map((config, index) => {
         const feedsValues = [156, 150, 45, 85] as const;
@@ -236,10 +238,8 @@ export default function OverviewPage() {
         const avgLatency = avgLatencyValues[index] ?? 0;
         const latencyTrend = [...(latencyTrendValues[index] ?? [])];
 
-        // 计算更新间隔（示例：延迟的 3 倍）
         const updateIntervalSeconds = avgLatency * 3;
 
-        // 计算健康评分
         const healthScore = calculateHealthScore({
           avgLatency,
           updateIntervalSeconds,
@@ -264,12 +264,7 @@ export default function OverviewPage() {
         };
       });
 
-      const mockTrendData: PriceTrendPoint[] = trendRes.length
-        ? trendRes
-        : Array.from({ length: 24 }, (_, i) => ({
-            timestamp: new Date(Date.now() - (23 - i) * 3600000).toISOString(),
-            value: 67000 + Math.random() * 2000 - 1000,
-          }));
+      const priceTrendData: PriceTrendPoint[] = trendRes.length > 0 ? trendRes : [];
 
       const mockAnomalies: AnomalyData[] = anomaliesRes.length
         ? anomaliesRes
@@ -306,11 +301,25 @@ export default function OverviewPage() {
             },
           ];
 
+      let priceDeviation = null;
+      if (priceTrendData.length > 0 && mockAnomalies.length > 0) {
+        const currentAnomaly = mockAnomalies.find((a) => a.symbol === state.selectedAsset);
+        if (currentAnomaly) {
+          const prices = Object.values(currentAnomaly.prices);
+          const minPrice = Math.min(...prices);
+          const maxPrice = Math.max(...prices);
+          const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+          const deviationPercent = ((maxPrice - minPrice) / avgPrice) * 100;
+          priceDeviation = { minPrice, maxPrice, avgPrice, deviationPercent };
+        }
+      }
+
       updateState({
-        stats: mockStats,
+        stats: statsRes ?? null,
         protocols,
-        priceTrendData: mockTrendData,
+        priceTrendData,
         anomalies: mockAnomalies,
+        priceDeviation,
         lastUpdated: new Date(),
         isSyncing: false,
         syncStatus: 'success',
@@ -320,13 +329,6 @@ export default function OverviewPage() {
         description: formatTimeAgo(new Date().toISOString(), lang === 'zh' ? 'zh' : 'en'),
         duration: 2000,
       });
-
-      setTimeout(() => {
-        setState((prev) => ({
-          ...prev,
-          syncStatus: prev.syncStatus === 'success' ? 'idle' : prev.syncStatus,
-        }));
-      }, 2000);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data';
       updateState({
@@ -342,7 +344,7 @@ export default function OverviewPage() {
     } finally {
       updateState({ loading: false });
     }
-  }, [updateState, t, lang]);
+  }, [updateState, t, lang, state.selectedAsset]);
 
   useEffect(() => {
     fetchData();
@@ -365,8 +367,10 @@ export default function OverviewPage() {
       });
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [state.autoRefreshEnabled, state.refreshInterval, fetchData, updateState]);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [state.autoRefreshEnabled, state.refreshInterval, fetchData]);
 
   const kpiItems: KPIItem[] = useMemo(
     () =>
@@ -460,17 +464,14 @@ export default function OverviewPage() {
     }));
   }, [state.protocols]);
 
+  const { data: activityData, loading: activityLoading, error: activityError, refresh: refreshActivity } = useOnChainActivity();
+  
   const onChainActivityData = useMemo(() => {
-    const baseTime = Date.now();
-    return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(baseTime - (6 - i) * 24 * 3600000);
-      return {
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        updates: Math.floor(15000 + Math.random() * 5000),
-        activeFeeds: Math.floor(240 + Math.random() * 15),
-      };
-    });
-  }, []);
+    if (activityData?.dailyData) {
+      return activityData.dailyData;
+    }
+    return [];
+  }, [activityData]);
 
   const SyncStatusIndicator = () => {
     const locale = lang === 'zh' ? 'zh' : 'en';
@@ -861,52 +862,168 @@ export default function OverviewPage() {
                     title={t('overview.onChainActivity') || 'On-Chain Activity'}
                     description={t('overview.onChainActivityDesc') || 'Updates and active feeds'}
                     icon={<Activity className="h-5 w-5" />}
+                    actions={
+                      activityError ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={refreshActivity}
+                          className="h-8 text-xs"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                          {t('common.retry') || '重试'}
+                        </Button>
+                      ) : null
+                    }
                   >
-                    <EnhancedBarChart
-                      data={onChainActivityData}
-                      bars={[
-                        {
-                          dataKey: 'updates',
-                          name: t('overview.updates') || 'Updates',
-                          color: CHART_COLORS.series[0],
-                        },
-                        {
-                          dataKey: 'activeFeeds',
-                          name: t('overview.activeFeeds') || 'Active Feeds',
-                          color: CHART_COLORS.series[1],
-                        },
-                      ]}
-                      height={240}
-                      valueFormatter={(v) => formatNumber(v, 0)}
-                      showGrid
-                      showLegend
-                    />
+                    {activityLoading ? (
+                      <div className="flex h-[240px] items-center justify-center">
+                        <Skeleton className="h-full w-full" />
+                      </div>
+                    ) : activityError ? (
+                      <div className="flex h-[240px] flex-col items-center justify-center gap-2 text-center">
+                        <AlertCircle className="h-8 w-8 text-warning" />
+                        <p className="text-sm text-muted-foreground">
+                          {t('overview.activityLoadError') || '加载活动数据失败，显示估算数据'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {activityError.message}
+                        </p>
+                      </div>
+                    ) : onChainActivityData.length > 0 ? (
+                      <EnhancedBarChart
+                        data={onChainActivityData}
+                        bars={[
+                          {
+                            dataKey: 'updates',
+                            name: t('overview.updates') || 'Updates',
+                            color: CHART_COLORS.series[0],
+                          },
+                          {
+                            dataKey: 'activeFeeds',
+                            name: t('overview.activeFeeds') || 'Active Feeds',
+                            color: CHART_COLORS.series[1],
+                          },
+                        ]}
+                        height={240}
+                        valueFormatter={(v) => formatNumber(v, 0)}
+                        showGrid
+                        showLegend
+                      />
+                    ) : (
+                      <div className="flex h-[240px] items-center justify-center">
+                        <p className="text-sm text-muted-foreground">
+                          {t('common.noData') || '暂无数据'}
+                        </p>
+                      </div>
+                    )}
                   </ChartCard>
 
                   <ChartCard
                     title={t('overview.priceTrend') || 'Price Trend'}
-                    description={t('overview.priceTrendDesc') || 'BTC/USD aggregated price'}
+                    description={
+                      <div className="flex flex-col gap-2">
+                        <span>{t('overview.priceTrendDesc') || 'Aggregated price trend'}</span>
+                        {state.priceDeviation && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                'border-0 px-1.5 py-0.5',
+                                state.priceDeviation.deviationPercent < 0.5
+                                  ? 'bg-success/10 text-success'
+                                  : state.priceDeviation.deviationPercent < 1
+                                    ? 'bg-warning/10 text-warning'
+                                    : 'bg-error/10 text-error',
+                              )}
+                            >
+                              偏差：{state.priceDeviation.deviationPercent.toFixed(3)}%
+                            </Badge>
+                            <span className="text-muted-foreground">
+                              区间：${state.priceDeviation.minPrice.toFixed(2)} - $
+                              {state.priceDeviation.maxPrice.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    }
                     icon={<TrendingUp className="h-5 w-5" />}
                     extraActions={
-                      <TimeRangeSelector
-                        value={state.timeRange}
-                        onChange={(range) => updateState({ timeRange: range })}
-                        showCustom={false}
-                      />
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={state.selectedAsset}
+                          onChange={(e) => {
+                            updateState({ selectedAsset: e.target.value });
+                            setTimeout(() => fetchData(), 0);
+                          }}
+                          className="rounded-md border border-border bg-background px-2 py-1.5 text-xs font-medium"
+                        >
+                          <option value="BTC/USD">BTC/USD</option>
+                          <option value="ETH/USD">ETH/USD</option>
+                          <option value="SOL/USD">SOL/USD</option>
+                          <option value="LINK/USD">LINK/USD</option>
+                        </select>
+                        <TimeRangeSelector
+                          value={state.timeRange}
+                          onChange={(range) => updateState({ timeRange: range })}
+                          showCustom={false}
+                        />
+                      </div>
                     }
                   >
-                    <EnhancedAreaChart
-                      data={state.priceTrendData.map((d) => ({
-                        timestamp: d.timestamp,
-                        value: d.value,
-                      }))}
-                      dataKey="value"
-                      color={CHART_COLORS.primary.DEFAULT}
-                      height={240}
-                      valueFormatter={(v) => `$${formatNumber(v, 2)}`}
-                      showGrid
-                      gradient
-                    />
+                    {state.priceTrendData.length === 0 ? (
+                      <div className="flex h-64 flex-col items-center justify-center gap-3 text-muted-foreground">
+                        <TrendingUp className="h-12 w-12 opacity-20" />
+                        <div className="text-center">
+                          <p className="text-sm font-medium">暂无价格数据</p>
+                          <p className="text-xs">
+                            该资产暂无聚合价格数据，请
+                            <a
+                              href="/compare/price"
+                              className="text-primary hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                window.location.href = '/compare/price';
+                              }}
+                            >
+                              查看其他价格对比
+                            </a>
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <EnhancedAreaChart
+                        data={state.priceTrendData.map((d) => ({
+                          timestamp: d.timestamp,
+                          value: d.value,
+                        }))}
+                        dataKey="value"
+                        color={CHART_COLORS.primary.DEFAULT}
+                        height={240}
+                        valueFormatter={(v) => `$${formatNumber(v, 2)}`}
+                        showGrid
+                        gradient
+                      />
+                    )}
+                    <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">数据来源：</span>
+                        <div className="flex items-center gap-1">
+                          {['Chainlink', 'Pyth', 'API3', 'Band'].map((protocol) => (
+                            <Badge key={protocol} variant="outline" className="text-[10px]">
+                              {protocol}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <a
+                        href="/compare/price"
+                        className="flex items-center gap-1 text-xs text-primary hover:underline"
+                      >
+                        查看详细对比
+                        <ChevronRight className="h-3 w-3" />
+                      </a>
+                    </div>
                   </ChartCard>
                 </div>
               </ContentSection>

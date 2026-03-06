@@ -8,7 +8,7 @@ import { Bell, ChevronDown, ChevronUp, X, BarChart3 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/Badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/ScrollArea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
 
 import { cn } from '@/shared/utils';

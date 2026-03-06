@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -37,8 +37,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { Textarea } from '@/components/ui/Textarea';
 
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn, formatTime } from '@/shared/utils';
@@ -183,7 +183,6 @@ export function UnifiedAlertPanel({
   const [filterProtocol, setFilterProtocol] = useState<OracleProtocol | 'all'>('all');
   const [filterSeverity, setFilterSeverity] = useState<AlertSeverity | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<AlertStatus | 'all'>('all');
-  const [selectedRule, setSelectedRule] = useState<AlertRule | null>(null);
   const [isRuleDialogOpen, setIsRuleDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -371,10 +370,6 @@ export function UnifiedAlertPanel({
     console.log('Toggle rule:', ruleId, enabled);
   }, []);
 
-  const totalAlerts = useMemo(
-    () => mockStats.reduce((sum, stat) => sum + stat.totalAlerts, 0),
-    [mockStats],
-  );
   const activeAlerts = useMemo(
     () => mockStats.reduce((sum, stat) => sum + stat.activeAlerts, 0),
     [mockStats],

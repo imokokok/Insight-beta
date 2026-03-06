@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { Virtuoso } from 'react-virtuoso';
 import { Trophy, TrendingUp, Activity, Shield, Search } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -34,7 +35,7 @@ export function ValidatorList({ validators, loading = false, limit = 20 }: Valid
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'rank' | 'votingPower' | 'commission' | 'uptime'>('rank');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [expandedValidator, setExpandedValidator] = useState<string | null>(null);
+  const [expandedValidators, setExpandedValidators] = useState<Set<string>>(new Set());
 
   const mockValidators: Validator[] = useMemo(() => {
     if (validators && validators.length > 0) return validators;
@@ -88,8 +89,8 @@ export function ValidatorList({ validators, loading = false, limit = 20 }: Valid
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
-    return filtered.slice(0, limit);
-  }, [mockValidators, searchTerm, sortBy, sortOrder, limit]);
+    return filtered;
+  }, [mockValidators, searchTerm, sortBy, sortOrder]);
 
   const handleSort = (field: 'rank' | 'votingPower' | 'commission' | 'uptime') => {
     if (sortBy === field) {
@@ -99,6 +100,18 @@ export function ValidatorList({ validators, loading = false, limit = 20 }: Valid
       setSortOrder('desc');
     }
   };
+
+  const toggleExpanded = (address: string) => {
+    const newExpanded = new Set(expandedValidators);
+    if (newExpanded.has(address)) {
+      newExpanded.delete(address);
+    } else {
+      newExpanded.add(address);
+    }
+    setExpandedValidators(newExpanded);
+  };
+
+  const isExpanded = (address: string) => expandedValidators.has(address);
 
   const getStatusColor = (status: Validator['status']) => {
     switch (status) {
@@ -181,18 +194,19 @@ export function ValidatorList({ validators, loading = false, limit = 20 }: Valid
           <div className="hidden col-span-2 text-right sm:block">Status</div>
         </div>
 
-        <div className="divide-y">
-          {filteredAndSortedValidators.map((validator) => (
+        <Virtuoso
+          data={filteredAndSortedValidators}
+          overscan={{ main: 200, reverse: 100 }}
+          style={{ height: '600px' }}
+          itemContent={(index, validator) => (
             <div key={validator.address}>
               <div
                 className={cn(
                   'grid grid-cols-12 gap-4 p-3 transition-colors hover:bg-muted/50',
-                  'cursor-pointer',
-                  expandedValidator === validator.address && 'bg-muted'
+                  'cursor-pointer border-b',
+                  isExpanded(validator.address) && 'bg-muted'
                 )}
-                onClick={() => setExpandedValidator(
-                  expandedValidator === validator.address ? null : validator.address
-                )}
+                onClick={() => toggleExpanded(validator.address)}
               >
                 <div className="col-span-2 sm:col-span-1 flex items-center">
                   <span className="font-mono text-sm font-semibold">#{validator.rank}</span>
@@ -256,7 +270,7 @@ export function ValidatorList({ validators, loading = false, limit = 20 }: Valid
                 </div>
               </div>
 
-              {expandedValidator === validator.address && (
+              {isExpanded(validator.address) && (
                 <div className="border-t bg-muted/30 p-4">
                   <div className="grid gap-4 sm:grid-cols-3">
                     <div>
@@ -303,8 +317,8 @@ export function ValidatorList({ validators, loading = false, limit = 20 }: Valid
                 </div>
               )}
             </div>
-          ))}
-        </div>
+          )}
+        />
       </div>
 
       {filteredAndSortedValidators.length === 0 && (

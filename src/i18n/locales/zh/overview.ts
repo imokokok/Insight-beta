@@ -27,6 +27,7 @@ export const overview = {
   onChainActivityDesc: '数据更新和活跃价格源',
   updates: '更新次数',
   activeFeeds: '活跃价格源',
+  activityLoadError: '加载活动数据失败，显示估算数据',
   healthDimensions: {
     latency: '延迟性能',
     freshness: '更新频率',

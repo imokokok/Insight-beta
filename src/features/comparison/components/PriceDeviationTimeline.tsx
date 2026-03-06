@@ -29,13 +29,13 @@ import {
 } from '@/shared/utils/format';
 import { formatDeviationSmall } from '@/shared/utils/format';
 import type {
-  PriceDeviationTimeline,
+  PriceDeviationTimeline as PriceDeviationTimelineType,
   PriceDeviationLevel,
   PriceDeviationEvent,
 } from '@/types/oracle/comparison';
 
 interface PriceDeviationTimelineProps {
-  data?: PriceDeviationTimeline;
+  data?: PriceDeviationTimelineType;
   isLoading?: boolean;
   maxEvents?: number;
   timeRange?: '24h' | '7d' | '30d';
@@ -100,18 +100,13 @@ const TimelineEvent = memo(function TimelineEvent({ event, isFirst, isLast }: Ti
   const config = levelConfig[event.deviationLevel];
   const Icon = config.icon;
 
-  const connectorColor = useMemo(() => {
-    if (event.deviationLevel === 'critical') return 'bg-error/20';
-    if (event.deviationLevel === 'high') return 'bg-orange-500/20';
-    if (event.deviationLevel === 'medium') return 'bg-warning/20';
-    return 'bg-success/20';
-  }, [event.deviationLevel]);
-
-  const deviationBadgeVariant = useMemo(() => {
-    if (event.deviationLevel === 'critical') return 'destructive' as const;
-    if (event.deviationLevel === 'high') return 'default' as const;
-    return 'secondary' as const;
-  }, [event.deviationLevel]);
+  const connectorColor = config.bgColor.replace('/5', '/20');
+  
+  const deviationBadgeVariant = event.deviationLevel === 'critical' 
+    ? 'destructive' as const 
+    : event.deviationLevel === 'high' 
+      ? 'default' as const 
+      : 'secondary' as const;
 
   return (
     <div className="relative flex gap-4 sm:gap-6">
@@ -228,7 +223,7 @@ const TimelineEvent = memo(function TimelineEvent({ event, isFirst, isLast }: Ti
   );
 });
 
-export function PriceDeviationTimeline({
+export const PriceDeviationTimeline = memo(function PriceDeviationTimeline({
   data: propData,
   isLoading: propLoading,
   maxEvents = 10,
@@ -238,7 +233,7 @@ export function PriceDeviationTimeline({
   protocol = 'chainlink',
 }: PriceDeviationTimelineProps) {
   const { t } = useI18n();
-  const [data, setData] = useState<PriceDeviationTimeline | undefined>(propData);
+  const [data, setData] = useState<PriceDeviationTimelineType | undefined>(propData);
   const [isLoading, setIsLoading] = useState(propLoading ?? false);
   const [selectedRange, setSelectedRange] = useState<'24h' | '7d' | '30d'>(propTimeRange);
 
@@ -250,26 +245,46 @@ export function PriceDeviationTimeline({
   useEffect(() => {
     if (propData) {
       setData(propData);
-    } else if (symbol && protocol) {
-      setIsLoading(true);
-      fetch(
-        buildApiUrl('/api/comparison/deviation/history', {
-          symbol,
-          protocol,
-          timeRange: selectedRange,
-          type: 'timeline',
-        }),
-      )
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.data) {
-            setData(result.data);
-          }
-        })
-        .catch((error) => logger.error('Failed to fetch price deviation timeline', { error }))
-        .finally(() => setIsLoading(false));
+      return;
     }
-  }, [symbol, protocol, selectedRange, propData]);
+    
+    if (!symbol || !protocol) {
+      return;
+    }
+    
+    const abortController = new AbortController();
+    setIsLoading(true);
+    
+    fetch(
+      buildApiUrl('/api/comparison/deviation/history', {
+        symbol,
+        protocol,
+        timeRange: selectedRange,
+        type: 'timeline',
+      }),
+      { signal: abortController.signal },
+    )
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.data) {
+          setData(result.data);
+        }
+      })
+      .catch((error) => {
+        if (error.name !== 'AbortError') {
+          logger.error('Failed to fetch price deviation timeline', { error });
+        }
+      })
+      .finally(() => {
+        if (!abortController.signal.aborted) {
+          setIsLoading(false);
+        }
+      });
+    
+    return () => {
+      abortController.abort();
+    };
+  }, [symbol, protocol, selectedRange, propData, buildApiUrl]);
 
   const displayEvents = useMemo(() => {
     if (!data) return [];
@@ -278,12 +293,19 @@ export function PriceDeviationTimeline({
 
   const eventStats = useMemo(() => {
     if (!data) return null;
-    const total = data.events.length;
-    const critical = data.events.filter((e) => e.deviationLevel === 'critical').length;
-    const high = data.events.filter((e) => e.deviationLevel === 'high').length;
-    const resolved = data.events.filter((e) => e.resolved).length;
+    
+    const stats = data.events.reduce(
+      (acc, e) => {
+        acc.total++;
+        if (e.deviationLevel === 'critical') acc.critical++;
+        if (e.deviationLevel === 'high') acc.high++;
+        if (e.resolved) acc.resolved++;
+        return acc;
+      },
+      { total: 0, critical: 0, high: 0, resolved: 0 }
+    );
 
-    return { total, critical, high, resolved };
+    return stats;
   }, [data]);
 
   if (isLoading) {
@@ -375,7 +397,7 @@ export function PriceDeviationTimeline({
         <div className="relative">
           <div className="absolute bottom-2 left-5 top-2 w-0.5 bg-gradient-to-b from-border via-muted-foreground/30 to-border" />
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             {displayEvents.map((event, index) => (
               <TimelineEvent
                 key={event.id}
@@ -399,4 +421,4 @@ export function PriceDeviationTimeline({
       </CardContent>
     </Card>
   );
-}
+});

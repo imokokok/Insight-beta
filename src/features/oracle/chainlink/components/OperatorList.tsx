@@ -97,13 +97,14 @@ export function OperatorList({ className, collapsible = false }: OperatorListPro
   const performanceData = useMemo(() => {
     if (!operators.length) return null;
 
-    const now = new Date().toISOString();
     const historyPoints = Array.from({ length: 24 }, (_, i) => {
       const timestamp = new Date(Date.now() - (23 - i) * 3600000).toISOString();
+      const baseUptime = 95 + Math.random() * 5;
+      const baseResponseTime = 100 + Math.random() * 100;
       return {
         timestamp,
-        uptime: 95 + Math.random() * 5,
-        responseTime: 100 + Math.random() * 100,
+        uptime: baseUptime,
+        responseTime: baseResponseTime,
         supportedFeedsCount: 5 + Math.floor(Math.random() * 10),
         activeFeedsCount: 3 + Math.floor(Math.random() * 7),
         feedUpdatesCount: Math.floor(Math.random() * 50) + 10,
@@ -111,40 +112,46 @@ export function OperatorList({ className, collapsible = false }: OperatorListPro
       };
     });
 
-    const uptimeData: NodeUptimeTimeSeries[] = operators.map((op) => ({
-      nodeName: op.name,
-      operatorName: op.name,
-      currentUptime: op.reliabilityScore?.uptime ?? 95 + Math.random() * 5,
-      avgUptime: 95 + Math.random() * 4,
-      minUptime: 90 + Math.random() * 5,
-      maxUptime: 99.9 + Math.random() * 0.1,
-      downtimeCount: Math.floor(Math.random() * 3),
-      totalDowntimeDuration: Math.floor(Math.random() * 300),
-      history: historyPoints.map((p) => ({
-        timestamp: p.timestamp,
-        uptime: p.uptime,
-        status: p.status,
-      })),
-    }));
+    const uptimeData: NodeUptimeTimeSeries[] = operators.map((op) => {
+      const baseUptime = op.reliabilityScore?.uptime ?? 95 + Math.random() * 5;
+      return {
+        nodeName: op.name,
+        operatorName: op.name,
+        currentUptime: baseUptime,
+        avgUptime: baseUptime - 1 + Math.random() * 2,
+        minUptime: baseUptime - 5 + Math.random() * 2,
+        maxUptime: baseUptime + 4 + Math.random() * 0.1,
+        downtimeCount: Math.floor(Math.random() * 3),
+        totalDowntimeDuration: Math.floor(Math.random() * 300),
+        history: historyPoints.map((p) => ({
+          timestamp: p.timestamp,
+          uptime: p.uptime,
+          status: p.status,
+        })),
+      };
+    });
 
-    const responseTimeData: NodeResponseTimeTrend[] = operators.map((op) => ({
-      nodeName: op.name,
-      operatorName: op.name,
-      currentResponseTime: op.responseTime,
-      avgResponseTime: 150 + Math.random() * 100,
-      minResponseTime: 50 + Math.random() * 50,
-      maxResponseTime: 500 + Math.random() * 500,
-      p50ResponseTime: 100 + Math.random() * 50,
-      p95ResponseTime: 300 + Math.random() * 200,
-      p99ResponseTime: 500 + Math.random() * 300,
-      history: historyPoints.map((p) => ({
-        timestamp: p.timestamp,
-        responseTime: p.responseTime,
-        p50ResponseTime: p.responseTime * 0.7,
-        p95ResponseTime: p.responseTime * 1.5,
-        p99ResponseTime: p.responseTime * 2,
-      })),
-    }));
+    const responseTimeData: NodeResponseTimeTrend[] = operators.map((op) => {
+      const baseResponseTime = op.responseTime;
+      return {
+        nodeName: op.name,
+        operatorName: op.name,
+        currentResponseTime: baseResponseTime,
+        avgResponseTime: baseResponseTime + 50 + Math.random() * 50,
+        minResponseTime: baseResponseTime * 0.5 + Math.random() * 25,
+        maxResponseTime: baseResponseTime * 1.5 + Math.random() * 250,
+        p50ResponseTime: baseResponseTime * 0.7 + Math.random() * 25,
+        p95ResponseTime: baseResponseTime * 1.5 + Math.random() * 100,
+        p99ResponseTime: baseResponseTime * 2 + Math.random() * 150,
+        history: historyPoints.map((p) => ({
+          timestamp: p.timestamp,
+          responseTime: p.responseTime,
+          p50ResponseTime: p.responseTime * 0.7,
+          p95ResponseTime: p.responseTime * 1.5,
+          p99ResponseTime: p.responseTime * 2,
+        })),
+      };
+    });
 
     const feedSupportData: NodeFeedSupportHistory[] = operators.map((op) => ({
       nodeName: op.name,
@@ -218,7 +225,7 @@ export function OperatorList({ className, collapsible = false }: OperatorListPro
       feedFrequencyData,
       comparisonData,
     };
-  }, [operators, timeRange]);
+  }, [operators.length, timeRange]);
 
   const renderOperatorGrid = () => (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
