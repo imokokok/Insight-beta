@@ -36,8 +36,6 @@ import {
   Gauge,
   TrendingUp,
   Shield,
-  PanelLeftClose,
-  PanelLeft,
   GitCompare,
 } from 'lucide-react';
 
@@ -94,8 +92,6 @@ export interface SidebarConfig {
 }
 
 interface SidebarContextType {
-  collapsed: boolean;
-  setCollapsed: (collapsed: boolean) => void;
   expandedGroups: Set<string>;
   toggleGroup: (groupId: string) => void;
   searchQuery: string;
@@ -185,6 +181,13 @@ export const defaultNavConfig: SidebarConfig = {
           defaultExpanded: false,
           items: [
             {
+              id: 'protocols-overview',
+              label: 'nav.protocolsOverview',
+              href: '/protocols',
+              icon: Link2,
+              description: 'nav.descriptions.protocolsOverview',
+            },
+            {
               id: 'chainlink',
               label: 'nav.chainlink',
               href: '/protocols/chainlink',
@@ -260,7 +263,6 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
   const pathname = usePathname();
   const prefersReducedMotion = useReducedMotion();
   const { t } = useI18n();
-  const { collapsed } = useSidebar();
   const [isExpanded, setIsExpanded] = useState(item.defaultExpanded ?? false);
   const unreadAlerts = useUnreadAlertsCount();
 
@@ -280,10 +282,10 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
   }, [item.id, item.badge, unreadAlerts.total]);
 
   const handleClick = useCallback(() => {
-    if (hasChildren && !collapsed) {
+    if (hasChildren) {
       setIsExpanded((prev) => !prev);
     }
-  }, [hasChildren, collapsed]);
+  }, [hasChildren]);
 
   const content = (
     <>
@@ -296,35 +298,31 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
         )}
       />
 
-      {!collapsed && (
-        <>
-          <span
-            className={cn(
-              'ml-3 flex-1 truncate text-sm font-medium transition-all duration-200',
-              isActive ? 'font-bold text-primary' : 'text-foreground group-hover:text-foreground',
-            )}
-          >
-            {t(item.label)}
-          </span>
+      <span
+        className={cn(
+          'ml-3 flex-1 truncate text-sm font-medium transition-all duration-200',
+          isActive ? 'font-bold text-primary' : 'text-foreground group-hover:text-foreground',
+        )}
+      >
+        {t(item.label)}
+      </span>
 
-          {dynamicBadge !== undefined && dynamicBadge !== 0 && (
-            <Badge
-              variant={item.badgeVariant || 'default'}
-              className="ml-2 flex-shrink-0 px-1.5 py-0 text-xs"
-            >
-              {dynamicBadge}
-            </Badge>
-          )}
+      {dynamicBadge !== undefined && dynamicBadge !== 0 && (
+        <Badge
+          variant={item.badgeVariant || 'default'}
+          className="ml-2 flex-shrink-0 px-1.5 py-0 text-xs"
+        >
+          {dynamicBadge}
+        </Badge>
+      )}
 
-          {hasChildren && (
-            <ChevronRight
-              className={cn(
-                'ml-2 h-4 w-4 transition-transform duration-200',
-                isExpanded && 'rotate-90',
-              )}
-            />
+      {hasChildren && (
+        <ChevronRight
+          className={cn(
+            'ml-2 h-4 w-4 transition-transform duration-200',
+            isExpanded && 'rotate-90',
           )}
-        </>
+        />
       )}
     </>
   );
@@ -335,12 +333,10 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
     isActive && [
       'bg-primary/12 hover:bg-primary/18 shadow-sm',
       'border border-primary/20',
-      !collapsed && 'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2',
-      !collapsed &&
-        'before:h-8 before:w-1.5 before:rounded-r before:bg-primary before:shadow-[0_0_8px_rgba(0,0,0,0.1)]',
+      'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2',
+      'before:h-8 before:w-1.5 before:rounded-r before:bg-primary before:shadow-[0_0_8px_rgba(0,0,0,0.1)]',
     ],
-    level > 0 && !collapsed && 'ml-4',
-    collapsed && 'justify-center px-2',
+    level > 0 && 'ml-4',
     item.disabled && 'cursor-not-allowed opacity-50',
   );
 
@@ -359,17 +355,15 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
     </button>
   );
 
-  const showTooltip = collapsed || item.description;
+  const showTooltip = !!item.description;
 
   return (
     <div className="group">
       {showTooltip ? (
-        <Tooltip delayDuration={collapsed ? 0 : 300}>
+        <Tooltip delayDuration={300}>
           <TooltipTrigger asChild>{navItem}</TooltipTrigger>
           <TooltipContent side="right" className="max-w-xs">
-            <p className="text-sm">
-              {collapsed ? t(item.label) : t(item.description || item.label)}
-            </p>
+            <p className="text-sm">{t(item.description || item.label)}</p>
           </TooltipContent>
         </Tooltip>
       ) : (
@@ -378,7 +372,7 @@ const NavItemComponent = React.memo(function NavItemComponent({ item, level = 0 
 
       {/* Submenu */}
       <AnimatePresence>
-        {hasChildren && isExpanded && !collapsed && (
+        {hasChildren && isExpanded && (
           <motion.div
             initial={prefersReducedMotion ? {} : { height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -407,7 +401,7 @@ interface NavGroupProps {
 }
 
 function NavGroupComponent({ group }: NavGroupProps) {
-  const { expandedGroups, toggleGroup, searchQuery, collapsed } = useSidebar();
+  const { expandedGroups, toggleGroup, searchQuery } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
   const { t } = useI18n();
   const isExpanded = expandedGroups.has(group.id);
@@ -429,7 +423,7 @@ function NavGroupComponent({ group }: NavGroupProps) {
 
   return (
     <div className="py-2">
-      {group.label && canCollapse && !collapsed && (
+      {group.label && canCollapse && (
         <button
           onClick={() => toggleGroup(group.id)}
           className="flex w-full items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
@@ -442,7 +436,7 @@ function NavGroupComponent({ group }: NavGroupProps) {
         </button>
       )}
 
-      {group.label && !canCollapse && !collapsed && (
+      {group.label && !canCollapse && (
         <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {group.icon && <group.icon className="mr-2 h-3.5 w-3.5" />}
           <span>{t(group.label)}</span>
@@ -450,7 +444,7 @@ function NavGroupComponent({ group }: NavGroupProps) {
       )}
 
       <AnimatePresence>
-        {(!canCollapse || isExpanded || collapsed) && (
+        {(!canCollapse || isExpanded) && (
           <motion.div
             initial={prefersReducedMotion ? {} : { height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -522,29 +516,10 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [isMounted, setIsMounted] = useState(false);
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    try {
-      const stored = localStorage.getItem('sidebar-collapsed');
-      return stored === 'true';
-    } catch {
-      return false;
-    }
-  });
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('sidebar-collapsed', String(collapsed));
-      } catch {
-        // ignore
-      }
-    }
-  }, [collapsed]);
 
   const toggleGroup = useCallback((groupId: string) => {
     setExpandedGroups((prev) => {
@@ -558,23 +533,17 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
     });
   }, []);
 
-  const toggleCollapsed = useCallback(() => {
-    setCollapsed((prev) => !prev);
-  }, []);
-
   const contextValue = useMemo(
     () => ({
-      collapsed,
-      setCollapsed: setCollapsed,
       expandedGroups,
       toggleGroup,
       searchQuery,
       setSearchQuery,
     }),
-    [collapsed, expandedGroups, searchQuery, toggleGroup],
+    [expandedGroups, searchQuery, toggleGroup],
   );
 
-  const sidebarWidth = collapsed ? 64 : 280;
+  const sidebarWidth = 280;
 
   if (!isMounted) {
     return (
@@ -595,7 +564,7 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
         <aside
           className={cn(
             'sticky top-0 h-screen border-r border-border bg-card',
-            'flex flex-col transition-all duration-300',
+            'flex flex-col',
             className,
           )}
           style={{ width: sidebarWidth }}
@@ -606,8 +575,7 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
             <Link
               href="/"
               className={cn(
-                'group flex items-center gap-2.5 rounded-lg py-1.5 transition-all duration-200 hover:bg-muted/50',
-                collapsed ? 'px-1.5' : 'px-2',
+                'group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-all duration-200 hover:bg-muted/50',
               )}
             >
               <motion.div
@@ -625,32 +593,19 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
                   priority
                 />
               </motion.div>
-              {!collapsed && (
-                <div className="flex flex-col overflow-hidden">
-                  <span className="truncate text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
-                    {t('app.brand')}
-                  </span>
-                  <span className="truncate text-[10px] font-medium text-muted-foreground">
-                    {t('app.subtitle')}
-                  </span>
-                </div>
-              )}
+              <div className="flex flex-col overflow-hidden">
+                <span className="truncate text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                  {t('app.brand')}
+                </span>
+                <span className="truncate text-[10px] font-medium text-muted-foreground">
+                  {t('app.subtitle')}
+                </span>
+              </div>
             </Link>
-            <button
-              onClick={toggleCollapsed}
-              aria-label={collapsed ? t('common.expand') : t('common.collapse')}
-              className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            >
-              {collapsed ? (
-                <PanelLeft className="h-4 w-4" />
-              ) : (
-                <PanelLeftClose className="h-4 w-4" />
-              )}
-            </button>
           </div>
 
           {/* Search */}
-          {config.showSearch && !collapsed && <SidebarSearch />}
+          {config.showSearch && <SidebarSearch />}
 
           {/* Scrollable Content */}
           <ScrollArea className="flex-1">
@@ -664,7 +619,7 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
 
           {/* Footer */}
           <div className="flex-shrink-0 border-t border-border">
-            {!collapsed && <FavoritesSection />}
+            <FavoritesSection />
             <div className="p-3">
               <ConnectWallet />
             </div>

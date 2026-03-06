@@ -19,6 +19,7 @@ export const nav = {
   trends: '趋势',
   deviation: '偏差',
   protocols: '协议',
+  protocolsOverview: '协议总览',
   api3: 'API3',
   band: 'Band Protocol',
   chainlink: 'Chainlink',
@@ -50,6 +51,7 @@ export const nav = {
     overview: '所有预言机网络的健康状态与性能总览',
     compare: '预言机对比中心 - 整合价格、延迟、成本、可靠性多维度对比分析',
     protocols: '协议 - 探索和分析预言机协议',
+    protocolsOverview: '所有预言机协议的列表与快速访问',
   },
   labels: {
     search: '搜索导航...',

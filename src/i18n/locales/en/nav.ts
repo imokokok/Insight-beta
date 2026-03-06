@@ -19,6 +19,7 @@ export const nav = {
   trends: 'Trends',
   deviation: 'Deviation',
   protocols: 'Protocols',
+  protocolsOverview: 'Protocols Overview',
   api3: 'API3',
   band: 'Band Protocol',
   chainlink: 'Chainlink',
@@ -54,6 +55,7 @@ export const nav = {
     compare:
       'Oracle Comparison Hub - Price, latency, cost, and reliability multi-dimensional analysis',
     protocols: 'Protocols - Explore and analyze oracle protocols',
+    protocolsOverview: 'List and quick access to all oracle protocols',
   },
   labels: {
     search: 'Search navigation...',
