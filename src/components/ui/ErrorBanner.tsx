@@ -8,6 +8,7 @@
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
 import { Button } from '@/components/ui';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 interface ErrorBannerProps {
@@ -49,18 +50,22 @@ export type { ErrorBannerProps };
 export function ErrorBanner({
   error,
   onRetry,
-  title = '加载失败',
+  title,
   className,
   isRetrying = false,
 }: ErrorBannerProps) {
+  const { t } = useI18n();
+  const defaultTitle = title || t('common.errorLoadFailed');
+  const defaultMessage = t('errors.checkNetwork');
+
   return (
     <div className={cn('rounded-lg border border-red-200 bg-red-50 p-4', className)}>
       <div className="flex items-start gap-3">
         <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
         <div className="min-w-0 flex-1">
-          <h3 className="font-medium text-red-900">{title}</h3>
+          <h3 className="font-medium text-red-900">{defaultTitle}</h3>
           <p className="mt-1 break-words text-sm text-red-700">
-            {error?.message || '请检查网络连接后重试'}
+            {error?.message || defaultMessage}
           </p>
           {onRetry && (
             <Button
@@ -75,7 +80,7 @@ export function ErrorBanner({
               ) : (
                 <RefreshCw className="mr-2 h-4 w-4" />
               )}
-              {isRetrying ? '重试中...' : '重试'}
+              {isRetrying ? t('common.retrying') : t('common.retry')}
             </Button>
           )}
         </div>

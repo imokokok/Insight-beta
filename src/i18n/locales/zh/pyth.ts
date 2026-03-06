@@ -89,4 +89,18 @@ export const pyth = {
     delayed: '延迟',
     abnormal: '异常',
   },
+  priceHistoryChart: {
+    title: '价格趋势分析',
+    description: 'Pyth 价格历史走势与波动分析',
+    selectPriceSource: '选择价格源',
+    currentPrice: '当前价格',
+    changeRate: '变化率',
+    highestPrice: '最高价',
+    lowestPrice: '最低价',
+    volatility: '波动率',
+    price: '价格',
+    time: '时间',
+    average: '均值',
+    noData: '暂无价格历史数据',
+  },
 };

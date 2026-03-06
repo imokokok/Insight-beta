@@ -242,7 +242,7 @@ export function FeedAggregation({ className }: FeedAggregationProps) {
             >
               <SelectTrigger className="w-[130px]">
                 <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder={t('common.filter')} />
+                <SelectValue placeholder={t('common.filterLabel')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('common.all')}</SelectItem>

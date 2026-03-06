@@ -20,6 +20,7 @@ export const errors = {
   userRejected: '您拒绝了钱包请求。',
   walletNotConnected: '钱包未连接',
   wrongNetwork: '网络错误。请切换到目标链。',
+  checkNetwork: '请检查网络连接后重试',
   failedToFetchPriceHistory: '无法获取价格历史数据',
   failedToFetchOhlcvData: '无法获取 OHLCV 市场数据',
   failedToFetchCurrentPrices: '无法获取当前市场价格',

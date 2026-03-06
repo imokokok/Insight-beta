@@ -160,10 +160,9 @@ export function EnhancedExportButton({
         let result: ExportResult;
 
         if (format === 'png' || format === 'pdf') {
-          // 对于 PNG/PDF，需要 DOM 元素
           const element = document.querySelector(`[data-export="${exportDataItem.filename}"]`);
           if (!element) {
-            throw new Error('找不到要导出的元素');
+            throw new Error(t('common.exportElementNotFound'));
           }
 
           if (format === 'png') {
@@ -264,10 +263,9 @@ export function EnhancedExportButton({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" className={cn('w-80', filterFields && 'w-[420px]')}>
-          {/* 筛选功能 */}
           {filterFields && (
             <>
-              <DropdownMenuLabel>Export Options</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('common.exportMenu.options')}</DropdownMenuLabel>
               <div className="px-2 py-1">
                 <DataFilter
                   fields={filterFields}
@@ -279,8 +277,7 @@ export function EnhancedExportButton({
             </>
           )}
 
-          {/* 单个导出选项 */}
-          <DropdownMenuLabel>Export Formats</DropdownMenuLabel>
+          <DropdownMenuLabel>{t('common.exportMenu.formats')}</DropdownMenuLabel>
           {formats.map((format) => {
             const Icon = formatIcons[format];
             return (
@@ -301,14 +298,14 @@ export function EnhancedExportButton({
           {/* 批量导出 */}
           {Array.isArray(data) && data.length > 1 && (
             <>
-              <DropdownMenuLabel>Batch Export</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('common.exportMenu.batchExport')}</DropdownMenuLabel>
               <DropdownMenuItem
                 onClick={handleBatchExport}
                 disabled={isExporting}
                 className="gap-2"
               >
                 <Download className="h-4 w-4" />
-                批量导出 ({data.length} 个项目)
+                {t('common.exportMenu.batchExportItems', { count: data.length })}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
@@ -316,16 +313,17 @@ export function EnhancedExportButton({
 
           <DropdownMenuSeparator />
 
-          {/* 导出历史 */}
           {exportHistory.length > 0 && (
             <div className="px-2 py-2">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground">最近导出</span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  {t('common.exportMenu.recentExports')}
+                </span>
                 <button
                   onClick={clearHistory}
                   className="text-xs text-muted-foreground hover:text-foreground"
                 >
-                  清空
+                  {t('common.clearAll')}
                 </button>
               </div>
               <div className="space-y-1">
@@ -364,7 +362,7 @@ export function EnhancedExportButton({
             className="absolute right-0 top-full mt-2 flex items-center gap-2 rounded-lg border border-border bg-card p-3 shadow-lg"
           >
             <Loader2 className="h-4 w-4 animate-spin text-primary" />
-            <span className="text-sm text-foreground">正在导出...</span>
+            <span className="text-sm text-foreground">{t('common.exporting')}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -400,7 +398,7 @@ function LegacyExportButton<T = unknown>(props: ExportButtonProps<T>) {
       try {
         switch (format) {
           case 'png':
-            if (!chartRef.current) throw new Error('Chart element not found');
+            if (!chartRef.current) throw new Error(t('common.chartElementNotFound'));
             await exportChartAsPNG(chartRef.current, {
               filename,
               watermark,
@@ -408,7 +406,7 @@ function LegacyExportButton<T = unknown>(props: ExportButtonProps<T>) {
             });
             break;
           case 'svg':
-            if (!chartRef.current) throw new Error('Chart element not found');
+            if (!chartRef.current) throw new Error(t('common.chartElementNotFound'));
             await exportChartAsSVG(chartRef.current, {
               filename,
               watermark,
@@ -416,11 +414,11 @@ function LegacyExportButton<T = unknown>(props: ExportButtonProps<T>) {
             });
             break;
           case 'csv':
-            if (!data || data.length === 0) throw new Error('No data available for CSV export');
+            if (!data || data.length === 0) throw new Error(t('common.noDataAvailableForCSV'));
             exportDataAsCSV(data, filename);
             break;
           case 'json':
-            if (!data || data.length === 0) throw new Error('No data available for JSON export');
+            if (!data || data.length === 0) throw new Error(t('common.noDataAvailableForJSON'));
             exportDataAsJSON(data, filename);
             break;
         }

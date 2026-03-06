@@ -12,32 +12,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Keyboard, X, Command } from 'lucide-react';
 
 import { Button } from '@/components/ui';
+import { useI18n } from '@/i18n';
 
 interface ShortcutItem {
   keys: string[];
-  description: string;
+  descriptionKey: string;
   category: string;
 }
 
 const shortcuts: ShortcutItem[] = [
   {
     keys: ['⌘', 'K'],
-    description: '打开全局搜索',
+    descriptionKey: 'keyboard.openSearch',
     category: 'navigation',
   },
   {
     keys: ['R'],
-    description: '刷新当前页面',
+    descriptionKey: 'keyboard.refreshPage',
     category: 'navigation',
   },
   {
     keys: ['Esc'],
-    description: '关闭弹窗/搜索框',
+    descriptionKey: 'keyboard.closeModal',
     category: 'navigation',
   },
   {
     keys: ['⌘', 'Shift', '?'],
-    description: '显示快捷键帮助',
+    descriptionKey: 'keyboard.showHelp',
     category: 'help',
   },
 ];
@@ -48,6 +49,7 @@ interface KeyboardShortcutsHelpProps {
 }
 
 export function KeyboardShortcutsHelp({ open = false, onOpenChange }: KeyboardShortcutsHelpProps) {
+  const { t } = useI18n();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -96,7 +98,7 @@ export function KeyboardShortcutsHelp({ open = false, onOpenChange }: KeyboardSh
               <div className="flex items-center gap-2">
                 <Keyboard className="h-5 w-5 text-primary" />
                 <h2 className="text-lg font-bold text-foreground">
-                  快捷键{' '}
+                  {t('keyboard.shortcuts')}{' '}
                   <span className="text-sm font-normal text-muted-foreground">
                     Keyboard Shortcuts
                   </span>
@@ -117,7 +119,7 @@ export function KeyboardShortcutsHelp({ open = false, onOpenChange }: KeyboardSh
                   key={index}
                   className="flex items-center justify-between rounded-xl border border-border/30 bg-card/50 p-3 transition-colors hover:border-primary/30"
                 >
-                  <span className="text-sm text-foreground">{shortcut.description}</span>
+                  <span className="text-sm text-foreground">{t(shortcut.descriptionKey)}</span>
                   <div className="flex items-center gap-1.5">
                     {shortcut.keys.map((key, keyIndex) => (
                       <kbd
@@ -134,16 +136,14 @@ export function KeyboardShortcutsHelp({ open = false, onOpenChange }: KeyboardSh
 
             {/* Footer */}
             <div className="mt-4 flex items-center justify-between border-t border-border/30 pt-4">
-              <p className="text-xs text-muted-foreground">
-                提示：在输入框中时，部分快捷键会被禁用
-              </p>
+              <p className="text-xs text-muted-foreground">{t('keyboard.inputHint')}</p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onOpenChange?.(false)}
                 className="h-8 text-xs"
               >
-                关闭
+                {t('common.close')}
               </Button>
             </div>
           </motion.div>

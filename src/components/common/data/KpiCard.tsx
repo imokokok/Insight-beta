@@ -148,7 +148,7 @@ const KpiCardComponent = function KpiCard({ data, compact = true, index = 0 }: K
             transition={{ delay: index * 0.06 + 0.22 }}
             className={cn('text-[11px] text-muted-foreground/70 sm:text-xs')}
           >
-            波动率：{metadata.volatility.toFixed(2)}%
+            {t('common.volatility')}: {metadata.volatility.toFixed(2)}%
           </motion.div>
         )}
       </div>

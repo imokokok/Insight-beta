@@ -56,7 +56,7 @@ interface PriceHistoryChartProps {
 }
 
 export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryChartProps) {
-  useI18n();
+  const { t } = useI18n();
   const [selectedTimeRange, setSelectedTimeRange] = useState<ChartTimeRangeKey>('24h');
   const [selectedSymbol, setSelectedSymbol] = useState<string>(POPULAR_SYMBOLS[0] ?? 'BTC/USD');
   const [chartData, setChartData] = useState<PriceHistoryPoint[]>([]);
@@ -162,8 +162,8 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
     return (
       <Card>
         <CardHeader>
-          <CardTitle>价格趋势分析</CardTitle>
-          <CardDescription>Pyth 价格历史走势</CardDescription>
+          <CardTitle>{t('pyth.priceHistoryChart.title')}</CardTitle>
+          <CardDescription>{t('pyth.priceHistoryChart.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -188,15 +188,15 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            价格趋势分析
+            {t('pyth.priceHistoryChart.title')}
           </CardTitle>
-          <CardDescription>Pyth 价格历史走势与波动分析</CardDescription>
+          <CardDescription>{t('pyth.priceHistoryChart.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-4">
             <Select value={selectedSymbol} onValueChange={setSelectedSymbol}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="选择价格源" />
+                <SelectValue placeholder={t('pyth.priceHistoryChart.selectPriceSource')} />
               </SelectTrigger>
               <SelectContent>
                 {POPULAR_SYMBOLS.map((symbol) => (
@@ -224,7 +224,7 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
             <div className="rounded-lg bg-muted/30 p-3">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Activity className="h-3.5 w-3.5" />
-                当前价格
+                {t('pyth.priceHistoryChart.currentPrice')}
               </div>
               <p className="mt-1 text-lg font-semibold">
                 {formatPrice(formattedData[formattedData.length - 1]?.price || 0)}
@@ -233,7 +233,7 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
             <div className="rounded-lg bg-muted/30 p-3">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <TrendingUp className="h-3.5 w-3.5" />
-                变化率
+                {t('pyth.priceHistoryChart.changeRate')}
               </div>
               <p
                 className={cn('mt-1 text-lg font-semibold')}
@@ -244,17 +244,21 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
               </p>
             </div>
             <div className="rounded-lg bg-muted/30 p-3">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">最高价</div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                {t('pyth.priceHistoryChart.highestPrice')}
+              </div>
               <p className="mt-1 text-lg font-semibold">{formatPrice(stats.maxPrice)}</p>
             </div>
             <div className="rounded-lg bg-muted/30 p-3">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">最低价</div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                {t('pyth.priceHistoryChart.lowestPrice')}
+              </div>
               <p className="mt-1 text-lg font-semibold">{formatPrice(stats.minPrice)}</p>
             </div>
             <div className="rounded-lg bg-muted/30 p-3">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Clock className="h-3.5 w-3.5" />
-                波动率
+                {t('pyth.priceHistoryChart.volatility')}
               </div>
               <p className="mt-1 text-lg font-semibold">{stats.volatility.toFixed(2)}%</p>
             </div>
@@ -287,14 +291,17 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
                       border: CHART_TOOLTIP.border,
                       borderRadius: CHART_TOOLTIP.borderRadius,
                     }}
-                    formatter={(value) => [formatPrice(value as number), '价格']}
-                    labelFormatter={(label) => `时间: ${label}`}
+                    formatter={(value) => [
+                      formatPrice(value as number),
+                      t('pyth.priceHistoryChart.price'),
+                    ]}
+                    labelFormatter={(label) => `${t('pyth.priceHistoryChart.time')}: ${label}`}
                   />
                   <Legend />
                   <Area
                     type="monotone"
                     dataKey="price"
-                    name="价格"
+                    name={t('pyth.priceHistoryChart.price')}
                     stroke={CHART_COLORS.warning}
                     fill={CHART_COLORS.warning}
                     fillOpacity={0.1}
@@ -306,7 +313,7 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
                       stroke={CHART_COLORS.indigo}
                       strokeDasharray="5 5"
                       label={{
-                        value: `均值: ${formatPrice(stats.avgPrice)}`,
+                        value: `${t('pyth.priceHistoryChart.average')}: ${formatPrice(stats.avgPrice)}`,
                         position: 'right',
                         fill: CHART_COLORS.indigo,
                         fontSize: 11,
@@ -318,7 +325,7 @@ export function PriceHistoryChart({ isLoading: externalLoading }: PriceHistoryCh
             </div>
           ) : (
             <div className="flex h-80 items-center justify-center text-muted-foreground">
-              暂无价格历史数据
+              {t('pyth.priceHistoryChart.noData')}
             </div>
           )}
         </CardContent>

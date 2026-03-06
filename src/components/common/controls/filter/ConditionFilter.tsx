@@ -8,6 +8,7 @@ import { Button } from '@/components/ui';
 import { Input } from '@/components/ui';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 import type { FilterCondition, FilterField, FilterOperator } from './types';
@@ -19,7 +20,7 @@ interface ConditionFilterProps {
   className?: string;
 }
 
-const OPERATOR_LABELS: Record<FilterOperator, string> = {
+const OPERATOR_LABELS_EN: Record<FilterOperator, string> = {
   equals: '=',
   notEquals: '≠',
   greaterThan: '>',
@@ -34,6 +35,23 @@ const OPERATOR_LABELS: Record<FilterOperator, string> = {
   notIn: 'Not in',
   between: 'Between',
   notBetween: 'Not between',
+};
+
+const OPERATOR_LABELS_ZH: Record<FilterOperator, string> = {
+  equals: '=',
+  notEquals: '≠',
+  greaterThan: '>',
+  greaterThanOrEqual: '≥',
+  lessThan: '<',
+  lessThanOrEqual: '≤',
+  contains: '包含',
+  notContains: '不包含',
+  startsWith: '开始于',
+  endsWith: '结束于',
+  in: '在...中',
+  notIn: '不在...中',
+  between: '介于',
+  notBetween: '不介于',
 };
 
 function getOperatorsForFieldType(fieldType: string): FilterOperator[] {
@@ -83,6 +101,9 @@ function getOperatorsForFieldType(fieldType: string): FilterOperator[] {
 }
 
 export function ConditionFilter({ fields, conditions, onChange, className }: ConditionFilterProps) {
+  const { t, lang } = useI18n();
+  const operatorLabels = lang === 'zh' ? OPERATOR_LABELS_ZH : OPERATOR_LABELS_EN;
+
   const addCondition = useCallback(() => {
     const firstField = fields[0];
     if (!firstField) return;
@@ -151,10 +172,10 @@ export function ConditionFilter({ fields, conditions, onChange, className }: Con
               const currentMax = Array.isArray(condition.value) ? condition.value[1] : '';
               updateCondition(condition.id, { value: [newMin, currentMax] });
             }}
-            placeholder="Min"
+            placeholder={t('common.filter.min')}
             className="h-8 w-24"
           />
-          <span className="text-sm text-muted-foreground">and</span>
+          <span className="text-sm text-muted-foreground">{t('common.filter.and')}</span>
           <Input
             type={field.type === 'number' ? 'number' : 'text'}
             value={String(max)}
@@ -163,7 +184,7 @@ export function ConditionFilter({ fields, conditions, onChange, className }: Con
               const currentMin = Array.isArray(condition.value) ? condition.value[0] : '';
               updateCondition(condition.id, { value: [currentMin, newMax] });
             }}
-            placeholder="Max"
+            placeholder={t('common.filter.max')}
             className="h-8 w-24"
           />
         </div>
@@ -177,7 +198,7 @@ export function ConditionFilter({ fields, conditions, onChange, className }: Con
         }
         value={String(condition.value || '')}
         onChange={(e) => updateCondition(condition.id, { value: e.target.value })}
-        placeholder={field.placeholder || 'Value'}
+        placeholder={field.placeholder || t('common.filter.value')}
         className="h-8 w-32"
       />
     );
@@ -200,7 +221,7 @@ export function ConditionFilter({ fields, conditions, onChange, className }: Con
           <Filter className="h-4 w-4" />
           <span className="truncate">
             {conditions.length === 0
-              ? 'Add filters'
+              ? t('common.filter.addFilters')
               : `${conditions.length} filter${conditions.length > 1 ? 's' : ''}`}
           </span>
         </Button>
@@ -211,7 +232,7 @@ export function ConditionFilter({ fields, conditions, onChange, className }: Con
       >
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Filter Conditions</span>
+            <span className="text-sm font-medium">{t('common.filter.filterConditions')}</span>
             <Button
               variant="ghost"
               size="sm"
@@ -219,7 +240,7 @@ export function ConditionFilter({ fields, conditions, onChange, className }: Con
               onClick={addCondition}
             >
               <Plus className="h-3.5 w-3.5" />
-              Add
+              {t('common.add')}
             </Button>
           </div>
 
@@ -274,7 +295,7 @@ export function ConditionFilter({ fields, conditions, onChange, className }: Con
                       <SelectContent>
                         {operators.map((op) => (
                           <SelectItem key={op} value={op}>
-                            {OPERATOR_LABELS[op as FilterOperator]}
+                            {operatorLabels[op as FilterOperator]}
                           </SelectItem>
                         ))}
                       </SelectContent>

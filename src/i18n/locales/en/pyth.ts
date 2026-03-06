@@ -89,4 +89,18 @@ export const pyth = {
     delayed: 'Delayed',
     abnormal: 'Abnormal',
   },
+  priceHistoryChart: {
+    title: 'Price Trend Analysis',
+    description: 'Pyth price history and volatility analysis',
+    selectPriceSource: 'Select price source',
+    currentPrice: 'Current Price',
+    changeRate: 'Change Rate',
+    highestPrice: 'Highest Price',
+    lowestPrice: 'Lowest Price',
+    volatility: 'Volatility',
+    price: 'Price',
+    time: 'Time',
+    average: 'Average',
+    noData: 'No price history data',
+  },
 };
