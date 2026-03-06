@@ -95,6 +95,21 @@ const PriceComparisonTab = lazy(() =>
     default: mod.PriceComparisonTab,
   })),
 );
+const ValidatorList = lazy(() =>
+  import('@/features/oracle/band/components/ValidatorList').then((mod) => ({
+    default: mod.ValidatorList,
+  })),
+);
+const OracleScriptAnalytics = lazy(() =>
+  import('@/features/oracle/band/components/OracleScriptAnalytics').then((mod) => ({
+    default: mod.OracleScriptAnalytics,
+  })),
+);
+const DataSourceReliabilityCard = lazy(() =>
+  import('@/features/oracle/band/components/DataSourceReliabilityCard').then((mod) => ({
+    default: mod.DataSourceReliabilityCard,
+  })),
+);
 
 const EXTENDED_CHAIN_DISPLAY_NAMES: Record<string, string> = {
   ...CHAIN_DISPLAY_NAMES,
@@ -376,6 +391,7 @@ export default function BandProtocolPage() {
       },
       { id: 'bridges', label: t('band.tabs.bridges'), icon: <GitBranch className="h-4 w-4" /> },
       { id: 'sources', label: t('band.tabs.sources'), icon: <Database className="h-4 w-4" /> },
+      { id: 'validators', label: 'Validators', icon: <Shield className="h-4 w-4" /> },
       { id: 'cosmos', label: 'Cosmos', icon: <Globe className="h-4 w-4" /> },
       { id: 'analysis', label: t('band.tabs.analysis'), icon: <BarChart3 className="h-4 w-4" /> },
     ],
@@ -689,6 +705,9 @@ export default function BandProtocolPage() {
             </Suspense>
           </div>
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+            <DataSourceReliabilityCard />
+          </Suspense>
+          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
             <DataSourceList
               sources={state.sourcesData?.sources}
               loading={state.loading}
@@ -697,7 +716,18 @@ export default function BandProtocolPage() {
             />
           </Suspense>
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-            <OracleScriptList scripts={state.oracleScripts ?? undefined} loading={state.loading} />
+            <OracleScriptAnalytics loading={state.loading} />
+          </Suspense>
+        </div>
+      </TabPanelWrapper>
+
+      <TabPanelWrapper tabId="validators">
+        <div className="space-y-4">
+          <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+            <ValidatorHealthCard />
+          </Suspense>
+          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+            <ValidatorList />
           </Suspense>
         </div>
       </TabPanelWrapper>

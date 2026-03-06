@@ -39,7 +39,15 @@ const PYTH_ABI = parseAbi([
 // Pyth 合约地址配置
 // ============================================================================
 
+/**
+ * Pyth Network 合约地址配置
+ * 支持 15 条主流 EVM 链
+ * 数据来源：Pyth Network 官方支持的 40+ 链中筛选
+ */
 export const PYTH_CONTRACT_ADDRESSES: Record<SupportedChain, Address | undefined> = {
+  // ============================================================================
+  // 主网链 (7 条)
+  // ============================================================================
   ethereum: '0x4305FB66699C3B2702D4d05CF36551390A4c69C6',
   polygon: '0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a',
   arbitrum: '0xff1a0f4744e8582DF1aE09D5611b887B6a12925C',
@@ -47,24 +55,38 @@ export const PYTH_CONTRACT_ADDRESSES: Record<SupportedChain, Address | undefined
   base: '0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a',
   avalanche: '0x4305FB66699C3B2702D4d05CF36551390A4c69C6',
   bsc: '0x4D7E825f80bDf85e913E0DD2A2D54927e9dE1594',
-  // 其他链暂不支持
-  fantom: undefined,
-  celo: undefined,
-  gnosis: undefined,
-  linea: undefined,
-  scroll: undefined,
-  mantle: undefined,
-  mode: undefined,
-  blast: undefined,
+  
+  // ============================================================================
+  // 新增链 (8 条)
+  // ============================================================================
+  fantom: '0xA2aa501b19aff244D90cc15a4Cf739D2725B5729',
+  celo: '0xff1a0f4744e8582DF1aE09D5611b887B6a12925C',
+  gnosis: '0xff1a0f4744e8582DF1aE09D5611b887B6a12925C',
+  linea: '0xA2aa501b19aff244D90cc15a4Cf739D2725B5729',
+  scroll: '0xA2aa501b19aff244D90cc15a4Cf739D2725B5729',
+  mantle: '0xA2aa501b19aff244D90cc15a4Cf739D2725B5729',
+  mode: '0xA2aa501b19aff244D90cc15a4Cf739D2725B5729',
+  blast: '0xA2aa501b19aff244D90cc15a4Cf739D2725B5729',
+  
+  // ============================================================================
+  // 测试链
+  // ============================================================================
+  sepolia: '0xDd24F84d36BF92C65F92307595335bdFab5Bbd21',
+  
+  // ============================================================================
+  // 暂不支持的链
+  // ============================================================================
+  // Layer 2 和其他链
+  polygonAmoy: undefined,
+  goerli: undefined,
+  mumbai: undefined,
+  local: undefined,
+  
+  // 非 EVM 链（Pyth 支持但本项目暂不支持）
   solana: undefined,
   near: undefined,
   aptos: undefined,
   sui: undefined,
-  polygonAmoy: undefined,
-  sepolia: '0xDd24F84d36BF92C65F92307595335bdFab5Bbd21',
-  goerli: undefined,
-  mumbai: undefined,
-  local: undefined,
 };
 
 // ============================================================================

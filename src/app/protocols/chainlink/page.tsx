@@ -24,6 +24,7 @@ import {
 } from '@/components/oracle/layouts/ProtocolPageLayout';
 import { Badge } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import { OracleAlertPanel } from '@/features/alerts/components';
 import type { ChainlinkFeed, Operator, OcrRound } from '@/features/oracle/chainlink/types';
 import { useI18n } from '@/i18n';
 import { fetchApiData } from '@/shared/utils';
@@ -32,6 +33,11 @@ import type { NetworkHealthStatus } from '@/types/common';
 const ChainlinkPriceHistory = lazy(() =>
   import('@/features/oracle/chainlink/components/ChainlinkPriceHistory').then((mod) => ({
     default: mod.ChainlinkPriceHistory,
+  })),
+);
+const HistoricalTrendsDashboard = lazy(() =>
+  import('@/features/oracle/chainlink/components/historical/HistoricalTrendsDashboard').then((mod) => ({
+    default: mod.HistoricalTrendsDashboard,
   })),
 );
 const FeedQualityAnalysis = lazy(() =>
@@ -299,25 +305,26 @@ export default function ChainlinkPage() {
   }, [overviewData, feeds, operators, state.lastUpdated]);
 
   return (
-    <ProtocolPageLayout
-      protocol="chainlink"
-      title="Chainlink"
-      icon={<Link2 className="h-5 w-5 text-blue-600" />}
-      description={t('chainlink.pageDescription')}
-      healthStatus={healthStatus}
-      kpiCards={kpiCards}
-      tabs={tabs}
-      loading={state.loading}
-      error={state.error}
-      lastUpdated={state.lastUpdated}
-      autoRefreshEnabled={state.autoRefreshEnabled}
-      onToggleAutoRefresh={() => updateState({ autoRefreshEnabled: !state.autoRefreshEnabled })}
-      refreshInterval={state.refreshInterval}
-      onRefreshIntervalChange={(interval) => updateState({ refreshInterval: interval })}
-      timeUntilRefresh={state.timeUntilRefresh}
-      onRefresh={fetchInitialData}
-      onExport={handleExport}
-    >
+    <>
+      <ProtocolPageLayout
+        protocol="chainlink"
+        title="Chainlink"
+        icon={<Link2 className="h-5 w-5 text-blue-600" />}
+        description={t('chainlink.pageDescription')}
+        healthStatus={healthStatus}
+        kpiCards={kpiCards}
+        tabs={tabs}
+        loading={state.loading}
+        error={state.error}
+        lastUpdated={state.lastUpdated}
+        autoRefreshEnabled={state.autoRefreshEnabled}
+        onToggleAutoRefresh={() => updateState({ autoRefreshEnabled: !state.autoRefreshEnabled })}
+        refreshInterval={state.refreshInterval}
+        onRefreshIntervalChange={(interval) => updateState({ refreshInterval: interval })}
+        timeUntilRefresh={state.timeUntilRefresh}
+        onRefresh={fetchInitialData}
+        onExport={handleExport}
+      >
       <TabPanelWrapper tabId="overview">
         <div className="space-y-3">
           <ContentSection
@@ -510,6 +517,9 @@ export default function ChainlinkPage() {
       <TabPanelWrapper tabId="advanced">
         <div className="space-y-4">
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+            <HistoricalTrendsDashboard defaultTimeRange="24h" />
+          </Suspense>
+          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
             <FeedQualityAnalysis collapsible />
           </Suspense>
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>
@@ -518,5 +528,12 @@ export default function ChainlinkPage() {
         </div>
       </TabPanelWrapper>
     </ProtocolPageLayout>
+    
+    <OracleAlertPanel
+      protocol="chainlink"
+      defaultExpanded={false}
+      position="floating"
+    />
+    </>
   );
 }

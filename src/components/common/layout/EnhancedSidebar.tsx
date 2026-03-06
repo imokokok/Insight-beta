@@ -181,13 +181,6 @@ export const defaultNavConfig: SidebarConfig = {
           defaultExpanded: false,
           items: [
             {
-              id: 'protocols-overview',
-              label: 'nav.protocolsOverview',
-              href: '/protocols',
-              icon: Link2,
-              description: 'nav.descriptions.protocolsOverview',
-            },
-            {
               id: 'chainlink',
               label: 'nav.chainlink',
               href: '/protocols/chainlink',

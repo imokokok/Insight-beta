@@ -5,3 +5,4 @@ export {
   type DeviationStatus,
   type FeedDeviationData,
 } from './useDeviation';
+export * from './useHistoricalTrends';

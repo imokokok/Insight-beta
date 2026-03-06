@@ -31,7 +31,11 @@ import {
   GasCostAnalysis,
   CrossProtocolComparison,
   AlertConfigPanel,
+  PriceUpdateHeatmap,
+  DapiHistoryChart,
+  CrossChainConsistency,
 } from '@/features/oracle/api3';
+import { usePriceUpdates, useDapiHistory, useCrossChainConsistency } from '@/features/oracle/api3/hooks/useEnhancedData';
 import { useI18n } from '@/i18n';
 import { formatTime } from '@/shared/utils/format/date';
 import { cn } from '@/shared/utils/ui';
@@ -550,6 +554,12 @@ export default function Api3Page() {
         <div className="space-y-4">
           <GasCostAnalysis />
           <CrossProtocolComparison />
+          {/* 新增：价格更新热力图 */}
+          <PriceUpdateHeatmapWrapper />
+          {/* 新增：dAPI 历史趋势 */}
+          <DapiHistoryChartWrapper />
+          {/* 新增：跨链一致性验证 */}
+          <CrossChainConsistencyWrapper />
         </div>
       </TabPanelWrapper>
 
@@ -560,5 +570,61 @@ export default function Api3Page() {
         </div>
       </TabPanelWrapper>
     </ProtocolPageLayout>
+  );
+}
+
+// ============================================================================
+// Wrapper 组件 - 集成真实数据
+// ============================================================================
+
+function PriceUpdateHeatmapWrapper() {
+  const { data, isLoading } = usePriceUpdates({ timeRange: '24h' });
+
+  const heatmapData = useMemo(() => {
+    if (!data?.updates) return [];
+    return data.updates.map((update) => ({
+      timestamp: update.timestamp,
+      dapiName: update.dapiName,
+      delay: update.delay,
+      severity: update.severity,
+    }));
+  }, [data]);
+
+  return <PriceUpdateHeatmap data={heatmapData} isLoading={isLoading} />;
+}
+
+function DapiHistoryChartWrapper() {
+  const { t } = useI18n();
+  const sampleDapi = 'ETH/USD';
+  const { data, isLoading } = useDapiHistory(sampleDapi, { timeRange: '24h' });
+
+  if (!data && !isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{sampleDapi} {t('api3.dapi.history')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground py-8">
+            暂无历史数据
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return <DapiHistoryChart dapiName={sampleDapi} history={data?.history || []} isLoading={isLoading} />;
+}
+
+function CrossChainConsistencyWrapper() {
+  const sampleDapi = 'ETH/USD';
+  const { data, isLoading } = useCrossChainConsistency(sampleDapi);
+
+  return (
+    <CrossChainConsistency
+      dapiName={sampleDapi}
+      data={data?.data || []}
+      isLoading={isLoading}
+    />
   );
 }

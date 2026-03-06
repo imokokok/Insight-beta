@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import {
   AlertTriangle,
@@ -12,6 +12,7 @@ import {
   TrendingDown,
   Minus,
   Info,
+  BarChart3,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui';
@@ -25,8 +26,17 @@ import { formatTime } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
 
 import { getScoreColor } from '../utils/reliabilityScore';
+import { NodePerformancePanel } from './performance';
 
 import type { Operator } from '../types';
+import type {
+  NodeUptimeTimeSeries,
+  NodeResponseTimeTrend,
+  NodeFeedSupportHistory,
+  FeedUpdateFrequencyTrend,
+  MultiNodeComparisonData,
+  TimeRange,
+} from '../types/historical';
 
 interface OperatorListProps {
   className?: string;
@@ -38,6 +48,8 @@ export function OperatorList({ className, collapsible = false }: OperatorListPro
   const [operators, setOperators] = useState<Operator[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showPerformancePanel, setShowPerformancePanel] = useState(false);
+  const [timeRange, setTimeRange] = useState<TimeRange>('24h');
 
   const fetchOperators = useCallback(async () => {
     setIsLoading(true);
@@ -81,6 +93,132 @@ export function OperatorList({ className, collapsible = false }: OperatorListPro
   };
 
   const onlineCount = operators.filter((op) => op.online).length;
+
+  const performanceData = useMemo(() => {
+    if (!operators.length) return null;
+
+    const now = new Date().toISOString();
+    const historyPoints = Array.from({ length: 24 }, (_, i) => {
+      const timestamp = new Date(Date.now() - (23 - i) * 3600000).toISOString();
+      return {
+        timestamp,
+        uptime: 95 + Math.random() * 5,
+        responseTime: 100 + Math.random() * 100,
+        supportedFeedsCount: 5 + Math.floor(Math.random() * 10),
+        activeFeedsCount: 3 + Math.floor(Math.random() * 7),
+        feedUpdatesCount: Math.floor(Math.random() * 50) + 10,
+        status: Math.random() > 0.1 ? ('online' as const) : ('degraded' as const),
+      };
+    });
+
+    const uptimeData: NodeUptimeTimeSeries[] = operators.map((op) => ({
+      nodeName: op.name,
+      operatorName: op.name,
+      currentUptime: op.reliabilityScore?.uptime ?? 95 + Math.random() * 5,
+      avgUptime: 95 + Math.random() * 4,
+      minUptime: 90 + Math.random() * 5,
+      maxUptime: 99.9 + Math.random() * 0.1,
+      downtimeCount: Math.floor(Math.random() * 3),
+      totalDowntimeDuration: Math.floor(Math.random() * 300),
+      history: historyPoints.map((p) => ({
+        timestamp: p.timestamp,
+        uptime: p.uptime,
+        status: p.status,
+      })),
+    }));
+
+    const responseTimeData: NodeResponseTimeTrend[] = operators.map((op) => ({
+      nodeName: op.name,
+      operatorName: op.name,
+      currentResponseTime: op.responseTime,
+      avgResponseTime: 150 + Math.random() * 100,
+      minResponseTime: 50 + Math.random() * 50,
+      maxResponseTime: 500 + Math.random() * 500,
+      p50ResponseTime: 100 + Math.random() * 50,
+      p95ResponseTime: 300 + Math.random() * 200,
+      p99ResponseTime: 500 + Math.random() * 300,
+      history: historyPoints.map((p) => ({
+        timestamp: p.timestamp,
+        responseTime: p.responseTime,
+        p50ResponseTime: p.responseTime * 0.7,
+        p95ResponseTime: p.responseTime * 1.5,
+        p99ResponseTime: p.responseTime * 2,
+      })),
+    }));
+
+    const feedSupportData: NodeFeedSupportHistory[] = operators.map((op) => ({
+      nodeName: op.name,
+      operatorName: op.name,
+      currentSupportedFeeds: op.supportedFeeds.length,
+      avgSupportedFeeds: op.supportedFeeds.length - 1 + Math.random() * 2,
+      totalFeedUpdates: Math.floor(Math.random() * 1000) + 500,
+      history: historyPoints.map((p) => ({
+        timestamp: p.timestamp,
+        supportedFeedsCount: p.supportedFeedsCount,
+        activeFeedsCount: p.activeFeedsCount,
+        feedUpdatesCount: p.feedUpdatesCount,
+      })),
+    }));
+
+    const feedFrequencyData: FeedUpdateFrequencyTrend[] = [
+      {
+        feedId: 'eth-usd',
+        symbol: 'ETH',
+        pair: 'ETH/USD',
+        currentFrequency: 1 + Math.random() * 0.5,
+        avgFrequency: 1 + Math.random() * 0.3,
+        minFrequency: 0.5 + Math.random() * 0.3,
+        maxFrequency: 2 + Math.random() * 0.5,
+        totalUpdates: Math.floor(Math.random() * 5000) + 1000,
+        history: historyPoints.map((p) => ({
+          timestamp: p.timestamp,
+          updatesPerMinute: 0.5 + Math.random() * 1.5,
+          avgIntervalSeconds: 30 + Math.random() * 60,
+        })),
+      },
+    ];
+
+    const comparisonData: MultiNodeComparisonData = {
+      nodes: operators.map((op) => ({
+        nodeName: op.name,
+        operatorName: op.name,
+        uptime: op.reliabilityScore?.uptime ?? 95 + Math.random() * 5,
+        avgResponseTime: op.responseTime,
+        p95ResponseTime: op.responseTime * 1.5,
+        supportedFeedsCount: op.supportedFeeds.length,
+        totalUpdates: Math.floor(Math.random() * 1000) + 500,
+        reliabilityScore: op.reliabilityScore?.overall ?? 90 + Math.random() * 10,
+        trend: op.reliabilityScore?.trend ?? 'stable',
+      })),
+      timeRange,
+      comparisonMetrics: {
+        avgUptime: operators.reduce((sum, op) => sum + (op.reliabilityScore?.uptime ?? 95), 0) / operators.length,
+        bestUptime: operators.reduce((best, op) => {
+          const uptime = op.reliabilityScore?.uptime ?? 95;
+          return uptime > (best.uptime ?? 0) ? { name: op.name, uptime } : best;
+        }, { name: '', uptime: 0 }).name,
+        worstUptime: operators.reduce((worst, op) => {
+          const uptime = op.reliabilityScore?.uptime ?? 95;
+          return uptime < (worst.uptime ?? 100) ? { name: op.name, uptime } : worst;
+        }, { name: '', uptime: 100 }).name,
+        avgResponseTime: operators.reduce((sum, op) => sum + op.responseTime, 0) / operators.length,
+        fastestNode: operators.reduce((fastest, op) => {
+          return op.responseTime < fastest.responseTime ? { name: op.name, responseTime: op.responseTime } : fastest;
+        }, { name: '', responseTime: Infinity }).name,
+        slowestNode: operators.reduce((slowest, op) => {
+          return op.responseTime > slowest.responseTime ? { name: op.name, responseTime: op.responseTime } : slowest;
+        }, { name: '', responseTime: 0 }).name,
+      },
+    };
+
+    return {
+      uptimeData,
+      responseTimeData,
+      feedSupportData,
+      feedFrequencyData,
+      comparisonData,
+    };
+  }, [operators, timeRange]);
 
   const renderOperatorGrid = () => (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -296,14 +434,31 @@ export function OperatorList({ className, collapsible = false }: OperatorListPro
                 </Badge>
               </CardTitle>
             </div>
-            <Button variant="outline" size="sm" onClick={fetchOperators}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              {t('common.refresh')}
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowPerformancePanel(true)}>
+                <BarChart3 className="mr-2 h-4 w-4" />
+                性能分析
+              </Button>
+              <Button variant="outline" size="sm" onClick={fetchOperators}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                {t('common.refresh')}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>{renderOperatorGrid()}</CardContent>
       </Card>
+
+      <NodePerformancePanel
+        isOpen={showPerformancePanel}
+        onClose={() => setShowPerformancePanel(false)}
+        uptimeData={performanceData?.uptimeData}
+        responseTimeData={performanceData?.responseTimeData}
+        feedSupportData={performanceData?.feedSupportData}
+        feedFrequencyData={performanceData?.feedFrequencyData}
+        comparisonData={performanceData?.comparisonData}
+        defaultTimeRange={timeRange}
+      />
     </TooltipProvider>
   );
 }

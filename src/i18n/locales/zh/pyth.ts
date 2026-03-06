@@ -12,6 +12,7 @@ export const pyth = {
     description: '高频预言机网络状态摘要',
     introduction:
       'Pyth Network 是高频预言机协议，提供来自第一方发布者的实时价格数据，支持多链 DeFi 应用。',
+    pullOracleInfo: 'Pull Oracle 机制说明',
   },
   features: {
     title: '核心特性',
@@ -102,5 +103,55 @@ export const pyth = {
     time: '时间',
     average: '均值',
     noData: '暂无价格历史数据',
+  },
+  // 价格喂价名称翻译
+  priceFeedNames: {
+    // 加密货币
+    BTC: '比特币',
+    ETH: '以太坊',
+    SOL: 'Solana',
+    AVAX: 'Avalanche',
+    AAVE: 'Aave',
+    LINK: 'Chainlink',
+    DOT: 'Polkadot',
+    MATIC: 'Polygon',
+    UNI: 'Uniswap',
+    ATOM: 'Cosmos',
+    FIL: 'Filecoin',
+    APT: 'Aptos',
+    ARB: 'Arbitrum',
+    OP: 'Optimism',
+    SUI: 'Sui',
+    NEAR: 'NEAR Protocol',
+    ALGO: 'Algorand',
+    VET: 'VeChain',
+    ICP: 'Internet Computer',
+    XRP: 'XRP',
+    // 外汇
+    'EUR/USD': '欧元/美元',
+    'GBP/USD': '英镑/美元',
+    'USD/JPY': '美元/日元',
+    'USD/CHF': '美元/瑞郎',
+    'AUD/USD': '澳元/美元',
+    'USD/CAD': '美元/加元',
+    'NZD/USD': '纽元/美元',
+    'EUR/GBP': '欧元/英镑',
+    'EUR/JPY': '欧元/日元',
+    'GBP/JPY': '英镑/日元',
+    // 大宗商品
+    'XAU/USD': '黄金',
+    'XAG/USD': '白银',
+    'XPT/USD': '铂金',
+    'XPD/USD': '钯金',
+    OIL: '原油 (WTI)',
+    BRENT: '布伦特原油',
+    NATGAS: '天然气',
+    WHEAT: '小麦',
+  },
+  // 资产类别
+  assetCategories: {
+    crypto: '加密货币',
+    forex: '外汇',
+    commodities: '大宗商品',
   },
 };

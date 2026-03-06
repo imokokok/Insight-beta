@@ -61,6 +61,28 @@ interface UpdateRecord {
   newValue: string;
 }
 
+interface OperatorInfo {
+  name: string;
+  operatorAddress: string;
+  totalAirnodes: number;
+  activeAirnodes: number;
+  reputationScore: number;
+  totalUpdates: number;
+  avgResponseTime: number;
+  uptimeRate: number;
+  website?: string;
+  description?: string;
+}
+
+interface HistoryStatistics {
+  avgResponseTime: number;
+  minResponseTime: number;
+  maxResponseTime: number;
+  avgUptime: number;
+  totalUpdates: number;
+  trend: 'improving' | 'stable' | 'degrading';
+}
+
 interface AirnodeDetailData {
   airnode: {
     address: string;
@@ -72,6 +94,11 @@ interface AirnodeDetailData {
     lastHeartbeat: string | null;
     responseTime: number;
     uptime: number;
+    operatorAddress?: string;
+  };
+  operator?: OperatorInfo;
+  history?: {
+    statistics: HistoryStatistics;
   };
   dapis: DapiInfo[];
   updateHistory: UpdateRecord[];
@@ -109,8 +136,18 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
     setError(null);
 
     try {
-      const data = await fetchApiData<AirnodeDetailData>(`/api/oracle/api3/airnode/${address}`);
-      setAirnodeData(data);
+      const [detailData, historyData] = await Promise.all([
+        fetchApiData<AirnodeDetailData>(`/api/oracle/api3/airnode/${address}`),
+        fetchApiData<{ statistics: HistoryStatistics }>(
+          `/api/oracle/api3/airnode/${address}/history?timeRange=7d`,
+        ),
+      ]);
+
+      const enrichedData = {
+        ...detailData,
+        history: historyData,
+      };
+      setAirnodeData(enrichedData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch airnode details');
       setAirnodeData(null);
@@ -396,6 +433,35 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
                   {metadata.activeDapis} / {metadata.totalDapis}
                 </span>
               </div>
+
+              {airnode.operator && (
+                <div className="flex items-center justify-between border-t pt-3">
+                  <span className="text-sm text-muted-foreground">运营商</span>
+                  <div className="text-right">
+                    <span className="block font-medium">{airnode.operator.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      信誉评分：{airnode.operator.reputationScore.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {airnode.history && (
+                <div className="flex items-center justify-between border-t pt-3">
+                  <span className="text-sm text-muted-foreground">历史表现</span>
+                  <div className="text-right">
+                    <span className="block font-medium">
+                      平均响应：{airnode.history.statistics.avgResponseTime}ms
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      趋势：
+                      {airnode.history.statistics.trend === 'improving' && '📈 改善中'}
+                      {airnode.history.statistics.trend === 'stable' && '➡️ 稳定'}
+                      {airnode.history.statistics.trend === 'degrading' && '📉 下降中'}
+                    </span>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

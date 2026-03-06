@@ -12,6 +12,7 @@ export const pyth = {
     description: 'High-frequency oracle network status summary',
     introduction:
       'Pyth Network is a high-frequency oracle protocol that provides real-time price data from first-party publishers, supporting DeFi applications across multiple chains.',
+    pullOracleInfo: 'Pull Oracle Mechanism',
   },
   features: {
     title: 'Core Features',
@@ -102,5 +103,55 @@ export const pyth = {
     time: 'Time',
     average: 'Average',
     noData: 'No price history data',
+  },
+  // Price feed names
+  priceFeedNames: {
+    // Crypto
+    BTC: 'Bitcoin',
+    ETH: 'Ethereum',
+    SOL: 'Solana',
+    AVAX: 'Avalanche',
+    AAVE: 'Aave',
+    LINK: 'Chainlink',
+    DOT: 'Polkadot',
+    MATIC: 'Polygon',
+    UNI: 'Uniswap',
+    ATOM: 'Cosmos',
+    FIL: 'Filecoin',
+    APT: 'Aptos',
+    ARB: 'Arbitrum',
+    OP: 'Optimism',
+    SUI: 'Sui',
+    NEAR: 'NEAR Protocol',
+    ALGO: 'Algorand',
+    VET: 'VeChain',
+    ICP: 'Internet Computer',
+    XRP: 'XRP',
+    // Forex
+    'EUR/USD': 'EUR/USD',
+    'GBP/USD': 'GBP/USD',
+    'USD/JPY': 'USD/JPY',
+    'USD/CHF': 'USD/CHF',
+    'AUD/USD': 'AUD/USD',
+    'USD/CAD': 'USD/CAD',
+    'NZD/USD': 'NZD/USD',
+    'EUR/GBP': 'EUR/GBP',
+    'EUR/JPY': 'EUR/JPY',
+    'GBP/JPY': 'GBP/JPY',
+    // Commodities
+    'XAU/USD': 'Gold',
+    'XAG/USD': 'Silver',
+    'XPT/USD': 'Platinum',
+    'XPD/USD': 'Palladium',
+    OIL: 'Crude Oil (WTI)',
+    BRENT: 'Brent Crude',
+    NATGAS: 'Natural Gas',
+    WHEAT: 'Wheat',
+  },
+  // Asset categories
+  assetCategories: {
+    crypto: 'Crypto',
+    forex: 'Forex',
+    commodities: 'Commodities',
   },
 };
