@@ -96,7 +96,7 @@ function DropdownMenuContent({
     return (
       <div
         className={cn(
-          'bg-popover text-popover-foreground absolute z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 text-left shadow-lg',
+          'absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-left text-popover-foreground shadow-lg',
           align === 'start' ? 'left-0' : align === 'end' ? 'right-0' : 'left-1/2 -translate-x-1/2',
           className,
         )}
@@ -120,7 +120,7 @@ function DropdownMenuContent({
           exit={{ opacity: 0, scale: 0.95, y: -8 }}
           transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
           className={cn(
-            'bg-popover text-popover-foreground absolute z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 text-left shadow-lg',
+            'absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-left text-popover-foreground shadow-lg',
             align === 'start'
               ? 'left-0'
               : align === 'end'

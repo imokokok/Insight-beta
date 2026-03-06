@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 
-import { TrendingUp, TrendingDown, AlertTriangle, Clock } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertTriangle, Clock, CheckCircle2 } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { logger } from '@/shared/logger';
 import { cn } from '@/shared/utils';
 import { buildApiUrl } from '@/shared/utils';
 import type { PriceDeviationHistory } from '@/types/oracle/comparison';
@@ -79,7 +80,7 @@ export function PriceDeviationHistoryChart({
             setData(result.data);
           }
         })
-        .catch(console.error)
+        .catch((error) => logger.error('Failed to fetch price deviation history', { error }))
         .finally(() => setIsLoading(false));
     }
   }, [symbol, protocol, selectedRange, propData]);
@@ -136,6 +137,27 @@ export function PriceDeviationHistoryChart({
     ];
   }, [data, t]);
 
+  const durationCards = useMemo(() => {
+    if (!data) return [];
+    const { summary } = data;
+    return [
+      {
+        title: t('comparison.deviation.maxDuration'),
+        value: `${(summary.maxDuration || 0).toFixed(0)}m`,
+        icon: AlertTriangle,
+        color: 'text-red-600',
+        bgColor: 'bg-red-50',
+      },
+      {
+        title: t('comparison.deviation.minDuration'),
+        value: `${(summary.minDuration || 0).toFixed(0)}m`,
+        icon: CheckCircle2,
+        color: 'text-green-600',
+        bgColor: 'bg-green-50',
+      },
+    ];
+  }, [data, t]);
+
   if (isLoading) {
     return (
       <Card className="w-full">
@@ -182,7 +204,10 @@ export function PriceDeviationHistoryChart({
               {data.symbol} - {data.protocol}
             </CardDescription>
           </div>
-          <Tabs value={selectedRange} onValueChange={(v) => handleTimeRangeChange(v as any)}>
+          <Tabs
+            value={selectedRange}
+            onValueChange={(v) => handleTimeRangeChange(v as '24h' | '7d' | '30d')}
+          >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="24h">24h</TabsTrigger>
               <TabsTrigger value="7d">7d</TabsTrigger>
@@ -194,6 +219,25 @@ export function PriceDeviationHistoryChart({
       <CardContent className="space-y-6">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {summaryCards.map((card) => (
+            <div
+              key={card.title}
+              className={cn('rounded-lg border p-4 transition-all hover:shadow-md', card.bgColor)}
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">{card.title}</p>
+                  <p className={cn('mt-1 text-2xl font-bold', card.color)}>{card.value}</p>
+                </div>
+                <div className={cn('rounded-full bg-white/50 p-2', card.color)}>
+                  <card.icon className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {durationCards.map((card) => (
             <div
               key={card.title}
               className={cn('rounded-lg border p-4 transition-all hover:shadow-md', card.bgColor)}

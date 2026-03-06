@@ -18,21 +18,21 @@ import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
-export interface Column {
-  key: string;
+export interface Column<T> {
+  key: Extract<keyof T, string>;
   header: string;
   width?: string | number;
   align?: 'left' | 'center' | 'right';
-  render?: (value: any, row: any, index: number) => React.ReactNode;
+  render?: (value: T[keyof T], row: T, index: number) => React.ReactNode;
   sortable?: boolean;
 }
 
-export interface ResponsiveTableProps {
-  columns: Column[];
-  data: any[];
+export interface ResponsiveTableProps<T> {
+  columns: Column<T>[];
+  data: T[];
   primaryColumns?: string[];
-  rowKey?: string | ((row: any) => string);
-  onRowClick?: (row: any) => void;
+  rowKey?: keyof T | ((row: T) => string);
+  onRowClick?: (row: T) => void;
   loading?: boolean;
   emptyMessage?: string;
   onRefresh?: () => void;
@@ -41,17 +41,17 @@ export interface ResponsiveTableProps {
   stickyHeader?: boolean;
 }
 
-interface MobileCardProps {
-  row: any;
-  columns: Column[];
+interface MobileCardProps<T> {
+  row: T;
+  columns: Column<T>[];
   primaryColumns: string[];
   isExpanded: boolean;
   onToggle: () => void;
-  onRowClick?: (row: any) => void;
+  onRowClick?: (row: T) => void;
   rowIndex: number;
 }
 
-const MobileCard = React.memo(function MobileCard({
+const MobileCard = React.memo(function MobileCardInner<T>({
   row,
   columns,
   primaryColumns,
@@ -59,7 +59,7 @@ const MobileCard = React.memo(function MobileCard({
   onToggle,
   onRowClick,
   rowIndex,
-}: MobileCardProps) {
+}: MobileCardProps<T>) {
   const primaryCols = columns.filter((col) => primaryColumns.includes(col.key));
   const secondaryCols = columns.filter((col) => !primaryColumns.includes(col.key));
 
@@ -85,9 +85,9 @@ const MobileCard = React.memo(function MobileCard({
       >
         <div className="flex-1 space-y-1.5">
           {primaryCols.map((col) => {
-            const value = row[col.key];
+            const value = row[col.key as keyof T];
             return (
-              <div key={col.key} className="flex items-center gap-2">
+              <div key={String(col.key)} className="flex items-center gap-2">
                 <span className="min-w-[60px] text-xs text-muted-foreground">{col.header}:</span>
                 <span className="flex-1 text-sm font-medium text-foreground">
                   {col.render ? col.render(value, row, rowIndex) : String(value ?? '-')}
@@ -126,9 +126,9 @@ const MobileCard = React.memo(function MobileCard({
         <div className="border-t border-border/30 bg-muted/20 px-3 py-2.5">
           <div className="space-y-2">
             {secondaryCols.map((col) => {
-              const value = row[col.key];
+              const value = row[col.key as keyof T];
               return (
-                <div key={col.key} className="flex items-start gap-2">
+                <div key={String(col.key)} className="flex items-start gap-2">
                   <span className="min-w-[60px] pt-0.5 text-xs text-muted-foreground">
                     {col.header}:
                   </span>
@@ -143,7 +143,7 @@ const MobileCard = React.memo(function MobileCard({
       </div>
     </div>
   );
-});
+}) as <T>(props: MobileCardProps<T>) => React.ReactElement;
 
 const TableSkeleton = React.memo(function TableSkeleton({ rowCount = 5 }: { rowCount?: number }) {
   return (
@@ -205,11 +205,11 @@ const EmptyState = React.memo(function EmptyState({
   );
 });
 
-export function ResponsiveTable({
+export function ResponsiveTable<T>({
   columns,
   data,
   primaryColumns = [],
-  rowKey = 'id',
+  rowKey = 'id' as keyof T,
   onRowClick,
   loading = false,
   emptyMessage = '暂无数据',
@@ -217,16 +217,16 @@ export function ResponsiveTable({
   className,
   cardClassName,
   stickyHeader = true,
-}: ResponsiveTableProps) {
+}: ResponsiveTableProps<T>) {
   const isMobile = useIsMobile();
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 
   const getRowKey = useCallback(
-    (row: any, index: number): string => {
+    (row: T, index: number): string => {
       if (typeof rowKey === 'function') {
         return rowKey(row);
       }
-      return row[rowKey] ?? String(index);
+      return String(row[rowKey] ?? index);
     },
     [rowKey],
   );
@@ -247,7 +247,7 @@ export function ResponsiveTable({
     if (primaryColumns.length > 0) {
       return primaryColumns;
     }
-    return columns.slice(0, 2).map((col) => col.key);
+    return columns.slice(0, 2).map((col) => String(col.key));
   }, [primaryColumns, columns]);
 
   if (loading) {
@@ -299,7 +299,7 @@ export function ResponsiveTable({
           <TableRow>
             {columns.map((col) => (
               <TableHead
-                key={col.key}
+                key={String(col.key)}
                 style={{
                   width: col.width,
                   textAlign: col.align,
@@ -324,10 +324,10 @@ export function ResponsiveTable({
                 className={cn(onRowClick && 'cursor-pointer')}
               >
                 {columns.map((col) => {
-                  const value = row[col.key];
+                  const value = row[col.key as keyof T];
                   return (
                     <TableCell
-                      key={col.key}
+                      key={String(col.key)}
                       className={cn(
                         col.align === 'center' && 'text-center',
                         col.align === 'right' && 'text-right',

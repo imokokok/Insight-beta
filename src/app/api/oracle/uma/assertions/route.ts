@@ -41,13 +41,7 @@ function generateMockAssertions(): Assertion[] {
     '0x1234567890abcdef1234567890abcdef12345678',
     '0x9876543210fedcba9876543210fedcba98765432',
   ];
-  const identifiers = [
-    'ETH/BTC',
-    'LINK/USD',
-    'USDC/USD',
-    'BTC/USD',
-    'SOL/USD',
-  ];
+  const identifiers = ['ETH/BTC', 'LINK/USD', 'USDC/USD', 'BTC/USD', 'SOL/USD'];
 
   const assertions: Assertion[] = [];
   const now = Date.now();
@@ -71,7 +65,11 @@ function generateMockAssertions(): Assertion[] {
       status,
       chain,
       blockNumber: 18000000 + Math.floor(Math.random() * 1000000),
-      txHash: `0x${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`.slice(0, 66),
+      txHash:
+        `0x${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`.slice(
+          0,
+          66,
+        ),
       timestamp: timestamp.toISOString(),
       expirationTimestamp: expirationTimestamp.toISOString(),
     };
@@ -81,23 +79,31 @@ function generateMockAssertions(): Assertion[] {
     }
 
     if (status === 'resolved' || status === 'settled') {
-      assertion.resolutionTimestamp = new Date(expirationTimestamp.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString();
+      assertion.resolutionTimestamp = new Date(
+        expirationTimestamp.getTime() + 1 * 24 * 60 * 60 * 1000,
+      ).toISOString();
       assertion.settledPrice = (Math.random() * 10000 + 1000).toFixed(4);
     }
 
     if (status === 'settled') {
-      assertion.settlementTimestamp = new Date(assertion.resolutionTimestamp ? new Date(assertion.resolutionTimestamp).getTime() + 2 * 24 * 60 * 60 * 1000 : expirationTimestamp.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
+      assertion.settlementTimestamp = new Date(
+        assertion.resolutionTimestamp
+          ? new Date(assertion.resolutionTimestamp).getTime() + 2 * 24 * 60 * 60 * 1000
+          : expirationTimestamp.getTime() + 3 * 24 * 60 * 60 * 1000,
+      ).toISOString();
     }
 
     assertions.push(assertion);
   }
 
-  return assertions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  return assertions.sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+  );
 }
 
 function filterAssertions(
   assertions: Assertion[],
-  { from, to, status, chain }: AssertionsQueryParams
+  { from, to, status, chain }: AssertionsQueryParams,
 ): Assertion[] {
   return assertions.filter((assertion) => {
     if (from) {
@@ -151,7 +157,7 @@ export async function GET(request: NextRequest) {
     });
 
     return ok({
-      assertions: filteredAssertions.map(a => ({ ...a, isMock: useMock })),
+      assertions: filteredAssertions.map((a) => ({ ...a, isMock: useMock })),
       total: filteredAssertions.length,
       metadata: {
         source: 'uma-optimistic-oracle',

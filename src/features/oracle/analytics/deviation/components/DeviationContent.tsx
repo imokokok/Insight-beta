@@ -23,6 +23,7 @@ import {
   StatCardSkeleton,
   ExportButton,
 } from '@/components/common';
+import type { ExportConfig } from '@/components/common';
 import { Button } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { RefreshIndicator } from '@/components/ui';
@@ -57,6 +58,8 @@ import {
 import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
+
+import type { DeviationReport } from '../types/deviation';
 
 interface DeviationContentProps {
   onRefresh?: () => void;
@@ -184,8 +187,8 @@ export function DeviationContent({ onRefresh }: DeviationContentProps) {
               {t('common.refresh')}
             </Button>
             <ExportButton
-              data={report as any}
-              config={deviationExportConfig as any}
+              data={report as DeviationReport | null}
+              config={deviationExportConfig as ExportConfig<unknown>}
               disabled={loading}
             />
             <AutoRefreshControl

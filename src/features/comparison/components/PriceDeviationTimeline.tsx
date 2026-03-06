@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, memo } from 'react';
 
 import {
   AlertTriangle,
@@ -16,7 +16,9 @@ import {
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { logger } from '@/shared/logger';
 import { cn } from '@/shared/utils';
 import { buildApiUrl } from '@/shared/utils';
 import {
@@ -26,12 +28,18 @@ import {
   formatFullDate,
 } from '@/shared/utils/format';
 import { formatDeviationSmall } from '@/shared/utils/format';
-import type { PriceDeviationTimeline, PriceDeviationLevel } from '@/types/oracle/comparison';
+import type {
+  PriceDeviationTimeline,
+  PriceDeviationLevel,
+  PriceDeviationEvent,
+} from '@/types/oracle/comparison';
 
 interface PriceDeviationTimelineProps {
   data?: PriceDeviationTimeline;
   isLoading?: boolean;
   maxEvents?: number;
+  timeRange?: '24h' | '7d' | '30d';
+  onTimeRangeChange?: (range: '24h' | '7d' | '30d') => void;
   symbol?: string;
   protocol?: string;
 }
@@ -81,16 +89,163 @@ const levelConfig: Record<
   },
 };
 
+interface TimelineEventProps {
+  event: PriceDeviationEvent;
+  isFirst: boolean;
+  isLast: boolean;
+}
+
+const TimelineEvent = memo(function TimelineEvent({ event, isFirst, isLast }: TimelineEventProps) {
+  const { t } = useI18n();
+  const config = levelConfig[event.deviationLevel];
+  const Icon = config.icon;
+
+  const connectorColor = useMemo(() => {
+    if (event.deviationLevel === 'critical') return 'bg-error/20';
+    if (event.deviationLevel === 'high') return 'bg-orange-500/20';
+    if (event.deviationLevel === 'medium') return 'bg-warning/20';
+    return 'bg-success/20';
+  }, [event.deviationLevel]);
+
+  const deviationBadgeVariant = useMemo(() => {
+    if (event.deviationLevel === 'critical') return 'destructive' as const;
+    if (event.deviationLevel === 'high') return 'default' as const;
+    return 'secondary' as const;
+  }, [event.deviationLevel]);
+
+  return (
+    <div className="relative flex gap-4 sm:gap-6">
+      <div className="flex flex-col items-center">
+        <div
+          className={cn(
+            'relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300',
+            config.bgColor,
+            config.borderColor,
+            config.ringColor,
+            'ring-4',
+            isFirst && 'scale-110',
+          )}
+        >
+          <Icon className={cn('h-5 w-5', config.color)} />
+        </div>
+        {!isLast && <div className={cn('w-0.5 flex-1', connectorColor)} />}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div
+          className={cn(
+            'group rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-5',
+            config.bgColor,
+            config.borderColor,
+            'backdrop-blur-sm',
+          )}
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
+                className={cn('text-xs font-medium capitalize', config.borderColor, config.color)}
+              >
+                {config.levelLabel}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                {event.protocol}
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                {event.symbol}
+              </Badge>
+              <Badge variant={deviationBadgeVariant} className="text-xs font-semibold">
+                <Icon className="mr-1 h-3 w-3" />
+                {formatDeviationSmall(event.deviationPercent)}
+              </Badge>
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-2">
+                {event.resolved ? (
+                  <div className="flex items-center gap-1 text-success">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span className="hidden text-xs font-medium sm:inline">Resolved</span>
+                  </div>
+                ) : (
+                  <div className="flex animate-pulse items-center gap-1 text-error">
+                    <XCircle className="h-4 w-4" />
+                    <span className="hidden text-xs font-medium sm:inline">Ongoing</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col items-end">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Clock3 className="h-3 w-3" />
+                  {formatFullTime(event.timestamp)}
+                </div>
+                <span className="text-[11px] text-muted-foreground/70">
+                  {formatFullDate(event.timestamp)} · {formatTimeAgoShort(event.timestamp)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+            <div className="rounded-lg border border-border/50 bg-background/50 p-3">
+              <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                <TrendingUp className="h-3 w-3" />
+                {t('comparison.deviation.startPrice')}
+              </p>
+              <p className="text-sm font-semibold">${event.startPrice.toFixed(4)}</p>
+            </div>
+            <div className="rounded-lg border border-border/50 bg-background/50 p-3">
+              <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                <TrendingDown className="h-3 w-3" />
+                {t('comparison.deviation.endPrice')}
+              </p>
+              <p className="text-sm font-semibold">${event.endPrice.toFixed(4)}</p>
+            </div>
+            <div className="rounded-lg border border-border/50 bg-background/50 p-3">
+              <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                {t('comparison.deviation.duration')}
+              </p>
+              <p className="text-sm font-semibold">{formatDurationMinutes(event.duration)}</p>
+            </div>
+            <div className="rounded-lg border border-border/50 bg-background/50 p-3">
+              <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                <Circle className="h-3 w-3" />
+                {t('comparison.referencePrice')}
+              </p>
+              <p className="text-sm font-semibold">${event.referencePrice.toFixed(4)}</p>
+            </div>
+          </div>
+
+          {!event.resolved && (
+            <div className="mt-4 flex items-center gap-2 rounded-lg border border-error/20 bg-error/5 p-3 text-error">
+              <AlertTriangle className="h-4 w-4 animate-pulse" />
+              <span className="text-sm font-medium">{t('comparison.deviation.ongoing')}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
 export function PriceDeviationTimeline({
   data: propData,
   isLoading: propLoading,
   maxEvents = 10,
+  timeRange: propTimeRange = '24h',
+  onTimeRangeChange,
   symbol = 'ETH/USD',
   protocol = 'chainlink',
 }: PriceDeviationTimelineProps) {
   const { t } = useI18n();
   const [data, setData] = useState<PriceDeviationTimeline | undefined>(propData);
   const [isLoading, setIsLoading] = useState(propLoading ?? false);
+  const [selectedRange, setSelectedRange] = useState<'24h' | '7d' | '30d'>(propTimeRange);
+
+  const handleTimeRangeChange = (range: '24h' | '7d' | '30d') => {
+    setSelectedRange(range);
+    onTimeRangeChange?.(range);
+  };
 
   useEffect(() => {
     if (propData) {
@@ -101,7 +256,7 @@ export function PriceDeviationTimeline({
         buildApiUrl('/api/comparison/deviation/history', {
           symbol,
           protocol,
-          timeRange: '24h',
+          timeRange: selectedRange,
           type: 'timeline',
         }),
       )
@@ -111,10 +266,10 @@ export function PriceDeviationTimeline({
             setData(result.data);
           }
         })
-        .catch(console.error)
+        .catch((error) => logger.error('Failed to fetch price deviation timeline', { error }))
         .finally(() => setIsLoading(false));
     }
-  }, [symbol, protocol, propData]);
+  }, [symbol, protocol, selectedRange, propData]);
 
   const displayEvents = useMemo(() => {
     if (!data) return [];
@@ -182,26 +337,38 @@ export function PriceDeviationTimeline({
               {t('comparison.deviation.timelineDesc')}
             </CardDescription>
           </div>
-          {eventStats && (
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="text-xs">
-                {eventStats.total} {t('comparison.deviation.events')}
-              </Badge>
-              {eventStats.critical > 0 && (
-                <Badge variant="destructive" className="text-xs">
-                  {eventStats.critical} {t('comparison.deviation.critical')}
+          <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
+            <Tabs
+              value={selectedRange}
+              onValueChange={(v) => handleTimeRangeChange(v as '24h' | '7d' | '30d')}
+            >
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="24h">24h</TabsTrigger>
+                <TabsTrigger value="7d">7d</TabsTrigger>
+                <TabsTrigger value="30d">30d</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            {eventStats && (
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className="text-xs">
+                  {eventStats.total} {t('comparison.deviation.events')}
                 </Badge>
-              )}
-              {eventStats.resolved > 0 && (
-                <Badge
-                  variant="outline"
-                  className="border-success/30 bg-success/5 text-xs text-success"
-                >
-                  {eventStats.resolved} Resolved
-                </Badge>
-              )}
-            </div>
-          )}
+                {eventStats.critical > 0 && (
+                  <Badge variant="destructive" className="text-xs">
+                    {eventStats.critical} {t('comparison.deviation.critical')}
+                  </Badge>
+                )}
+                {eventStats.resolved > 0 && (
+                  <Badge
+                    variant="outline"
+                    className="border-success/30 bg-success/5 text-xs text-success"
+                  >
+                    {eventStats.resolved} Resolved
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -209,163 +376,14 @@ export function PriceDeviationTimeline({
           <div className="absolute bottom-2 left-5 top-2 w-0.5 bg-gradient-to-b from-border via-muted-foreground/30 to-border" />
 
           <div className="space-y-8">
-            {displayEvents.map((event, index) => {
-              const config = levelConfig[event.deviationLevel];
-              const Icon = config.icon;
-              const isFirst = index === 0;
-              const isLast = index === displayEvents.length - 1;
-
-              return (
-                <div key={event.id} className="relative flex gap-4 sm:gap-6">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={cn(
-                        'relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300',
-                        config.bgColor,
-                        config.borderColor,
-                        config.ringColor,
-                        'ring-4',
-                        isFirst && 'scale-110',
-                      )}
-                    >
-                      <Icon className={cn('h-5 w-5', config.color)} />
-                    </div>
-                    {!isLast && (
-                      <div
-                        className={cn(
-                          'w-0.5 flex-1',
-                          event.deviationLevel === 'critical'
-                            ? 'bg-error/20'
-                            : event.deviationLevel === 'high'
-                              ? 'bg-orange-500/20'
-                              : event.deviationLevel === 'medium'
-                                ? 'bg-warning/20'
-                                : 'bg-success/20',
-                        )}
-                      />
-                    )}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div
-                      className={cn(
-                        'group rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-5',
-                        config.bgColor,
-                        config.borderColor,
-                        'backdrop-blur-sm',
-                      )}
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              'text-xs font-medium capitalize',
-                              config.borderColor,
-                              config.color,
-                            )}
-                          >
-                            {config.levelLabel}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            {event.protocol}
-                          </Badge>
-                          <Badge variant="secondary" className="text-xs">
-                            {event.symbol}
-                          </Badge>
-                          <Badge
-                            variant={
-                              event.deviationLevel === 'critical'
-                                ? 'destructive'
-                                : event.deviationLevel === 'high'
-                                  ? 'default'
-                                  : 'secondary'
-                            }
-                            className="text-xs font-semibold"
-                          >
-                            <Icon className="mr-1 h-3 w-3" />
-                            {formatDeviationSmall(event.deviationPercent)}
-                          </Badge>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <div className="flex items-center gap-2">
-                            {event.resolved ? (
-                              <div className="flex items-center gap-1 text-success">
-                                <CheckCircle2 className="h-4 w-4" />
-                                <span className="hidden text-xs font-medium sm:inline">
-                                  Resolved
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="flex animate-pulse items-center gap-1 text-error">
-                                <XCircle className="h-4 w-4" />
-                                <span className="hidden text-xs font-medium sm:inline">
-                                  Ongoing
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex flex-col items-end">
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Clock3 className="h-3 w-3" />
-                              {formatFullTime(event.timestamp)}
-                            </div>
-                            <span className="text-[11px] text-muted-foreground/70">
-                              {formatFullDate(event.timestamp)} ·{' '}
-                              {formatTimeAgoShort(event.timestamp)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-                        <div className="rounded-lg border border-border/50 bg-background/50 p-3">
-                          <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
-                            <TrendingUp className="h-3 w-3" />
-                            {t('comparison.deviation.startPrice')}
-                          </p>
-                          <p className="text-sm font-semibold">${event.startPrice.toFixed(4)}</p>
-                        </div>
-                        <div className="rounded-lg border border-border/50 bg-background/50 p-3">
-                          <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
-                            <TrendingDown className="h-3 w-3" />
-                            {t('comparison.deviation.endPrice')}
-                          </p>
-                          <p className="text-sm font-semibold">${event.endPrice.toFixed(4)}</p>
-                        </div>
-                        <div className="rounded-lg border border-border/50 bg-background/50 p-3">
-                          <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            {t('comparison.deviation.duration')}
-                          </p>
-                          <p className="text-sm font-semibold">
-                            {formatDurationMinutes(event.duration)}
-                          </p>
-                        </div>
-                        <div className="rounded-lg border border-border/50 bg-background/50 p-3">
-                          <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
-                            <Circle className="h-3 w-3" />
-                            {t('comparison.referencePrice')}
-                          </p>
-                          <p className="text-sm font-semibold">
-                            ${event.referencePrice.toFixed(4)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {!event.resolved && (
-                        <div className="mt-4 flex items-center gap-2 rounded-lg border border-error/20 bg-error/5 p-3 text-error">
-                          <AlertTriangle className="h-4 w-4 animate-pulse" />
-                          <span className="text-sm font-medium">
-                            {t('comparison.deviation.ongoing')}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {displayEvents.map((event, index) => (
+              <TimelineEvent
+                key={event.id}
+                event={event}
+                isFirst={index === 0}
+                isLast={index === displayEvents.length - 1}
+              />
+            ))}
           </div>
         </div>
 

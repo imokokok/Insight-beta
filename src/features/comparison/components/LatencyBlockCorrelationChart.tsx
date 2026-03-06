@@ -18,6 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { logger } from '@/shared/logger';
 import { buildApiUrl } from '@/shared/utils';
 import { formatLatency } from '@/shared/utils/format';
 import type { LatencyBlockCorrelation } from '@/types/oracle/comparison';
@@ -61,7 +62,7 @@ export function LatencyBlockCorrelationChart({
             setData(result.data);
           }
         })
-        .catch(console.error)
+        .catch((error) => logger.error('Failed to fetch latency block correlation data', { error }))
         .finally(() => setIsLoading(false));
     }
   }, [symbol, protocol, chain, propData]);

@@ -24,9 +24,12 @@ import { Button } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useWallet } from '@/features/wallet/contexts/WalletContext';
 import { useI18n } from '@/i18n';
+import { logger } from '@/shared/logger';
 import { formatTime } from '@/shared/utils/format/date';
 import { cn } from '@/shared/utils/ui';
 import type { NetworkHealthStatus } from '@/types/common';
+
+import type { Route } from 'next';
 
 interface Assertion {
   id: string;
@@ -247,7 +250,7 @@ export default function UmaPage() {
         setDisputesData(result.data);
       }
     } catch (err) {
-      console.error('Failed to fetch disputes:', err);
+      logger.error('Failed to fetch disputes', { error: err });
     } finally {
       setDisputesLoading(false);
     }
@@ -270,7 +273,7 @@ export default function UmaPage() {
       } else {
         params.delete('filter');
       }
-      router.replace(`${pathname}?${params.toString()}` as any, { scroll: false });
+      router.replace(`${pathname}?${params.toString()}` as Route, { scroll: false });
     },
     [searchParams, router, pathname],
   );

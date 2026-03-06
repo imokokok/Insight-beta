@@ -24,6 +24,8 @@ import { formatTimeAgo } from '@/shared/utils/format/date';
 
 import { useAddressHistory, type AddressHistoryItem } from '../hooks/useAddressHistory';
 
+import type { Route } from 'next';
+
 const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 
 interface PopularAddress {
@@ -150,21 +152,21 @@ export function AddressExplorer({ className }: AddressExplorerProps) {
         ? undefined
         : inputAddressType;
     addToHistory(address, typeForHistory);
-    router.push(`/oracle/address/${address}` as any);
+    router.push(`/oracle/address/${address}` as Route);
   };
 
   const handleHistoryClick = (item: AddressHistoryItem) => {
     setAddress(item.address);
     setInputAddressType(item.type || 'unknown');
     addToHistory(item.address, item.type, item.label);
-    router.push(`/oracle/address/${item.address}` as any);
+    router.push(`/oracle/address/${item.address}` as Route);
   };
 
   const handlePopularClick = (item: PopularAddress) => {
     setAddress(item.address);
     setInputAddressType(item.type);
     addToHistory(item.address, item.type, item.label);
-    router.push(`/oracle/address/${item.address}` as any);
+    router.push(`/oracle/address/${item.address}` as Route);
   };
 
   const handleClearHistory = () => {

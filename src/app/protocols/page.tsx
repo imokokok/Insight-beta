@@ -8,6 +8,8 @@ import { ContentSection, Breadcrumb } from '@/components/common';
 import { Badge, Button, Card } from '@/components/ui';
 import { useI18n } from '@/i18n';
 
+import type { Route } from 'next';
+
 interface ProtocolCard {
   id: string;
   name: string;
@@ -91,7 +93,7 @@ export default function ProtocolsListPage() {
             <Card
               key={protocol.id}
               className="group cursor-pointer transition-all hover:border-primary/50 hover:shadow-md"
-              onClick={() => router.push(protocol.href as any)}
+              onClick={() => router.push(protocol.href as Route)}
             >
               <div className="p-4 sm:p-6">
                 <div className="flex items-start justify-between">

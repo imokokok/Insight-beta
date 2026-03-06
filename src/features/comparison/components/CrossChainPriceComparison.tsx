@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { logger } from '@/shared/logger';
 import { cn } from '@/shared/utils';
 import { buildApiUrl } from '@/shared/utils';
 import { formatPrice } from '@/shared/utils/format';
@@ -57,7 +58,9 @@ export function CrossChainPriceComparison({
             setData(result.data);
           }
         })
-        .catch(console.error)
+        .catch((error) =>
+          logger.error('Failed to fetch cross-chain price comparison data', { error }),
+        )
         .finally(() => setIsLoading(false));
     }
   }, [chains, symbols, propData]);

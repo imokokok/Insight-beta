@@ -140,7 +140,8 @@ export function getShadow(context: keyof typeof SHADOW_USAGE, state: string = 'd
     return SHADOWS.sm;
   }
 
-  return (usage as any)[state] || SHADOWS.sm;
+  const shadowValue = (usage as Record<string, string>)[state];
+  return shadowValue || SHADOWS.sm;
 }
 
 /**

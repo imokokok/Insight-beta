@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { logger } from '@/shared/logger';
 import { cn } from '@/shared/utils';
 import { buildApiUrl } from '@/shared/utils';
 import { formatLatency, formatDurationMinutes, formatTimeAgoShort } from '@/shared/utils/format';
@@ -75,7 +76,7 @@ export function LatencyAnomalyEvents({
             setData(result.data);
           }
         })
-        .catch(console.error)
+        .catch((error) => logger.error('Failed to fetch latency anomaly events', { error }))
         .finally(() => setIsLoading(false));
     }
   }, [symbol, protocol, chain, propData]);

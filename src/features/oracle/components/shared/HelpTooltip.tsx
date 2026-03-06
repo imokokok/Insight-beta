@@ -57,7 +57,7 @@ export function HelpTooltip({
         </TooltipTrigger>
         <TooltipContent
           side={side}
-          className="bg-popover/95 max-w-xs border-border/50 backdrop-blur-sm"
+          className="max-w-xs border-border/50 bg-popover/95 backdrop-blur-sm"
           sideOffset={8}
         >
           <div className="space-y-1">

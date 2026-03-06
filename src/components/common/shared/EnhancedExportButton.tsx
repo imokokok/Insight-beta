@@ -33,6 +33,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuLabel,
   Badge,
 } from '@/components/ui';
 import { useI18n } from '@/i18n';
@@ -44,6 +45,7 @@ import {
   type ExportResult,
   globalExportQueue,
 } from '@/lib/export/enhancedExport';
+import { logger } from '@/shared/logger';
 import { cn } from '@/shared/utils';
 import {
   exportChartAsPNG,
@@ -51,6 +53,8 @@ import {
   exportDataAsCSV,
   exportDataAsJSON,
 } from '@/utils/chartExport';
+
+import { DataFilter } from '../controls/filter';
 
 export interface ExportData {
   data: unknown;
@@ -92,6 +96,8 @@ export interface DataExportButtonProps<T> {
 
 export type ExportButtonProps<T = unknown> = ChartExportButtonProps | DataExportButtonProps<T>;
 
+import type { FilterField, FilterConfig } from '../controls/filter';
+
 interface EnhancedExportButtonProps {
   data: ExportData | ExportData[];
   formats?: ExportFormat[];
@@ -99,6 +105,9 @@ interface EnhancedExportButtonProps {
   size?: 'default' | 'sm' | 'lg' | 'icon';
   showProgress?: boolean;
   className?: string;
+  filterFields?: FilterField[];
+  filterStorageKey?: string;
+  onFilterApply?: (config: FilterConfig) => void;
 }
 
 interface ExportHistoryItem {
@@ -116,6 +125,9 @@ export function EnhancedExportButton({
   size = 'sm',
   showProgress = true,
   className,
+  filterFields,
+  filterStorageKey = 'export-filter',
+  onFilterApply,
 }: EnhancedExportButtonProps) {
   const { t } = useI18n();
   const [isExporting, setIsExporting] = useState(false);
@@ -179,10 +191,10 @@ export function EnhancedExportButton({
         setExportHistory((prev) => [historyItem, ...prev.slice(0, 9)]);
 
         if (!result.success) {
-          console.error('Export failed:', result.error);
+          logger.error('Export failed', { error: result.error });
         }
       } catch (error) {
-        console.error('Export error:', error);
+        logger.error('Export error', { error });
       } finally {
         setIsExporting(false);
       }
@@ -217,7 +229,7 @@ export function EnhancedExportButton({
 
       await Promise.all(promises);
     } catch (error) {
-      console.error('Batch export failed:', error);
+      logger.error('Batch export failed', { error });
     } finally {
       setIsExporting(false);
     }
@@ -251,8 +263,24 @@ export function EnhancedExportButton({
           </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent align="end" className={cn('w-80', filterFields && 'w-[420px]')}>
+          {/* 筛选功能 */}
+          {filterFields && (
+            <>
+              <DropdownMenuLabel>Export Options</DropdownMenuLabel>
+              <div className="px-2 py-1">
+                <DataFilter
+                  fields={filterFields}
+                  storageKey={filterStorageKey}
+                  onApply={onFilterApply}
+                />
+              </div>
+              <DropdownMenuSeparator />
+            </>
+          )}
+
           {/* 单个导出选项 */}
+          <DropdownMenuLabel>Export Formats</DropdownMenuLabel>
           {formats.map((format) => {
             const Icon = formatIcons[format];
             return (
@@ -272,10 +300,18 @@ export function EnhancedExportButton({
 
           {/* 批量导出 */}
           {Array.isArray(data) && data.length > 1 && (
-            <DropdownMenuItem onClick={handleBatchExport} disabled={isExporting} className="gap-2">
-              <Download className="h-4 w-4" />
-              批量导出 ({data.length} 个项目)
-            </DropdownMenuItem>
+            <>
+              <DropdownMenuLabel>Batch Export</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={handleBatchExport}
+                disabled={isExporting}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                批量导出 ({data.length} 个项目)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
           )}
 
           <DropdownMenuSeparator />
@@ -389,7 +425,7 @@ function LegacyExportButton<T = unknown>(props: ExportButtonProps<T>) {
             break;
         }
       } catch (error) {
-        console.error('Export failed:', error);
+        logger.error('Export failed', { error });
       } finally {
         setIsExporting(false);
       }
@@ -421,7 +457,7 @@ function LegacyExportButton<T = unknown>(props: ExportButtonProps<T>) {
             break;
         }
       } catch (error) {
-        console.error('Export failed:', error);
+        logger.error('Export failed', { error });
       } finally {
         setIsExporting(false);
       }

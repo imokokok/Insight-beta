@@ -2,7 +2,8 @@ import type { NextRequest } from 'next/server';
 
 import { ok, error } from '@/lib/api/apiResponse';
 import { logger } from '@/shared/logger';
-import type { CrossChainPriceDifference } from '@/types/oracle/comparison';
+import type { SupportedChain } from '@/types/chains';
+import type { CrossChainPriceDifference, CrossChainPriceData } from '@/types/oracle/comparison';
 
 export async function GET(request: NextRequest) {
   const requestStartTime = performance.now();
@@ -67,7 +68,7 @@ async function fetchCrossChainPrices(
   return results;
 }
 
-function generateChainPrices(symbol: string, chains: string[]) {
+function generateChainPrices(symbol: string, chains: string[]): CrossChainPriceData[] {
   const basePrice = getBasePrice(symbol);
   const now = new Date();
 
@@ -76,7 +77,7 @@ function generateChainPrices(symbol: string, chains: string[]) {
     const price = basePrice * (1 + deviation);
 
     return {
-      chain: chain as any,
+      chain: chain as SupportedChain,
       price,
       timestamp: now.toISOString(),
       deviation: price - basePrice,
@@ -102,21 +103,45 @@ function getBasePrice(symbol: string): number {
   return prices[symbol] || 100;
 }
 
-function calculateConsensus(chainPrices: any[]) {
+type ConsensusResult = {
+  median: number;
+  mean: number;
+  weighted: number;
+};
+
+type SpreadResult = {
+  min: number;
+  max: number;
+  absolute: number;
+  percent: number;
+};
+
+type ArbitrageOpportunity = {
+  profitPercent: number;
+  buyChain: string;
+  sellChain: string;
+};
+
+function calculateConsensus(chainPrices: CrossChainPriceData[]): ConsensusResult {
   const prices = chainPrices.map((cp) => cp.price);
   const sorted = [...prices].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
 
-  const median = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-  const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
+  const median =
+    sorted.length % 2 !== 0
+      ? (sorted[mid] ?? 0)
+      : ((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2;
+  const mean = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
   const weighted =
-    prices.reduce((sum, price, i) => sum + price * (i + 1), 0) /
-    ((prices.length * (prices.length + 1)) / 2);
+    prices.length > 0
+      ? prices.reduce((sum, price, i) => sum + price * (i + 1), 0) /
+        ((prices.length * (prices.length + 1)) / 2)
+      : 0;
 
   return { median, mean, weighted };
 }
 
-function calculateSpread(chainPrices: any[]) {
+function calculateSpread(chainPrices: CrossChainPriceData[]): SpreadResult {
   const prices = chainPrices.map((cp) => cp.price);
   const min = Math.min(...prices);
   const max = Math.max(...prices);
@@ -126,10 +151,14 @@ function calculateSpread(chainPrices: any[]) {
   return { min, max, absolute, percent };
 }
 
-function detectArbitrage(chainPrices: any[]): any | undefined {
+function detectArbitrage(chainPrices: CrossChainPriceData[]): ArbitrageOpportunity | undefined {
+  if (chainPrices.length < 2) return undefined;
+
   const sortedByPrice = [...chainPrices].sort((a, b) => a.price - b.price);
   const lowest = sortedByPrice[0];
   const highest = sortedByPrice[sortedByPrice.length - 1];
+
+  if (!lowest || !highest) return undefined;
 
   const profitPercent = (highest.price - lowest.price) / lowest.price;
 

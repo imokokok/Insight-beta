@@ -10,6 +10,7 @@ import { Button } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { ScrollArea } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { logger } from '@/shared/logger';
 import { formatTime } from '@/shared/utils/format/date';
 import { cn } from '@/shared/utils/ui';
 
@@ -69,7 +70,7 @@ export const VoterHistoryModal = memo(function VoterHistoryModal({
         });
       }
     } catch (err) {
-      console.error('Failed to fetch votes:', err);
+      logger.error('Failed to fetch votes', { error: err });
     } finally {
       setLoading(false);
     }
