@@ -214,11 +214,6 @@ export default function Api3Page() {
     ];
   }, [data?.overviewStats, t]);
 
-  const breadcrumbItems = useMemo(
-    () => [{ label: t('nav.protocols'), href: '/protocols' }, { label: 'API3' }],
-    [t],
-  );
-
   const handleToggleAutoRefresh = useCallback(() => {
     setAutoRefreshEnabled((prev) => !prev);
   }, []);
@@ -266,7 +261,6 @@ export default function Api3Page() {
       healthStatus={healthStatus}
       kpiCards={kpiCards}
       tabs={TABS}
-      breadcrumbItems={breadcrumbItems}
       loading={isLoading}
       error={isError ? (error?.message ?? 'Failed to load data') : null}
       lastUpdated={lastUpdated}

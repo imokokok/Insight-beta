@@ -4,7 +4,6 @@ import { Suspense, useState } from 'react';
 
 import Link from 'next/link';
 
-import { Breadcrumb } from '@/components/common';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import { Alert, AlertDescription, ChartSkeleton } from '@/components/ui';
 import { ComparisonContent } from '@/features/comparison/components/ComparisonContent';
@@ -20,14 +19,8 @@ export default function PriceComparePage() {
   const [selectedSymbol, setSelectedSymbol] = useState<string>('ETH/USD');
   const [selectedProtocol, setSelectedProtocol] = useState<string>('chainlink');
 
-  const breadcrumbItems = [
-    { label: t('nav.compare'), href: '/compare' },
-    { label: t('compare.tabs.price') },
-  ];
-
   return (
     <ComparePageLayout activeTab="price">
-      <Breadcrumb items={breadcrumbItems} />
       <div className="mb-4">
         <h1 className="text-xl font-semibold">{t('compare.price.title')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t('compare.price.description')}</p>

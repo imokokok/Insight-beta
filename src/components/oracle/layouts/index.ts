@@ -4,7 +4,6 @@ export type {
   ProtocolPageLayoutProps,
   TabPanelWrapperProps,
   TabItem,
-  BreadcrumbItem,
   NetworkHealthStatus,
   KpiCardData,
 } from './ProtocolPageLayout';

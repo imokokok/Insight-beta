@@ -14,7 +14,6 @@ import { useI18n } from '@/i18n';
 import { FavoritesProvider } from '@/shared/contexts/FavoritesContext';
 import { cn } from '@/shared/utils';
 
-import { Breadcrumb, type BreadcrumbItem } from './Breadcrumb';
 import { EnhancedSidebar as Sidebar } from './EnhancedSidebar';
 import { MobileMenuButton, MobileSidebar, MobileNavProvider } from './MobileNav';
 import { ErrorBoundary } from '../feedback/ErrorBoundary';
@@ -59,32 +58,6 @@ function getPageTitle(pathname: string | null): string {
   return 'app.brand';
 }
 
-function generateBreadcrumbs(
-  pathname: string | null,
-  t: (key: string) => string,
-): BreadcrumbItem[] {
-  if (!pathname || pathname === '/') return [];
-
-  const segments = pathname.split('/').filter(Boolean);
-  const breadcrumbs: BreadcrumbItem[] = [];
-  let currentPath = '';
-
-  segments.forEach((segment, index) => {
-    currentPath += `/${segment}`;
-    const titleKey = routeTitleMap[currentPath];
-    const isLast = index === segments.length - 1;
-
-    if (titleKey) {
-      breadcrumbs.push({
-        label: t(titleKey),
-        href: isLast ? undefined : currentPath,
-      });
-    }
-  });
-
-  return breadcrumbs;
-}
-
 export function AppLayout({ children }: AppLayoutProps) {
   const { t } = useI18n();
   const pathname = usePathname();
@@ -99,7 +72,6 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const titleKey = useMemo(() => getPageTitle(pathname), [pathname]);
   const title = t(titleKey);
-  const breadcrumbItems = useMemo(() => generateBreadcrumbs(pathname, t), [pathname, t]);
 
   // 处理刷新
   const handleRefresh = useMemo(() => {
@@ -216,11 +188,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                       <LanguageSwitcher />
                     </div>
                   </div>
-                  {breadcrumbItems.length > 0 && (
-                    <div className="ml-8 sm:ml-10 md:ml-14">
-                      <Breadcrumb items={breadcrumbItems} />
-                    </div>
-                  )}
                 </header>
                 {children}
               </div>

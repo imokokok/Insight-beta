@@ -420,11 +420,6 @@ export default function BandProtocolPage() {
     state.lastUpdated,
   ]);
 
-  const breadcrumbItems = [
-    { label: t('nav.protocols'), href: '/protocols' },
-    { label: 'Band Protocol' },
-  ];
-
   return (
     <ProtocolPageLayout
       protocol="band"
@@ -434,7 +429,6 @@ export default function BandProtocolPage() {
       healthStatus={healthStatus}
       kpiCards={kpiCards}
       tabs={tabs}
-      breadcrumbItems={breadcrumbItems}
       loading={state.loading}
       error={state.error}
       lastUpdated={state.lastUpdated}

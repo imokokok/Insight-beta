@@ -2,7 +2,6 @@
 
 import { Suspense, useState } from 'react';
 
-import { Breadcrumb } from '@/components/common';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import { ChartSkeleton } from '@/components/ui';
 import { ComparisonContent } from '@/features/comparison/components/ComparisonContent';
@@ -17,14 +16,8 @@ export default function LatencyComparePage() {
   const [selectedSymbol, setSelectedSymbol] = useState<string>('ETH/USD');
   const [selectedChain, setSelectedChain] = useState<string>('ethereum');
 
-  const breadcrumbItems = [
-    { label: t('nav.compare'), href: '/compare' },
-    { label: t('compare.tabs.latency') },
-  ];
-
   return (
     <ComparePageLayout activeTab="latency">
-      <Breadcrumb items={breadcrumbItems} />
       <div className="mb-4">
         <h1 className="text-xl font-semibold">{t('compare.latency.title')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t('compare.latency.description')}</p>

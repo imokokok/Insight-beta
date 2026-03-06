@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 
 import { Link2, Zap, Server, Globe, ArrowRight } from 'lucide-react';
 
-import { ContentSection, Breadcrumb } from '@/components/common';
+import { ContentSection } from '@/components/common';
 import { Badge, Button, Card } from '@/components/ui';
 import { useI18n } from '@/i18n';
 
@@ -73,12 +73,8 @@ export default function ProtocolsListPage() {
   const { t } = useI18n();
   const router = useRouter();
 
-  const breadcrumbItems = [{ label: t('nav.protocols'), href: '/protocols' }];
-
   return (
     <div className="container mx-auto space-y-4 p-3 sm:p-4">
-      <Breadcrumb items={breadcrumbItems} />
-
       <div className="flex flex-col gap-2">
         <h1 className="text-xl font-bold sm:text-2xl lg:text-3xl">{t('protocols.title')}</h1>
         <p className="text-sm text-muted-foreground">{t('protocols.subtitle')}</p>

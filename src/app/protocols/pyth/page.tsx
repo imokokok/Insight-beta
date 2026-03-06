@@ -416,11 +416,6 @@ export default function PythPage() {
     ];
   }, [dashboardData, t]);
 
-  const breadcrumbItems = useMemo(
-    () => [{ label: t('nav.protocols'), href: '/protocols' }, { label: 'Pyth' }],
-    [t],
-  );
-
   const handlePublisherSort = useCallback((key: string) => {
     setPublisherSort((prev) => {
       if (prev?.key === key) {
@@ -545,7 +540,6 @@ export default function PythPage() {
       healthStatus={healthStatus}
       kpiCards={kpiCards}
       tabs={TABS}
-      breadcrumbItems={breadcrumbItems}
       loading={isLoading || isRefreshing}
       error={isError ? error?.message : null}
       lastUpdated={lastUpdated}

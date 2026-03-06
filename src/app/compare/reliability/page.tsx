@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { RefreshCw } from 'lucide-react';
 
-import { Breadcrumb } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
@@ -53,15 +52,8 @@ export default function ReliabilityComparePage() {
 
   const selectedRanking = rankings.find((r) => r.protocol === selectedProtocol);
 
-  const breadcrumbItems = [
-    { label: t('nav.compare'), href: '/compare' },
-    { label: t('compare.tabs.reliability') },
-  ];
-
   return (
     <ComparePageLayout activeTab="reliability">
-      <Breadcrumb items={breadcrumbItems} />
-
       <div className="mb-4">
         <h1 className="text-xl font-semibold">{t('compare.reliability.title')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t('compare.reliability.description')}</p>

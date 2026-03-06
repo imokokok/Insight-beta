@@ -280,11 +280,6 @@ export default function ChainlinkPage() {
     return operators.filter((op) => op.online).length;
   }, [operators]);
 
-  const breadcrumbItems = [
-    { label: t('nav.protocols'), href: '/protocols' },
-    { label: 'Chainlink' },
-  ];
-
   const handleExport = useCallback(() => {
     const exportData = {
       overview: overviewData,
@@ -312,7 +307,6 @@ export default function ChainlinkPage() {
       healthStatus={healthStatus}
       kpiCards={kpiCards}
       tabs={tabs}
-      breadcrumbItems={breadcrumbItems}
       loading={state.loading}
       error={state.error}
       lastUpdated={state.lastUpdated}

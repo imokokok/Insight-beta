@@ -25,7 +25,6 @@ import { CHART_COLORS } from '@/components/charts';
 import {
   ContentSection,
   AutoRefreshControl,
-  Breadcrumb,
   ErrorBoundary,
   KPIOverviewBar,
   type KPIItem,
@@ -410,11 +409,6 @@ export default function OverviewPage() {
     [state.stats, t],
   );
 
-  const breadcrumbItems = [
-    { label: t('nav.oracle'), href: '/oracle' },
-    { label: t('nav.overview') },
-  ];
-
   const quickLinks = useMemo(() => getQuickLinks(t), [t]);
 
   const getStatusColor = (status: ProtocolHealth['status']) => {
@@ -574,7 +568,6 @@ export default function OverviewPage() {
   if (state.error && !state.stats) {
     return (
       <div className="container mx-auto space-y-4 p-3 sm:p-4">
-        <Breadcrumb items={breadcrumbItems} />
         <ErrorBanner
           error={new Error(state.error)}
           onRetry={fetchData}
@@ -589,8 +582,6 @@ export default function OverviewPage() {
     <ErrorBoundary>
       <div className="min-h-screen bg-background pb-16 md:pb-0">
         <div className="space-y-6">
-          <Breadcrumb items={breadcrumbItems} />
-
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
               <div className="flex items-center gap-3">

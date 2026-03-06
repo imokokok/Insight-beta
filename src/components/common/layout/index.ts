@@ -4,19 +4,11 @@ export { EnhancedSidebar, defaultNavConfig } from './EnhancedSidebar';
 export { MobileNavProvider, MobileMenuButton, MobileSidebar, useMobileNav } from './MobileNav';
 export { ListContainer, type ListContainerProps } from './ListContainer';
 export {
-  Breadcrumb,
-  BreadcrumbWithActions,
-  type BreadcrumbItem,
-  type BreadcrumbProps,
-  type BreadcrumbWithActionsProps,
-} from './Breadcrumb';
-export {
   PageHeader,
   PageHeaderSkeleton,
   DashboardPageHeader,
   DashboardPageHeaderSkeleton,
   DynamicPageHeader,
-  type BreadcrumbItem as PageHeaderBreadcrumbItem,
   type PageHeaderProps,
   type DashboardPageHeaderProps,
   type DynamicPageHeaderProps,

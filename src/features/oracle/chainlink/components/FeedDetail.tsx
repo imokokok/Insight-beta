@@ -19,7 +19,6 @@ import {
   Info,
 } from 'lucide-react';
 
-import { Breadcrumb } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
@@ -122,12 +121,6 @@ export function FeedDetail({ address }: FeedDetailProps) {
     return `${hours}h ${minutes}m`;
   };
 
-  const breadcrumbItems = [
-    { label: t('nav.oracle'), href: '/oracle' },
-    { label: 'Chainlink', href: '/oracle/chainlink' },
-    { label: feedData?.feed.pair ?? address.slice(0, 8) },
-  ];
-
   if (isLoading) {
     return (
       <div className="container mx-auto space-y-6 p-4 sm:p-6">
@@ -159,7 +152,6 @@ export function FeedDetail({ address }: FeedDetailProps) {
   if (error || !feedData) {
     return (
       <div className="container mx-auto space-y-6 p-4 sm:p-6">
-        <Breadcrumb items={breadcrumbItems.slice(0, 2)} />
         <Card>
           <CardContent className="flex flex-col items-center justify-center gap-4 py-12">
             <AlertTriangle className="h-12 w-12 text-amber-500" />
@@ -189,8 +181,6 @@ export function FeedDetail({ address }: FeedDetailProps) {
 
   return (
     <div className="container mx-auto space-y-6 p-4 sm:p-6">
-      <Breadcrumb items={breadcrumbItems} />
-
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Link href="/oracle/chainlink">

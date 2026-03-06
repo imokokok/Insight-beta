@@ -2,19 +2,10 @@
 
 import React, { memo, useMemo } from 'react';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { motion } from 'framer-motion';
-import {
-  ChevronRight,
-  Home,
-  RefreshCw,
-  Download,
-  MoreHorizontal,
-  Settings,
-  Menu,
-} from 'lucide-react';
+import { RefreshCw, Download, MoreHorizontal, Settings, Menu } from 'lucide-react';
 
 import { Button } from '@/components/ui';
 import {
@@ -26,12 +17,8 @@ import {
 } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
-import type { BreadcrumbItem } from '@/types/common';
-
-export type { BreadcrumbItem } from '@/types/common';
 
 export interface PageHeaderProps {
-  breadcrumbs?: BreadcrumbItem[];
   title: string;
   description?: string;
   icon?: React.ReactNode;
@@ -96,7 +83,6 @@ function getPageTitle(pathname: string | null): string {
 }
 
 export const PageHeader = memo(function PageHeader({
-  breadcrumbs,
   title,
   description,
   icon,
@@ -118,36 +104,6 @@ export const PageHeader = memo(function PageHeader({
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className={cn('space-y-5', className)}
     >
-      {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link
-            href="/"
-            className="flex items-center gap-1 rounded px-1.5 py-0.5 transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
-          >
-            <Home className="h-4 w-4" />
-          </Link>
-          {breadcrumbs.map((item, index) => (
-            <React.Fragment key={index}>
-              <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
-              {item.href ? (
-                <a
-                  href={item.href}
-                  className="flex items-center gap-1 rounded px-1.5 py-0.5 transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
-                >
-                  {item.icon}
-                  {item.label}
-                </a>
-              ) : (
-                <span className="flex items-center gap-1 font-medium text-foreground">
-                  {item.icon}
-                  {item.label}
-                </span>
-              )}
-            </React.Fragment>
-          ))}
-        </nav>
-      )}
-
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">

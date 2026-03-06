@@ -29,7 +29,6 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-import { Breadcrumb } from '@/components/common';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
@@ -156,12 +155,6 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
     return 'text-red-500';
   };
 
-  const breadcrumbItems = [
-    { label: t('nav.oracle'), href: '/oracle' },
-    { label: 'API3', href: '/oracle/api3' },
-    { label: airnodeData?.airnode.address.slice(0, 8) ?? address.slice(0, 8) },
-  ];
-
   const CustomTooltip = ({
     active,
     payload,
@@ -216,7 +209,6 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
   if (error || !airnodeData) {
     return (
       <div className="container-6 sm:p- space-y6 mx-auto p-4">
-        <Breadcrumb items={breadcrumbItems.slice(0, 2)} />
         <Card>
           <CardContent className="flex flex-col items-center justify-center gap-4 py-12">
             <AlertTriangle className="h-12 w-12 text-amber-500" />
@@ -246,8 +238,6 @@ export function AirnodeDetail({ address }: AirnodeDetailProps) {
 
   return (
     <div className="container mx-auto space-y-6 p-4 sm:p-6">
-      <Breadcrumb items={breadcrumbItems} />
-
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Link href="/oracle/api3">

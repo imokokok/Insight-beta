@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { Breadcrumb, AutoRefreshControl } from '@/components/common';
+import { AutoRefreshControl } from '@/components/common';
 import { KpiGrid } from '@/components/common';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
@@ -14,11 +14,9 @@ import { TopStatusBar } from '@/features/oracle/components/shared';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import type { NetworkHealthStatus } from '@/types/common';
-import type { BreadcrumbItem } from '@/types/common/breadcrumb';
 import type { KpiCardData } from '@/types/shared/kpi';
 
 export type { NetworkHealthStatus } from '@/types/common';
-export type { BreadcrumbItem } from '@/types/common/breadcrumb';
 export type { KpiCardData } from '@/types/shared/kpi';
 
 export interface TabItem {
@@ -449,7 +447,6 @@ export interface ProtocolPageLayoutProps {
   kpiCards: KpiCardData[];
   tabs: TabItem[];
   children: React.ReactNode;
-  breadcrumbItems?: BreadcrumbItem[];
   loading?: boolean;
   error?: string | null;
   lastUpdated?: Date | null;
@@ -482,7 +479,6 @@ export function ProtocolPageLayout({
   kpiCards,
   tabs,
   children,
-  breadcrumbItems,
   loading = false,
   error = null,
   lastUpdated,
@@ -518,11 +514,6 @@ export function ProtocolPageLayout({
     syncUrl: true,
     urlParamName: 'tab',
   });
-
-  const defaultBreadcrumbItems: BreadcrumbItem[] = useMemo(
-    () => [{ label: t('nav.oracle'), href: '/oracle' }, { label: title }],
-    [t, title],
-  );
 
   const healthConfig: Record<
     NetworkHealthStatus,
@@ -567,7 +558,6 @@ export function ProtocolPageLayout({
   if (error && !loading) {
     return (
       <div className="container mx-auto space-y-6 p-4 sm:p-6">
-        <Breadcrumb items={breadcrumbItems || defaultBreadcrumbItems} />
         <ErrorBanner
           error={new Error(error)}
           onRetry={onRefresh || (() => {})}
@@ -591,8 +581,6 @@ export function ProtocolPageLayout({
       />
 
       <div className="container mx-auto space-y-3 p-4 sm:p-6">
-        <Breadcrumb items={breadcrumbItems || defaultBreadcrumbItems} />
-
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="flex items-center gap-2 text-lg font-bold sm:text-xl lg:text-2xl">

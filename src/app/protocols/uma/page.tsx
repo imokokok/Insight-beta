@@ -342,11 +342,6 @@ export default function UmaPage() {
     ];
   }, [data, t]);
 
-  const breadcrumbItems = useMemo(
-    () => [{ label: t('nav.protocols'), href: '/protocols' }, { label: 'UMA' }],
-    [t],
-  );
-
   const handleToggleAutoRefresh = useCallback(() => {
     setAutoRefreshEnabled((prev) => !prev);
   }, []);
@@ -415,7 +410,6 @@ export default function UmaPage() {
         healthStatus={healthStatus}
         kpiCards={kpiCards}
         tabs={TABS}
-        breadcrumbItems={breadcrumbItems}
         loading={isLoading}
         error={isError ? (error?.message ?? 'Failed to load data') : null}
         lastUpdated={lastUpdated}
