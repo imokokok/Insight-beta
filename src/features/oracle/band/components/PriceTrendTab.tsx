@@ -6,7 +6,7 @@ import { TrendingUp, TrendingDown, Clock, RefreshCw } from 'lucide-react';
 
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Card, CardContent } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { TIME_RANGES, BAND_ORACLE_SYMBOL_OPTIONS } from '@/config/constants';
@@ -97,19 +97,10 @@ export function PriceTrendTab() {
       : [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-lg font-medium">{t('band.priceTrend.title')}</CardTitle>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={fetchPriceData} disabled={loading}>
-              <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
-              {t('common.refresh')}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap items-center gap-4">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-2">
               {BAND_ORACLE_SYMBOL_OPTIONS.map((symbol) => (
                 <Badge
@@ -122,37 +113,36 @@ export function PriceTrendTab() {
                 </Badge>
               ))}
             </div>
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-[140px]">
-                <Clock className="mr-2 h-4 w-4" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TIME_RANGES.filter((r) => ['1h', '24h', '7d'].includes(r.value)).map((range) => (
-                  <SelectItem key={range.value} value={range.value}>
-                    {range.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <Select value={timeRange} onValueChange={setTimeRange}>
+                <SelectTrigger className="w-[140px]">
+                  <Clock className="mr-2 h-4 w-4" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIME_RANGES.filter((r) => ['1h', '24h', '7d'].includes(r.value)).map((range) => (
+                    <SelectItem key={range.value} value={range.value}>
+                      {range.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={fetchPriceData} disabled={loading}>
+                <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(3)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="mt-2 h-8 w-24" />
-                <Skeleton className="mt-2 h-4 w-16" />
-              </CardContent>
-            </Card>
+            <Skeleton key={i} className="h-24 w-full" />
           ))}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {selectedSymbols.map((symbol) => {
             const data = priceData?.[symbol];
             if (!data) return null;
@@ -163,25 +153,23 @@ export function PriceTrendTab() {
 
             return (
               <Card key={symbol}>
-                <CardContent className="p-4">
+                <CardContent className="p-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium">{symbol}</span>
+                    <span className="text-sm font-medium">{symbol}</span>
                     {isPositive ? (
                       <TrendingUp className="h-4 w-4 text-green-500" />
                     ) : (
                       <TrendingDown className="h-4 w-4 text-red-500" />
                     )}
                   </div>
-                  <div className="mt-2 text-2xl font-bold">
+                  <div className="mt-1 text-xl font-bold">
                     $
                     {latestPrice.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
                   </div>
-                  <div
-                    className={cn('mt-1 text-sm', isPositive ? 'text-green-600' : 'text-red-600')}
-                  >
+                  <div className={cn('text-sm', isPositive ? 'text-green-600' : 'text-red-600')}>
                     {isPositive ? '+' : ''}
                     {change.toFixed(2)}%
                   </div>
@@ -193,14 +181,11 @@ export function PriceTrendTab() {
       )}
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-medium">{t('band.priceTrend.chartTitle')}</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="p-4">
           {loading ? (
-            <Skeleton className="h-[300px] w-full" />
+            <Skeleton className="h-[250px] w-full" />
           ) : (
-            <div className="h-[300px] w-full overflow-auto">
+            <div className="h-[250px] w-full overflow-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
@@ -213,11 +198,11 @@ export function PriceTrendTab() {
                   </tr>
                 </thead>
                 <tbody>
-                  {chartData.slice(0, 20).map((point, index) => (
+                  {chartData.slice(0, 15).map((point, index) => (
                     <tr key={index} className="border-b">
-                      <td className="py-2 text-muted-foreground">{point.timestamp as string}</td>
+                      <td className="py-1.5 text-muted-foreground">{point.timestamp as string}</td>
                       {selectedSymbols.map((symbol) => (
-                        <td key={symbol} className="py-2 text-right">
+                        <td key={symbol} className="py-1.5 text-right">
                           {(point[symbol] as number)?.toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,

@@ -2,17 +2,9 @@
 
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 
-import {
-  Globe,
-  Activity,
-  Database,
-  Shield,
-  GitBranch,
-  BarChart3,
-  LayoutDashboard,
-} from 'lucide-react';
+import { Globe, Database, Shield, GitBranch, BarChart3, LayoutDashboard } from 'lucide-react';
 
-import { ContentSection, ContentGrid } from '@/components/common';
+import { ContentSection } from '@/components/common';
 import {
   ProtocolPageLayout,
   TabPanelWrapper,
@@ -458,79 +450,6 @@ export default function BandProtocolPage() {
     >
       <TabPanelWrapper tabId="overview">
         <div className="space-y-3">
-          <ContentSection
-            title={t('band.overview.title')}
-            description={t('band.overview.description')}
-          >
-            <p className="text-sm text-muted-foreground">{t('band.overview.introduction')}</p>
-          </ContentSection>
-
-          <ContentSection title={t('band.features.title')}>
-            <ContentGrid columns={3} gap="sm">
-              <div className="flex items-center gap-2.5 border-b border-border/30 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
-                <div className="rounded-lg bg-orange-500/10 p-2">
-                  <Globe className="h-5 w-5 text-orange-500" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">
-                    {t('band.features.crossChain.label')}
-                  </p>
-                  <p className="text-sm font-semibold text-foreground">
-                    {t('band.features.crossChain.value')}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 border-b border-border/30 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
-                <div className="rounded-lg bg-blue-500/10 p-2">
-                  <Activity className="h-5 w-5 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">
-                    {t('band.features.ibc.label')}
-                  </p>
-                  <p className="text-sm font-semibold text-foreground">
-                    {t('band.features.ibc.value')}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <div className="rounded-lg bg-green-500/10 p-2">
-                  <Shield className="h-5 w-5 text-green-500" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">
-                    {t('band.features.validation.label')}
-                  </p>
-                  <p className="text-sm font-semibold text-foreground">
-                    {t('band.features.validation.value')}
-                  </p>
-                </div>
-              </div>
-            </ContentGrid>
-          </ContentSection>
-
-          <ContentSection
-            title={t('band.supportedChains.title')}
-            description={t('band.supportedChains.description')}
-          >
-            <div className="flex flex-wrap gap-1.5">
-              {getChainConnectivity.map(({ chain, isActive }) => (
-                <span
-                  key={chain}
-                  className={cn(
-                    'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize',
-                    isActive
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
-                  )}
-                >
-                  {chain}
-                  {isActive && <span className="ml-1 text-xs">●</span>}
-                </span>
-              ))}
-            </div>
-          </ContentSection>
-
           <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
             <div className="lg:col-span-1 xl:col-span-2">
               <Suspense fallback={<Skeleton className="h-80 w-full" />}>
@@ -629,6 +548,23 @@ export default function BandProtocolPage() {
                   </div>
                 </div>
               </div>
+
+              <div className="flex flex-wrap gap-1.5">
+                {getChainConnectivity.slice(0, 6).map(({ chain, isActive }) => (
+                  <span
+                    key={chain}
+                    className={cn(
+                      'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize',
+                      isActive
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
+                    )}
+                  >
+                    {chain}
+                    {isActive && <span className="ml-1 text-xs">●</span>}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -649,35 +585,83 @@ export default function BandProtocolPage() {
 
       <TabPanelWrapper tabId="bridges">
         <div className="space-y-4">
-          <ContentSection
-            title={t('band.bridgeList.title')}
-            description={
-              t('band.bridgeList.description', {
-                count: state.bridgesData?.bridges.length ?? 0,
-              }) + (selectedBridge ? ` (${t('band.bridgeList.clickToViewTrend')})` : '')
-            }
-          >
-            {state.bridgesData?.bridges.length === 0 ? (
-              <div className="py-12 text-center text-muted-foreground">
-                <GitBranch className="mx-auto h-12 w-12 opacity-50" />
-                <p className="mt-2">{t('band.bridgeList.empty')}</p>
+          {state.bridgesData?.bridges.length === 0 ? (
+            <div className="py-12 text-center text-muted-foreground">
+              <GitBranch className="mx-auto h-12 w-12 opacity-50" />
+              <p className="mt-2">{t('band.bridgeList.empty')}</p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border/30 text-xs text-muted-foreground">
+                      <th className="pb-2 text-left font-medium">桥接</th>
+                      <th className="pb-2 text-right font-medium">转账数</th>
+                      <th className="pb-2 text-right font-medium">交易量</th>
+                      <th className="pb-2 text-right font-medium">延迟</th>
+                      <th className="pb-2 text-right font-medium">成功率</th>
+                      <th className="pb-2 text-center font-medium">状态</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state.bridgesData?.bridges.map((bridge) => (
+                      <tr
+                        key={bridge.bridgeId}
+                        onClick={() => setSelectedBridge(bridge)}
+                        className={cn(
+                          'cursor-pointer border-b border-border/20 transition-colors hover:bg-muted/50',
+                          selectedBridge?.bridgeId === bridge.bridgeId && 'bg-muted',
+                        )}
+                      >
+                        <td className="py-3 pr-4">
+                          <div className="flex items-center gap-2">
+                            <GitBranch className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-mono text-sm">
+                              {EXTENDED_CHAIN_DISPLAY_NAMES[bridge.sourceChain] ||
+                                bridge.sourceChain}{' '}
+                              →{' '}
+                              {EXTENDED_CHAIN_DISPLAY_NAMES[bridge.destinationChain] ||
+                                bridge.destinationChain}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 text-right font-mono text-sm">
+                          {bridge.totalTransfers?.toLocaleString() ?? '-'}
+                        </td>
+                        <td className="py-3 text-right font-mono text-sm">
+                          {bridge.totalVolume
+                            ? `$${(bridge.totalVolume / 1000000).toFixed(2)}M`
+                            : '-'}
+                        </td>
+                        <td className="py-3 text-right font-mono text-sm">
+                          {bridge.avgLatency ? `${bridge.avgLatency}ms` : '-'}
+                        </td>
+                        <td className="py-3 text-right font-mono text-sm">
+                          {bridge.successRate ? `${bridge.successRate.toFixed(1)}%` : '-'}
+                        </td>
+                        <td className="py-3 text-center">
+                          <span
+                            className={cn(
+                              'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                              bridge.status === 'active' &&
+                                'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                              bridge.status === 'inactive' &&
+                                'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                              bridge.status === 'degraded' &&
+                                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                            )}
+                          >
+                            {bridge.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {state.bridgesData?.bridges.map((bridge) => (
-                  <Suspense key={bridge.bridgeId} fallback={<Skeleton className="h-40 w-full" />}>
-                    <BandBridgeStatusCard
-                      bridge={bridge}
-                      onClick={(b) => setSelectedBridge(b)}
-                      className={cn(
-                        selectedBridge?.bridgeId === bridge.bridgeId && 'border-primary',
-                      )}
-                    />
-                  </Suspense>
-                ))}
-              </div>
-            )}
-          </ContentSection>
+            </>
+          )}
 
           {selectedBridge && (
             <Suspense fallback={<Skeleton className="h-64 w-full" />}>
@@ -695,18 +679,31 @@ export default function BandProtocolPage() {
       </TabPanelWrapper>
 
       <TabPanelWrapper tabId="sources">
-        <div className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-              <BandPriceChart symbol="ETH/USD" chain="ethereum" timeRange="24h" />
-            </Suspense>
-            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-              <BandPriceChart symbol="BTC/USD" chain="ethereum" timeRange="24h" />
-            </Suspense>
+        <div className="space-y-3">
+          <div className="grid gap-3 lg:grid-cols-12">
+            <div className="lg:col-span-8">
+              <Suspense fallback={<Skeleton className="h-72 w-full" />}>
+                <BandPriceChart symbol="ETH/USD" chain="ethereum" timeRange="24h" />
+              </Suspense>
+            </div>
+            <div className="lg:col-span-4">
+              <Suspense fallback={<Skeleton className="h-72 w-full" />}>
+                <BandPriceChart symbol="BTC/USD" chain="ethereum" timeRange="24h" />
+              </Suspense>
+            </div>
           </div>
-          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-            <DataSourceReliabilityCard />
-          </Suspense>
+          <div className="grid gap-3 lg:grid-cols-12">
+            <div className="lg:col-span-5">
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <DataSourceReliabilityCard />
+              </Suspense>
+            </div>
+            <div className="lg:col-span-7">
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <OracleScriptAnalytics loading={state.loading} />
+              </Suspense>
+            </div>
+          </div>
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>
             <DataSourceList
               sources={state.sourcesData?.sources}
@@ -715,107 +712,85 @@ export default function BandProtocolPage() {
               symbol={undefined}
             />
           </Suspense>
-          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-            <OracleScriptAnalytics loading={state.loading} />
-          </Suspense>
         </div>
       </TabPanelWrapper>
 
       <TabPanelWrapper tabId="validators">
-        <div className="space-y-4">
-          <Suspense fallback={<Skeleton className="h-48 w-full" />}>
-            <ValidatorHealthCard />
-          </Suspense>
-          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-            <ValidatorList />
-          </Suspense>
+        <div className="space-y-6">
+          <ContentSection>
+            <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+              <ValidatorHealthCard />
+            </Suspense>
+          </ContentSection>
+          <ContentSection>
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              <ValidatorList />
+            </Suspense>
+          </ContentSection>
         </div>
       </TabPanelWrapper>
 
       <TabPanelWrapper tabId="cosmos">
         <div className="space-y-4">
-          <ContentSection
-            title={t('band.cosmosSelector.title')}
-            description={t('band.cosmosSelector.description')}
-          >
-            <Suspense fallback={<Skeleton className="h-48 w-full" />}>
-              <CosmosChainSelector
-                selectedChain={selectedCosmosChain}
-                onChainChange={setSelectedCosmosChain}
-                showDetails={true}
-                showIBCStatus={true}
-                filterType="mainnet"
-              />
+          <ContentSection title="Cosmos 链数据">
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              <div className="space-y-4">
+                <CosmosChainSelector
+                  selectedChain={selectedCosmosChain}
+                  onChainChange={setSelectedCosmosChain}
+                  showDetails={true}
+                  showIBCStatus={false}
+                  filterType="mainnet"
+                />
+
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <span className="text-xs text-muted-foreground">
+                      {t('band.blockInfo.height')}
+                    </span>
+                    <div className="mt-1 font-mono text-base">
+                      {Math.floor(Math.random() * 10000000).toLocaleString()}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground">
+                      {t('band.blockInfo.timestamp')}
+                    </span>
+                    <div className="mt-1 text-sm">{new Date().toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground">IBC 连接</span>
+                    <div className="mt-1 text-base font-semibold">
+                      {state.ibcData?.connections.total ?? 0}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground">活跃通道</span>
+                    <div className="mt-1 text-base font-semibold">
+                      {state.ibcData?.channels.open ?? 0}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </Suspense>
-          </ContentSection>
-
-          <ContentSection
-            title={t('band.blockInfo.title')}
-            description={t('band.blockInfo.description')}
-          >
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="border-b border-border/30 pb-3 sm:border-b-0 sm:pb-0">
-                <span className="text-sm text-muted-foreground">{t('band.blockInfo.height')}</span>
-                <div className="mt-1 font-mono text-lg">
-                  {Math.floor(Math.random() * 10000000).toLocaleString()}
-                </div>
-              </div>
-              <div className="border-b border-border/30 pb-3 sm:border-b-0 sm:pb-0">
-                <span className="text-sm text-muted-foreground">{t('band.blockInfo.hash')}</span>
-                <div className="mt-1 truncate font-mono text-sm">
-                  0x
-                  {Array.from({ length: 64 }, () =>
-                    Math.floor(Math.random() * 16).toString(16),
-                  ).join('')}
-                </div>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">
-                  {t('band.blockInfo.timestamp')}
-                </span>
-                <div className="mt-1 text-sm">{new Date().toLocaleString()}</div>
-              </div>
-            </div>
-          </ContentSection>
-
-          <ContentSection
-            title={t('band.ibcStatus.title')}
-            description={t('band.ibcStatus.description')}
-          >
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="border-b border-border/30 pb-3 sm:border-b-0 sm:pb-0">
-                <span className="text-sm text-muted-foreground">{t('band.ibcStatus.chainId')}</span>
-                <div className="mt-1 font-mono text-lg">{selectedCosmosChain}</div>
-              </div>
-              <div className="border-b border-border/30 pb-3 sm:border-b-0 sm:pb-0">
-                <span className="text-sm text-muted-foreground">
-                  {t('band.ibcStatus.connections')}
-                </span>
-                <div className="mt-1 text-lg font-semibold">
-                  {state.ibcData?.connections.total ?? 0}
-                </div>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">
-                  {t('band.ibcStatus.activeChannels')}
-                </span>
-                <div className="mt-1 text-lg font-semibold">
-                  {state.ibcData?.channels.open ?? 0}
-                </div>
-              </div>
-            </div>
           </ContentSection>
         </div>
       </TabPanelWrapper>
 
       <TabPanelWrapper tabId="analysis">
         <div className="space-y-4">
-          <Suspense fallback={<Skeleton className="h-80 w-full" />}>
-            <PriceTrendTab />
-          </Suspense>
-          <Suspense fallback={<Skeleton className="h-80 w-full" />}>
-            <QualityAnalysisTab />
-          </Suspense>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+                <PriceTrendTab />
+              </Suspense>
+            </div>
+            <div className="space-y-4">
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <QualityAnalysisTab />
+              </Suspense>
+            </div>
+          </div>
           <Suspense fallback={<Skeleton className="h-80 w-full" />}>
             <PriceComparisonTab />
           </Suspense>
