@@ -136,7 +136,6 @@ export const SHADOW_TRANSITIONS = {
 export function getShadow(context: keyof typeof SHADOW_USAGE, state: string = 'default'): string {
   const usage = SHADOW_USAGE[context];
   if (!usage) {
-    console.warn(`Unknown shadow context: ${context}`);
     return SHADOWS.sm;
   }
 

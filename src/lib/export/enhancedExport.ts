@@ -341,8 +341,6 @@ export async function batchExport(options: BatchExportOptions): Promise<ExportRe
     // const zipBlob = await zip.generateAsync({ type: 'blob' });
     // const finalZipName = generateFilename(zipFilename, 'zip', includeTimestamp);
     // saveAs(zipBlob, finalZipName);
-
-    console.warn('ZIP export requires jszip package. Install with: npm install jszip');
   } catch (error) {
     logger.error('Batch export failed', { error });
     results.push({

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+import { logger } from '@/shared/logger';
+
 import type { FilterConfig, FilterField, TimeRange } from './types';
 
 const STORAGE_PREFIX = 'filter-config:';
@@ -67,7 +69,7 @@ export function useFilterConfig({ fields, storageKey, initialConfig }: UseFilter
           return deserializeConfig(stored);
         }
       } catch (e) {
-        console.warn('Failed to load filter config from localStorage:', e);
+        logger.warn('Failed to load filter config from localStorage', { error: e });
       }
     }
 
@@ -79,7 +81,7 @@ export function useFilterConfig({ fields, storageKey, initialConfig }: UseFilter
       try {
         localStorage.setItem(STORAGE_PREFIX + storageKey, serializeConfig(config));
       } catch (e) {
-        console.warn('Failed to save filter config to localStorage:', e);
+        logger.warn('Failed to save filter config to localStorage', { error: e });
       }
     }
   }, [config, storageKey]);

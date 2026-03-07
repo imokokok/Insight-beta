@@ -360,13 +360,9 @@ export function UnifiedAlertPanel({
     setIsRuleDialogOpen(true);
   }, []);
 
-  const handleDeleteRule = useCallback((ruleId: string) => {
-    console.log('Delete rule:', ruleId);
-  }, []);
+  const handleDeleteRule = useCallback((_ruleId: string) => {}, []);
 
-  const handleToggleRule = useCallback((ruleId: string, enabled: boolean) => {
-    console.log('Toggle rule:', ruleId, enabled);
-  }, []);
+  const handleToggleRule = useCallback((_ruleId: string, _enabled: boolean) => {}, []);
 
   const activeAlerts = useMemo(
     () => mockStats.reduce((sum, stat) => sum + stat.activeAlerts, 0),

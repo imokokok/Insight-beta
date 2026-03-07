@@ -1,6 +1,6 @@
 /**
  * usePythStream Hook
- * 
+ *
  * 用于连接 Pyth SSE 实时价格流的自定义 Hook
  * - 自动连接和重连
  * - 价格更新订阅
@@ -108,7 +108,6 @@ export function usePythStream(options: UsePythStreamOptions = {}): UsePythStream
         setIsConnected(true);
         setIsConnecting(false);
         reconnectAttemptsRef.current = 0;
-        console.log('Pyth SSE connected');
       };
 
       eventSource.onmessage = (event) => {
@@ -117,7 +116,6 @@ export function usePythStream(options: UsePythStreamOptions = {}): UsePythStream
 
           switch (message.type) {
             case 'connected':
-              console.log('Pyth SSE connection established', { clientId: message.clientId });
               break;
 
             case 'price_update':
@@ -159,7 +157,6 @@ export function usePythStream(options: UsePythStreamOptions = {}): UsePythStream
         if (autoReconnect && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
           setStats((prev) => ({ ...prev, reconnectCount: reconnectAttemptsRef.current }));
-          console.log(`Reconnecting... attempt ${reconnectAttemptsRef.current}`);
           reconnectTimeoutRef.current = setTimeout(connect, reconnectInterval);
         }
       };
@@ -168,13 +165,23 @@ export function usePythStream(options: UsePythStreamOptions = {}): UsePythStream
       setError(err as Error);
       setIsConnecting(false);
     }
-  }, [isConnected, isConnecting, autoReconnect, reconnectInterval, maxReconnectAttempts, disconnect]);
+  }, [
+    isConnected,
+    isConnecting,
+    autoReconnect,
+    reconnectInterval,
+    maxReconnectAttempts,
+    disconnect,
+  ]);
 
-  const updateSymbols = useCallback((newSymbols: string[]) => {
-    currentSymbolsRef.current = newSymbols;
-    disconnect();
-    updateSymbolsTimeoutRef.current = setTimeout(connect, 100);
-  }, [disconnect, connect]);
+  const updateSymbols = useCallback(
+    (newSymbols: string[]) => {
+      currentSymbolsRef.current = newSymbols;
+      disconnect();
+      updateSymbolsTimeoutRef.current = setTimeout(connect, 100);
+    },
+    [disconnect, connect],
+  );
 
   useEffect(() => {
     connect();
