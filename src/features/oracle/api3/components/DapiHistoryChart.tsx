@@ -15,11 +15,18 @@ import {
   Area,
 } from 'recharts';
 
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
-import { useI18n } from '@/i18n';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui';
 import { CHART_GRID } from '@/lib/chart-config';
-import { formatTime, TrendIcon } from '@/shared/utils';
+import { formatTime } from '@/shared/utils';
 
 interface DapiHistoryPoint {
   timestamp: string;
@@ -65,7 +72,7 @@ export function DapiHistoryChart({ dapiName, history, isLoading }: DapiHistoryCh
     return history
       .filter((point) => new Date(point.timestamp) >= cutoffTime)
       .map((point) => ({
-        time: formatTime(point.timestamp, {
+        time: formatTime(point.timestamp, 'en-US', {
           hour: '2-digit',
           minute: '2-digit',
           second: timeRange === '1h' ? '2-digit' : undefined,
@@ -84,10 +91,10 @@ export function DapiHistoryChart({ dapiName, history, isLoading }: DapiHistoryCh
     const delays = chartData.map((d) => d.avgDelay);
     const updates = chartData.map((d) => d.updateCount);
 
-    const currentValue = values[values.length - 1];
-    const startValue = values[0];
+    const currentValue = values[values.length - 1] ?? 0;
+    const startValue = values[0] ?? 0;
     const change = currentValue - startValue;
-    const changePercent = ((change / startValue) * 100).toFixed(2);
+    const changePercent = startValue !== 0 ? ((change / startValue) * 100).toFixed(2) : '0.00';
 
     const avgDelay = delays.reduce((a, b) => a + b, 0) / delays.length;
     const totalUpdates = updates.reduce((a, b) => a + b, 0);
@@ -206,7 +213,7 @@ export function DapiHistoryChart({ dapiName, history, isLoading }: DapiHistoryCh
                 <TrendingUp className="h-4 w-4 text-blue-500" />
                 <span className="text-sm text-muted-foreground">当前价格</span>
               </div>
-              <div className="mt-2 text-2xl font-bold">{stats.currentValue.toFixed(2)}</div>
+              <div className="mt-2 text-2xl font-bold">{(stats.currentValue ?? 0).toFixed(2)}</div>
               <div
                 className={`mt-1 text-xs ${stats.change >= 0 ? 'text-green-600' : 'text-red-600'}`}
               >

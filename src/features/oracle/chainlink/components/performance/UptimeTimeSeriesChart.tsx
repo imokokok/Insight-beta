@@ -2,7 +2,7 @@
 
 import { useMemo, memo } from 'react';
 
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Server, Activity } from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -13,16 +13,15 @@ import {
   YAxis,
   ReferenceArea,
   ReferenceLine,
-  Server,
-  Activity,
 } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
 import { cn, formatChartLabel, formatNumber, getStatusColor } from '@/shared/utils';
 
-import type { NodeUptimeTimeSeries, TimeRange } from '../../types';
 import { TimeRangeSelector } from '../historical/TimeRangeSelector';
+
+import type { NodeUptimeTimeSeries, TimeRange } from '../../types';
 
 export interface UptimeTimeSeriesChartProps {
   data: NodeUptimeTimeSeries[];
@@ -63,7 +62,7 @@ export const UptimeTimeSeriesChart = memo(function UptimeTimeSeriesChart({
     });
 
     return Array.from(timeMap.values()).sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }, [data]);
 
@@ -118,7 +117,8 @@ export const UptimeTimeSeriesChart = memo(function UptimeTimeSeriesChart({
                       className={cn(
                         'bg-success/10 text-success',
                         stats.uptimeTrend === 'down' && 'bg-error/10 text-error',
-                        stats.uptimeTrend === 'stable' && 'bg-muted-foreground/10 text-muted-foreground'
+                        stats.uptimeTrend === 'stable' &&
+                          'bg-muted-foreground/10 text-muted-foreground',
                       )}
                     >
                       {stats.uptimeTrend === 'up' && <TrendingUp className="mr-1 h-3 w-3" />}
@@ -220,30 +220,21 @@ export const UptimeTimeSeriesChart = memo(function UptimeTimeSeriesChart({
                           const node = data.find((n) => n.nodeName === nodeName);
                           if (!node || !entry.value) return null;
 
-                          const point = node.history.find(
-                            (p) => p.timestamp === label
-                          );
+                          const point = node.history.find((p) => p.timestamp === label);
 
                           return (
-                            <div
-                              key={nodeName}
-                              className="flex items-center gap-2 text-xs"
-                            >
+                            <div key={nodeName} className="flex items-center gap-2 text-xs">
                               <div
                                 className="h-2 w-2 rounded-full"
                                 style={{ backgroundColor: entry.fill }}
                               />
-                              <span className="text-muted-foreground">
-                                {nodeName}
-                              </span>
-                              <span className="font-medium">
-                                {formatNumber(entry.value, 2)}%
-                              </span>
+                              <span className="text-muted-foreground">{nodeName}</span>
+                              <span className="font-medium">{formatNumber(entry.value, 2)}%</span>
                               {point && (
                                 <div
                                   className={cn(
                                     'h-2 w-2 rounded-full',
-                                    getStatusColor(point.status)
+                                    getStatusColor(point.status),
                                   )}
                                   title={point.status}
                                 />
@@ -255,39 +246,16 @@ export const UptimeTimeSeriesChart = memo(function UptimeTimeSeriesChart({
                     </div>
                   );
                 }}
-                cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
+                cursor={{ stroke: CHART_COLORS.primary, strokeWidth: 1 }}
               />
 
               {showComparison && (
                 <>
-                  <ReferenceArea
-                    y1={95}
-                    y2={100}
-                    fill={CHART_COLORS.success.DEFAULT}
-                    fillOpacity={0.05}
-                  />
-                  <ReferenceArea
-                    y1={80}
-                    y2={95}
-                    fill={CHART_COLORS.warning.DEFAULT}
-                    fillOpacity={0.05}
-                  />
-                  <ReferenceArea
-                    y1={0}
-                    y2={80}
-                    fill={CHART_COLORS.error.DEFAULT}
-                    fillOpacity={0.05}
-                  />
-                  <ReferenceLine
-                    y={95}
-                    stroke={CHART_COLORS.success.DEFAULT}
-                    strokeDasharray="3 3"
-                  />
-                  <ReferenceLine
-                    y={80}
-                    stroke={CHART_COLORS.warning.DEFAULT}
-                    strokeDasharray="3 3"
-                  />
+                  <ReferenceArea y1={95} y2={100} fill={CHART_COLORS.success} fillOpacity={0.05} />
+                  <ReferenceArea y1={80} y2={95} fill={CHART_COLORS.warning} fillOpacity={0.05} />
+                  <ReferenceArea y1={0} y2={80} fill={CHART_COLORS.error} fillOpacity={0.05} />
+                  <ReferenceLine y={95} stroke={CHART_COLORS.success} strokeDasharray="3 3" />
+                  <ReferenceLine y={80} stroke={CHART_COLORS.warning} strokeDasharray="3 3" />
                 </>
               )}
 

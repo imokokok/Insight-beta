@@ -216,28 +216,28 @@ export const CompareCharts = memo(function CompareCharts({
                   <Bar
                     dataKey="latency"
                     name={t('comparison.protocolCompare.metrics.latency')}
-                    fill={CHART_COLORS.semantic.warning.DEFAULT}
+                    fill={CHART_COLORS.warning}
                     radius={[4, 4, 0, 0]}
                     animationDuration={CHART_ANIMATIONS.chart.animationDuration}
                   />
                   <Bar
                     dataKey="accuracy"
                     name={t('comparison.protocolCompare.metrics.accuracy')}
-                    fill={CHART_COLORS.semantic.success.DEFAULT}
+                    fill={CHART_COLORS.success}
                     radius={[4, 4, 0, 0]}
                     animationDuration={CHART_ANIMATIONS.chart.animationDuration}
                   />
                   <Bar
                     dataKey="updateFrequency"
                     name={t('comparison.protocolCompare.metrics.updateFrequency')}
-                    fill={CHART_COLORS.primary.DEFAULT}
+                    fill={CHART_COLORS.primary}
                     radius={[4, 4, 0, 0]}
                     animationDuration={CHART_ANIMATIONS.chart.animationDuration}
                   />
                   <Bar
                     dataKey="priceDeviation"
                     name={t('comparison.protocolCompare.metrics.priceDeviation')}
-                    fill={CHART_COLORS.semantic.error.DEFAULT}
+                    fill={CHART_COLORS.error}
                     radius={[4, 4, 0, 0]}
                     animationDuration={CHART_ANIMATIONS.chart.animationDuration}
                   />

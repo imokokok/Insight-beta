@@ -6,13 +6,14 @@ import { Activity, TrendingUp, Users, AlertTriangle } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
+import { useHistoricalTrends } from '@/features/oracle/chainlink/hooks/useHistoricalTrends';
 
+import { AnomalyTimeline } from './AnomalyTimeline';
 import { FeedTrendChart } from './FeedTrendChart';
 import { NodePerformanceChart } from './NodePerformanceChart';
 import { OCRRoundChart } from './OCRRoundChart';
-import { AnomalyTimeline } from './AnomalyTimeline';
-import { useHistoricalTrends } from '@/features/oracle/chainlink/hooks/useHistoricalTrends';
-import type { TimeRange } from '../types';
+
+import type { TimeRange } from '../../types';
 
 export interface HistoricalTrendsDashboardProps {
   defaultTimeRange?: TimeRange;
@@ -145,7 +146,8 @@ export const HistoricalTrendsDashboard = memo(function HistoricalTrendsDashboard
             <span>数据点：{data.metadata.dataPoints}</span>
           </div>
           <span>
-            采样率：{data.metadata.samplingRate ? (data.metadata.samplingRate * 100).toFixed(0) : 100}%
+            采样率：
+            {data.metadata.samplingRate ? (data.metadata.samplingRate * 100).toFixed(0) : 100}%
           </span>
         </div>
       )}

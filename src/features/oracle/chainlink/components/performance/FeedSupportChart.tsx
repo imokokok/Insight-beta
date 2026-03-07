@@ -2,10 +2,9 @@
 
 import { useMemo, memo } from 'react';
 
-import { Server, TrendingUp, TrendingDown } from 'lucide-react';
+import { Server, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import {
   Area,
-  AreaChart,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -14,15 +13,15 @@ import {
   Bar,
   BarChart,
   ComposedChart,
-  Activity,
 } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
 import { cn, formatChartLabel, formatNumber } from '@/shared/utils';
 
-import type { NodeFeedSupportHistory, TimeRange } from '../../types';
 import { TimeRangeSelector } from '../historical/TimeRangeSelector';
+
+import type { NodeFeedSupportHistory, TimeRange } from '../../types';
 
 export interface FeedSupportChartProps {
   data: NodeFeedSupportHistory[];
@@ -66,7 +65,7 @@ export const FeedSupportChart = memo(function FeedSupportChart({
     });
 
     return Array.from(timeMap.values()).sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }, [data, showActiveFeeds]);
 
@@ -119,7 +118,7 @@ export const FeedSupportChart = memo(function FeedSupportChart({
                         'bg-success/10 text-success',
                         stats.feedTrend === 'down' && 'bg-error/10 text-error',
                         stats.feedTrend === 'stable' &&
-                          'bg-muted-foreground/10 text-muted-foreground'
+                          'bg-muted-foreground/10 text-muted-foreground',
                       )}
                     >
                       {stats.feedTrend === 'up' && <TrendingUp className="mr-1 h-3 w-3" />}
@@ -214,9 +213,7 @@ export const FeedSupportChart = memo(function FeedSupportChart({
                               const node = data.find((n) => n.nodeName === nodeName);
                               if (!node || !entry.value) return null;
 
-                              const metric = entry.dataKey.includes('_supported')
-                                ? '支持'
-                                : '活跃';
+                              const metric = entry.dataKey.includes('_supported') ? '支持' : '活跃';
 
                               return (
                                 <div
@@ -230,7 +227,9 @@ export const FeedSupportChart = memo(function FeedSupportChart({
                                   <span className="text-muted-foreground">
                                     {nodeName} ({metric})
                                   </span>
-                                  <span className="font-medium">{formatNumber(entry.value, 0)}</span>
+                                  <span className="font-medium">
+                                    {formatNumber(entry.value, 0)}
+                                  </span>
                                 </div>
                               );
                             })}
@@ -238,7 +237,7 @@ export const FeedSupportChart = memo(function FeedSupportChart({
                         </div>
                       );
                     }}
-                    cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
+                    cursor={{ stroke: CHART_COLORS.primary, strokeWidth: 1 }}
                   />
 
                   {data.map((node, index) => {
@@ -282,9 +281,7 @@ export const FeedSupportChart = memo(function FeedSupportChart({
             </div>
 
             <div>
-              <h4 className="mb-2 text-xs font-medium text-muted-foreground">
-                Feed 更新次数趋势
-              </h4>
+              <h4 className="mb-2 text-xs font-medium text-muted-foreground">Feed 更新次数趋势</h4>
               <ResponsiveContainer width="100%" height={height / 2}>
                 <BarChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid
@@ -328,17 +325,12 @@ export const FeedSupportChart = memo(function FeedSupportChart({
                               if (!node || !entry.value) return null;
 
                               return (
-                                <div
-                                  key={nodeName}
-                                  className="flex items-center gap-2 text-xs"
-                                >
+                                <div key={nodeName} className="flex items-center gap-2 text-xs">
                                   <div
                                     className="h-2 w-2 rounded-full"
                                     style={{ backgroundColor: entry.fill }}
                                   />
-                                  <span className="text-muted-foreground">
-                                    {nodeName}
-                                  </span>
+                                  <span className="text-muted-foreground">{nodeName}</span>
                                   <span className="font-medium">
                                     {formatNumber(entry.value, 0)} 次
                                   </span>
@@ -349,7 +341,7 @@ export const FeedSupportChart = memo(function FeedSupportChart({
                         </div>
                       );
                     }}
-                    cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
+                    cursor={{ stroke: CHART_COLORS.primary, strokeWidth: 1 }}
                   />
 
                   {data.map((node, index) => {

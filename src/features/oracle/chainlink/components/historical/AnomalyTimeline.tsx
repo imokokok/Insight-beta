@@ -28,8 +28,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from
 import { CHART_COLORS } from '@/lib/chart-config';
 import { cn, formatChartLabel, formatTime } from '@/shared/utils';
 
-import type { AnomalyEvent, AnomalyStats, TimeRange } from '../../types';
 import { TimeRangeSelector } from './TimeRangeSelector';
+
+import type { AnomalyEvent, AnomalyStats, TimeRange } from '../../types';
 
 const ANOMALY_ICONS: Record<string, any> = {
   price_spike: TrendingUp,
@@ -80,15 +81,18 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
   const chartData = useMemo(() => {
     if (!data.length) return [];
 
-    const filtered = selectedSeverity === 'all'
-      ? data
-      : data.filter((e) => e.severity === selectedSeverity);
+    const filtered =
+      selectedSeverity === 'all' ? data : data.filter((e) => e.severity === selectedSeverity);
 
     return filtered.map((event) => {
       const severityValue =
-        event.severity === 'critical' ? 4 :
-        event.severity === 'high' ? 3 :
-        event.severity === 'medium' ? 2 : 1;
+        event.severity === 'critical'
+          ? 4
+          : event.severity === 'high'
+            ? 3
+            : event.severity === 'medium'
+              ? 2
+              : 1;
 
       return {
         timestamp: event.timestamp,
@@ -145,11 +149,6 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
     ];
   }, [stats]);
 
-  const getEventIcon = (type: string) => {
-    const Icon = ANOMALY_ICONS[type] || AlertCircle;
-    return <Icon className="h-4 w-4" />;
-  };
-
   return (
     <Card className={cn('w-full', className)}>
       <CardHeader>
@@ -170,12 +169,10 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
                 key={stat.label}
                 className={cn(
                   'flex flex-col items-center justify-center rounded-lg border border-border p-2',
-                  stat.bgColor
+                  stat.bgColor,
                 )}
               >
-                <span className={cn('text-lg font-bold', stat.color)}>
-                  {stat.value}
-                </span>
+                <span className={cn('text-lg font-bold', stat.color)}>{stat.value}</span>
                 <span className="text-xs text-muted-foreground">{stat.label}</span>
               </div>
             ))}
@@ -189,8 +186,8 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
             className={cn(
               'rounded-full px-3 py-1 text-xs font-medium transition-colors',
               selectedSeverity === 'all'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                ? 'text-primary-foreground bg-primary'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80',
             )}
           >
             全部
@@ -204,7 +201,7 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
                 'rounded-full px-3 py-1 text-xs font-medium transition-colors',
                 'border',
                 SEVERITY_COLORS[severity],
-                selectedSeverity === severity && 'ring-2 ring-offset-1 ring-current'
+                selectedSeverity === severity && 'ring-2 ring-current ring-offset-1',
               )}
             >
               {SEVERITY_LABELS[severity]}
@@ -218,9 +215,7 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
           {chartData.length > 0 && (
             <>
               <div>
-                <h4 className="mb-2 text-xs font-medium text-muted-foreground">
-                  异常事件时间线
-                </h4>
+                <h4 className="mb-2 text-xs font-medium text-muted-foreground">异常事件时间线</h4>
                 <ResponsiveContainer width="100%" height={height / 2}>
                   <ScatterChart
                     data={chartData}
@@ -276,13 +271,15 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
                               </p>
                               <p>
                                 <span className="text-muted-foreground">严重性:</span>{' '}
-                                <span className={cn(
-                                  'font-medium',
-                                  entry.severity === 4 && 'text-error',
-                                  entry.severity === 3 && 'text-warning',
-                                  entry.severity === 2 && 'text-orange-500',
-                                  entry.severity === 1 && 'text-info'
-                                )}>
+                                <span
+                                  className={cn(
+                                    'font-medium',
+                                    entry.severity === 4 && 'text-error',
+                                    entry.severity === 3 && 'text-warning',
+                                    entry.severity === 2 && 'text-orange-500',
+                                    entry.severity === 1 && 'text-info',
+                                  )}
+                                >
                                   {['', '低', '中', '高', '严重'][entry.severity]}
                                 </span>
                               </p>
@@ -308,35 +305,34 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
                           </div>
                         );
                       }}
-                      cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
+                      cursor={{ stroke: CHART_COLORS.primary, strokeWidth: 1 }}
                     />
 
                     <ReferenceLine
                       y={3.5}
-                      stroke={CHART_COLORS.error.DEFAULT}
+                      stroke={CHART_COLORS.error}
                       strokeDasharray="3 3"
                       strokeOpacity={0.5}
                     />
 
                     <Scatter
                       dataKey="severity"
-                      fill={CHART_COLORS.primary.DEFAULT}
+                      fill={CHART_COLORS.primary}
                       isAnimationActive={true}
                       animationDuration={300}
                     >
                       {chartData.map((entry, index) => {
                         const color =
-                          entry.severity === 4 ? CHART_COLORS.error.DEFAULT :
-                          entry.severity === 3 ? CHART_COLORS.warning.DEFAULT :
-                          entry.severity === 2 ? '#f97316' :
-                          CHART_COLORS.info.DEFAULT;
+                          entry.severity === 4
+                            ? CHART_COLORS.error
+                            : entry.severity === 3
+                              ? CHART_COLORS.warning
+                              : entry.severity === 2
+                                ? '#f97316'
+                                : CHART_COLORS.primary;
 
                         return (
-                          <Cell
-                            key={index}
-                            fill={color}
-                            fillOpacity={entry.resolved ? 0.5 : 1}
-                          />
+                          <Cell key={index} fill={color} fillOpacity={entry.resolved ? 0.5 : 1} />
                         );
                       })}
                     </Scatter>
@@ -345,9 +341,7 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
               </div>
 
               <div>
-                <h4 className="mb-2 text-xs font-medium text-muted-foreground">
-                  最近异常事件
-                </h4>
+                <h4 className="mb-2 text-xs font-medium text-muted-foreground">最近异常事件</h4>
                 <div className="max-h-64 space-y-2 overflow-y-auto">
                   {data.slice(0, 10).map((event) => {
                     const Icon = ANOMALY_ICONS[event.type] || AlertCircle;
@@ -358,13 +352,13 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
                         key={event.id}
                         className={cn(
                           'flex items-start gap-3 rounded-lg border border-border p-3 transition-colors',
-                          isResolved ? 'bg-muted/30' : 'bg-muted/50'
+                          isResolved ? 'bg-muted/30' : 'bg-muted/50',
                         )}
                       >
                         <div
                           className={cn(
                             'flex h-8 w-8 items-center justify-center rounded-full',
-                            SEVERITY_COLORS[event.severity]
+                            SEVERITY_COLORS[event.severity],
                           )}
                         >
                           <Icon className="h-4 w-4" />
@@ -382,7 +376,10 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
                                 {SEVERITY_LABELS[event.severity]}
                               </Badge>
                               {isResolved && (
-                                <Badge variant="outline" className="bg-success/10 text-success text-xs">
+                                <Badge
+                                  variant="outline"
+                                  className="bg-success/10 text-xs text-success"
+                                >
                                   <CheckCircle2 className="mr-1 h-3 w-3" />
                                   已解决
                                 </Badge>
@@ -392,9 +389,7 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
                               {formatTime(new Date(event.timestamp), 'MM/DD HH:mm')}
                             </span>
                           </div>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {event.description}
-                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">{event.description}</p>
                           {(event.feedId || event.nodeName) && (
                             <div className="mt-1 flex gap-2 text-xs text-muted-foreground">
                               {event.feedId && <span>Feed: {event.feedId}</span>}
@@ -415,9 +410,7 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
               <div className="text-center">
                 <CheckCircle2 className="mx-auto mb-2 h-8 w-8 text-success" />
                 <p className="text-sm font-medium">暂无异常事件</p>
-                <p className="text-xs text-muted-foreground">
-                  系统运行正常，未检测到异常
-                </p>
+                <p className="text-xs text-muted-foreground">系统运行正常，未检测到异常</p>
               </div>
             </div>
           )}

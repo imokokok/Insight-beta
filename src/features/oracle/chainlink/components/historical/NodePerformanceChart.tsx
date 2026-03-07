@@ -2,7 +2,7 @@
 
 import { useMemo, memo } from 'react';
 
-import { Server } from 'lucide-react';
+import { Server, Clock, Activity } from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -14,16 +14,15 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  Clock,
-  Activity,
 } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
 import { cn, formatChartLabel, formatNumber } from '@/shared/utils';
 
-import type { NodePerformanceHistory, TimeRange } from '../../types';
 import { TimeRangeSelector } from './TimeRangeSelector';
+
+import type { NodePerformanceHistory, TimeRange } from '../../types';
 
 export interface NodePerformanceChartProps {
   data: NodePerformanceHistory[];
@@ -62,17 +61,13 @@ export const NodePerformanceChart = memo(function NodePerformanceChart({
     });
 
     return Array.from(timeMap.values()).sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }, [data]);
 
   const getNodeStats = (node: NodePerformanceHistory) => {
     const uptimeColor =
-      node.currentUptime >= 99
-        ? 'success'
-        : node.currentUptime >= 95
-          ? 'warning'
-          : 'error';
+      node.currentUptime >= 99 ? 'success' : node.currentUptime >= 95 ? 'warning' : 'error';
 
     return {
       uptimeBadge: (
@@ -136,9 +131,7 @@ export const NodePerformanceChart = memo(function NodePerformanceChart({
           {chartData.length > 0 && (
             <>
               <div>
-                <h4 className="mb-2 text-xs font-medium text-muted-foreground">
-                  在线率趋势 (%)
-                </h4>
+                <h4 className="mb-2 text-xs font-medium text-muted-foreground">在线率趋势 (%)</h4>
                 <ResponsiveContainer width="100%" height={height / 2}>
                   <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <defs>
@@ -202,17 +195,12 @@ export const NodePerformanceChart = memo(function NodePerformanceChart({
                                 if (!node || !entry.value) return null;
 
                                 return (
-                                  <div
-                                    key={nodeName}
-                                    className="flex items-center gap-2 text-xs"
-                                  >
+                                  <div key={nodeName} className="flex items-center gap-2 text-xs">
                                     <div
                                       className="h-2 w-2 rounded-full"
                                       style={{ backgroundColor: entry.fill }}
                                     />
-                                    <span className="text-muted-foreground">
-                                      {nodeName}
-                                    </span>
+                                    <span className="text-muted-foreground">{nodeName}</span>
                                     <span className="font-medium">
                                       {formatNumber(entry.value, 2)}%
                                     </span>
@@ -223,13 +211,13 @@ export const NodePerformanceChart = memo(function NodePerformanceChart({
                           </div>
                         );
                       }}
-                      cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
+                      cursor={{ stroke: CHART_COLORS.primary, strokeWidth: 1 }}
                     />
 
                     <ReferenceArea
                       y1={95}
                       y2={100}
-                      fill={CHART_COLORS.success.DEFAULT}
+                      fill={CHART_COLORS.success}
                       fillOpacity={0.05}
                     />
 
@@ -303,17 +291,12 @@ export const NodePerformanceChart = memo(function NodePerformanceChart({
                                 if (!node || !entry.value) return null;
 
                                 return (
-                                  <div
-                                    key={nodeName}
-                                    className="flex items-center gap-2 text-xs"
-                                  >
+                                  <div key={nodeName} className="flex items-center gap-2 text-xs">
                                     <div
                                       className="h-2 w-2 rounded-full"
                                       style={{ backgroundColor: entry.stroke }}
                                     />
-                                    <span className="text-muted-foreground">
-                                      {nodeName}
-                                    </span>
+                                    <span className="text-muted-foreground">{nodeName}</span>
                                     <span className="font-medium">
                                       {formatNumber(entry.value, 0)}ms
                                     </span>
@@ -324,7 +307,7 @@ export const NodePerformanceChart = memo(function NodePerformanceChart({
                           </div>
                         );
                       }}
-                      cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
+                      cursor={{ stroke: CHART_COLORS.primary, strokeWidth: 1 }}
                     />
 
                     {data.map((node, index) => {

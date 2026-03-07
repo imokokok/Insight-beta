@@ -2,12 +2,7 @@
 
 import { useMemo, memo, useState } from 'react';
 
-import {
-  Award,
-  Clock,
-  Activity,
-  CheckCircle2,
-} from 'lucide-react';
+import { Award, Clock, Activity, CheckCircle2 } from 'lucide-react';
 import {
   Bar,
   BarChart,
@@ -29,8 +24,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
 import { cn, formatNumber } from '@/shared/utils';
 
-import type { MultiNodeComparisonData, TimeRange, NodeComparisonMetrics } from '../../types';
 import { TimeRangeSelector } from '../historical/TimeRangeSelector';
+
+import type { MultiNodeComparisonData, TimeRange, NodeComparisonMetrics } from '../../types';
 
 export interface MultiNodeComparisonChartProps {
   data: MultiNodeComparisonData;
@@ -99,7 +95,10 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
       metrics.forEach((metric) => {
         const value = node[metric as keyof NodeComparisonMetrics] as number;
         const maxValue = maxValues[metric as keyof typeof maxValues];
-        radarData[metric] = metric === 'responseTime' ? (maxValue - value) / maxValue * 100 : (value / maxValue) * 100;
+        radarData[metric] =
+          metric === 'responseTime'
+            ? ((maxValue - value) / maxValue) * 100
+            : (value / maxValue) * 100;
       });
       return radarData;
     });
@@ -176,9 +175,7 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
           <div className="space-y-6">
             <div>
               <div className="mb-3 flex items-center justify-between">
-                <h4 className="text-xs font-medium text-muted-foreground">
-                  性能指标对比
-                </h4>
+                <h4 className="text-xs font-medium text-muted-foreground">性能指标对比</h4>
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -186,8 +183,8 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
                     className={cn(
                       'rounded px-2 py-1 text-xs transition-colors',
                       sortBy === 'uptime'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        ? 'text-primary-foreground bg-primary'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80',
                     )}
                   >
                     按在线率
@@ -198,8 +195,8 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
                     className={cn(
                       'rounded px-2 py-1 text-xs transition-colors',
                       sortBy === 'response'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        ? 'text-primary-foreground bg-primary'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80',
                     )}
                   >
                     按响应时间
@@ -210,8 +207,8 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
                     className={cn(
                       'rounded px-2 py-1 text-xs transition-colors',
                       sortBy === 'score'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        ? 'text-primary-foreground bg-primary'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80',
                     )}
                   >
                     按可靠性评分
@@ -274,9 +271,7 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
                               </div>
                               <div className="flex justify-between gap-4">
                                 <span className="text-muted-foreground">在线率</span>
-                                <span className="font-medium">
-                                  {formatNumber(node.uptime, 2)}%
-                                </span>
+                                <span className="font-medium">{formatNumber(node.uptime, 2)}%</span>
                               </div>
                               <div className="flex justify-between gap-4">
                                 <span className="text-muted-foreground">响应时间</span>
@@ -296,7 +291,12 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
                               </div>
                               <div className="flex justify-between gap-4">
                                 <span className="text-muted-foreground">可靠性评分</span>
-                                <span className={cn('font-medium', getScoreColor(node.reliabilityScore))}>
+                                <span
+                                  className={cn(
+                                    'font-medium',
+                                    getScoreColor(node.reliabilityScore),
+                                  )}
+                                >
                                   {formatNumber(node.reliabilityScore, 0)}
                                 </span>
                               </div>
@@ -321,10 +321,10 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
                         key={`cell-uptime-${index}`}
                         fill={
                           entry.uptime >= 99
-                            ? CHART_COLORS.success.DEFAULT
+                            ? CHART_COLORS.success
                             : entry.uptime >= 95
-                              ? CHART_COLORS.warning.DEFAULT
-                              : CHART_COLORS.error.DEFAULT
+                              ? CHART_COLORS.warning
+                              : CHART_COLORS.error
                         }
                         fillOpacity={0.8}
                       />
@@ -336,7 +336,7 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
                     dataKey="responseTime"
                     name="响应时间"
                     radius={[4, 4, 0, 0]}
-                    fill={CHART_COLORS.primary.DEFAULT}
+                    fill={CHART_COLORS.primary}
                     fillOpacity={0.5}
                     isAnimationActive={true}
                     animationDuration={300}
@@ -347,9 +347,7 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
 
             {showRadar && radarChartData.length > 0 && (
               <div>
-                <h4 className="mb-2 text-xs font-medium text-muted-foreground">
-                  综合能力雷达图
-                </h4>
+                <h4 className="mb-2 text-xs font-medium text-muted-foreground">综合能力雷达图</h4>
                 <ResponsiveContainer width="100%" height={height / 2}>
                   <RadarChart
                     cx="50%"
@@ -382,9 +380,7 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
                             <div className="space-y-1 text-xs">
                               <div className="flex justify-between gap-4">
                                 <span className="text-muted-foreground">在线率</span>
-                                <span className="font-medium">
-                                  {formatNumber(entry.uptime, 1)}
-                                </span>
+                                <span className="font-medium">{formatNumber(entry.uptime, 1)}</span>
                               </div>
                               <div className="flex justify-between gap-4">
                                 <span className="text-muted-foreground">响应速度</span>

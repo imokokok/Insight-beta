@@ -6,7 +6,6 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 import { Gavel, TrendingUp, LayoutDashboard, Users, AlertTriangle, Wallet } from 'lucide-react';
 
-import { ContentSection, ContentGrid } from '@/components/common';
 import { useProtocolData } from '@/components/oracle/hooks/useProtocolData';
 import {
   ProtocolPageLayout,
@@ -507,7 +506,8 @@ export default function UmaPage() {
       >
         <TabPanelWrapper tabId="overview">
           <div className="space-y-6">
-            <ContentSection title={t('uma.overview.recentActivity')}>
+            <div>
+              <h2 className="mb-4 text-lg font-semibold">{t('uma.overview.recentActivity')}</h2>
               <div className="rounded-lg border border-border bg-card p-4">
                 {loading ? (
                   <Skeleton className="h-32 w-full" />
@@ -553,10 +553,11 @@ export default function UmaPage() {
                   <p className="text-center text-muted-foreground">{t('common.noData')}</p>
                 )}
               </div>
-            </ContentSection>
+            </div>
 
-            <ContentSection title={t('uma.overview.stats')}>
-              <ContentGrid columns={3}>
+            <div>
+              <h2 className="mb-4 text-lg font-semibold">{t('uma.overview.stats')}</h2>
+              <div className="grid gap-4 sm:grid-cols-3">
                 <div className="rounded-lg border border-border bg-card p-4">
                   <p className="text-sm text-muted-foreground">{t('uma.overview.totalResolved')}</p>
                   <p className="text-2xl font-bold">
@@ -582,20 +583,23 @@ export default function UmaPage() {
                       : 'N/A'}
                   </p>
                 </div>
-              </ContentGrid>
-            </ContentSection>
+              </div>
+            </div>
           </div>
         </TabPanelWrapper>
 
         <TabPanelWrapper tabId="assertions">
-          <ContentSection title={t('uma.assertions.title')}>
-            <FilterButtons
-              filter={assertionsFilter}
-              onFilterChange={handleAssertionsFilterChange}
-              allLabel={t('uma.filters.all')}
-              mineLabel={t('uma.filters.mine')}
-              isConnected={isConnected}
-            />
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">{t('uma.assertions.title')}</h2>
+              <FilterButtons
+                filter={assertionsFilter}
+                onFilterChange={handleAssertionsFilterChange}
+                allLabel={t('uma.filters.all')}
+                mineLabel={t('uma.filters.mine')}
+                isConnected={isConnected}
+              />
+            </div>
             <div className="rounded-lg border border-border bg-card">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -671,18 +675,21 @@ export default function UmaPage() {
                 </table>
               </div>
             </div>
-          </ContentSection>
+          </div>
         </TabPanelWrapper>
 
         <TabPanelWrapper tabId="disputes">
-          <ContentSection title={t('uma.disputes.title')}>
-            <FilterButtons
-              filter={disputesFilter}
-              onFilterChange={handleDisputesFilterChange}
-              allLabel={t('uma.filters.all')}
-              mineLabel={t('uma.filters.mine')}
-              isConnected={isConnected}
-            />
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">{t('uma.disputes.title')}</h2>
+              <FilterButtons
+                filter={disputesFilter}
+                onFilterChange={handleDisputesFilterChange}
+                allLabel={t('uma.filters.all')}
+                mineLabel={t('uma.filters.mine')}
+                isConnected={isConnected}
+              />
+            </div>
             <div className="rounded-lg border border-border bg-card">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -762,11 +769,12 @@ export default function UmaPage() {
                 </table>
               </div>
             </div>
-          </ContentSection>
+          </div>
         </TabPanelWrapper>
 
         <TabPanelWrapper tabId="voters">
-          <ContentSection title={t('uma.voters.title')}>
+          <div>
+            <h2 className="mb-4 text-lg font-semibold">{t('uma.voters.title')}</h2>
             <div className="rounded-lg border border-border bg-card">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -837,7 +845,7 @@ export default function UmaPage() {
                 </table>
               </div>
             </div>
-          </ContentSection>
+          </div>
         </TabPanelWrapper>
 
         <TabPanelWrapper tabId="analysis">
@@ -849,7 +857,8 @@ export default function UmaPage() {
               <HistoricalDisputeStats disputes={allAssertions.map(transformAssertionToDispute)} />
             </div>
 
-            <ContentSection title={t('uma.analysis.chainDistribution')}>
+            <div>
+              <h2 className="mb-4 text-lg font-semibold">{t('uma.analysis.chainDistribution')}</h2>
               <div className="rounded-lg border border-border bg-card p-4">
                 {loading ? (
                   <Skeleton className="h-32 w-full" />
@@ -884,7 +893,7 @@ export default function UmaPage() {
                   <p className="text-center text-muted-foreground">{t('common.noData')}</p>
                 )}
               </div>
-            </ContentSection>
+            </div>
           </div>
         </TabPanelWrapper>
       </ProtocolPageLayout>

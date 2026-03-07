@@ -2,7 +2,7 @@
 
 import { useMemo, memo } from 'react';
 
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Clock } from 'lucide-react';
 import {
   Line,
   LineChart,
@@ -14,16 +14,15 @@ import {
   ReferenceLine,
   Area,
   AreaChart,
-  Activity,
-  Clock,
 } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
 import { cn, formatChartLabel, formatNumber } from '@/shared/utils';
 
-import type { FeedUpdateFrequencyTrend, TimeRange } from '../../types';
 import { TimeRangeSelector } from '../historical/TimeRangeSelector';
+
+import type { FeedUpdateFrequencyTrend, TimeRange } from '../../types';
 
 export interface FeedUpdateFrequencyChartProps {
   data: FeedUpdateFrequencyTrend[];
@@ -66,7 +65,7 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
     });
 
     return Array.from(timeMap.values()).sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }, [data, showInterval]);
 
@@ -116,10 +115,7 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
             {data.map((feed) => {
               const stats = getFeedStats(feed);
               return (
-                <div
-                  key={feed.feedId}
-                  className="rounded-lg border border-border bg-muted/50 p-3"
-                >
+                <div key={feed.feedId} className="rounded-lg border border-border bg-muted/50 p-3">
                   <div className="flex items-start justify-between">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
@@ -134,15 +130,11 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                         'bg-success/10 text-success',
                         stats.frequencyTrend === 'down' && 'bg-error/10 text-error',
                         stats.frequencyTrend === 'stable' &&
-                          'bg-muted-foreground/10 text-muted-foreground'
+                          'bg-muted-foreground/10 text-muted-foreground',
                       )}
                     >
-                      {stats.frequencyTrend === 'up' && (
-                        <TrendingUp className="mr-1 h-3 w-3" />
-                      )}
-                      {stats.frequencyTrend === 'down' && (
-                        <TrendingDown className="mr-1 h-3 w-3" />
-                      )}
+                      {stats.frequencyTrend === 'up' && <TrendingUp className="mr-1 h-3 w-3" />}
+                      {stats.frequencyTrend === 'down' && <TrendingDown className="mr-1 h-3 w-3" />}
                       {stats.currentFrequency}/m
                     </Badge>
                   </div>
@@ -240,17 +232,12 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                               if (!feed || !entry.value) return null;
 
                               return (
-                                <div
-                                  key={feedId}
-                                  className="flex items-center gap-2 text-xs"
-                                >
+                                <div key={feedId} className="flex items-center gap-2 text-xs">
                                   <div
                                     className="h-2 w-2 rounded-full"
                                     style={{ backgroundColor: entry.fill }}
                                   />
-                                  <span className="text-muted-foreground">
-                                    {feed.symbol}
-                                  </span>
+                                  <span className="text-muted-foreground">{feed.symbol}</span>
                                   <span className="font-medium">
                                     {formatNumber(entry.value, 1)}/m
                                   </span>
@@ -261,14 +248,10 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                         </div>
                       );
                     }}
-                    cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
+                    cursor={{ stroke: CHART_COLORS.primary, strokeWidth: 1 }}
                   />
 
-                  <ReferenceLine
-                    y={1}
-                    stroke={CHART_COLORS.warning.DEFAULT}
-                    strokeDasharray="3 3"
-                  />
+                  <ReferenceLine y={1} stroke={CHART_COLORS.warning} strokeDasharray="3 3" />
 
                   {data.map((feed, index) => {
                     const color = getChartColor(index);
@@ -341,17 +324,12 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                                 if (!feed || !entry.value) return null;
 
                                 return (
-                                  <div
-                                    key={feedId}
-                                    className="flex items-center gap-2 text-xs"
-                                  >
+                                  <div key={feedId} className="flex items-center gap-2 text-xs">
                                     <div
                                       className="h-2 w-2 rounded-full"
                                       style={{ backgroundColor: entry.stroke }}
                                     />
-                                    <span className="text-muted-foreground">
-                                      {feed.symbol}
-                                    </span>
+                                    <span className="text-muted-foreground">{feed.symbol}</span>
                                     <span className="font-medium">
                                       {formatInterval(entry.value)}
                                     </span>
@@ -362,7 +340,7 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                           </div>
                         );
                       }}
-                      cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
+                      cursor={{ stroke: CHART_COLORS.primary, strokeWidth: 1 }}
                     />
 
                     {data.map((feed, index) => {

@@ -38,7 +38,7 @@ const groupByOptions: { value: GroupBy; label: string }[] = [
 ];
 
 const severityColors: Record<string, string> = {
-  critical: CHART_COLORS.semantic.error.DEFAULT,
+  critical: CHART_COLORS.error,
   high: '#f97316',
   medium: '#eab308',
   low: '#22c55e',
@@ -72,9 +72,7 @@ function TrendIndicator({ trend, percent }: { trend: string; percent: number }) 
   }
 
   const isIncreasing = trend === 'increasing';
-  const color = isIncreasing
-    ? CHART_COLORS.semantic.error.DEFAULT
-    : CHART_COLORS.semantic.success.DEFAULT;
+  const color = isIncreasing ? CHART_COLORS.error : CHART_COLORS.success;
   const Icon = isIncreasing ? TrendingUp : TrendingDown;
 
   return (
@@ -144,7 +142,7 @@ export function AlertTrendChart({
         <EnhancedAreaChart
           data={chartData}
           dataKey="count"
-          color={CHART_COLORS.primary.DEFAULT}
+          color={CHART_COLORS.primary}
           height={280}
           valueFormatter={(v) => formatNumber(v, 0)}
           labelFormatter={(l) => String(l)}

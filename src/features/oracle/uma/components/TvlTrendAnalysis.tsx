@@ -14,18 +14,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { formatTime } from '@/shared/utils/format/date';
 import { cn } from '@/shared/utils/ui';
 
@@ -122,15 +111,15 @@ export function TvlTrendAnalysis({ tvlData, isLoading }: TvlTrendAnalysisProps) 
   }) => {
     if (active && payload && payload.length > 0) {
       return (
-        <div className="rounded-lg border bg-white p-3 text-sm shadow-lg">
-          <p className="mb-2 font-semibold text-gray-700">{formatTime(label || '')}</p>
+        <div className="rounded-lg border border-border bg-card p-3 text-sm shadow-lg">
+          <p className="mb-2 font-semibold">{formatTime(label || '')}</p>
           {payload.map((item, index) => (
             <div key={index} className="flex items-center gap-2 text-xs">
               <div
                 className="h-2 w-2 rounded-full"
                 style={{ backgroundColor: item.color || '#3b82f6' }}
               />
-              <span className="text-gray-600">{item.name}:</span>
+              <span className="text-muted-foreground">{item.name}:</span>
               <span className="font-semibold">
                 {item.name === 'TVL'
                   ? `$${item.value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
@@ -146,215 +135,212 @@ export function TvlTrendAnalysis({ tvlData, isLoading }: TvlTrendAnalysisProps) 
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>TVL 趋势分析</CardTitle>
-          <CardDescription>总锁仓价值历史趋势</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex h-80 items-center justify-center">
-            <div className="text-sm text-gray-400">加载中...</div>
+      <div className="rounded-lg border border-border bg-card p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">TVL 趋势分析</h3>
+            <p className="text-sm text-muted-foreground">总锁仓价值历史趋势</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="flex h-80 items-center justify-center">
+          <div className="text-sm text-muted-foreground">加载中...</div>
+        </div>
+      </div>
     );
   }
 
   if (!tvlData || tvlData.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>TVL 趋势分析</CardTitle>
-          <CardDescription>总锁仓价值历史趋势</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex h-80 items-center justify-center text-sm text-gray-400">
-            暂无 TVL 数据
+      <div className="rounded-lg border border-border bg-card p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">TVL 趋势分析</h3>
+            <p className="text-sm text-muted-foreground">总锁仓价值历史趋势</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">
+          暂无 TVL 数据
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>TVL 趋势分析</CardTitle>
-            <CardDescription>总锁仓价值历史趋势</CardDescription>
-          </div>
-          <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
-            <SelectTrigger className="w-[120px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TIME_RANGES.map((range) => (
-                <SelectItem key={range.value} value={range.value}>
-                  {range.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="rounded-lg border border-border bg-card p-6">
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">TVL 趋势分析</h3>
+          <p className="text-sm text-muted-foreground">总锁仓价值历史趋势</p>
         </div>
-      </CardHeader>
-      <CardContent>
-        {tvlStats && (
-          <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            <div className="rounded-lg bg-gray-50 p-3">
-              <div className="text-xs text-gray-500">当前 TVL</div>
-              <div className="text-xl font-bold">
-                $
-                {tvlStats.currentTvl.toLocaleString(undefined, {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
-              </div>
-            </div>
-            <div className="rounded-lg bg-gray-50 p-3">
-              <div className="text-xs text-gray-500">变化量</div>
-              <div
-                className={cn(
-                  'text-xl font-bold',
-                  tvlStats.change >= 0 ? 'text-green-600' : 'text-red-600',
-                )}
-              >
-                {tvlStats.change >= 0 ? '+' : ''}$
-                {Math.abs(tvlStats.change).toLocaleString(undefined, {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
-              </div>
-            </div>
-            <div className="rounded-lg bg-gray-50 p-3">
-              <div className="text-xs text-gray-500">变化率</div>
-              <div
-                className={cn(
-                  'text-xl font-bold',
-                  tvlStats.changePercent >= 0 ? 'text-green-600' : 'text-red-600',
-                )}
-              >
-                {tvlStats.changePercent >= 0 ? '+' : ''}
-                {tvlStats.changePercent.toFixed(2)}%
-              </div>
-            </div>
-            <div className="rounded-lg bg-gray-50 p-3">
-              <div className="text-xs text-gray-500">最高 TVL</div>
-              <div className="text-xl font-bold">
-                $
-                {tvlStats.maxTvl.toLocaleString(undefined, {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
-              </div>
-            </div>
-            <div className="rounded-lg bg-gray-50 p-3">
-              <div className="text-xs text-gray-500">平均 TVL</div>
-              <div className="text-xl font-bold">
-                $
-                {tvlStats.avgTvl.toLocaleString(undefined, {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
-              </div>
+        <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TIME_RANGES.map((range) => (
+              <SelectItem key={range.value} value={range.value}>
+                {range.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {tvlStats && (
+        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
+            <div className="text-xs text-muted-foreground">当前 TVL</div>
+            <div className="text-xl font-bold">
+              $
+              {tvlStats.currentTvl.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}
             </div>
           </div>
-        )}
-
-        <div className="mb-4 flex items-center gap-2">
-          <label className="text-sm text-gray-600">显示断言数量</label>
-          <input
-            type="checkbox"
-            checked={showAssertions}
-            onChange={(e) => setShowAssertions(e.target.checked)}
-            className="h-4 w-4"
-          />
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
+            <div className="text-xs text-muted-foreground">变化量</div>
+            <div
+              className={cn(
+                'text-xl font-bold',
+                tvlStats.change >= 0 ? 'text-green-500' : 'text-red-500',
+              )}
+            >
+              {tvlStats.change >= 0 ? '+' : ''}$
+              {Math.abs(tvlStats.change).toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
+            <div className="text-xs text-muted-foreground">变化率</div>
+            <div
+              className={cn(
+                'text-xl font-bold',
+                tvlStats.changePercent >= 0 ? 'text-green-500' : 'text-red-500',
+              )}
+            >
+              {tvlStats.changePercent >= 0 ? '+' : ''}
+              {tvlStats.changePercent.toFixed(2)}%
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
+            <div className="text-xs text-muted-foreground">最高 TVL</div>
+            <div className="text-xl font-bold">
+              $
+              {tvlStats.maxTvl.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
+            <div className="text-xs text-muted-foreground">平均 TVL</div>
+            <div className="text-xl font-bold">
+              $
+              {tvlStats.avgTvl.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}
+            </div>
+          </div>
         </div>
+      )}
 
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            {showAssertions ? (
-              <AreaChart data={filteredData}>
-                <defs>
-                  <linearGradient id="colorTvl" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="timestamp"
-                  tickFormatter={(value) => formatTime(value)}
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis
-                  yAxisId="left"
-                  tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="tvl"
-                  name="TVL"
-                  stroke="#3b82f6"
-                  fillOpacity={1}
-                  fill="url(#colorTvl)"
-                />
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="assertionCount"
-                  name="断言数"
-                  stroke="#f59e0b"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </AreaChart>
-            ) : (
-              <AreaChart data={filteredData}>
-                <defs>
-                  <linearGradient id="colorTvlSimple" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="timestamp"
-                  tickFormatter={(value) => formatTime(value)}
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis
-                  tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
-                  tick={{ fontSize: 12 }}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="tvl"
-                  name="TVL"
-                  stroke="#3b82f6"
-                  fillOpacity={1}
-                  fill="url(#colorTvlSimple)"
-                />
-                <ReferenceLine
-                  y={tvlStats?.avgTvl || 0}
-                  stroke="#94a3b8"
-                  strokeDasharray="3 3"
-                  label={{ value: '平均', fontSize: 12, fill: '#64748b' }}
-                />
-              </AreaChart>
-            )}
-          </ResponsiveContainer>
-        </div>
+      <div className="mb-4 flex items-center gap-2">
+        <label className="text-sm text-muted-foreground">显示断言数量</label>
+        <input
+          type="checkbox"
+          checked={showAssertions}
+          onChange={(e) => setShowAssertions(e.target.checked)}
+          className="h-4 w-4"
+        />
+      </div>
 
-        <div className="mt-4 text-xs text-gray-500">
-          数据更新时间：{formatTime(new Date().toISOString())}
-        </div>
-      </CardContent>
-    </Card>
+      <div className="h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          {showAssertions ? (
+            <AreaChart data={filteredData}>
+              <defs>
+                <linearGradient id="colorTvl" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="timestamp"
+                tickFormatter={(value) => formatTime(value)}
+                tick={{ fontSize: 12 }}
+              />
+              <YAxis
+                yAxisId="left"
+                tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+                tick={{ fontSize: 12 }}
+              />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
+              <Tooltip content={<CustomTooltip />} />
+              <Area
+                yAxisId="left"
+                type="monotone"
+                dataKey="tvl"
+                name="TVL"
+                stroke="#3b82f6"
+                fillOpacity={1}
+                fill="url(#colorTvl)"
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="assertionCount"
+                name="断言数"
+                stroke="#f59e0b"
+                strokeWidth={2}
+                dot={false}
+              />
+            </AreaChart>
+          ) : (
+            <AreaChart data={filteredData}>
+              <defs>
+                <linearGradient id="colorTvlSimple" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="timestamp"
+                tickFormatter={(value) => formatTime(value)}
+                tick={{ fontSize: 12 }}
+              />
+              <YAxis
+                tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+                tick={{ fontSize: 12 }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="tvl"
+                name="TVL"
+                stroke="#3b82f6"
+                fillOpacity={1}
+                fill="url(#colorTvlSimple)"
+              />
+              <ReferenceLine
+                y={tvlStats?.avgTvl || 0}
+                stroke="#94a3b8"
+                strokeDasharray="3 3"
+                label={{ value: '平均', fontSize: 12, fill: '#64748b' }}
+              />
+            </AreaChart>
+          )}
+        </ResponsiveContainer>
+      </div>
+
+      <div className="mt-4 text-xs text-muted-foreground">
+        数据更新时间：{formatTime(new Date().toISOString())}
+      </div>
+    </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useCallback } from 'react';
 
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bell,
   AlertTriangle,
@@ -23,13 +22,12 @@ import {
   Pause,
 } from 'lucide-react';
 
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/Badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import { Switch } from '@/components/ui/Switch';
 import {
   Select,
   SelectContent,
@@ -37,14 +35,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { Switch } from '@/components/ui/Switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Textarea } from '@/components/ui/Textarea';
-
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn, formatTime } from '@/shared/utils';
-
-import type { OracleProtocol } from '@/types/oracle/protocol';
 import type { AlertSeverity, AlertStatus } from '@/types/oracle/alert';
+import type { OracleProtocol } from '@/types/oracle/protocol';
 
 export type AlertType =
   | 'price'
@@ -185,6 +183,7 @@ export function UnifiedAlertPanel({
   const [filterStatus, setFilterStatus] = useState<AlertStatus | 'all'>('all');
   const [isRuleDialogOpen, setIsRuleDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedRule, setSelectedRule] = useState<AlertRule | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(30);
 
@@ -329,8 +328,7 @@ export function UnifiedAlertPanel({
     return mockRules.filter((rule) => {
       if (filterProtocol !== 'all' && rule.protocol !== filterProtocol) return false;
       if (filterSeverity !== 'all' && rule.severity !== filterSeverity) return false;
-      if (searchQuery && !rule.name.toLowerCase().includes(searchQuery.toLowerCase()))
-        return false;
+      if (searchQuery && !rule.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       return true;
     });
   }, [mockRules, filterProtocol, filterSeverity, searchQuery]);
@@ -405,7 +403,9 @@ export function UnifiedAlertPanel({
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{protocol.toUpperCase()}: {stats?.activeAlerts ?? 0} 活跃告警</p>
+                      <p>
+                        {protocol.toUpperCase()}: {stats?.activeAlerts ?? 0} 活跃告警
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -485,7 +485,9 @@ export function UnifiedAlertPanel({
                   className="rounded-lg border p-3 transition-colors hover:bg-muted/50"
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn('rounded p-1', protocolColors[stat.protocol as OracleProtocol])}>
+                    <div
+                      className={cn('rounded p-1', protocolColors[stat.protocol as OracleProtocol])}
+                    >
                       <Icon className="h-4 w-4 text-white" />
                     </div>
                     <span className="text-xs font-semibold">
@@ -644,11 +646,7 @@ export function UnifiedAlertPanel({
                         <Button variant="ghost" size="sm" onClick={() => handleEditRule(rule)}>
                           <Edit2 className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteRule(rule.id)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteRule(rule.id)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

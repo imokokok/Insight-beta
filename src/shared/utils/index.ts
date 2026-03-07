@@ -13,7 +13,7 @@ export * from './storage';
 export * from './typeGuards';
 export * from './ui';
 export * from './url';
-export * from './chart.tsx';
+export * from './chart';
 
 // HTTP 工具（排除重复的 getErrorMessage）
 export {

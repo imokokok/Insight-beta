@@ -17,8 +17,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
 import { cn, formatChartLabel, formatPrice, formatNumber, TrendIcon } from '@/shared/utils';
 
-import type { FeedTrendData, TimeRange } from '../../types';
 import { TimeRangeSelector } from './TimeRangeSelector';
+
+import type { FeedTrendData, TimeRange } from '../../types';
 
 export interface FeedTrendChartProps {
   data: FeedTrendData[];
@@ -41,7 +42,7 @@ export const FeedTrendChart = memo(function FeedTrendChart({
   height = 400,
 }: FeedTrendChartProps) {
   const [selectedFeeds, setSelectedFeeds] = useState<string[]>(
-    data.slice(0, 3).map((f) => f.feedId)
+    data.slice(0, 3).map((f) => f.feedId),
   );
 
   const chartData = useMemo(() => {
@@ -62,7 +63,7 @@ export const FeedTrendChart = memo(function FeedTrendChart({
     });
 
     return Array.from(timeMap.values()).sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }, [data]);
 
@@ -74,9 +75,7 @@ export const FeedTrendChart = memo(function FeedTrendChart({
 
   const toggleFeed = (feedId: string) => {
     setSelectedFeeds((prev) =>
-      prev.includes(feedId)
-        ? prev.filter((id) => id !== feedId)
-        : [...prev, feedId].slice(0, 5)
+      prev.includes(feedId) ? prev.filter((id) => id !== feedId) : [...prev, feedId].slice(0, 5),
     );
   };
 
@@ -120,7 +119,7 @@ export const FeedTrendChart = memo(function FeedTrendChart({
                     'hover:border-primary/50 hover:shadow-sm',
                     isSelected
                       ? 'border-primary/50 bg-primary/5 shadow-sm'
-                      : 'border-border bg-muted/50'
+                      : 'border-border bg-muted/50',
                   )}
                 >
                   <div className="flex flex-col items-start">
@@ -147,22 +146,12 @@ export const FeedTrendChart = memo(function FeedTrendChart({
       <CardContent>
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={height}>
-            <AreaChart
-              data={chartData}
-              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-            >
+            <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
                 {selectedFeeds.map((feedId, index) => {
                   const color = getChartColor(index);
                   return (
-                    <linearGradient
-                      key={feedId}
-                      id={`color${feedId}`}
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient key={feedId} id={`color${feedId}`} x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={color} stopOpacity={0.3} />
                       <stop offset="95%" stopColor={color} stopOpacity={0} />
                     </linearGradient>
@@ -212,20 +201,13 @@ export const FeedTrendChart = memo(function FeedTrendChart({
                           if (!feed || !entry.value) return null;
 
                           return (
-                            <div
-                              key={feedId}
-                              className="flex items-center gap-2 text-xs"
-                            >
+                            <div key={feedId} className="flex items-center gap-2 text-xs">
                               <div
                                 className="h-2 w-2 rounded-full"
                                 style={{ backgroundColor: entry.fill }}
                               />
-                              <span className="text-muted-foreground">
-                                {feed.symbol}
-                              </span>
-                              <span className="font-medium">
-                                {formatPrice(entry.value)}
-                              </span>
+                              <span className="text-muted-foreground">{feed.symbol}</span>
+                              <span className="font-medium">{formatPrice(entry.value)}</span>
                             </div>
                           );
                         })}
@@ -233,7 +215,7 @@ export const FeedTrendChart = memo(function FeedTrendChart({
                     </div>
                   );
                 }}
-                cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
+                cursor={{ stroke: CHART_COLORS.primary, strokeWidth: 1 }}
               />
 
               <Legend
@@ -244,23 +226,16 @@ export const FeedTrendChart = memo(function FeedTrendChart({
                   return (
                     <div className="mt-4 flex flex-wrap justify-center gap-4">
                       {payload.map((entry: any) => {
-                        const feed = data.find(
-                          (f) => f.feedId === entry.value
-                        );
+                        const feed = data.find((f) => f.feedId === entry.value);
                         if (!feed) return null;
 
                         return (
-                          <div
-                            key={entry.value}
-                            className="flex items-center gap-2"
-                          >
+                          <div key={entry.value} className="flex items-center gap-2">
                             <div
                               className="h-2.5 w-2.5 rounded-full"
                               style={{ backgroundColor: entry.color }}
                             />
-                            <span className="text-xs text-muted-foreground">
-                              {feed.pair}
-                            </span>
+                            <span className="text-xs text-muted-foreground">{feed.pair}</span>
                           </div>
                         );
                       })}
@@ -291,10 +266,7 @@ export const FeedTrendChart = memo(function FeedTrendChart({
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div
-            className="flex items-center justify-center"
-            style={{ height }}
-          >
+          <div className="flex items-center justify-center" style={{ height }}>
             <p className="text-sm text-muted-foreground">暂无数据</p>
           </div>
         )}

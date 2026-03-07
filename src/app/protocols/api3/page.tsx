@@ -22,8 +22,7 @@ import {
   type TabItem,
   type KpiCardData,
 } from '@/components/oracle/layouts/ProtocolPageLayout';
-import { Badge } from '@/components/ui';
-import { Skeleton } from '@/components/ui';
+import { Badge, Skeleton, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import {
   PriceUpdateMonitor,
   DapiList,
@@ -35,7 +34,11 @@ import {
   DapiHistoryChart,
   CrossChainConsistency,
 } from '@/features/oracle/api3';
-import { usePriceUpdates, useDapiHistory, useCrossChainConsistency } from '@/features/oracle/api3/hooks/useEnhancedData';
+import {
+  usePriceUpdates,
+  useDapiHistory,
+  useCrossChainConsistency,
+} from '@/features/oracle/api3/hooks/useEnhancedData';
 import { useI18n } from '@/i18n';
 import { formatTime } from '@/shared/utils/format/date';
 import { cn } from '@/shared/utils/ui';
@@ -276,7 +279,7 @@ export default function Api3Page() {
       onExport={handleExport}
     >
       <TabPanelWrapper tabId="overview">
-        <div className="space-y-3">
+        <div className="space-y-4">
           <ContentSection
             title={t('api3.overview.title')}
             description={t('api3.overview.description')}
@@ -290,11 +293,11 @@ export default function Api3Page() {
                 <div className="rounded-lg bg-blue-500/10 p-2">
                   <Server className="h-5 w-5 text-blue-500" />
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-medium text-muted-foreground">
                     {t('api3.features.airnode.label')}
                   </p>
-                  <p className="text-sm font-semibold text-foreground">
+                  <p className="truncate text-sm font-semibold text-foreground">
                     {t('api3.features.airnode.value')}
                   </p>
                 </div>
@@ -303,11 +306,11 @@ export default function Api3Page() {
                 <div className="rounded-lg bg-green-500/10 p-2">
                   <Shield className="h-5 w-5 text-green-500" />
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-medium text-muted-foreground">
                     {t('api3.features.signature.label')}
                   </p>
-                  <p className="text-sm font-semibold text-foreground">
+                  <p className="truncate text-sm font-semibold text-foreground">
                     {t('api3.features.signature.value')}
                   </p>
                 </div>
@@ -316,11 +319,11 @@ export default function Api3Page() {
                 <div className="rounded-lg bg-purple-500/10 p-2">
                   <TrendingUp className="h-5 w-5 text-purple-500" />
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-medium text-muted-foreground">
                     {t('api3.features.priceMonitor.label')}
                   </p>
-                  <p className="text-sm font-semibold text-foreground">
+                  <p className="truncate text-sm font-semibold text-foreground">
                     {t('api3.features.priceMonitor.value')}
                   </p>
                 </div>
@@ -332,7 +335,7 @@ export default function Api3Page() {
             title={t('api3.supportedChains.title')}
             description={t('api3.supportedChains.description')}
           >
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {data?.airnodesData?.metadata?.supportedChains?.map((chain) => (
                 <Badge key={chain} variant="secondary" className="text-xs capitalize">
                   {chain}
@@ -362,98 +365,102 @@ export default function Api3Page() {
             </div>
           </ContentSection>
 
-          <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
-            <div className="lg:col-span-1 xl:col-span-2">
-              <div className="border-b border-border/30 pb-3">
-                <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
-                  <Activity className="h-3.5 w-3.5 text-primary" />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="md:col-span-2 lg:col-span-2">
+              <div className="border-b border-border/30 pb-4">
+                <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                  <Activity className="h-4 w-4 text-primary" />
                   {t('api3.priceUpdate.totalUpdates')}
                 </h4>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">
                       {t('api3.priceUpdate.totalEvents')}
                     </span>
-                    <span className="font-mono font-semibold">
+                    <span className="font-mono text-lg font-semibold">
                       {data?.oevData?.metadata?.total ?? 0}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">
                       {t('api3.priceUpdate.involvedDapis')}
                     </span>
-                    <Badge variant="secondary" size="sm">
+                    <Badge variant="secondary" className="w-fit text-sm">
                       {data?.oevData?.metadata?.queriedDapis?.length ?? 0}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">
                       {t('api3.priceUpdate.involvedChains')}
                     </span>
-                    <Badge variant="secondary" size="sm">
+                    <Badge variant="secondary" className="w-fit text-sm">
                       {data?.oevData?.metadata?.queriedChains?.length ?? 0}
                     </Badge>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="space-y-3 lg:col-span-1 xl:col-span-1">
-              <div className="border-b border-border/30 pb-3">
-                <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
-                  <Server className="h-3.5 w-3.5 text-primary" />
+            <div className="space-y-4 md:col-span-2 lg:col-span-1">
+              <div className="border-b border-border/30 pb-4">
+                <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                  <Server className="h-4 w-4 text-primary" />
                   {t('api3.airnode.statusOverview')}
                 </h4>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">{t('api3.airnode.totalAirnodes')}</span>
-                    <span className="font-mono font-semibold">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      {t('api3.airnode.totalAirnodes')}
+                    </span>
+                    <span className="font-mono text-lg font-semibold">
                       {data?.airnodesData?.metadata?.total ?? 0}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
                       {t('api3.airnode.onlineAirnodes')}
                     </span>
-                    <Badge variant="success" size="sm">
+                    <Badge variant="success" className="text-sm">
                       {data?.airnodesData?.metadata?.online ?? 0}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
                       {t('api3.airnode.offlineAirnodes')}
                     </span>
-                    <Badge variant="destructive" size="sm">
+                    <Badge variant="destructive" className="text-sm">
                       {data?.airnodesData?.metadata?.offline ?? 0}
                     </Badge>
                   </div>
                 </div>
               </div>
 
-              <div className="border-b border-border/30 pb-3">
-                <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
-                  <Database className="h-3.5 w-3.5 text-primary" />
+              <div className="border-b border-border/30 pb-4">
+                <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                  <Database className="h-4 w-4 text-primary" />
                   {t('api3.dapiStatus.title')}
                 </h4>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">{t('api3.dapiStatus.totalDapis')}</span>
-                    <span className="font-mono font-semibold">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      {t('api3.dapiStatus.totalDapis')}
+                    </span>
+                    <span className="font-mono text-lg font-semibold">
                       {data?.dapisData?.metadata?.total ?? 0}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
                       {t('api3.dapiStatus.activeDapis')}
                     </span>
-                    <Badge variant="success" size="sm">
+                    <Badge variant="success" className="text-sm">
                       {data?.dapisData?.metadata?.active ?? 0}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
                       {t('api3.dapiStatus.inactiveDapis')}
                     </span>
-                    <Badge variant="warning" size="sm">
+                    <Badge variant="warning" className="text-sm">
                       {data?.dapisData?.metadata?.inactive ?? 0}
                     </Badge>
                   </div>
@@ -469,7 +476,7 @@ export default function Api3Page() {
           {loading && !data?.airnodesData ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full" />
+                <Skeleton key={i} className="h-24 w-full" />
               ))}
             </div>
           ) : data?.airnodesData ? (
@@ -480,21 +487,21 @@ export default function Api3Page() {
                   <p className="mt-2">{t('api3.dapi.noData')}</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {data.airnodesData.airnodes.map((airnode, index) => (
                     <div
                       key={index}
-                      className="flex cursor-pointer items-center justify-between border-b border-border/30 pb-3 pt-1 transition-colors hover:bg-muted/20"
+                      className="flex cursor-pointer flex-col gap-3 border-b border-border/30 pb-4 pt-2 transition-colors hover:bg-muted/20 sm:flex-row sm:items-center sm:justify-between"
                       onClick={() =>
                         router.push(`/protocols/api3/airnode/${airnode.address}` as Route)
                       }
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
                         <div className="rounded-lg bg-primary/10 p-2">
                           <Server className="h-5 w-5 text-primary" />
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="font-medium">{t('api3.airnode.title')}</span>
                             <span
                               className={cn(
@@ -507,16 +514,16 @@ export default function Api3Page() {
                               {airnode.online ? t('common.online') : t('common.offline')}
                             </span>
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="truncate text-sm text-muted-foreground">
                             {t('api3.airnode.lastHeartbeat')}:{' '}
                             {airnode.lastHeartbeat ? formatTime(airnode.lastHeartbeat) : '-'}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-4 sm:gap-6">
                         <div className="text-right">
                           <p className="text-xs text-muted-foreground">{t('api3.airnode.chain')}</p>
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-sm">
                             {airnode.chain}
                           </Badge>
                         </div>
@@ -526,7 +533,7 @@ export default function Api3Page() {
                           </p>
                           <p
                             className={cn(
-                              'font-medium',
+                              'text-lg font-medium',
                               getResponseTimeColor(airnode.responseTime),
                             )}
                           >
@@ -602,18 +609,20 @@ function DapiHistoryChartWrapper() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{sampleDapi} {t('api3.dapi.history')}</CardTitle>
+          <CardTitle>
+            {sampleDapi} {t('api3.dapi.history')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-muted-foreground py-8">
-            暂无历史数据
-          </div>
+          <div className="py-8 text-center text-muted-foreground">暂无历史数据</div>
         </CardContent>
       </Card>
     );
   }
 
-  return <DapiHistoryChart dapiName={sampleDapi} history={data?.history || []} isLoading={isLoading} />;
+  return (
+    <DapiHistoryChart dapiName={sampleDapi} history={data?.history || []} isLoading={isLoading} />
+  );
 }
 
 function CrossChainConsistencyWrapper() {
@@ -621,10 +630,6 @@ function CrossChainConsistencyWrapper() {
   const { data, isLoading } = useCrossChainConsistency(sampleDapi);
 
   return (
-    <CrossChainConsistency
-      dapiName={sampleDapi}
-      data={data?.data || []}
-      isLoading={isLoading}
-    />
+    <CrossChainConsistency dapiName={sampleDapi} data={data?.data || []} isLoading={isLoading} />
   );
 }

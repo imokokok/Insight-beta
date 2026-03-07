@@ -22,8 +22,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { CHART_COLORS, CHART_COLOR_PALETTE } from '@/lib/chart-config';
 import { cn, formatChartLabel, formatNumber, formatLatency } from '@/shared/utils';
 
-import type { OCRRoundStats, TimeRange } from '../../types';
 import { TimeRangeSelector } from './TimeRangeSelector';
+
+import type { OCRRoundStats, TimeRange } from '../../types';
 
 export interface OCRRoundChartProps {
   data: OCRRoundStats;
@@ -119,7 +120,7 @@ export const OCRRoundChart = memo(function OCRRoundChart({
                 key={stat.label}
                 className={cn(
                   'flex items-center gap-3 rounded-lg border border-border p-3',
-                  stat.bgColor
+                  stat.bgColor,
                 )}
               >
                 <Icon className={cn('h-5 w-5', stat.color)} />
@@ -138,21 +139,13 @@ export const OCRRoundChart = memo(function OCRRoundChart({
           {chartData.length > 0 && (
             <>
               <div>
-                <h4 className="mb-2 text-xs font-medium text-muted-foreground">
-                  参与节点数趋势
-                </h4>
+                <h4 className="mb-2 text-xs font-medium text-muted-foreground">参与节点数趋势</h4>
                 <ResponsiveContainer width="100%" height={height / 2}>
                   <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <defs>
-                      <linearGradient
-                        id="colorParticipants"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop offset="5%" stopColor={CHART_COLORS.primary.DEFAULT} stopOpacity={0.3} />
-                        <stop offset="95%" stopColor={CHART_COLORS.primary.DEFAULT} stopOpacity={0} />
+                      <linearGradient id="colorParticipants" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={CHART_COLORS.primary} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={CHART_COLORS.primary} stopOpacity={0} />
                       </linearGradient>
                     </defs>
 
@@ -216,13 +209,13 @@ export const OCRRoundChart = memo(function OCRRoundChart({
                           </div>
                         );
                       }}
-                      cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
+                      cursor={{ stroke: CHART_COLORS.primary, strokeWidth: 1 }}
                     />
 
                     <Area
                       type="monotone"
                       dataKey="participants"
-                      stroke={CHART_COLORS.primary.DEFAULT}
+                      stroke={CHART_COLORS.primary}
                       strokeWidth={2}
                       fill="url(#colorParticipants)"
                       fillOpacity={0.3}
@@ -241,7 +234,10 @@ export const OCRRoundChart = memo(function OCRRoundChart({
                     聚合时间趋势 (ms)
                   </h4>
                   <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={chartData.slice(-50)} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                    <BarChart
+                      data={chartData.slice(-50)}
+                      margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
+                    >
                       <CartesianGrid
                         strokeDasharray="3 3"
                         stroke="rgba(148, 163, 184, 0.2)"
@@ -290,7 +286,7 @@ export const OCRRoundChart = memo(function OCRRoundChart({
 
                       <Bar
                         dataKey="aggregationTime"
-                        fill={CHART_COLORS.warning.DEFAULT}
+                        fill={CHART_COLORS.warning}
                         radius={[4, 4, 0, 0]}
                         isAnimationActive={true}
                         animationDuration={300}
@@ -300,9 +296,7 @@ export const OCRRoundChart = memo(function OCRRoundChart({
                 </div>
 
                 <div>
-                  <h4 className="mb-2 text-xs font-medium text-muted-foreground">
-                    提议者分布
-                  </h4>
+                  <h4 className="mb-2 text-xs font-medium text-muted-foreground">提议者分布</h4>
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Tooltip

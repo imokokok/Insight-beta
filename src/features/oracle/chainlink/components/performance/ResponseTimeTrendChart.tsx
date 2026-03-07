@@ -18,8 +18,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
 import { cn, formatChartLabel, formatNumber } from '@/shared/utils';
 
-import type { NodeResponseTimeTrend, TimeRange } from '../../types';
 import { TimeRangeSelector } from '../historical/TimeRangeSelector';
+
+import type { NodeResponseTimeTrend, TimeRange } from '../../types';
 
 export interface ResponseTimeTrendChartProps {
   data: NodeResponseTimeTrend[];
@@ -64,7 +65,7 @@ export const ResponseTimeTrendChart = memo(function ResponseTimeTrendChart({
     });
 
     return Array.from(timeMap.values()).sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }, [data, showPercentiles]);
 
@@ -121,12 +122,10 @@ export const ResponseTimeTrendChart = memo(function ResponseTimeTrendChart({
                         'bg-success/10 text-success',
                         stats.responseTimeTrend === 'down' && 'bg-error/10 text-error',
                         stats.responseTimeTrend === 'stable' &&
-                          'bg-muted-foreground/10 text-muted-foreground'
+                          'bg-muted-foreground/10 text-muted-foreground',
                       )}
                     >
-                      {stats.responseTimeTrend === 'up' && (
-                        <TrendingUp className="mr-1 h-3 w-3" />
-                      )}
+                      {stats.responseTimeTrend === 'up' && <TrendingUp className="mr-1 h-3 w-3" />}
                       {stats.responseTimeTrend === 'down' && (
                         <TrendingDown className="mr-1 h-3 w-3" />
                       )}
@@ -210,7 +209,9 @@ export const ResponseTimeTrendChart = memo(function ResponseTimeTrendChart({
                       </p>
                       <div className="space-y-1">
                         {payload.map((entry: any) => {
-                          const nodeName = entry.dataKey.replace('_response', '').replace(/_p\d+/, '');
+                          const nodeName = entry.dataKey
+                            .replace('_response', '')
+                            .replace(/_p\d+/, '');
                           const node = data.find((n) => n.nodeName === nodeName);
                           if (!node || !entry.value) return null;
 
@@ -239,22 +240,22 @@ export const ResponseTimeTrendChart = memo(function ResponseTimeTrendChart({
                     </div>
                   );
                 }}
-                cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
+                cursor={{ stroke: CHART_COLORS.primary, strokeWidth: 1 }}
               />
 
               {showPercentiles && (
                 <>
                   <ReferenceLine
                     y={500}
-                    stroke={CHART_COLORS.success.DEFAULT}
+                    stroke={CHART_COLORS.success}
                     strokeDasharray="3 3"
-                    label={{ value: '500ms', fontSize: 10, fill: CHART_COLORS.success.DEFAULT }}
+                    label={{ value: '500ms', fontSize: 10, fill: CHART_COLORS.success }}
                   />
                   <ReferenceLine
                     y={2000}
-                    stroke={CHART_COLORS.error.DEFAULT}
+                    stroke={CHART_COLORS.error}
                     strokeDasharray="3 3"
-                    label={{ value: '2000ms', fontSize: 10, fill: CHART_COLORS.error.DEFAULT }}
+                    label={{ value: '2000ms', fontSize: 10, fill: CHART_COLORS.error }}
                   />
                 </>
               )}

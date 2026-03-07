@@ -436,7 +436,7 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
               {sparklineWithData && (
                 <Sparkline
                   data={sparklineWithData.data}
-                  color={sparklineWithData.color || CHART_COLORS.primary.DEFAULT}
+                  color={sparklineWithData.color || CHART_COLORS.primary}
                   showArea={sparklineWithData.showArea}
                   width={100}
                   height={30}
@@ -509,7 +509,7 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
             <div className="mt-4">
               <Sparkline
                 data={sparklineWithData.data}
-                color={sparklineWithData.color || CHART_COLORS.primary.DEFAULT}
+                color={sparklineWithData.color || CHART_COLORS.primary}
                 showArea={sparklineWithData.showArea}
                 width={200}
                 height={40}
@@ -548,7 +548,7 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
           <div className="mt-3">
             <Sparkline
               data={sparklineWithData.data}
-              color={sparklineWithData.color || CHART_COLORS.primary.DEFAULT}
+              color={sparklineWithData.color || CHART_COLORS.primary}
               showArea={sparklineWithData.showArea}
               width={120}
               height={30}

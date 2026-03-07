@@ -2,15 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
-import {
-  AlertTriangle,
-  RefreshCw,
-  Server,
-  Clock,
-  Activity,
-  Info,
-  BarChart3,
-} from 'lucide-react';
+import { AlertTriangle, RefreshCw, Server, Clock, Activity, Info, BarChart3 } from 'lucide-react';
 
 import { Button } from '@/components/ui';
 import { Badge, StatusBadge } from '@/components/ui';
@@ -22,8 +14,8 @@ import { useI18n } from '@/i18n';
 import { formatTime, TrendIcon } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
 
-import { getScoreColor } from '../utils/reliabilityScore';
 import { NodePerformancePanel } from './performance';
+import { getScoreColor } from '../utils/reliabilityScore';
 
 import type { Operator } from '../types';
 import type {
@@ -46,7 +38,7 @@ export function OperatorList({ className, collapsible = false }: OperatorListPro
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showPerformancePanel, setShowPerformancePanel] = useState(false);
-  const [timeRange, setTimeRange] = useState<TimeRange>('24h');
+  const [timeRange] = useState<TimeRange>('24h');
 
   const fetchOperators = useCallback(async () => {
     setIsLoading(true);
@@ -185,22 +177,40 @@ export function OperatorList({ className, collapsible = false }: OperatorListPro
       })),
       timeRange,
       comparisonMetrics: {
-        avgUptime: operators.reduce((sum, op) => sum + (op.reliabilityScore?.uptime ?? 95), 0) / operators.length,
-        bestUptime: operators.reduce((best, op) => {
-          const uptime = op.reliabilityScore?.uptime ?? 95;
-          return uptime > (best.uptime ?? 0) ? { name: op.name, uptime } : best;
-        }, { name: '', uptime: 0 }).name,
-        worstUptime: operators.reduce((worst, op) => {
-          const uptime = op.reliabilityScore?.uptime ?? 95;
-          return uptime < (worst.uptime ?? 100) ? { name: op.name, uptime } : worst;
-        }, { name: '', uptime: 100 }).name,
+        avgUptime:
+          operators.reduce((sum, op) => sum + (op.reliabilityScore?.uptime ?? 95), 0) /
+          operators.length,
+        bestUptime: operators.reduce(
+          (best, op) => {
+            const uptime = op.reliabilityScore?.uptime ?? 95;
+            return uptime > (best.uptime ?? 0) ? { name: op.name, uptime } : best;
+          },
+          { name: '', uptime: 0 },
+        ).name,
+        worstUptime: operators.reduce(
+          (worst, op) => {
+            const uptime = op.reliabilityScore?.uptime ?? 95;
+            return uptime < (worst.uptime ?? 100) ? { name: op.name, uptime } : worst;
+          },
+          { name: '', uptime: 100 },
+        ).name,
         avgResponseTime: operators.reduce((sum, op) => sum + op.responseTime, 0) / operators.length,
-        fastestNode: operators.reduce((fastest, op) => {
-          return op.responseTime < fastest.responseTime ? { name: op.name, responseTime: op.responseTime } : fastest;
-        }, { name: '', responseTime: Infinity }).name,
-        slowestNode: operators.reduce((slowest, op) => {
-          return op.responseTime > slowest.responseTime ? { name: op.name, responseTime: op.responseTime } : slowest;
-        }, { name: '', responseTime: 0 }).name,
+        fastestNode: operators.reduce(
+          (fastest, op) => {
+            return op.responseTime < fastest.responseTime
+              ? { name: op.name, responseTime: op.responseTime }
+              : fastest;
+          },
+          { name: '', responseTime: Infinity },
+        ).name,
+        slowestNode: operators.reduce(
+          (slowest, op) => {
+            return op.responseTime > slowest.responseTime
+              ? { name: op.name, responseTime: op.responseTime }
+              : slowest;
+          },
+          { name: '', responseTime: 0 },
+        ).name,
       },
     };
 

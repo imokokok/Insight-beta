@@ -42,7 +42,7 @@ export function useDashboardCharts(
     () => ({
       data: priceTrendData,
       dataKey: 'value',
-      color: CHART_COLORS.primary.DEFAULT,
+      color: CHART_COLORS.primary,
       valueFormatter: (v: number) => `$${formatNumber(v, 2)}`,
       labelFormatter: (l: string | number) =>
         new Date(l).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
@@ -65,7 +65,7 @@ export function useDashboardCharts(
   const latencyChartConfig = useMemo(
     () => ({
       data: latencyData,
-      lines: [{ dataKey: 'value', name: 'Latency', color: CHART_COLORS.semantic.warning.DEFAULT }],
+      lines: [{ dataKey: 'value', name: 'Latency', color: CHART_COLORS.warning }],
       valueFormatter: (v: number) => `${formatNumber(v, 0)}ms`,
     }),
     [latencyData],

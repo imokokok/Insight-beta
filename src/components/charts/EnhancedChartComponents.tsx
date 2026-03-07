@@ -176,7 +176,7 @@ export const EnhancedAreaChart = memo(function EnhancedAreaChart({
   height = CHART_DIMENSIONS.height.md,
   className,
   dataKey = 'value',
-  color = CHART_COLORS.primary.DEFAULT,
+  color = CHART_COLORS.primary,
   gradient = true,
   showGrid = true,
   showDots = true,
@@ -571,7 +571,7 @@ export const Sparkline = memo(function Sparkline({
   data,
   width = 120,
   height = 40,
-  color = CHART_COLORS.primary.DEFAULT,
+  color = CHART_COLORS.primary,
   showArea = true,
   className,
   ariaLabel,
@@ -595,8 +595,7 @@ export const Sparkline = memo(function Sparkline({
   const firstValue = data[0] ?? 0;
   const lastValue = data[data.length - 1] ?? 0;
   const trend = lastValue - firstValue;
-  const trendColor =
-    trend >= 0 ? CHART_COLORS.semantic.success.DEFAULT : CHART_COLORS.semantic.error.DEFAULT;
+  const trendColor = trend >= 0 ? CHART_COLORS.success : CHART_COLORS.error;
 
   const lastPoint = points[points.length - 1];
 
@@ -662,9 +661,7 @@ export const StatComparison = memo(function StatComparison({
 }: StatComparisonProps & { ariaLabel?: string }) {
   const change = previous !== 0 ? ((current - previous) / previous) * 100 : 0;
   const isPositive = reverseTrend ? change < 0 : change > 0;
-  const trendColor = isPositive
-    ? CHART_COLORS.semantic.success.DEFAULT
-    : CHART_COLORS.semantic.error.DEFAULT;
+  const trendColor = isPositive ? CHART_COLORS.success : CHART_COLORS.error;
 
   return (
     <div

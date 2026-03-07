@@ -14,11 +14,9 @@ import {
   ReferenceLine,
 } from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
-import { Badge } from '@/components/ui';
-import { useI18n } from '@/i18n';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import { CHART_GRID } from '@/lib/chart-config';
-import { cn, TrendIcon } from '@/shared/utils';
+import { cn } from '@/shared/utils';
 
 interface ChainDataPoint {
   chain: string;
@@ -227,9 +225,7 @@ export function CrossChainConsistency({ dapiName, data, isLoading }: CrossChainC
               <TrendingUp className="h-5 w-5 text-blue-500" />
               {dapiName} 跨链一致性分析
             </CardTitle>
-            <CardDescription>
-              对比同一 dAPI 在不同链上的数据，评估数据一致性
-            </CardDescription>
+            <CardDescription>对比同一 dAPI 在不同链上的数据，评估数据一致性</CardDescription>
           </div>
           {consistencyScore && (
             <div className="text-right">
@@ -237,10 +233,7 @@ export function CrossChainConsistency({ dapiName, data, isLoading }: CrossChainC
               <div className={cn('text-3xl font-bold', getScoreColor(consistencyScore.level))}>
                 {consistencyScore.score}
               </div>
-              <Badge
-                variant={getScoreBadgeColor(consistencyScore.level)}
-                className="mt-1"
-              >
+              <Badge variant={getScoreBadgeColor(consistencyScore.level)} className="mt-1">
                 {consistencyScore.level === 'excellent' && '优秀'}
                 {consistencyScore.level === 'good' && '良好'}
                 {consistencyScore.level === 'fair' && '一般'}
@@ -272,9 +265,7 @@ export function CrossChainConsistency({ dapiName, data, isLoading }: CrossChainC
                   <AlertTriangle className="h-4 w-4 text-yellow-500" />
                   <span className="text-sm text-muted-foreground">最大偏差</span>
                 </div>
-                <div className="mt-2 text-2xl font-bold">
-                  {consistencyScore.maxDeviation}%
-                </div>
+                <div className="mt-2 text-2xl font-bold">{consistencyScore.maxDeviation}%</div>
               </CardContent>
             </Card>
 
@@ -284,9 +275,7 @@ export function CrossChainConsistency({ dapiName, data, isLoading }: CrossChainC
                   <TrendingUp className="h-4 w-4 text-blue-500" />
                   <span className="text-sm text-muted-foreground">平均偏差</span>
                 </div>
-                <div className="mt-2 text-2xl font-bold">
-                  {consistencyScore.avgDeviation}%
-                </div>
+                <div className="mt-2 text-2xl font-bold">{consistencyScore.avgDeviation}%</div>
               </CardContent>
             </Card>
 
@@ -300,7 +289,9 @@ export function CrossChainConsistency({ dapiName, data, isLoading }: CrossChainC
                   )}
                   <span className="text-sm text-muted-foreground">整体状态</span>
                 </div>
-                <div className={cn('mt-2 text-xl font-bold', getScoreColor(consistencyScore.level))}>
+                <div
+                  className={cn('mt-2 text-xl font-bold', getScoreColor(consistencyScore.level))}
+                >
                   {consistencyScore.level === 'excellent' && '优秀'}
                   {consistencyScore.level === 'good' && '良好'}
                   {consistencyScore.level === 'fair' && '一般'}
@@ -322,16 +313,8 @@ export function CrossChainConsistency({ dapiName, data, isLoading }: CrossChainC
                   className={CHART_GRID.className}
                   vertical={CHART_GRID.vertical}
                 />
-                <XAxis
-                  dataKey="chain"
-                  tick={{ fontSize: 11 }}
-                  className="text-muted-foreground"
-                />
-                <YAxis
-                  yAxisId="left"
-                  tick={{ fontSize: 12 }}
-                  className="text-muted-foreground"
-                />
+                <XAxis dataKey="chain" tick={{ fontSize: 11 }} className="text-muted-foreground" />
+                <YAxis yAxisId="left" tick={{ fontSize: 12 }} className="text-muted-foreground" />
                 <YAxis
                   yAxisId="right"
                   orientation="right"
@@ -410,9 +393,7 @@ export function CrossChainConsistency({ dapiName, data, isLoading }: CrossChainC
                           {chainData.chain}
                         </Badge>
                       </td>
-                      <td className="py-3 text-right font-mono">
-                        {chainData.value.toFixed(2)}
-                      </td>
+                      <td className="py-3 text-right font-mono">{chainData.value.toFixed(2)}</td>
                       <td
                         className={cn(
                           'py-3 text-right font-mono',

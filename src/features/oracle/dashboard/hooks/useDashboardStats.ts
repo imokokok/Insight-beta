@@ -32,7 +32,7 @@ export function useDashboardStats(stats: DashboardStats | null): UseDashboardSta
         trend: { value: 12, isPositive: false, label: 'vs last hour' },
         sparkline: {
           data: [10, 12, 8, 15, 12, 18, 12],
-          color: CHART_COLORS.semantic.warning.DEFAULT,
+          color: CHART_COLORS.warning,
         },
       },
       {
@@ -43,7 +43,7 @@ export function useDashboardStats(stats: DashboardStats | null): UseDashboardSta
         trend: { value: 5, isPositive: false, label: 'vs last hour' },
         sparkline: {
           data: [500, 520, 480, 550, 530, 580, 520],
-          color: CHART_COLORS.primary.DEFAULT,
+          color: CHART_COLORS.primary,
         },
       },
       {
@@ -54,7 +54,7 @@ export function useDashboardStats(stats: DashboardStats | null): UseDashboardSta
         trend: { value: 0.1, isPositive: true, label: 'vs last hour' },
         sparkline: {
           data: [99.8, 99.9, 99.9, 99.8, 99.9, 99.9, 99.9],
-          color: CHART_COLORS.semantic.success.DEFAULT,
+          color: CHART_COLORS.success,
         },
       },
       {
@@ -63,7 +63,7 @@ export function useDashboardStats(stats: DashboardStats | null): UseDashboardSta
         icon: null,
         status: (stats?.staleFeeds ?? 0) > 0 ? 'warning' : 'healthy',
         trend: { value: 2, isPositive: false, label: 'vs last hour' },
-        sparkline: { data: [2, 3, 2, 4, 3, 2, 3], color: CHART_COLORS.semantic.error.DEFAULT },
+        sparkline: { data: [2, 3, 2, 4, 3, 2, 3], color: CHART_COLORS.error },
       },
     ],
     [stats],

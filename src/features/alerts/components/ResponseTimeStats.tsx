@@ -79,7 +79,7 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
       {
         label: t('alerts.responseTime.critical'),
         value: avgResponseTimeBySeverity.critical / 60000,
-        color: CHART_COLORS.semantic.error.DEFAULT,
+        color: CHART_COLORS.error,
       },
       {
         label: t('alerts.responseTime.high'),
@@ -89,12 +89,12 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
       {
         label: t('alerts.responseTime.medium'),
         value: avgResponseTimeBySeverity.medium / 60000,
-        color: CHART_COLORS.semantic.warning.DEFAULT,
+        color: CHART_COLORS.warning,
       },
       {
         label: t('alerts.responseTime.low'),
         value: avgResponseTimeBySeverity.low / 60000,
-        color: CHART_COLORS.semantic.success.DEFAULT,
+        color: CHART_COLORS.success,
       },
     ].filter((item) => item.value > 0);
   }, [data?.metrics, t]);
@@ -227,7 +227,7 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
                 {
                   dataKey: 'mttr',
                   name: t('alerts.responseTime.mttr'),
-                  color: CHART_COLORS.primary.DEFAULT,
+                  color: CHART_COLORS.primary,
                   strokeWidth: 2,
                 },
                 {
@@ -265,7 +265,7 @@ export function ResponseTimeStats({ className }: ResponseTimeStatsProps) {
                 {
                   dataKey: 'value',
                   name: t('alerts.responseTime.avgTime'),
-                  color: CHART_COLORS.primary.DEFAULT,
+                  color: CHART_COLORS.primary,
                 },
               ]}
               valueFormatter={valueFormatter}
