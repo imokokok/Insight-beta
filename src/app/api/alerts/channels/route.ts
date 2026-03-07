@@ -4,7 +4,6 @@ import { fetchChannels, createNewChannel, mockChannels } from '@/features/alerts
 import { ok, error } from '@/lib/api/apiResponse';
 import { createNotificationChannelSchema } from '@/lib/api/validation/schemas';
 import { parseAndValidate } from '@/lib/api/validation/validate';
-import { logger } from '@/shared/logger';
 
 export async function GET() {
   try {
@@ -23,7 +22,7 @@ export async function GET() {
 
     return ok(responseData);
   } catch (err) {
-    logger.error('Failed to fetch channels', { error: err });
+    console.error('Failed to fetch channels:', err);
     return error({ code: 'FETCH_ERROR', message: 'Failed to fetch channels' }, 500);
   }
 }

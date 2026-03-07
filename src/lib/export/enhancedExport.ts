@@ -15,8 +15,6 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 
-import { logger } from '@/shared/logger';
-
 export type ExportFormat = 'csv' | 'json' | 'excel' | 'pdf' | 'png';
 
 export interface ExportOptions {
@@ -47,29 +45,22 @@ export interface BatchExportOptions {
 /**
  * 生成带时间戳的文件名
  */
-export function generateFilename(
-  baseName: string,
-  extension: string,
-  includeTimestamp = true,
-): string {
+function generateFilename(baseName: string, extension: string, includeTimestamp = true): string {
   if (!includeTimestamp) {
     return `${baseName}.${extension}`;
   }
 
-  const timestamp = new Date().toISOString().split('T')[0];
-  return `${baseName}-${timestamp}.${extension}`;
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+  return `${baseName}_${timestamp}.${extension}`;
 }
 
 /**
  * 将数据转换为 CSV 格式
  */
-function convertToCSV(data: Record<string, unknown>[]): string {
+function convertToCSV(data: any[]): string {
   if (!data || data.length === 0) return '';
 
-  const firstRow = data[0];
-  if (!firstRow) return '';
-
-  const headers = Object.keys(firstRow);
+  const headers = Object.keys(data[0]);
   const csvRows = [
     headers.join(','),
     ...data.map((row) =>
@@ -93,7 +84,7 @@ function convertToCSV(data: Record<string, unknown>[]): string {
  * 导出为 CSV
  */
 export async function exportToCSV(
-  data: Record<string, unknown>[],
+  data: any[],
   filename: string,
   includeTimestamp = true,
 ): Promise<ExportResult> {
@@ -104,7 +95,7 @@ export async function exportToCSV(
     saveAs(blob, finalFilename);
     return { success: true, filename: finalFilename };
   } catch (error) {
-    logger.error('CSV export failed', { error });
+    console.error('CSV export failed:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : '导出失败',
@@ -129,7 +120,7 @@ export async function exportToJSON(
     saveAs(blob, finalFilename);
     return { success: true, filename: finalFilename };
   } catch (error) {
-    logger.error('JSON export failed', { error });
+    console.error('JSON export failed:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : '导出失败',
@@ -141,7 +132,7 @@ export async function exportToJSON(
  * 导出为 Excel
  */
 export async function exportToExcel(
-  data: Record<string, unknown>[],
+  data: any[],
   filename: string,
   includeTimestamp = true,
   sheetName = 'Sheet1',
@@ -159,7 +150,7 @@ export async function exportToExcel(
     saveAs(blob, finalFilename);
     return { success: true, filename: finalFilename };
   } catch (error) {
-    logger.error('Excel export failed', { error });
+    console.error('Excel export failed:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : '导出失败',
@@ -203,7 +194,7 @@ export async function exportToPNG(
     saveAs(blob, finalFilename);
     return { success: true, filename: finalFilename };
   } catch (error) {
-    logger.error('PNG export failed', { error });
+    console.error('PNG export failed:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : '导出失败',
@@ -267,7 +258,7 @@ export async function exportToPDF(
     pdf.save(finalFilename);
     return { success: true, filename: finalFilename };
   } catch (error) {
-    logger.error('PDF export failed', { error });
+    console.error('PDF export failed:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : '导出失败',
@@ -283,11 +274,11 @@ export async function exportData(data: unknown, options: ExportOptions): Promise
 
   switch (format) {
     case 'csv':
-      return exportToCSV(data as Record<string, unknown>[], filename, includeTimestamp);
+      return exportToCSV(data as any[], filename, includeTimestamp);
     case 'json':
       return exportToJSON(data, filename, includeTimestamp, compress);
     case 'excel':
-      return exportToExcel(data as Record<string, unknown>[], filename, includeTimestamp);
+      return exportToExcel(data as any[], filename, includeTimestamp);
     case 'png':
       throw new Error('PNG export requires HTMLElement. Use exportToPNG directly.');
     case 'pdf':
@@ -341,8 +332,10 @@ export async function batchExport(options: BatchExportOptions): Promise<ExportRe
     // const zipBlob = await zip.generateAsync({ type: 'blob' });
     // const finalZipName = generateFilename(zipFilename, 'zip', includeTimestamp);
     // saveAs(zipBlob, finalZipName);
+
+    console.warn('ZIP export requires jszip package. Install with: npm install jszip');
   } catch (error) {
-    logger.error('Batch export failed', { error });
+    console.error('Batch export failed:', error);
     results.push({
       success: false,
       error: error instanceof Error ? error.message : '批量导出失败',
@@ -441,7 +434,7 @@ export class ScheduledExport {
           this.stop();
         }
       } catch (error) {
-        logger.error('Scheduled export failed', { error });
+        console.error('Scheduled export failed:', error);
       }
     }, this.config.interval);
   }

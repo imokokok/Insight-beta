@@ -2,7 +2,7 @@
 
 import { useMemo, memo } from 'react';
 
-import { TrendingUp, TrendingDown, Activity, Clock } from 'lucide-react';
+import { Activity, Clock, TrendingUp, TrendingDown } from 'lucide-react';
 import {
   Line,
   LineChart,
@@ -18,7 +18,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
-import { cn, formatChartLabel, formatNumber } from '@/shared/utils';
+import { cn, formatNumber, formatTime } from '@/shared/utils';
 
 import { TimeRangeSelector } from '../historical/TimeRangeSelector';
 
@@ -68,6 +68,23 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
       (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }, [data, showInterval]);
+  const formatLabel = (timestamp: string) => {
+    const date = new Date(timestamp);
+    switch (timeRange) {
+      case '1h':
+        return formatTime(date, 'HH:mm');
+      case '24h':
+        return formatTime(date, 'HH:mm');
+      case '7d':
+        return formatTime(date, 'MM/DD HH:mm');
+      case '30d':
+      case '90d':
+        return formatTime(date, 'MM/DD');
+      default:
+        return formatTime(date, 'MM/DD');
+    }
+  };
+
 
   const getFeedStats = (feed: FeedUpdateFrequencyTrend) => {
     const frequencyTrend =
@@ -205,7 +222,7 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                     tickLine={false}
                     axisLine={false}
                     dy={10}
-                  />
+                    tickFormatter={formatLabel}
 
                   <YAxis
                     tickFormatter={formatFrequency}
@@ -229,7 +246,7 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                             {payload.map((entry: any) => {
                               const feedId = entry.dataKey.replace('_frequency', '');
                               const feed = data.find((f) => f.feedId === feedId);
-                              if (!feed || !entry.value) return null;
+                            {formatLabel(label as string)}
 
                               return (
                                 <div key={feedId} className="flex items-center gap-2 text-xs">
@@ -259,12 +276,12 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                       <Area
                         key={feed.feedId}
                         type="monotone"
-                        dataKey={`${feed.feedId}_frequency`}
+                    cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
                         stroke={color}
                         strokeWidth={2}
                         fill={`url(#colorFrequency${feed.feedId})`}
                         fillOpacity={0.3}
-                        dot={false}
+                    stroke={CHART_COLORS.warning.DEFAULT}
                         activeDot={{ r: 4, strokeWidth: 2 }}
                         name={feed.symbol}
                         isAnimationActive={true}
@@ -306,7 +323,7 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                       tickLine={false}
                       axisLine={false}
                       width={50}
-                    />
+                      tickFormatter={formatLabel}
 
                     <Tooltip
                       content={({ active, payload, label }) => {
@@ -330,7 +347,7 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                                       style={{ backgroundColor: entry.stroke }}
                                     />
                                     <span className="text-muted-foreground">{feed.symbol}</span>
-                                    <span className="font-medium">
+                              {formatLabel(label as string)}
                                       {formatInterval(entry.value)}
                                     </span>
                                   </div>
@@ -360,7 +377,7 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                         />
                       );
                     })}
-                  </LineChart>
+                      cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
                 </ResponsiveContainer>
               </div>
             )}

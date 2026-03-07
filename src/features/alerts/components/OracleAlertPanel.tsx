@@ -5,17 +5,16 @@ import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, ChevronDown, ChevronUp, X, BarChart3 } from 'lucide-react';
 
-import { Card, CardContent } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/Badge';
-import { ScrollArea } from '@/components/ui/ScrollArea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
 
 import { cn } from '@/shared/utils';
-
 import { UnifiedAlertPanel, CrossProtocolAlertComparison } from './';
 import type { OracleProtocol } from '@/types/oracle/protocol';
-import type { AlertHistory } from './UnifiedAlertPanel';
+import type { OracleProtocol } from '@/types/oracle/protocol';
 
 interface OracleAlertPanelProps {
   protocol: OracleProtocol;
@@ -33,7 +32,6 @@ export function OracleAlertPanel({
   onAlertClick,
 }: OracleAlertPanelProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-  const [showComparison, setShowComparison] = useState(false);
 
   const mockAlerts = useMemo(
     () => [
@@ -81,7 +79,7 @@ export function OracleAlertPanel({
               </div>
               <span className="text-sm font-medium">{protocol.toUpperCase()} 告警</span>
             </div>
-            <div className="flex items-center gap-1">
+              <span className="text-sm font-medium">{protocol.toUpperCase()} 告警</span>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -96,7 +94,7 @@ export function OracleAlertPanel({
                   <TooltipContent>
                     <p>跨协议对比</p>
                   </TooltipContent>
-                </Tooltip>
+                    <p>跨协议对比</p>
               </TooltipProvider>
               <Button variant="ghost" size="sm" onClick={handleToggleExpand}>
                 {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
@@ -133,8 +131,8 @@ export function OracleAlertPanel({
                   <Bell className="h-5 w-5 text-primary" />
                   <h3 className="font-semibold">{protocol.toUpperCase()} 告警管理</h3>
                   <Badge variant="secondary">{activeAlerts} 活跃</Badge>
-                </div>
-                <div className="flex items-center gap-1">
+                  <h3 className="font-semibold">{protocol.toUpperCase()} 告警管理</h3>
+                  <Badge variant="secondary">{activeAlerts} 活跃</Badge>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -149,7 +147,7 @@ export function OracleAlertPanel({
                       <TooltipContent>
                         <p>跨协议对比</p>
                       </TooltipContent>
-                    </Tooltip>
+                        <p>跨协议对比</p>
                   </TooltipProvider>
                   <Button variant="ghost" size="sm" onClick={handleClose}>
                     <X className="h-4 w-4" />
@@ -188,7 +186,7 @@ export function OracleAlertPanel({
               <div className="flex items-center justify-between border-b p-4">
                 <h3 className="text-lg font-semibold">跨协议告警对比</h3>
                 <Button variant="ghost" size="sm" onClick={() => setShowComparison(false)}>
-                  <X className="h-4 w-4" />
+                <h3 className="text-lg font-semibold">跨协议告警对比</h3>
                 </Button>
               </div>
               <ScrollArea className="h-[calc(100vh-200px)]">

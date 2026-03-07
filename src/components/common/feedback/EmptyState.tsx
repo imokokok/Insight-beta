@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui';
-import { useI18n } from '@/i18n/LanguageProvider';
+import { useI18n } from '@/i18n';
 import {
   itemVariants,
   containerVariants,

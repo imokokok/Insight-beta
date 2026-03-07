@@ -7,5 +7,3 @@ export { FilterPopover } from './FilterPopover';
 export type { FilterPopoverProps } from './FilterPopover';
 export { FilterBar } from './FilterBar';
 export type { FilterBarProps } from './FilterBar';
-
-export * from './filter';

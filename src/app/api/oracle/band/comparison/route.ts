@@ -36,19 +36,6 @@ interface DeviationHistoryPoint {
   bandVsPyth: number;
 }
 
-interface ComparisonResponse {
-  summary: {
-    totalSymbols: number;
-    avgDeviation: number;
-    maxDeviation: number;
-    symbolsInSync: number;
-    symbolsOutOfSync: number;
-  };
-  prices: OraclePriceData[];
-  comparison: PriceComparison[];
-  deviationHistory: DeviationHistoryPoint[];
-}
-
 const BASE_PRICES: Record<string, number> = {
   'BTC/USD': 67500,
   'ETH/USD': 3450,

@@ -10,7 +10,6 @@ import {
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react';
 
 import { Button } from '@/components/ui';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
@@ -21,7 +20,6 @@ import {
   GlobalSearch,
   QuickAccess,
 } from '@/features/explore/components';
-import { MobileFilterSheet } from '@/features/explore/components/MobileFilterSheet';
 import type { TrendingSortBy } from '@/features/explore/types';
 import { AddressExplorer } from '@/features/oracle/components';
 import { useIsMobile } from '@/hooks/useMediaQuery';
@@ -32,7 +30,7 @@ export default function ExplorePage() {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('address');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<TrendingSortBy>('volume');
+  const [activeTab, setActiveTab] = useState('address');
   const tabsListRef = useRef<HTMLDivElement>(null);
   const [showScrollButtons, setShowScrollButtons] = useState(false);
 
@@ -40,12 +38,6 @@ export default function ExplorePage() {
     {
       value: 'address',
       label: t('explore.tabs.address'),
-      description: t('explore.tabs.addressDesc'),
-      icon: User,
-    },
-    {
-      value: 'discovery',
-      label: t('explore.tabs.discovery'),
       description: t('explore.tabs.discoveryDesc'),
       icon: Sparkles,
     },
@@ -219,10 +211,6 @@ export default function ExplorePage() {
                 <DataDiscovery />
               </TabsContent>
 
-              <TabsContent value="trending" className="mt-0">
-                <TrendingFeeds initialSortBy={sortBy} />
-              </TabsContent>
-            </motion.div>
           </AnimatePresence>
         </Tabs>
       </div>

@@ -14,6 +14,7 @@ import { useI18n } from '@/i18n';
 import { FavoritesProvider } from '@/shared/contexts/FavoritesContext';
 import { cn } from '@/shared/utils';
 
+import { Breadcrumb, type BreadcrumbItem } from './Breadcrumb';
 import { EnhancedSidebar as Sidebar } from './EnhancedSidebar';
 import { MobileMenuButton, MobileSidebar, MobileNavProvider } from './MobileNav';
 import { ErrorBoundary } from '../feedback/ErrorBoundary';
@@ -58,6 +59,32 @@ function getPageTitle(pathname: string | null): string {
   return 'app.brand';
 }
 
+function generateBreadcrumbs(
+  pathname: string | null,
+  t: (key: string) => string,
+): BreadcrumbItem[] {
+  if (!pathname || pathname === '/') return [];
+
+  const segments = pathname.split('/').filter(Boolean);
+  const breadcrumbs: BreadcrumbItem[] = [];
+  let currentPath = '';
+
+  segments.forEach((segment, index) => {
+    currentPath += `/${segment}`;
+    const titleKey = routeTitleMap[currentPath];
+    const isLast = index === segments.length - 1;
+
+    if (titleKey) {
+      breadcrumbs.push({
+        label: t(titleKey),
+        href: isLast ? undefined : currentPath,
+      });
+    }
+  });
+
+  return breadcrumbs;
+}
+
 export function AppLayout({ children }: AppLayoutProps) {
   const { t } = useI18n();
   const pathname = usePathname();
@@ -72,6 +99,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const titleKey = useMemo(() => getPageTitle(pathname), [pathname]);
   const title = t(titleKey);
+  const breadcrumbItems = useMemo(() => generateBreadcrumbs(pathname, t), [pathname, t]);
 
   // 处理刷新
   const handleRefresh = useMemo(() => {
@@ -108,26 +136,21 @@ export function AppLayout({ children }: AppLayoutProps) {
           <main id="main-content" className="min-w-0 flex-1">
             <ErrorBoundary>
               <div className="container mx-auto max-w-7xl p-4 sm:p-6">
-                <header
-                  className={cn(
-                    'sticky top-0 z-20 mb-4 flex flex-col gap-2 sm:mb-6 sm:gap-3',
-                    'px-1 py-3 sm:py-5',
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-2 sm:gap-3">
-                    <div className="flex items-center gap-2 sm:gap-3">
+                <header className={cn('sticky top-0 z-20 mb-6 flex flex-col gap-3', 'px-1 py-5')}>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
                       <MobileMenuButton />
                       <motion.h1
                         key={title}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="text-lg font-bold text-foreground sm:text-xl md:text-2xl"
+                        className="text-xl font-bold text-foreground md:text-2xl"
                       >
                         {title}
                       </motion.h1>
                     </div>
-                    <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -188,6 +211,11 @@ export function AppLayout({ children }: AppLayoutProps) {
                       <LanguageSwitcher />
                     </div>
                   </div>
+                  {breadcrumbItems.length > 0 && (
+                    <div className="ml-10 md:ml-14">
+                      <Breadcrumb items={breadcrumbItems} />
+                    </div>
+                  )}
                 </header>
                 {children}
               </div>

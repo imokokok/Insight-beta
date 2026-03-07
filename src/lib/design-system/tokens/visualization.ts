@@ -13,37 +13,49 @@
 
 export const CHART_COLORS = {
   // 主色调
-  primary: 'rgb(var(--color-primary))',
-  primaryLight: '#a78bfa',
-  primaryDark: '#7c3aed',
-  primary50: '#f5f3ff',
-  primary100: '#ede9fe',
-  primary200: '#ddd6fe',
-  primary300: '#c4b5fd',
-  primary400: '#a78bfa',
-  primary500: 'rgb(var(--color-primary))',
-  primary600: '#7c3aed',
-  primary700: '#6d28d9',
-  primary800: '#5b21b6',
-  primary900: '#4c1d95',
+  primary: {
+    DEFAULT: 'rgb(var(--color-primary))',
+    light: '#a78bfa',
+    dark: '#7c3aed',
+    50: '#f5f3ff',
+    100: '#ede9fe',
+    200: '#ddd6fe',
+    300: '#c4b5fd',
+    400: '#a78bfa',
+    500: 'rgb(var(--color-primary))',
+    600: '#7c3aed',
+    700: '#6d28d9',
+    800: '#5b21b6',
+    900: '#4c1d95',
+  },
 
   // 语义化颜色
-  success: '#22c55e',
-  successLight: '#86efac',
-  successDark: '#16a34a',
-  successBg: 'rgba(34, 197, 94, 0.1)',
-  warning: '#f59e0b',
-  warningLight: '#fcd34d',
-  warningDark: '#d97706',
-  warningBg: 'rgba(245, 158, 11, 0.1)',
-  error: '#ef4444',
-  errorLight: '#fca5a5',
-  errorDark: '#dc2626',
-  errorBg: 'rgba(239, 68, 68, 0.1)',
-  info: '#3b82f6',
-  infoLight: '#93c5fd',
-  infoDark: '#2563eb',
-  infoBg: 'rgba(59, 130, 246, 0.1)',
+  semantic: {
+    success: {
+      DEFAULT: '#22c55e',
+      light: '#86efac',
+      dark: '#16a34a',
+      bg: 'rgba(34, 197, 94, 0.1)',
+    },
+    warning: {
+      DEFAULT: '#f59e0b',
+      light: '#fcd34d',
+      dark: '#d97706',
+      bg: 'rgba(245, 158, 11, 0.1)',
+    },
+    error: {
+      DEFAULT: '#ef4444',
+      light: '#fca5a5',
+      dark: '#dc2626',
+      bg: 'rgba(239, 68, 68, 0.1)',
+    },
+    info: {
+      DEFAULT: '#3b82f6',
+      light: '#93c5fd',
+      dark: '#2563eb',
+      bg: 'rgba(59, 130, 246, 0.1)',
+    },
+  },
 
   // 多数据系列配色（用于对比图表）
   series: [
@@ -272,14 +284,14 @@ export function getStatusColorByValue(
   reverse = false,
 ): string {
   if (reverse) {
-    if (value <= thresholds.critical) return CHART_COLORS.error;
-    if (value <= thresholds.warning) return CHART_COLORS.warning;
-    return CHART_COLORS.success;
+    if (value <= thresholds.critical) return CHART_COLORS.semantic.error.DEFAULT;
+    if (value <= thresholds.warning) return CHART_COLORS.semantic.warning.DEFAULT;
+    return CHART_COLORS.semantic.success.DEFAULT;
   }
 
-  if (value >= thresholds.critical) return CHART_COLORS.error;
-  if (value >= thresholds.warning) return CHART_COLORS.warning;
-  return CHART_COLORS.success;
+  if (value >= thresholds.critical) return CHART_COLORS.semantic.error.DEFAULT;
+  if (value >= thresholds.warning) return CHART_COLORS.semantic.warning.DEFAULT;
+  return CHART_COLORS.semantic.success.DEFAULT;
 }
 
 /**
@@ -288,10 +300,10 @@ export function getStatusColorByValue(
  * @returns 颜色字符串
  */
 export function getHealthScoreColor(score: number): string {
-  if (score >= CHART_THRESHOLDS.health.excellent) return CHART_COLORS.success;
-  if (score >= CHART_THRESHOLDS.health.good) return CHART_COLORS.successLight;
-  if (score >= CHART_THRESHOLDS.health.fair) return CHART_COLORS.warning;
-  return CHART_COLORS.error;
+  if (score >= CHART_THRESHOLDS.health.excellent) return CHART_COLORS.semantic.success.DEFAULT;
+  if (score >= CHART_THRESHOLDS.health.good) return CHART_COLORS.semantic.success.light;
+  if (score >= CHART_THRESHOLDS.health.fair) return CHART_COLORS.semantic.warning.DEFAULT;
+  return CHART_COLORS.semantic.error.DEFAULT;
 }
 
 /**

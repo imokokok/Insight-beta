@@ -24,7 +24,7 @@ import {
   MoreHorizontal,
 } from 'lucide-react';
 
-import { Sparkline, StatComparison, CHART_COLORS } from '@/components/charts';
+import { Sparkline, StatComparison, CHART_COLORS } from '@/components/charts/EnhancedChartComponents';
 import { Button } from '@/components/ui';
 import {
   DropdownMenu,
@@ -36,7 +36,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
-import { cn, formatChangePercent, formatTimeAgo } from '@/shared/utils';
+import { cn } from '@/shared/utils';
+import { formatChangePercent, formatTimeAgo } from '@/shared/utils/format';
 
 // ============================================================================
 // Types
@@ -130,7 +131,7 @@ const statusConfig: Record<
   healthy: {
     bg: 'bg-success/10',
     border: 'border-success/20',
-    text: 'text-success-dark',
+    text: 'text-success',
     icon: <CheckCircle className="h-5 w-5" />,
     dot: 'bg-success',
     gradient: 'from-success/10 to-success/5',
@@ -138,7 +139,7 @@ const statusConfig: Record<
   warning: {
     bg: 'bg-warning/10',
     border: 'border-warning/20',
-    text: 'text-warning-dark',
+    text: 'text-warning',
     icon: <AlertCircle className="h-5 w-5" />,
     dot: 'bg-warning',
     gradient: 'from-warning/10 to-warning/5',
@@ -146,7 +147,7 @@ const statusConfig: Record<
   critical: {
     bg: 'bg-error/10',
     border: 'border-error/20',
-    text: 'text-error-dark',
+    text: 'text-error',
     icon: <AlertCircle className="h-5 w-5" />,
     dot: 'bg-error',
     gradient: 'from-error/10 to-error/5',
@@ -175,7 +176,7 @@ const colorConfig: Record<
   blue: {
     bg: 'bg-primary/10',
     border: 'border-primary/20',
-    text: 'text-primary-dark',
+    text: 'text-primary',
     icon: <Activity className="h-5 w-5" />,
     dot: 'bg-primary',
     gradient: 'from-primary/10 to-primary/5',
@@ -183,7 +184,7 @@ const colorConfig: Record<
   green: {
     bg: 'bg-success/10',
     border: 'border-success/20',
-    text: 'text-success-dark',
+    text: 'text-success',
     icon: <CheckCircle className="h-5 w-5" />,
     dot: 'bg-success',
     gradient: 'from-success/10 to-success/5',
@@ -191,42 +192,42 @@ const colorConfig: Record<
   amber: {
     bg: 'bg-warning/10',
     border: 'border-warning/20',
-    text: 'text-warning-dark',
+    text: 'text-warning',
     icon: <AlertCircle className="h-5 w-5" />,
     dot: 'bg-warning',
     gradient: 'from-warning/10 to-warning/5',
   },
   purple: {
-    bg: 'bg-primary/10',
-    border: 'border-primary/20',
-    text: 'text-primary-dark',
+    bg: 'bg-purple-500/10',
+    border: 'border-purple-500/20',
+    text: 'text-purple-500',
     icon: <Activity className="h-5 w-5" />,
-    dot: 'bg-primary',
-    gradient: 'from-primary/10 to-primary/5',
+    dot: 'bg-purple-500',
+    gradient: 'from-purple-500/10 to-purple-500/5',
   },
   red: {
     bg: 'bg-error/10',
     border: 'border-error/20',
-    text: 'text-error-dark',
+    text: 'text-error',
     icon: <AlertCircle className="h-5 w-5" />,
     dot: 'bg-error',
     gradient: 'from-error/10 to-error/5',
   },
   cyan: {
-    bg: 'bg-accent/10',
-    border: 'border-accent/20',
-    text: 'text-accent-dark',
+    bg: 'bg-cyan-500/10',
+    border: 'border-cyan-500/20',
+    text: 'text-cyan-500',
     icon: <Activity className="h-5 w-5" />,
-    dot: 'bg-accent',
-    gradient: 'from-accent/10 to-accent/5',
+    dot: 'bg-cyan-500',
+    gradient: 'from-cyan-500/10 to-cyan-500/5',
   },
   pink: {
-    bg: 'bg-accent/10',
-    border: 'border-accent/20',
-    text: 'text-accent-dark',
+    bg: 'bg-pink-500/10',
+    border: 'border-pink-500/20',
+    text: 'text-pink-500',
     icon: <Activity className="h-5 w-5" />,
-    dot: 'bg-accent',
-    gradient: 'from-accent/10 to-accent/5',
+    dot: 'bg-pink-500',
+    gradient: 'from-pink-500/10 to-pink-500/5',
   },
 };
 
@@ -287,7 +288,6 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
 }: EnhancedStatCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const config = color ? colorConfig[color] : statusConfig[status];
-
   const sparklineWithData = sparkline || (sparklineData ? { data: sparklineData } : undefined);
 
   // 计算趋势显示
@@ -486,8 +486,8 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
                 className={cn(
                   'flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium',
                   trend.isPositive
-                    ? 'bg-success/20 text-success-dark'
-                    : 'bg-error/20 text-error-dark',
+                    ? 'bg-success/20 text-success'
+                    : 'bg-error/20 text-error',
                 )}
               >
                 {trend.isPositive ? (
@@ -616,18 +616,18 @@ export const DashboardStatsSection = memo(function DashboardStatsSection({
   icon,
   color = 'blue',
 }: DashboardStatsSectionProps) {
-  const colorConfig = {
+  const sectionColorConfig = {
     blue: { bg: 'bg-primary/5', border: 'border-primary/20', icon: 'text-primary' },
     green: { bg: 'bg-success/5', border: 'border-success/20', icon: 'text-success' },
     amber: { bg: 'bg-warning/5', border: 'border-warning/20', icon: 'text-warning' },
-    purple: { bg: 'bg-primary/5', border: 'border-primary/20', icon: 'text-primary' },
+    purple: { bg: 'bg-purple-500/5', border: 'border-purple-500/20', icon: 'text-purple-500' },
     red: { bg: 'bg-error/5', border: 'border-error/20', icon: 'text-error' },
   }[color];
 
   return (
-    <div className={cn('rounded-xl border p-4', colorConfig.bg, colorConfig.border, className)}>
+    <div className={cn('rounded-xl border p-4', sectionColorConfig.bg, sectionColorConfig.border, className)}>
       <div className="mb-4 flex items-center gap-2">
-        {icon && <div className={cn('rounded-lg bg-card/50 p-1.5', colorConfig.icon)}>{icon}</div>}
+        {icon && <div className={cn('rounded-lg bg-card/50 p-1.5', sectionColorConfig.icon)}>{icon}</div>}
         <div>
           <h3 className="text-sm font-semibold text-foreground">{title}</h3>
           {description && <p className="text-xs text-muted-foreground">{description}</p>}
@@ -695,13 +695,13 @@ export const UnifiedStatsPanel = memo(function UnifiedStatsPanel({
           const trendDisplay = item.trend
             ? (() => {
                 const { value: trendValue, isPositive, label } = item.trend;
-                const color = isPositive ? 'text-success' : 'text-error';
+                const trendColor = isPositive ? 'text-success' : 'text-error';
                 const Icon = isPositive ? TrendingUp : TrendingDown;
 
                 return (
                   <div className="flex items-center gap-1">
-                    <Icon className={cn('h-3 w-3', color)} />
-                    <span className={cn('text-xs font-medium', color)}>
+                    <Icon className={cn('h-3 w-3', trendColor)} />
+                    <span className={cn('text-xs font-medium', trendColor)}>
                       {formatChangePercent(trendValue / 100, 1, false)}
                     </span>
                     {label && <span className="text-xs text-muted-foreground">{label}</span>}

@@ -11,7 +11,6 @@ import {
   PageTransition,
   ClientComponentsWrapper,
   ResourceHints,
-  DensityProvider,
 } from '@/components/common';
 import { WalletProvider } from '@/features/wallet/contexts/WalletContext';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
@@ -78,23 +77,21 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <PageProgress />
         <LanguageProvider initialLang={lang}>
-          <DensityProvider>
-            <WalletProvider>
-              <Toaster />
-              <div className="mesh-gradient" />
-              <div className="animated-blobs">
-                <div className="blob-1" />
-                <div className="blob-2" />
-                <div className="blob-3" />
-                <div className="blob-4" />
-              </div>
-              <AppLayout>
-                <PageTransition>
-                  <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
-                </PageTransition>
-              </AppLayout>
-            </WalletProvider>
-          </DensityProvider>
+          <WalletProvider>
+            <Toaster />
+            <div className="mesh-gradient" />
+            <div className="animated-blobs">
+              <div className="blob-1" />
+              <div className="blob-2" />
+              <div className="blob-3" />
+              <div className="blob-4" />
+            </div>
+            <AppLayout>
+              <PageTransition>
+                <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
+              </PageTransition>
+            </AppLayout>
+          </WalletProvider>
         </LanguageProvider>
       </body>
     </html>

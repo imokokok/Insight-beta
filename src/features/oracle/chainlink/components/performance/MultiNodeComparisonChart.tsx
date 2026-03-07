@@ -6,6 +6,10 @@ import { Award, Clock, Activity, CheckCircle2 } from 'lucide-react';
 import {
   Bar,
   BarChart,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Server,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -25,7 +29,7 @@ import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
 import { cn, formatNumber } from '@/shared/utils';
 
 import { TimeRangeSelector } from '../historical/TimeRangeSelector';
-
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import type { MultiNodeComparisonData, TimeRange, NodeComparisonMetrics } from '../../types';
 
 export interface MultiNodeComparisonChartProps {
@@ -107,10 +111,27 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
   const comparisonMetrics = data?.comparisonMetrics;
 
   const getScoreColor = (score: number) => {
+  const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
+    switch (trend) {
+      case 'up':
+        return <TrendingUp className="h-3 w-3 text-success" />;
+      case 'down':
+        return <TrendingDown className="h-3 w-3 text-error" />;
+      default:
+        return <Minus className="h-3 w-3 text-muted-foreground" />;
+    }
+  };
+
     if (score >= 90) return 'text-success';
     if (score >= 70) return 'text-warning';
     return 'text-error';
   };
+  };
+
+  const getResponseTimeVariant = (ms: number): 'success' | 'warning' | 'danger' => {
+    if (ms <= 500) return 'success';
+    if (ms <= 2000) return 'warning';
+    return 'danger';
 
   return (
     <Card className={cn('w-full', className)}>

@@ -21,3 +21,9 @@ export function isStatsUpdateMessage(value: unknown): value is StatsUpdateMessag
   const message = value as Record<string, unknown>;
   return message.type === 'stats_update';
 }
+// ============================================================================
+// General Type Guards
+// ============================================================================
+// getErrorMessage 已从 lib/errors 统一导出
+// 请从 @/lib/errors 导入 getErrorMessage
+export { getErrorMessage } from '@/lib/errors';

@@ -2,7 +2,7 @@
 
 import { useMemo, memo } from 'react';
 
-import { TrendingUp, TrendingDown, Server, Activity } from 'lucide-react';
+import { Activity, Server, TrendingUp, TrendingDown } from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -17,7 +17,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
-import { cn, formatChartLabel, formatNumber, getStatusColor } from '@/shared/utils';
+import { cn, formatNumber, formatTime } from '@/shared/utils';
 
 import { TimeRangeSelector } from '../historical/TimeRangeSelector';
 
@@ -65,6 +65,23 @@ export const UptimeTimeSeriesChart = memo(function UptimeTimeSeriesChart({
       (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }, [data]);
+  const formatLabel = (timestamp: string) => {
+    const date = new Date(timestamp);
+    switch (timeRange) {
+      case '1h':
+        return formatTime(date, 'HH:mm');
+      case '24h':
+        return formatTime(date, 'HH:mm');
+      case '7d':
+        return formatTime(date, 'MM/DD HH:mm');
+      case '30d':
+      case '90d':
+        return formatTime(date, 'MM/DD');
+      default:
+        return formatTime(date, 'MM/DD');
+    }
+  };
+
 
   const getNodeStats = (node: NodeUptimeTimeSeries) => {
     const uptimeTrend =
@@ -84,6 +101,19 @@ export const UptimeTimeSeriesChart = memo(function UptimeTimeSeriesChart({
       uptimeTrend,
     };
   };
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'online':
+        return 'bg-success';
+      case 'offline':
+        return 'bg-error';
+      case 'degraded':
+        return 'bg-warning';
+      default:
+        return 'bg-muted-foreground';
+    }
+  };
+
 
   return (
     <Card className={cn('w-full', className)}>
@@ -185,7 +215,7 @@ export const UptimeTimeSeriesChart = memo(function UptimeTimeSeriesChart({
                 vertical={false}
               />
 
-              <XAxis
+                tickFormatter={formatLabel}
                 dataKey="timestamp"
                 tickFormatter={(ts) => formatChartLabel(timeRange, ts)}
                 stroke="rgba(148, 163, 184, 0.5)"
@@ -210,7 +240,7 @@ export const UptimeTimeSeriesChart = memo(function UptimeTimeSeriesChart({
                   if (!active || !payload?.length) return null;
 
                   return (
-                    <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
+                        {formatLabel(label as string)}
                       <p className="mb-2 text-xs font-medium text-muted-foreground">
                         {formatChartLabel(timeRange, label as string)}
                       </p>
@@ -253,7 +283,7 @@ export const UptimeTimeSeriesChart = memo(function UptimeTimeSeriesChart({
                 <>
                   <ReferenceArea y1={95} y2={100} fill={CHART_COLORS.success} fillOpacity={0.05} />
                   <ReferenceArea y1={80} y2={95} fill={CHART_COLORS.warning} fillOpacity={0.05} />
-                  <ReferenceArea y1={0} y2={80} fill={CHART_COLORS.error} fillOpacity={0.05} />
+                cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
                   <ReferenceLine y={95} stroke={CHART_COLORS.success} strokeDasharray="3 3" />
                   <ReferenceLine y={80} stroke={CHART_COLORS.warning} strokeDasharray="3 3" />
                 </>
@@ -261,29 +291,29 @@ export const UptimeTimeSeriesChart = memo(function UptimeTimeSeriesChart({
 
               {data.map((node, index) => {
                 const color = getChartColor(index);
-                return (
+                    fill={CHART_COLORS.success.DEFAULT}
                   <Area
                     key={node.nodeName}
                     type="monotone"
                     dataKey={`${node.nodeName}_uptime`}
                     stroke={color}
-                    strokeWidth={2}
+                    fill={CHART_COLORS.warning.DEFAULT}
                     fill={`url(#colorUptime${node.nodeName})`}
                     fillOpacity={0.3}
                     dot={false}
                     activeDot={{ r: 4, strokeWidth: 2 }}
                     name={node.nodeName}
-                    isAnimationActive={true}
+                    fill={CHART_COLORS.error.DEFAULT}
                     animationDuration={300}
                   />
                 );
               })}
-            </AreaChart>
+                    stroke={CHART_COLORS.success.DEFAULT}
           </ResponsiveContainer>
         ) : (
           <div className="flex items-center justify-center" style={{ height }}>
             <p className="text-sm text-muted-foreground">暂无在线率数据</p>
-          </div>
+                    stroke={CHART_COLORS.warning.DEFAULT}
         )}
       </CardContent>
     </Card>

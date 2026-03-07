@@ -1,302 +1,314 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { BarChart3, TrendingUp, Clock, Target, Zap } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { cn } from '@/shared/utils';
+import { useState, useEffect, useCallback } from 'react';
 
-interface ScriptPerformance {
-  scriptId: string;
-  name: string;
-  totalRequests: number;
-  successRate: number;
-  avgResponseTime: number;
-  requests24h: number;
-  requestsChange: number;
-  reliability: number;
-  popularity: number;
-  category: string;
-}
+import { FileCode, TrendingUp, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Skeleton, Badge } from '@/components/ui';
+import { useI18n } from '@/i18n';
+import { cn, formatTime } from '@/shared/utils';
+
+import type { OracleScript } from '../types/band';
 
 interface OracleScriptAnalyticsProps {
-  scripts?: ScriptPerformance[];
   loading?: boolean;
+  className?: string;
 }
 
-export function OracleScriptAnalytics({ scripts, loading = false }: OracleScriptAnalyticsProps) {
-  const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d'>('24h');
+export function OracleScriptAnalytics({ loading: externalLoading, className }: OracleScriptAnalyticsProps) {
+  const { t } = useI18n();
+  const [scripts, setScripts] = useState<OracleScript[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const mockScripts: ScriptPerformance[] = useMemo(() => {
-    if (scripts && scripts.length > 0) return scripts;
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    return [
-      {
-        scriptId: 'price_feed',
-        name: 'Price Feed',
-        totalRequests: 1250000,
-        successRate: 99.8,
-        avgResponseTime: 450,
-        requests24h: 52000,
-        requestsChange: 12.5,
-        reliability: 99.9,
-        popularity: 95,
-        category: 'Price Data',
-      },
-      {
-        scriptId: 'crypto_prices',
-        name: 'Crypto Prices',
-        totalRequests: 890000,
-        successRate: 99.5,
-        avgResponseTime: 380,
-        requests24h: 38000,
-        requestsChange: 8.3,
-        reliability: 99.7,
-        popularity: 88,
-        category: 'Price Data',
-      },
-      {
-        scriptId: 'weather_data',
-        name: 'Weather Data',
-        totalRequests: 345000,
-        successRate: 98.9,
-        avgResponseTime: 820,
-        requests24h: 15000,
-        requestsChange: -3.2,
-        reliability: 98.5,
-        popularity: 65,
-        category: 'Real World',
-      },
-      {
-        scriptId: 'sports_results',
-        name: 'Sports Results',
-        totalRequests: 123000,
-        successRate: 97.8,
-        avgResponseTime: 580,
-        requests24h: 5200,
-        requestsChange: 5.1,
-        reliability: 97.2,
-        popularity: 45,
-        category: 'Sports',
-      },
-      {
-        scriptId: 'stock_prices',
-        name: 'Stock Prices',
-        totalRequests: 892000,
-        successRate: 99.6,
-        avgResponseTime: 420,
-        requests24h: 42000,
-        requestsChange: 15.7,
-        reliability: 99.8,
-        popularity: 92,
-        category: 'Price Data',
-      },
-      {
-        scriptId: 'randomness',
-        name: 'Randomness Generator',
-        totalRequests: 567000,
-        successRate: 99.9,
-        avgResponseTime: 250,
-        requests24h: 25000,
-        requestsChange: 22.4,
-        reliability: 99.95,
-        popularity: 78,
-        category: 'Utility',
-      },
-    ];
-  }, [scripts]);
+      const response = await fetch('/api/oracle/band/scripts');
+      if (!response.ok) {
+        throw new Error('Failed to fetch oracle scripts');
+      }
 
-  const sortedByPopularity = [...mockScripts].sort((a, b) => b.popularity - a.popularity);
-  const sortedByPerformance = [...mockScripts].sort((a, b) => b.reliability - a.reliability);
+      const result = await response.json();
+      if (result.success && result.data?.scripts) {
+        setScripts(result.data.scripts);
+      } else {
+        // Use mock data as fallback
+        setScripts([
+          {
+            scriptId: 'price_feed',
+            name: 'Price Feed',
+            description: t('band.oracleScriptTypes.priceFeed.description'),
+            owner: 'band1abc123def456',
+            codeHash: '0x1234abcd5678efgh',
+            schema: '{symbol:string,price:uint64}',
+            status: 'active',
+            totalRequests: 125000,
+            lastRequestAt: new Date(Date.now() - 300000).toISOString(),
+            avgResponseTimeMs: 450,
+            successRate: 99.2,
+          },
+          {
+            scriptId: 'weather_data',
+            name: 'Weather Data',
+            description: t('band.oracleScriptTypes.weather.description'),
+            owner: 'band1def456ghi789',
+            codeHash: '0x5678efgh90abijkl',
+            schema: '{location:string,temp:uint64}',
+            status: 'active',
+            totalRequests: 34500,
+            lastRequestAt: new Date(Date.now() - 600000).toISOString(),
+            avgResponseTimeMs: 820,
+            successRate: 97.8,
+          },
+          {
+            scriptId: 'sports_results',
+            name: 'Sports Results',
+            description: t('band.oracleScriptTypes.sports.description'),
+            owner: 'band1ghi789jkl012',
+            codeHash: '0x90abijklcdefmnop',
+            schema: '{gameId:string,score:string}',
+            status: 'inactive',
+            totalRequests: 12300,
+            lastRequestAt: new Date(Date.now() - 86400000).toISOString(),
+            avgResponseTimeMs: 580,
+            successRate: 96.5,
+          },
+          {
+            scriptId: 'stock_prices',
+            name: 'Stock Prices',
+            description: t('band.oracleScriptTypes.stocks.description'),
+            owner: 'band1jkl012mno345',
+            codeHash: '0xcdefmnopqrstuvwx',
+            schema: '{ticker:string,price:uint64}',
+            status: 'deprecated',
+            totalRequests: 89200,
+            lastRequestAt: new Date(Date.now() - 259200000).toISOString(),
+            avgResponseTimeMs: 380,
+            successRate: 99.5,
+          },
+        ]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      // Use mock data as fallback
+      setScripts([
+        {
+          scriptId: 'price_feed',
+          name: 'Price Feed',
+          description: t('band.oracleScriptTypes.priceFeed.description'),
+          owner: 'band1abc123def456',
+          codeHash: '0x1234abcd5678efgh',
+          schema: '{symbol:string,price:uint64}',
+          status: 'active',
+          totalRequests: 125000,
+          lastRequestAt: new Date(Date.now() - 300000).toISOString(),
+          avgResponseTimeMs: 450,
+          successRate: 99.2,
+        },
+        {
+          scriptId: 'weather_data',
+          name: 'Weather Data',
+          description: t('band.oracleScriptTypes.weather.description'),
+          owner: 'band1def456ghi789',
+          codeHash: '0x5678efgh90abijkl',
+          schema: '{location:string,temp:uint64}',
+          status: 'active',
+          totalRequests: 34500,
+          lastRequestAt: new Date(Date.now() - 600000).toISOString(),
+          avgResponseTimeMs: 820,
+          successRate: 97.8,
+        },
+        {
+          scriptId: 'sports_results',
+          name: 'Sports Results',
+          description: t('band.oracleScriptTypes.sports.description'),
+          owner: 'band1ghi789jkl012',
+          codeHash: '0x90abijklcdefmnop',
+          schema: '{gameId:string,score:string}',
+          status: 'inactive',
+          totalRequests: 12300,
+          lastRequestAt: new Date(Date.now() - 86400000).toISOString(),
+          avgResponseTimeMs: 580,
+          successRate: 96.5,
+        },
+        {
+          scriptId: 'stock_prices',
+          name: 'Stock Prices',
+          description: t('band.oracleScriptTypes.stocks.description'),
+          owner: 'band1jkl012mno345',
+          codeHash: '0xcdefmnopqrstuvwx',
+          schema: '{ticker:string,price:uint64}',
+          status: 'deprecated',
+          totalRequests: 89200,
+          lastRequestAt: new Date(Date.now() - 259200000).toISOString(),
+          avgResponseTimeMs: 380,
+          successRate: 99.5,
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [t]);
 
-  const avgSuccessRate = mockScripts.reduce((acc, s) => acc + s.successRate, 0) / mockScripts.length;
-  const avgResponseTime = mockScripts.reduce((acc, s) => acc + s.avgResponseTime, 0) / mockScripts.length;
-  const totalRequests24h = mockScripts.reduce((acc, s) => acc + s.requests24h, 0);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const getPerformanceColor = (reliability: number) => {
-    if (reliability >= 99.5) return 'text-green-600 dark:text-green-400';
-    if (reliability >= 98) return 'text-blue-600 dark:text-blue-400';
-    if (reliability >= 95) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
+  const getStatusConfig = (status: OracleScript['status']) => {
+    switch (status) {
+      case 'active':
+        return { color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: t('common.status.active') };
+      case 'inactive':
+        return { color: 'text-amber-500', bg: 'bg-amber-500/10', label: t('common.status.inactive') };
+      case 'deprecated':
+        return { color: 'text-red-500', bg: 'bg-red-500/10', label: t('common.status.deprecated') };
+      default:
+        return { color: 'text-muted-foreground', bg: 'bg-muted', label: status };
+    }
   };
 
-  const getTrendColor = (change: number) => {
-    if (change > 0) return 'text-green-600 dark:text-green-400';
-    if (change < 0) return 'text-red-600 dark:text-red-400';
-    return 'text-muted-foreground';
+  const getSuccessRateColor = (rate: number) => {
+    if (rate >= 99) return 'text-emerald-500';
+    if (rate >= 95) return 'text-amber-500';
+    return 'text-red-500';
   };
+
+  const loading = externalLoading || isLoading;
 
   if (loading) {
     return (
-      <Card>
+      <Card className={className}>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="h-5 w-40 animate-pulse rounded bg-muted" />
-              <div className="mt-2 h-4 w-64 animate-pulse rounded bg-muted" />
-            </div>
-            <div className="flex gap-2">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-8 w-16 animate-pulse rounded bg-muted" />
-              ))}
-            </div>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <FileCode className="h-5 w-5" />
+            {t('band.scripts.analyticsTitle')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-16 animate-pulse rounded bg-muted" />
-            ))}
+          <div className="space-y-2">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
           </div>
         </CardContent>
       </Card>
     );
   }
 
+  if (error || scripts.length === 0) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileCode className="h-5 w-5" />
+            {t('band.scripts.analyticsTitle')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2 text-amber-500">
+            <AlertTriangle className="h-5 w-5" />
+            <span className="text-sm">{error || t('common.noData')}</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const totalRequests = scripts.reduce((sum, s) => sum + s.totalRequests, 0);
+  const avgSuccessRate = scripts.reduce((sum, s) => sum + s.successRate, 0) / scripts.length;
+  const activeScripts = scripts.filter((s) => s.status === 'active').length;
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BarChart3 className="h-5 w-5" />
-              Oracle Script Analytics
-            </CardTitle>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Performance metrics and usage statistics for all Oracle scripts
-            </p>
-          </div>
-          <div className="flex gap-2">
-            {(['24h', '7d', '30d'] as const).map((range) => (
-              <Button
-                key={range}
-                variant={timeRange === range ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTimeRange(range)}
-              >
-                {range}
-              </Button>
-            ))}
-          </div>
-        </div>
+    <Card className={className}>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <FileCode className="h-5 w-5 text-primary" />
+          {t('band.scripts.analyticsTitle')}
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Target className="h-3.5 w-3.5" />
-              Avg Success Rate
+      <CardContent className="space-y-4">
+        {/* Summary Stats */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-3">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <FileCode className="h-3.5 w-3.5" />
+              {t('band.scripts.total')}
             </div>
-            <p className={cn('text-2xl font-bold', getPerformanceColor(avgSuccessRate))}>
-              {avgSuccessRate.toFixed(2)}%
-            </p>
+            <p className="mt-1 font-mono text-lg font-semibold">{scripts.length}</p>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              Avg Response Time
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-3">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
+              {t('band.scripts.active')}
             </div>
-            <p className="text-2xl font-bold">{avgResponseTime.toFixed(0)}ms</p>
+            <p className="mt-1 font-mono text-lg font-semibold text-emerald-500">{activeScripts}</p>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Zap className="h-3.5 w-3.5" />
-              Total Requests (24h)
-            </div>
-            <p className="text-2xl font-bold">{(totalRequests24h / 1000).toFixed(1)}K</p>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="rounded-lg border border-border/30 bg-muted/20 p-3">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <TrendingUp className="h-3.5 w-3.5" />
-              Active Scripts
+              {t('band.scripts.avgSuccessRate')}
             </div>
-            <p className="text-2xl font-bold">{mockScripts.length}</p>
+            <p className={cn('mt-1 font-mono text-lg font-semibold', getSuccessRateColor(avgSuccessRate))}>
+              {avgSuccessRate.toFixed(1)}%
+            </p>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <h4 className="mb-3 text-sm font-semibold">Top Scripts by Popularity</h4>
-            <div className="space-y-2">
-              {sortedByPopularity.slice(0, 5).map((script, index) => (
-                <div
-                  key={script.scriptId}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-bold">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold">{script.name}</p>
-                      <p className="text-xs text-muted-foreground">{script.category}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-sm font-semibold">{script.requests24h.toLocaleString()}</p>
-                      <p className={cn('text-xs', getTrendColor(script.requestsChange))}>
-                        {script.requestsChange > 0 ? '+' : ''}{script.requestsChange.toFixed(1)}%
-                      </p>
-                    </div>
-                    <Badge variant="outline" className={cn('font-semibold', getPerformanceColor(script.reliability))}>
-                      {script.reliability.toFixed(2)}%
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <h4 className="mb-3 text-sm font-semibold">Best Performance</h4>
-              <div className="rounded-lg border p-4">
-                {sortedByPerformance.slice(0, 3).map((script, index) => (
-                  <div key={script.scriptId} className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-2">
-                      <TrophyIcon rank={index + 1} />
-                      <span className="text-sm font-medium">{script.name}</span>
-                    </div>
-                    <span className={cn('text-sm font-bold', getPerformanceColor(script.reliability))}>
-                      {script.reliability.toFixed(3)}%
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="mb-3 text-sm font-semibold">Fastest Response</h4>
-              <div className="rounded-lg border p-4">
-                {[...mockScripts].sort((a, b) => a.avgResponseTime - b.avgResponseTime).slice(0, 3).map((script, index) => (
-                  <div key={script.scriptId} className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-2">
-                      <TrophyIcon rank={index + 1} />
-                      <span className="text-sm font-medium">{script.name}</span>
-                    </div>
-                    <span className="text-sm font-bold">{script.avgResponseTime}ms</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        {/* Scripts List */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border/30 text-xs text-muted-foreground">
+                <th className="pb-2 text-left font-medium">{t('band.scripts.name')}</th>
+                <th className="pb-2 text-right font-medium">{t('band.scripts.requests')}</th>
+                <th className="pb-2 text-right font-medium">{t('band.scripts.responseTime')}</th>
+                <th className="pb-2 text-center font-medium">{t('common.status.status')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scripts.map((script) => {
+                const statusConfig = getStatusConfig(script.status);
+                
+                return (
+                  <tr
+                    key={script.scriptId}
+                    className="border-b border-border/20 transition-colors hover:bg-muted/30"
+                  >
+                    <td className="py-2 pr-4">
+                      <div>
+                        <p className="font-medium text-sm">{script.name}</p>
+                        <p className="text-xs text-muted-foreground font-mono">
+                          {script.scriptId}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="py-2 text-right font-mono text-sm">
+                      {script.totalRequests.toLocaleString()}
+                    </td>
+                    <td className="py-2 text-right font-mono text-sm">
+                      {script.avgResponseTimeMs}ms
+                    </td>
+                    <td className="py-2 text-center">
+                      <Badge
+                        variant={script.status === 'active' ? 'success' : script.status === 'deprecated' ? 'destructive' : 'warning'}
+                        size="sm"
+                      >
+                        {statusConfig.label}
+                      </Badge>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>
   );
-}
-
-function TrophyIcon({ rank }: { rank: number }) {
-  const colors = {
-    1: 'text-yellow-500',
-    2: 'text-gray-400',
-    3: 'text-amber-600',
-  };
-  
-  return <TrendingUp className={cn('h-4 w-4', colors[rank as keyof typeof colors])} />;
 }

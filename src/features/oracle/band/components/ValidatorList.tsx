@@ -1,339 +1,251 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-import { Trophy, Activity, Shield, Search, TrendingUp } from 'lucide-react';
-import { Virtuoso } from 'react-virtuoso';
+import { Users, AlertTriangle, CheckCircle, XCircle, Shield } from 'lucide-react';
 
-import { Input, Badge, Button } from '@/components/ui';
-import { cn, getStatusColor } from '@/shared/utils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Skeleton, Badge } from '@/components/ui';
+import { useI18n } from '@/i18n';
+import { cn, formatTime } from '@/shared/utils';
 
-export interface Validator {
-  address: string;
-  name: string;
-  rank: number;
-  votingPower: number;
-  votingPowerPercent: number;
-  commission: number;
-  uptime: number;
-  blocksSigned: number;
-  blocksMissed: number;
-  status: 'active' | 'inactive' | 'jailed';
-  delegators: number;
-  rewards24h: number;
-  uptimeHistory: number[];
-}
+import type { Validator } from '../types/band';
 
 interface ValidatorListProps {
-  validators?: Validator[];
-  loading?: boolean;
-  limit?: number;
+  className?: string;
 }
 
-export function ValidatorList({ validators, loading = false }: ValidatorListProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'rank' | 'votingPower' | 'commission' | 'uptime'>('rank');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [expandedValidators, setExpandedValidators] = useState<Set<string>>(new Set());
+export function ValidatorList({ className }: ValidatorListProps) {
+  const { t } = useI18n();
+  const [validators, setValidators] = useState<Validator[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const mockValidators: Validator[] = useMemo(() => {
-    if (validators && validators.length > 0) return validators;
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    return Array.from({ length: 30 }, (_, i) => ({
-      address: `bandvaloper1${Array.from(
-        { length: 38 },
-        () => 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)],
-      ).join('')}`,
-      name: `Validator ${String.fromCharCode(65 + (i % 26))}${i >= 26 ? i - 25 : ''}`,
-      rank: i + 1,
-      votingPower: Math.floor(Math.random() * 1000000) + 100000,
-      votingPowerPercent: parseFloat((Math.random() * 5 + 0.1).toFixed(2)),
-      commission: parseFloat((Math.random() * 10 + 1).toFixed(2)),
-      uptime: parseFloat((Math.random() * 5 + 95).toFixed(2)),
-      blocksSigned: Math.floor(Math.random() * 100000) + 50000,
-      blocksMissed: Math.floor(Math.random() * 1000),
-      status: i < 25 ? 'active' : i < 28 ? 'inactive' : 'jailed',
-      delegators: Math.floor(Math.random() * 5000) + 100,
-      rewards24h: parseFloat((Math.random() * 100 + 10).toFixed(2)),
-      uptimeHistory: Array.from({ length: 7 }, () =>
-        parseFloat((Math.random() * 5 + 95).toFixed(2)),
-      ),
-    }));
-  }, [validators]);
-
-  const filteredAndSortedValidators = useMemo(() => {
-    let filtered = [...mockValidators];
-
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (v) =>
-          v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          v.address.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
-    }
-
-    filtered.sort((a, b) => {
-      let comparison = 0;
-      switch (sortBy) {
-        case 'rank':
-          comparison = a.rank - b.rank;
-          break;
-        case 'votingPower':
-          comparison = b.votingPower - a.votingPower;
-          break;
-        case 'commission':
-          comparison = a.commission - b.commission;
-          break;
-        case 'uptime':
-          comparison = b.uptime - a.uptime;
-          break;
+      const response = await fetch('/api/oracle/band/validators');
+      if (!response.ok) {
+        throw new Error('Failed to fetch validator data');
       }
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
 
-    return filtered;
-  }, [mockValidators, searchTerm, sortBy, sortOrder]);
+      const result = await response.json();
+      if (result.success && result.data?.validators) {
+        setValidators(result.data.validators);
+      } else {
+        // Use mock data as fallback
+        setValidators([
+          {
+            validatorAddress: 'bandvaloper1abc123def456',
+            moniker: 'Validator One',
+            status: 'active',
+            votingPower: 10000000,
+            commissionRate: 0.1,
+            uptimePercent: 99.9,
+            lastSeenAt: new Date().toISOString(),
+            totalRequestsProcessed: 1250000,
+            missedBlocks: 2,
+          },
+          {
+            validatorAddress: 'bandvaloper2def456ghi789',
+            moniker: 'Validator Two',
+            status: 'active',
+            votingPower: 8500000,
+            commissionRate: 0.08,
+            uptimePercent: 99.5,
+            lastSeenAt: new Date().toISOString(),
+            totalRequestsProcessed: 980000,
+            missedBlocks: 5,
+          },
+          {
+            validatorAddress: 'bandvaloper3ghi789jkl012',
+            moniker: 'Validator Three',
+            status: 'jailed',
+            votingPower: 5000000,
+            commissionRate: 0.12,
+            uptimePercent: 85.0,
+            lastSeenAt: new Date(Date.now() - 86400000).toISOString(),
+            totalRequestsProcessed: 450000,
+            missedBlocks: 150,
+          },
+        ]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      // Use mock data as fallback
+      setValidators([
+        {
+          validatorAddress: 'bandvaloper1abc123def456',
+          moniker: 'Validator One',
+          status: 'active',
+          votingPower: 10000000,
+          commissionRate: 0.1,
+          uptimePercent: 99.9,
+          lastSeenAt: new Date().toISOString(),
+          totalRequestsProcessed: 1250000,
+          missedBlocks: 2,
+        },
+        {
+          validatorAddress: 'bandvaloper2def456ghi789',
+          moniker: 'Validator Two',
+          status: 'active',
+          votingPower: 8500000,
+          commissionRate: 0.08,
+          uptimePercent: 99.5,
+          lastSeenAt: new Date().toISOString(),
+          totalRequestsProcessed: 980000,
+          missedBlocks: 5,
+        },
+        {
+          validatorAddress: 'bandvaloper3ghi789jkl012',
+          moniker: 'Validator Three',
+          status: 'jailed',
+          votingPower: 5000000,
+          commissionRate: 0.12,
+          uptimePercent: 85.0,
+          lastSeenAt: new Date(Date.now() - 86400000).toISOString(),
+          totalRequestsProcessed: 450000,
+          missedBlocks: 150,
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const handleSort = (field: 'rank' | 'votingPower' | 'commission' | 'uptime') => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(field);
-      setSortOrder('desc');
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const getStatusConfig = (status: Validator['status']) => {
+    switch (status) {
+      case 'active':
+        return { icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: t('band.validators.active') };
+      case 'jailed':
+        return { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10', label: t('band.validators.jailed') };
+      default:
+        return { icon: Shield, color: 'text-muted-foreground', bg: 'bg-muted', label: t('band.validators.inactive') };
     }
   };
 
-  const toggleExpanded = (address: string) => {
-    const newExpanded = new Set(expandedValidators);
-    if (newExpanded.has(address)) {
-      newExpanded.delete(address);
-    } else {
-      newExpanded.add(address);
-    }
-    setExpandedValidators(newExpanded);
-  };
-
-  const isExpanded = (address: string) => expandedValidators.has(address);
-
-  const getUptimeColor = (uptime: number) => {
-    if (uptime >= 99) return 'text-green-600 dark:text-green-400';
-    if (uptime >= 97) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
-  };
-
-  const formatAddress = (address: string) => {
-    return `${address.slice(0, 12)}...${address.slice(-8)}`;
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="space-y-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-16 w-full animate-pulse rounded-lg bg-muted" />
-        ))}
-      </div>
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            {t('band.validators.listTitle')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error || validators.length === 0) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            {t('band.validators.listTitle')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2 text-amber-500">
+            <AlertTriangle className="h-5 w-5" />
+            <span className="text-sm">{error || t('common.noData')}</span>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search validators by name or address..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant={sortBy === 'rank' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleSort('rank')}
-          >
-            <Trophy className="mr-1 h-3 w-3" />
-            Rank
-          </Button>
-          <Button
-            variant={sortBy === 'votingPower' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleSort('votingPower')}
-          >
-            <Shield className="mr-1 h-3 w-3" />
-            Voting Power
-          </Button>
-          <Button
-            variant={sortBy === 'uptime' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleSort('uptime')}
-          >
-            <Activity className="mr-1 h-3 w-3" />
-            Uptime
-          </Button>
-        </div>
-      </div>
-
-      <div>
-        <div className="grid grid-cols-12 gap-4 border-b border-border/30 py-3 text-xs font-semibold">
-          <div className="col-span-2 sm:col-span-1">Rank</div>
-          <div className="col-span-4 sm:col-span-2">Validator</div>
-          <div className="col-span-3 text-right sm:col-span-2">Voting Power</div>
-          <div className="col-span-2 hidden text-right sm:block">Commission</div>
-          <div className="col-span-3 text-right sm:col-span-2">Uptime</div>
-          <div className="col-span-2 hidden text-right sm:block">Status</div>
-        </div>
-
-        <Virtuoso
-          data={filteredAndSortedValidators}
-          overscan={{ main: 200, reverse: 100 }}
-          style={{ height: '600px' }}
-          itemContent={(index, validator) => (
-            <div key={validator.address}>
-              <div
-                className={cn(
-                  'grid grid-cols-12 gap-4 py-3 transition-colors hover:bg-muted/30',
-                  'cursor-pointer border-b border-border/20',
-                  isExpanded(validator.address) && 'bg-muted/30',
-                )}
-                onClick={() => toggleExpanded(validator.address)}
-              >
-                <div className="col-span-2 flex items-center sm:col-span-1">
-                  <span className="font-mono text-sm font-semibold">#{validator.rank}</span>
-                </div>
-
-                <div className="col-span-4 flex items-center gap-2 sm:col-span-2">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold">{validator.name}</span>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {formatAddress(validator.address)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="col-span-3 flex items-center justify-end gap-2 sm:col-span-2">
-                  <div className="flex flex-col items-end">
-                    <span className="text-sm font-semibold">
-                      {validator.votingPower.toLocaleString()}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {validator.votingPowerPercent.toFixed(2)}%
-                    </span>
-                  </div>
-                </div>
-
-                <div className="col-span-2 hidden items-center justify-end sm:flex">
-                  <span
-                    className={cn(
-                      'text-sm font-semibold',
-                      validator.commission < 5
-                        ? 'text-green-600'
-                        : validator.commission < 8
-                          ? 'text-yellow-600'
-                          : 'text-red-600',
-                    )}
+    <Card className={className}>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Users className="h-5 w-5 text-primary" />
+          {t('band.validators.listTitle')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border/30 text-xs text-muted-foreground">
+                <th className="pb-2 text-left font-medium">{t('band.validators.moniker')}</th>
+                <th className="pb-2 text-right font-medium">{t('band.validators.votingPower')}</th>
+                <th className="pb-2 text-right font-medium">{t('band.validators.commission')}</th>
+                <th className="pb-2 text-right font-medium">{t('band.validators.uptime')}</th>
+                <th className="pb-2 text-center font-medium">{t('common.status.status')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {validators.map((validator) => {
+                const statusConfig = getStatusConfig(validator.status);
+                const StatusIcon = statusConfig.icon;
+                
+                return (
+                  <tr
+                    key={validator.validatorAddress}
+                    className="border-b border-border/20 transition-colors hover:bg-muted/30"
                   >
-                    {validator.commission.toFixed(2)}%
-                  </span>
-                </div>
-
-                <div className="col-span-3 flex items-center justify-end sm:col-span-2">
-                  <div className="flex flex-col items-end">
-                    <span className={cn('text-sm font-semibold', getUptimeColor(validator.uptime))}>
-                      {validator.uptime.toFixed(2)}%
-                    </span>
-                    <div className="mt-1 flex gap-0.5">
-                      {validator.uptimeHistory.map((uptime, i) => (
-                        <div
-                          key={i}
-                          className={cn(
-                            'h-1.5 w-1.5 rounded-full',
-                            uptime >= 99
-                              ? 'bg-green-500'
-                              : uptime >= 97
-                                ? 'bg-yellow-500'
-                                : 'bg-red-500',
-                          )}
-                          title={`Day ${i + 1}: ${uptime}%`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col-span-2 hidden items-center justify-end sm:flex">
-                  <Badge className={getStatusColor(validator.status)}>{validator.status}</Badge>
-                </div>
-              </div>
-
-              {isExpanded(validator.address) && (
-                <div className="border-t border-border/20 bg-muted/10 py-4">
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground">Blocks</h4>
-                      <div className="mt-2 space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Signed:</span>
-                          <span className="font-semibold">
-                            {validator.blocksSigned.toLocaleString()}
-                          </span>
+                    <td className="py-3 pr-4">
+                      <div className="flex items-center gap-2">
+                        <div className={cn('flex h-8 w-8 items-center justify-center rounded-full', statusConfig.bg)}>
+                          <StatusIcon className={cn('h-4 w-4', statusConfig.color)} />
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Missed:</span>
-                          <span className="font-semibold">
-                            {validator.blocksMissed.toLocaleString()}
-                          </span>
+                        <div>
+                          <p className="font-medium text-sm">{validator.moniker}</p>
+                          <p className="text-xs text-muted-foreground font-mono">
+                            {validator.validatorAddress.slice(0, 12)}...
+                          </p>
                         </div>
                       </div>
-                    </div>
-
-                    <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground">Delegations</h4>
-                      <div className="mt-2 space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Delegators:</span>
-                          <span className="font-semibold">
-                            {validator.delegators.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">24h Rewards:</span>
-                          <span className="font-semibold">
-                            {validator.rewards24h.toFixed(2)} BAND
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground">Performance</h4>
-                      <div className="mt-2 flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        <span
-                          className={cn(
-                            'text-sm font-semibold',
-                            validator.uptime >= 99 ? 'text-green-600' : 'text-yellow-600',
-                          )}
-                        >
-                          {validator.uptime >= 99 ? 'Excellent' : 'Good'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        />
-      </div>
-
-      {filteredAndSortedValidators.length === 0 && (
-        <div className="py-12 text-center text-muted-foreground">
-          <Activity className="mx-auto h-12 w-12 opacity-50" />
-          <p className="mt-2">No validators found</p>
+                    </td>
+                    <td className="py-3 text-right font-mono text-sm">
+                      {(validator.votingPower / 1000000).toFixed(2)}M
+                    </td>
+                    <td className="py-3 text-right font-mono text-sm">
+                      {(validator.commissionRate * 100).toFixed(1)}%
+                    </td>
+                    <td className="py-3 text-right font-mono text-sm">
+                      <span
+                        className={cn(
+                          validator.uptimePercent >= 99
+                            ? 'text-emerald-500'
+                            : validator.uptimePercent >= 95
+                              ? 'text-amber-500'
+                              : 'text-red-500'
+                        )}
+                      >
+                        {validator.uptimePercent.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="py-3 text-center">
+                      <Badge
+                        variant={validator.status === 'active' ? 'success' : validator.status === 'jailed' ? 'destructive' : 'secondary'}
+                        size="sm"
+                      >
+                        {statusConfig.label}
+                      </Badge>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

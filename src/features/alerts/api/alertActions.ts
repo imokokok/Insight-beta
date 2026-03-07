@@ -49,7 +49,6 @@ async function upsertAlertStatusOverride(
   userId?: string,
 ): Promise<void> {
   const now = new Date().toISOString();
-
   await query(
     `INSERT INTO alert_status_overrides (alert_id, status, note, silenced_until, updated_by, updated_at, created_at)
      VALUES ($1, $2, $3, $4, $5, $6, $6)
@@ -65,17 +64,12 @@ async function upsertAlertStatusOverride(
 
 export async function updateAlertStatus(
   id: string,
-  request: AlertActionRequest,
+  newStatus: AlertStatus,
+  action: AlertActionRequest['action'],
+  note?: string,
+  duration?: number,
+  userId?: string,
 ): Promise<AlertActionResult | null> {
-  const { action, note, duration, userId } = request;
-
-  if (!action || !['acknowledge', 'resolve', 'silence'].includes(action)) {
-    return null;
-  }
-
-  const newStatus: AlertStatus =
-    action === 'acknowledge' ? 'investigating' : action === 'resolve' ? 'resolved' : 'active';
-
   const dbStatus = mapStatusToDb(newStatus);
   const now = new Date().toISOString();
 
@@ -155,7 +149,6 @@ export async function getAlertStoredData(id: string): Promise<{
       acknowledged: 'investigating',
       resolved: 'resolved',
     };
-
     return {
       status: statusMap[row.status] || 'active',
       note: row.note,

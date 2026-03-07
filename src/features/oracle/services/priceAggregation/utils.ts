@@ -212,7 +212,7 @@ export function detectOutliersZScore(values: number[], threshold: number = 3): n
   if (values.length < 3) return [];
 
   const mean = calculateMean(values);
-  const std = calculateStdDev(values);
+  const std = calculateStdDev(values, mean);
 
   if (std === 0) return []; // 所有值相同，无异常
 

@@ -10,17 +10,8 @@ export const pyth = {
   overview: {
     title: 'Pyth Network 协议概览',
     description: '高频预言机网络状态摘要',
-    introduction:
-      'Pyth Network 是高频预言机协议，提供来自第一方发布者的实时价格数据，支持多链 DeFi 应用。',
-    pullOracleInfo: 'Pull Oracle 机制说明',
-  },
-  features: {
-    title: '核心特性',
-    highFrequency: {
-      label: '高频更新',
-      value: '亚秒级价格更新',
-    },
-    publishers: {
+    introduction: 'Pyth Network 是高频预言机协议，提供来自第一方发布者的实时价格数据，支持多链 DeFi 应用。',
+    firstParty: {
       label: '第一方发布者',
       value: '交易所直接数据',
     },
@@ -65,7 +56,6 @@ export const pyth = {
     avgUpdateFrequency: '平均更新频率',
     avgLatency: '平均延迟',
     statistics: '价格推送统计',
-    detailedStats: '价格推送详细统计',
     detailedStatsDesc: '实时价格更新频率与延迟分析',
     feedName: '价格源名称',
     categoryName: '分类',
@@ -86,22 +76,13 @@ export const pyth = {
   status: {
     active: '活跃',
     degraded: '降级',
-    offline: '离线',
     delayed: '延迟',
     abnormal: '异常',
   },
-  priceHistoryChart: {
-    title: '价格趋势分析',
+  priceHistory: {
     description: 'Pyth 价格历史走势与波动分析',
-    selectPriceSource: '选择价格源',
-    currentPrice: '当前价格',
-    changeRate: '变化率',
-    highestPrice: '最高价',
     lowestPrice: '最低价',
     volatility: '波动率',
-    price: '价格',
-    time: '时间',
-    average: '均值',
     noData: '暂无价格历史数据',
   },
   // 价格喂价名称翻译
@@ -113,7 +94,7 @@ export const pyth = {
     AVAX: 'Avalanche',
     AAVE: 'Aave',
     LINK: 'Chainlink',
-    DOT: 'Polkadot',
+    DOT: '波卡',
     MATIC: 'Polygon',
     UNI: 'Uniswap',
     ATOM: 'Cosmos',
@@ -124,9 +105,9 @@ export const pyth = {
     SUI: 'Sui',
     NEAR: 'NEAR Protocol',
     ALGO: 'Algorand',
-    VET: 'VeChain',
-    ICP: 'Internet Computer',
-    XRP: 'XRP',
+    VET: '唯链',
+    ICP: '互联网计算机',
+    XRP: '瑞波币',
     // 外汇
     'EUR/USD': '欧元/美元',
     'GBP/USD': '英镑/美元',
@@ -148,7 +129,7 @@ export const pyth = {
     NATGAS: '天然气',
     WHEAT: '小麦',
   },
-  // 资产类别
+  // 资产分类
   assetCategories: {
     crypto: '加密货币',
     forex: '外汇',

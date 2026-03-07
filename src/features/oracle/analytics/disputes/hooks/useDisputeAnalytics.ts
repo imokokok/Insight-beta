@@ -7,7 +7,6 @@ import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 import type { DisputeReport, Dispute } from '@/types/oracle/dispute';
-import type { TimeRangePreset } from '@/types/shared/timeRange';
 
 function generateMockDisputeReport(): DisputeReport {
   const now = new Date();
@@ -100,7 +99,7 @@ function generateMockDisputeReport(): DisputeReport {
   };
 }
 
-export type { TimeRangePreset };
+export type TimeRangePreset = '1h' | '6h' | '24h' | '7d' | '30d' | 'custom';
 
 export function useDisputeAnalytics() {
   const [loading, setLoading] = useState(true);

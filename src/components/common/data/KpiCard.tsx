@@ -1,10 +1,3 @@
-'use client';
-
-import { memo } from 'react';
-
-import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
-
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 import type { KpiCardData, KpiTrendDirection, KpiStatus } from '@/types/shared/kpi';
@@ -17,18 +10,29 @@ export type { KpiCardData, KpiStatus };
 export type { KpiTrendDirection as TrendDirection };
 
 const TREND_ICONS: Record<KpiTrendDirection, React.ReactNode> = {
-  up: <TrendingUp className="h-4 w-4" />,
-  down: <TrendingDown className="h-4 w-4" />,
-  neutral: <Minus className="h-4 w-4" />,
+  up: (
+    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+    </svg>
+  ),
+  down: (
+    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  ),
+  neutral: (
+    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" />
+    </svg>
+  ),
 };
 
 interface KpiCardProps {
   data: KpiCardData;
   compact?: boolean;
-  index?: number;
 }
 
-const KpiCardComponent = function KpiCard({ data, compact = true, index = 0 }: KpiCardProps) {
+export function KpiCard({ data, compact = true }: KpiCardProps) {
   const { t } = useI18n();
   const {
     value,
@@ -45,118 +49,62 @@ const KpiCardComponent = function KpiCard({ data, compact = true, index = 0 }: K
   const trendColor = trend === 'up' ? 'success' : trend === 'down' ? 'error' : 'neutral';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.3,
-        delay: index * 0.06,
-        ease: 'easeOut',
-      }}
+    <div
       className={cn(
         'flex flex-col',
-        'transition-all duration-300',
-        'hover:translate-y-[-2px]',
-        compact ? 'px-3 py-3 sm:px-4 sm:py-4' : 'px-4 py-4 sm:px-5 sm:py-5',
+        'transition-colors duration-200',
+        compact ? 'py-1.5' : 'py-2.5',
       )}
     >
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: index * 0.06 + 0.1 }}
-          className={cn(
-            'font-semibold tracking-wide text-muted-foreground/80',
-            compact ? 'text-[11px] sm:text-xs' : 'text-xs sm:text-sm',
-          )}
+      <div className="mb-0.5 flex items-center justify-between">
+        <span
+          className={cn('font-medium text-muted-foreground', compact ? 'text-[10px]' : 'text-xs')}
         >
           {label}
-        </motion.span>
+        </span>
         {trend && trend !== 'neutral' && (
-          <motion.span
-            initial={{ opacity: 0, x: 5 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.06 + 0.15 }}
+          <span
             className={cn(
-              'flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold sm:text-xs',
-              'shadow-sm',
+              'flex shrink-0 items-center gap-0.5 whitespace-nowrap text-[10px] font-medium',
               TREND_COLORS[trend],
-              trend === 'up' ? 'bg-success/10' : 'bg-error/10',
             )}
           >
-            <motion.div
-              animate={{
-                y: trend === 'up' ? [-2, 0, -2] : [2, 0, 2],
-              }}
-              transition={{
-                duration: 1.8,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            >
-              {TREND_ICONS[trend]}
-            </motion.div>
+            {TREND_ICONS[trend]}
             {changePercent !== undefined && `${Math.abs(changePercent)}%`}
-          </motion.span>
+          </span>
         )}
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: index * 0.06 + 0.12 }}
-        className="mb-2 flex items-baseline gap-2"
-      >
+      <div className="flex items-baseline gap-1.5">
         <span
           className={cn(
-            'font-mono font-black tracking-tight',
+            'font-mono font-bold tracking-tight',
             colors.text,
-            compact ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-3xl sm:text-4xl md:text-5xl',
+            compact ? 'text-base' : 'text-lg',
           )}
         >
           {value}
         </span>
         {showTrend && trendData && trendData.length >= 2 && (
-          <motion.div
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: 'auto' }}
-            transition={{ delay: index * 0.06 + 0.18 }}
-            className="hidden sm:block"
-          >
-            <MiniTrend data={trendData} color={trendColor} mode="line" />
-          </motion.div>
-        )}
-      </motion.div>
-
-      <div className="space-y-1">
-        {changePercent !== undefined && trend === 'neutral' && (
-          <motion.div
-            initial={{ opacity: 0, y: 3 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.06 + 0.2 }}
-            className={cn('text-[11px] font-medium sm:text-xs', TREND_COLORS[trend])}
-          >
-            {t('common.kpi.comparedToLastPeriod')} {changePercent > 0 ? '+' : ''}
-            {changePercent}%
-          </motion.div>
-        )}
-
-        {metadata?.volatility && (
-          <motion.div
-            initial={{ opacity: 0, y: 3 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.06 + 0.22 }}
-            className={cn('text-[11px] text-muted-foreground/70 sm:text-xs')}
-          >
-            {t('common.volatility')}: {metadata.volatility.toFixed(2)}%
-          </motion.div>
+          <MiniTrend data={trendData} color={trendColor} mode="line" />
         )}
       </div>
-    </motion.div>
-  );
-};
 
-export const KpiCard = memo(KpiCardComponent);
+      {changePercent !== undefined && trend === 'neutral' && (
+        <div className={cn('mt-0.5 text-[10px]', TREND_COLORS[trend])}>
+          {t('common.kpi.comparedToLastPeriod')} {changePercent > 0 ? '+' : ''}
+          {changePercent}%
+        </div>
+      )}
+
+      {metadata?.volatility && (
+        <div className={cn('mt-0.5 text-[10px] text-muted-foreground')}>
+          波动率：{metadata.volatility.toFixed(2)}%
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface KpiGridProps {
   kpis: KpiCardData[];
@@ -177,59 +125,47 @@ export function KpiGrid({
     return (
       <div
         className={cn(
-          'grid gap-4 sm:gap-5 md:gap-6',
-          'xs:grid-cols-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
+          'grid gap-1.5 md:gap-2',
+          compact ? 'grid-cols-2 xl:grid-cols-4' : 'grid-cols-2 sm:grid-cols-4',
           className,
         )}
       >
         {[1, 2, 3, 4].map((i) => (
-          <motion.div
+          <div
             key={i}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08 }}
-            className="relative flex flex-col overflow-hidden rounded-xl border border-border/40 bg-gradient-to-br from-background via-muted/10 to-background"
+            className="relative flex flex-col overflow-hidden rounded-lg border border-border/30 bg-gradient-to-br from-background via-muted/5 to-background py-2.5"
           >
-            <div className="via-primary/8 absolute inset-0 animate-pulse bg-gradient-to-r from-transparent to-transparent" />
-            <div className="relative z-10 mb-2 flex items-center justify-between px-4 pt-4">
-              <div className="h-3 w-20 animate-[pulse_1.5s_ease-in-out_infinite] rounded bg-primary/25" />
-              <div className="h-4 w-12 animate-[pulse_1.5s_ease-in-out_infinite] rounded bg-primary/20 [animation-delay:0.2s]" />
+            <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
+            <div className="relative z-10 mb-0.5 flex items-center justify-between px-2.5">
+              <div className="h-2.5 w-14 animate-[pulse_1.5s_ease-in-out_infinite] rounded bg-primary/20" />
+              <div className="h-2.5 w-7 animate-[pulse_1.5s_ease-in-out_infinite] rounded bg-primary/15 [animation-delay:0.2s]" />
             </div>
-            <div className="relative z-10 mt-2 px-4 pb-4">
-              <div className="h-7 w-28 animate-[pulse_1.5s_ease-in-out_infinite] rounded bg-primary/30 [animation-delay:0.1s]" />
+            <div className="relative z-10 mt-1.5 px-2.5">
+              <div className="w-18 h-4 animate-[pulse_1.5s_ease-in-out_infinite] rounded bg-primary/25 [animation-delay:0.1s]" />
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
+    <div
       className={cn(
-        'xs:grid-cols-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
-        'gap-4 sm:gap-5 md:gap-6',
+        'grid grid-cols-2 sm:grid-cols-4',
+        'divide-x divide-y divide-border/30 sm:divide-y-0',
+        'overflow-hidden rounded-lg border border-border/30',
+        'px-2.5',
         className,
       )}
     >
       {kpis.map((kpi, index) => (
-        <motion.div
+        <KpiCard
           key={index}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.06 }}
-          className="overflow-hidden rounded-xl border border-border/40 bg-gradient-to-br from-background via-muted/5 to-background transition-shadow duration-300 hover:shadow-md"
-        >
-          <KpiCard
-            index={index}
-            data={{ ...kpi, label: kpi.label || labels?.[index] || '' }}
-            compact={compact}
-          />
-        </motion.div>
+          data={{ ...kpi, label: kpi.label || labels?.[index] || '' }}
+          compact={compact}
+        />
       ))}
-    </motion.div>
+    </div>
   );
 }

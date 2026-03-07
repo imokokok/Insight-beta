@@ -4,9 +4,6 @@
  * 集中管理应用中的魔法数字和配置项
  */
 
-import type { SupportedChain as SupportedChainBase } from '@/types/chains';
-import type { TimeRangePreset } from '@/types/shared/timeRange';
-
 // ============================================================================
 // 支持的交易符号
 // ============================================================================
@@ -149,6 +146,8 @@ export const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI
 // 支持的区块链网络配置
 // ============================================================================
 
+import type { SupportedChain as SupportedChainBase } from '@/types/chains';
+
 export type SupportedChain = SupportedChainBase;
 
 export interface ChainInfo {
@@ -277,7 +276,7 @@ export const TIME_RANGE_OPTIONS = [
   { value: '30d', label: '30D' },
 ] as const;
 
-export type TimeRange = Exclude<TimeRangePreset, 'ALL' | 'custom'>;
+export type TimeRange = (typeof TIME_RANGE_OPTIONS)[number]['value'];
 
 export interface ChartTimeRangeConfig {
   label: string;

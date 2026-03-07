@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-
 import { Slot } from '@radix-ui/react-slot';
 
 import { cn } from '@/shared/utils';
@@ -68,8 +67,8 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
     const context = React.useContext(TabsContext);
     if (!context) throw new Error('TabsTrigger must be used within Tabs');
 
-    const isActive = context.value === value;
     const Comp = asChild ? Slot : 'button';
+    const isActive = context.value === value;
 
     return (
       <Comp

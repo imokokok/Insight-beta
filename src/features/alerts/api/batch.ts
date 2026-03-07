@@ -74,7 +74,6 @@ async function upsertAlertStatusOverrideWithClient(
   userId?: string,
 ): Promise<void> {
   const now = new Date().toISOString();
-
   await client.query(
     `INSERT INTO alert_status_overrides (alert_id, status, note, silenced_until, updated_by, updated_at, created_at)
      VALUES ($1, $2, $3, $4, $5, $6, $6)
@@ -88,18 +87,18 @@ async function upsertAlertStatusOverrideWithClient(
   );
 }
 
-async function updateAlertInDbWithClient(
+async function processAlertAction(
   client: pg.PoolClient,
   alertId: string,
   action: string,
   dbStatus: string,
-  note: string | undefined,
-  silencedUntil: string | undefined,
-  userId: string | undefined,
-  now: string,
+  note?: string,
+  silencedUntil?: string,
+  userId?: string,
 ): Promise<UpdateResult> {
-  let updateResult;
+  const now = new Date().toISOString();
 
+  let updateResult;
   if (action === 'acknowledge') {
     updateResult = await client.query(
       `UPDATE unified_alerts 
@@ -146,7 +145,6 @@ export async function processBatchAction(request: BatchActionRequest): Promise<B
     action === 'acknowledge' ? 'investigating' : action === 'resolve' ? 'resolved' : 'active';
 
   const dbStatus = mapStatusToDb(newStatus);
-  const now = new Date().toISOString();
 
   let silencedUntil: string | undefined;
   if (action === 'silence' && duration) {
@@ -164,7 +162,7 @@ export async function processBatchAction(request: BatchActionRequest): Promise<B
 
     for (const alertId of alertIds) {
       try {
-        const result = await updateAlertInDbWithClient(
+        const result = await processAlertAction(
           client,
           alertId,
           action,
@@ -172,7 +170,6 @@ export async function processBatchAction(request: BatchActionRequest): Promise<B
           note,
           silencedUntil,
           userId,
-          now,
         );
         results.push({
           alertId,

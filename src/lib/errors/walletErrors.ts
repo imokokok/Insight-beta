@@ -29,17 +29,18 @@ function getErrorCode(err: unknown): number | undefined {
   return typeof code === 'number' ? code : undefined;
 }
 
+function getErrorMessage(err: unknown): string | undefined {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === 'object' && 'message' in err) {
+    const msg = (err as { message?: unknown }).message;
+    if (typeof msg === 'string') return msg;
+  }
+  return undefined;
+}
+
 function getErrorDetails(err: unknown): WalletErrorDetail {
   const code = getErrorCode(err);
-
-  let rawMessage: string | undefined;
-  if (err instanceof Error) {
-    rawMessage = err.message;
-  } else if (err && typeof err === 'object' && 'message' in err) {
-    const msg = (err as { message?: unknown }).message;
-    rawMessage = typeof msg === 'string' ? msg : undefined;
-  }
-
+  const rawMessage = getErrorMessage(err);
   const msg = (rawMessage ?? '').toLowerCase();
 
   if (

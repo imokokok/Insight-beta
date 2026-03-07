@@ -13,17 +13,6 @@ interface ScriptPerformance {
   category: string;
 }
 
-interface ScriptsResponse {
-  scripts: ScriptPerformance[];
-  summary: {
-    totalScripts: number;
-    avgSuccessRate: number;
-    avgResponseTime: number;
-    totalRequests24h: number;
-  };
-  lastUpdated: string;
-}
-
 export async function GET() {
   try {
     const mockScripts: ScriptPerformance[] = [

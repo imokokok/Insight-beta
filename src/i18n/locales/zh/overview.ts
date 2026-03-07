@@ -16,51 +16,6 @@ export const overview = {
   noAnomalies: '暂无异常',
   quickAccess: '快速入口',
   quickAccessDesc: '常用功能快速访问',
-  protocolMarketShare: '协议市场份额',
-  marketShareDesc: '各协议的 TVL 分布',
-  healthStatusDesc: '量化的健康评分',
-  protocolMetrics: '协议指标',
-  metricsDesc: 'TVL 和 24h 交易量对比',
-  tvl: '锁仓价值',
-  volume24h: '24h 交易量',
-  onChainActivity: '链上活动',
-  onChainActivityDesc: '数据更新和活跃价格源',
-  updates: '更新次数',
-  activeFeeds: '活跃价格源',
-  activityLoadError: '加载活动数据失败，显示估算数据',
-  healthDimensions: {
-    latency: '延迟性能',
-    freshness: '更新频率',
-    consistency: '数据一致性',
-  },
-  dataSync: {
-    syncing: '数据同步中...',
-    synced: '已同步',
-    failed: '同步失败',
-    lastUpdated: '最后更新',
-    justNow: '刚刚',
-  },
-  freshness: {
-    fresh: '实时',
-    moderate: '稍旧',
-    stale: '过时',
-  },
-  quickLinks: {
-    priceComparison: {
-      title: '价格对比',
-      description: '对比不同预言机价格',
-    },
-    crossChain: {
-      title: '跨链分析',
-      description: '跨链价格差异分析',
-    },
-    alerts: {
-      title: '告警中心',
-      description: '管理告警规则',
-    },
-    reliability: {
-      title: '可靠性评分',
-      description: '预言机可靠性排名',
-    },
-  },
+  crossChainScenario: '查看同一资产在不同链上的价格',
+  reliabilityScenario: '评估预言机整体可靠性',
 };

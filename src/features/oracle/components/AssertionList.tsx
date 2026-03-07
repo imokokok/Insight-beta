@@ -7,7 +7,6 @@ import { CheckCircle2, Clock, ArrowUpRight, RotateCw, FileQuestion } from 'lucid
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
 
 import { CopyButton } from '@/components/common';
-import { ListContainer } from '@/components/common/layout';
 import { SkeletonList } from '@/components/ui';
 import { LivenessProgressBar } from '@/features/oracle/components/LivenessProgressBar';
 import { useI18n } from '@/i18n/LanguageProvider';
@@ -59,14 +58,14 @@ const GridItem = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
 );
 GridItem.displayName = 'GridItem';
 
-const AssertionListContainer = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
+const ListContainer = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
   ({ style, children, ...props }, ref) => (
-    <ListContainer ref={ref} style={style} {...props} gap="xl" className="pb-4">
+    <div ref={ref} {...props} style={style} className="space-y-6 pb-4">
       {children}
-    </ListContainer>
+    </div>
   ),
 );
-AssertionListContainer.displayName = 'AssertionListContainer';
+ListContainer.displayName = 'ListContainer';
 
 export const AssertionList = memo(function AssertionList({
   items,
@@ -340,7 +339,7 @@ export const AssertionList = memo(function AssertionList({
       endReached={loadMore}
       overscan={200}
       components={{
-        List: AssertionListContainer,
+        List: ListContainer,
         Footer: Footer,
       }}
       itemContent={(_index, item) => <div className="mb-6">{renderCard(item)}</div>}

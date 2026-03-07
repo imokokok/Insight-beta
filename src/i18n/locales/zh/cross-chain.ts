@@ -1,9 +1,9 @@
 export const crossChain = {
-  title: '跨链桥监控',
-  description: '跨链桥状态监控、链间价格差异与交易量分析',
+  title: '跨链分析',
+  description: '比较多个区块链网络的资产价格',
   page: {
-    title: '跨链桥监控',
-    description: '跨链桥状态监控、链间价格差异与交易量分析',
+    title: '跨链分析',
+    description: '比较多个区块链网络的资产价格',
   },
   controls: {
     symbol: '交易对',
@@ -64,5 +64,5 @@ export const crossChain = {
   },
   priceAlerts: '价格偏差告警',
   compareHint: '想对比不同预言机之间的价格差异？',
-  goToCompare: '前往预言机对比中心',
+  goToCompare: '前往比较中心',
 };

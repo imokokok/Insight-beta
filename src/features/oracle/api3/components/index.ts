@@ -16,8 +16,5 @@ export { CrossChainMetrics } from './CrossChainMetrics';
 export { CrossProtocolComparison } from './CrossProtocolComparison';
 export { AirnodeDetail } from './AirnodeDetail';
 export { AlertConfigPanel } from './AlertConfigPanel';
-export { PriceUpdateHeatmap } from './PriceUpdateHeatmap';
-export { DapiHistoryChart } from './DapiHistoryChart';
-export { CrossChainConsistency } from './CrossChainConsistency';
 
 export { Api3TopStatusBar, Api3KpiOverview, type Api3KpiStats } from './dashboard';

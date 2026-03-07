@@ -5,6 +5,7 @@ import { useMemo, memo } from 'react';
 import { Server, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import {
   Area,
+  AreaChart,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -17,7 +18,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
-import { cn, formatChartLabel, formatNumber } from '@/shared/utils';
+import { cn, formatNumber, formatTime } from '@/shared/utils';
 
 import { TimeRangeSelector } from '../historical/TimeRangeSelector';
 
@@ -68,6 +69,23 @@ export const FeedSupportChart = memo(function FeedSupportChart({
       (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }, [data, showActiveFeeds]);
+  const formatLabel = (timestamp: string) => {
+    const date = new Date(timestamp);
+    switch (timeRange) {
+      case '1h':
+        return formatTime(date, 'HH:mm');
+      case '24h':
+        return formatTime(date, 'HH:mm');
+      case '7d':
+        return formatTime(date, 'MM/DD HH:mm');
+      case '30d':
+      case '90d':
+        return formatTime(date, 'MM/DD');
+      default:
+        return formatTime(date, 'MM/DD');
+    }
+  };
+
 
   const getNodeStats = (node: NodeFeedSupportHistory) => {
     const feedTrend =
@@ -178,7 +196,7 @@ export const FeedSupportChart = memo(function FeedSupportChart({
                   />
 
                   <XAxis
-                    dataKey="timestamp"
+                    tickFormatter={formatLabel}
                     tickFormatter={(ts) => formatChartLabel(timeRange, ts)}
                     stroke="rgba(148, 163, 184, 0.5)"
                     fontSize={12}
@@ -202,7 +220,7 @@ export const FeedSupportChart = memo(function FeedSupportChart({
 
                       return (
                         <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
-                          <p className="mb-2 text-xs font-medium text-muted-foreground">
+                            {formatLabel(label as string)}
                             {formatChartLabel(timeRange, label as string)}
                           </p>
                           <div className="space-y-1">
@@ -236,7 +254,7 @@ export const FeedSupportChart = memo(function FeedSupportChart({
                           </div>
                         </div>
                       );
-                    }}
+                    cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
                     cursor={{ stroke: CHART_COLORS.primary, strokeWidth: 1 }}
                   />
 
@@ -293,7 +311,7 @@ export const FeedSupportChart = memo(function FeedSupportChart({
                   <XAxis
                     dataKey="timestamp"
                     tickFormatter={(ts) => formatChartLabel(timeRange, ts)}
-                    stroke="rgba(148, 163, 184, 0.5)"
+                    tickFormatter={formatLabel}
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
@@ -317,7 +335,7 @@ export const FeedSupportChart = memo(function FeedSupportChart({
                         <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
                           <p className="mb-2 text-xs font-medium text-muted-foreground">
                             {formatChartLabel(timeRange, label as string)}
-                          </p>
+                            {formatLabel(label as string)}
                           <div className="space-y-1">
                             {payload.map((entry: any) => {
                               const nodeName = entry.dataKey.replace('_updates', '');
@@ -347,7 +365,7 @@ export const FeedSupportChart = memo(function FeedSupportChart({
                   {data.map((node, index) => {
                     const color = getChartColor(index);
                     return (
-                      <Bar
+                    cursor={{ stroke: CHART_COLORS.primary.DEFAULT, strokeWidth: 1 }}
                         key={node.nodeName}
                         dataKey={`${node.nodeName}_updates`}
                         fill={color}

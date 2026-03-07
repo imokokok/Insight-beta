@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react';
-
 import { ErrorBoundary } from '@/components/common';
 import { ChartSkeleton } from '@/components/ui';
 import { useToast } from '@/components/ui';
@@ -282,6 +281,7 @@ export function ComparisonContent({ onRefresh: _onRefresh }: ComparisonContentPr
   return (
     <ErrorBoundary>
       <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2">
             {isLive && (
@@ -295,7 +295,7 @@ export function ComparisonContent({ onRefresh: _onRefresh }: ComparisonContentPr
             )}
           </div>
         </div>
-
+          filter={filter}
         <ComparisonControls
           filter={filter}
           config={config}
@@ -317,21 +317,8 @@ export function ComparisonContent({ onRefresh: _onRefresh }: ComparisonContentPr
             'OP/USD',
           ]}
         />
-
-        <div className="space-y-4 sm:space-y-6">
-          {currentView === 'heatmap' && (
-            <Suspense fallback={<ChartSkeleton className="h-96" />}>
-              <PriceHeatmap
-                data={heatmap.data}
-                isLoading={heatmap.isLoading}
-                onCellClick={handleCellClick}
                 selectedProtocols={debouncedFilter.protocols}
-              />
-            </Suspense>
-          )}
-
-          {currentView === 'latency' && (
-            <Suspense fallback={<ChartSkeleton className="h-96" />}>
+        <div className="space-y-4 sm:space-y-6">
               <LatencyAnalysisView data={latency.data} isLoading={latency.isLoading} />
             </Suspense>
           )}
@@ -372,9 +359,9 @@ export function ComparisonContent({ onRefresh: _onRefresh }: ComparisonContentPr
                 onExport={handleExport}
                 rowHeight={52}
                 containerHeight={600}
-              />
+                  <div className="h-10 animate-pulse rounded-lg bg-gray-200" />
             </Suspense>
-          )}
+                    <div key={i} className="h-12 animate-pulse rounded-lg bg-gray-100" />
 
           {currentView === 'compare' && (
             <Suspense fallback={<ChartSkeleton className="h-96" />}>

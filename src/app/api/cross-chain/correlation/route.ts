@@ -9,21 +9,7 @@ interface CorrelationData {
   sampleSize: number;
 }
 
-interface CorrelationMatrixResponse {
-  chains: string[];
-  matrix: number[][];
-  correlations: CorrelationData[];
-  meta: {
-    symbol: string;
-    timeRange: string;
-    timestamp: string;
-    dataSource: string;
-    isExample: boolean;
-    disclaimer: string;
-  };
-}
-
-function generateCorrelationMatrix(symbol: string, timeRange: string): CorrelationMatrixResponse {
+function generateCorrelationMatrix(symbol: string, timeRange: string) {
   const chains = AVAILABLE_CHAIN_IDS.slice(0, 5 + Math.floor(Math.random() * 3));
   const size = chains.length;
   const matrix: number[][] = Array.from({ length: size }, () => Array(size).fill(0));

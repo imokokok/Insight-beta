@@ -71,18 +71,8 @@ export function usePythStream(options: UsePythStreamOptions = {}): UsePythStream
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const currentSymbolsRef = useRef<string[]>(symbols);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const updateSymbolsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const disconnect = useCallback(() => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-    if (updateSymbolsTimeoutRef.current) {
-      clearTimeout(updateSymbolsTimeoutRef.current);
-      updateSymbolsTimeoutRef.current = null;
-    }
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
       eventSourceRef.current = null;
@@ -108,6 +98,7 @@ export function usePythStream(options: UsePythStreamOptions = {}): UsePythStream
         setIsConnected(true);
         setIsConnecting(false);
         reconnectAttemptsRef.current = 0;
+        console.log('Pyth SSE connected');
       };
 
       eventSource.onmessage = (event) => {
@@ -116,6 +107,7 @@ export function usePythStream(options: UsePythStreamOptions = {}): UsePythStream
 
           switch (message.type) {
             case 'connected':
+              console.log('Pyth SSE connection established', { clientId: message.clientId });
               break;
 
             case 'price_update':
@@ -136,6 +128,7 @@ export function usePythStream(options: UsePythStreamOptions = {}): UsePythStream
               break;
 
             case 'heartbeat':
+              // 心跳保持连接
               break;
 
             case 'error':
@@ -157,7 +150,8 @@ export function usePythStream(options: UsePythStreamOptions = {}): UsePythStream
         if (autoReconnect && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
           setStats((prev) => ({ ...prev, reconnectCount: reconnectAttemptsRef.current }));
-          reconnectTimeoutRef.current = setTimeout(connect, reconnectInterval);
+          console.log(`Reconnecting... attempt ${reconnectAttemptsRef.current}`);
+          setTimeout(connect, reconnectInterval);
         }
       };
     } catch (err) {
@@ -170,15 +164,13 @@ export function usePythStream(options: UsePythStreamOptions = {}): UsePythStream
     isConnecting,
     autoReconnect,
     reconnectInterval,
-    maxReconnectAttempts,
+    setTimeout(connect, 100);
     disconnect,
   ]);
 
   const updateSymbols = useCallback(
-    (newSymbols: string[]) => {
-      currentSymbolsRef.current = newSymbols;
-      disconnect();
-      updateSymbolsTimeoutRef.current = setTimeout(connect, 100);
+    return () => disconnect();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
     },
     [disconnect, connect],
   );

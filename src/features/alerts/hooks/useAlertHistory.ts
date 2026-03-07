@@ -4,12 +4,11 @@ import useSWR from 'swr';
 
 import { buildApiUrl } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
-import type { TimeRangePreset } from '@/types/shared/timeRange';
 import type { AlertHistoryStats as AlertHistoryStatsBase, TrendDirection } from '@/types/stats';
 
 import type { AlertSource, AlertSeverity, UnifiedAlert } from '../types';
 
-export type TimeRange = Exclude<TimeRangePreset, 'ALL' | 'custom'>;
+export type TimeRange = '1h' | '6h' | '24h' | '7d' | '30d';
 export type GroupBy = 'severity' | 'source' | 'none';
 export type { TrendDirection };
 

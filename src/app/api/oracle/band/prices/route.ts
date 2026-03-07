@@ -18,16 +18,6 @@ interface BandPriceQueryParams {
   chain?: SupportedChain;
 }
 
-interface BandPriceResponse {
-  symbol: string;
-  price: number;
-  timestamp: number;
-  chain: SupportedChain;
-  decimals: number;
-  isStale: boolean;
-  stalenessSeconds: number;
-}
-
 function parseQueryParams(request: NextRequest): BandPriceQueryParams {
   const { searchParams } = new URL(request.url);
   return {

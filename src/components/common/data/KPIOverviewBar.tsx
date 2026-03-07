@@ -5,8 +5,8 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
-import { useDensity } from '@/components/common/controls/DensityProvider';
-import { cn, formatChangePercent } from '@/shared/utils';
+import { cn } from '@/shared/utils';
+import { useDensity } from '@/components/common';
 
 export type KPIColor = 'blue' | 'green' | 'amber' | 'red' | 'purple';
 
@@ -91,8 +91,6 @@ interface KPICardProps {
 
 const KPICard = memo(function KPICard({ item, onItemClick, index }: KPICardProps) {
   const { config: densityConfig } = useDensity();
-  const config = colorConfig[item.color || 'blue'];
-
   const handleClick = () => {
     if (onItemClick) {
       onItemClick(item.id);
@@ -100,47 +98,39 @@ const KPICard = memo(function KPICard({ item, onItemClick, index }: KPICardProps
   };
 
   const cardPadding = densityConfig.spacing.item;
+  const config = colorConfig[item.color || 'blue'];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{
-        duration: 0.4,
-        delay: index * 0.08,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      whileHover={{
-        y: -4,
-        scale: 1.02,
-        transition: { duration: 0.2 },
-      }}
-      whileTap={{
-        scale: 0.98,
-        transition: { duration: 0.1 },
-      }}
-      className={cn(
-        'group relative overflow-hidden rounded-xl border border-border/30 backdrop-blur-sm',
-        'bg-background/50',
-        'transition-all duration-300',
-        'hover:shadow-current/10 hover:shadow-lg',
-        'active:shadow-sm',
-        onItemClick && 'cursor-pointer',
-        'kpi-card-subtle',
-      )}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
+      whileHover={{ y: -2, scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
       onClick={handleClick}
+      className={cn(
+        'bg-background/50',
+        'group relative overflow-hidden rounded-lg border backdrop-blur-sm',
+        'bg-gradient-to-br',
+        config.gradient,
+        config.border,
+        'transition-all duration-200',
+        'hover:shadow-md',
+        config.glow,
+        onItemClick && 'cursor-pointer'
+      )}
+      style={{ padding: cardPadding }}
     >
       <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/5 opacity-0 transition-all duration-300 group-hover:scale-110 group-hover:opacity-100" />
-      <div className="duration-400 absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/5 opacity-0 transition-all group-hover:scale-110 group-hover:opacity-100" />
-
-      <div className="relative" style={{ padding: cardPadding }}>
-        <div className="mb-3 flex items-start justify-between">
+      <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/5 opacity-0 transition-all duration-400 group-hover:scale-110 group-hover:opacity-100" />
+      <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-white/5 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+      
+      <div className="relative">
+        <div className="mb-2 flex items-start justify-between">
           <motion.div
-            whileHover={{ rotate: 5 }}
             className={cn(
-              'rounded-lg p-2.5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md',
               config.iconBg,
-              config.text,
+              'rounded-md p-2 transition-transform duration-200 group-hover:scale-105'
             )}
           >
             {item.icon}
@@ -149,60 +139,33 @@ const KPICard = memo(function KPICard({ item, onItemClick, index }: KPICardProps
             <motion.div
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.08 + 0.2 }}
+              transition={{ delay: index * 0.05 + 0.2 }}
               className={cn(
-                'flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold',
                 'shadow-sm',
-                item.trend.isPositive
-                  ? 'bg-gradient-to-r from-success/20 to-success/10 text-success'
-                  : 'bg-gradient-to-r from-error/20 to-error/10 text-error',
+                'flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium',
+                item.trend.isPositive ? 'bg-success/15 text-success' : 'bg-error/15 text-error'
               )}
             >
-              <motion.div
-                animate={{ y: item.trend.isPositive ? [-1, 0, -1] : [1, 0, 1] }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-              >
-                {item.trend.isPositive ? (
-                  <ArrowUpRight className="h-3.5 w-3.5" />
-                ) : (
-                  <ArrowDownRight className="h-3.5 w-3.5" />
-                )}
-              </motion.div>
-              {formatChangePercent(item.trend.value / 100, 0, false)}
+              {item.trend.isPositive ? (
+                <ArrowUpRight className="h-2.5 w-2.5" />
+              ) : (
+                <ArrowDownRight className="h-2.5 w-2.5" />
+              )}
+              <span>{item.trend.value}%</span>
             </motion.div>
           )}
         </div>
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground/80">
-            {item.label}
-          </p>
-          <motion.p
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.08 + 0.1 }}
-            className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl"
-          >
-            {item.value}
-          </motion.p>
+        <div className="space-y-0.5">
+          <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
+          <p className="text-xl font-bold text-foreground">{item.value}</p>
         </div>
 
         {onItemClick && (
-          <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 0, y: 5 }}
-            whileHover={{ opacity: 1, y: 0 }}
-            className="mt-2.5 flex items-center gap-1.5 text-xs text-muted-foreground/90"
-          >
-            <span className="font-medium">查看详情</span>
-            <motion.div animate={{ x: [0, 2, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </motion.div>
-          </motion.div>
+          <div className="mt-1.5 flex items-center gap-1 text-[10px] text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <span>查看详情</span>
+            <ArrowUpRight className="h-2.5 w-2.5" />
+          </div>
         )}
       </div>
     </motion.div>
@@ -215,15 +178,14 @@ export const KPIOverviewBar = memo(function KPIOverviewBar({
   className,
 }: KPIOverviewBarProps) {
   return (
-    <div
-      className={cn(
-        'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
-        'gap-3 sm:gap-4',
-        className,
-      )}
-    >
+    <div className={cn('grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4', className)}>
       {items.map((item, index) => (
-        <KPICard key={item.id} item={item} onItemClick={onItemClick} index={index} />
+        <KPICard
+          key={item.id}
+          item={item}
+          onItemClick={onItemClick}
+          index={index}
+        />
       ))}
     </div>
   );

@@ -5,6 +5,8 @@
  * ApiError 继承自 AppError，保持错误处理的一致性
  */
 
+import type { PaginationMeta } from '@/types/common/pagination';
+
 import { AppError, type ErrorCategory } from './AppError';
 
 // ============================================================================
@@ -229,6 +231,27 @@ export const apiErrors = {
 };
 
 // ============================================================================
+// 错误响应类型
+// ============================================================================
+
+export interface ApiErrorResponse {
+  error: {
+    code: ApiErrorCode;
+    message: string;
+    statusCode: number;
+    details?: Record<string, unknown>;
+    timestamp: string;
+  };
+}
+
+export interface ApiSuccessResponse<T> {
+  data: T;
+  meta?: PaginationMeta;
+}
+
+export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+// ============================================================================
 // 请求选项类型
 // ============================================================================
 
@@ -237,6 +260,3 @@ export interface RequestOptions {
   retries?: number;
   cache?: boolean;
 }
-
-// 重新导出统一的 ApiResponse 类型
-export type { ApiResponse } from '@/lib/api/apiResponse';

@@ -1,8 +1,7 @@
 'use client';
 
-import type { ComponentPropsWithoutRef } from 'react';
+import { forwardRef, lazy, Suspense, useMemo } from 'react';
 import { lazy, Suspense, useMemo } from 'react';
-import { forwardRef } from 'react';
 
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -17,7 +16,6 @@ import {
 import { Virtuoso } from 'react-virtuoso';
 
 import { AutoRefreshControl, EmptyAlertsListState, KpiGrid } from '@/components/common';
-import { ListContainer } from '@/components/common/layout';
 import { Button } from '@/components/ui';
 import { Checkbox } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
@@ -83,14 +81,14 @@ function LoadingFallback({ height = '200px' }: { height?: string }) {
   );
 }
 
-const AlertListContainer = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
+const ListContainer = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
   ({ style, children, ...props }, ref) => (
-    <ListContainer ref={ref} style={style} {...props} className="pr-2">
+    <div ref={ref} {...props} style={style} className="space-y-3 pr-2">
       {children}
-    </ListContainer>
+    </div>
   ),
 );
-AlertListContainer.displayName = 'AlertListContainer';
+ListContainer.displayName = 'ListContainer';
 
 type HealthStatus = 'healthy' | 'warning' | 'critical';
 
@@ -576,7 +574,7 @@ export default function AlertsCenterPage() {
                               data={filteredAlerts}
                               style={{ height: '600px' }}
                               components={{
-                                List: AlertListContainer,
+                                List: ListContainer,
                               }}
                               itemContent={(_index, alert) => (
                                 <AlertCard

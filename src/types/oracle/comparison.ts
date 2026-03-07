@@ -73,8 +73,6 @@ export type PriceDeviationHistory = {
     deviationCount: number;
     criticalCount: number;
     avgDuration: number;
-    maxDuration: number;
-    minDuration: number;
   };
 };
 

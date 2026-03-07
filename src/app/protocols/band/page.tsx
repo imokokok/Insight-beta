@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 
-import { Globe, Database, Shield, GitBranch, BarChart3, LayoutDashboard } from 'lucide-react';
+import { Globe, Database, Shield, GitBranch, BarChart3, LayoutDashboard, TrendingUp, Activity, Scale } from 'lucide-react';
 
-import { ContentSection } from '@/components/common';
 import {
   ProtocolPageLayout,
   TabPanelWrapper,
@@ -67,6 +66,11 @@ const ValidatorHealthCard = lazy(() =>
     default: mod.ValidatorHealthCard,
   })),
 );
+const ValidatorList = lazy(() =>
+  import('@/features/oracle/band/components/ValidatorList').then((mod) => ({
+    default: mod.ValidatorList,
+  })),
+);
 const BridgeTrendChart = lazy(() =>
   import('@/features/oracle/band/components/BridgeTrendChart').then((mod) => ({
     default: mod.BridgeTrendChart,
@@ -85,11 +89,6 @@ const QualityAnalysisTab = lazy(() =>
 const PriceComparisonTab = lazy(() =>
   import('@/features/oracle/band/components/PriceComparisonTab').then((mod) => ({
     default: mod.PriceComparisonTab,
-  })),
-);
-const ValidatorList = lazy(() =>
-  import('@/features/oracle/band/components/ValidatorList').then((mod) => ({
-    default: mod.ValidatorList,
   })),
 );
 const OracleScriptAnalytics = lazy(() =>
@@ -448,50 +447,61 @@ export default function BandProtocolPage() {
       onRefresh={fetchInitialData}
       onExport={handleExport}
     >
+      {/* Overview Tab */}
       <TabPanelWrapper tabId="overview">
-        <div className="space-y-3">
-          <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
-            <div className="lg:col-span-1 xl:col-span-2">
+        <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-3">
+            {/* Price Chart - Takes 2/3 width */}
+            <div className="lg:col-span-2">
               <Suspense fallback={<Skeleton className="h-80 w-full" />}>
                 <BandPriceChart symbol="ATOM/USD" chain="cosmos" timeRange="24h" />
               </Suspense>
             </div>
-            <div className="space-y-3 lg:col-span-1 xl:col-span-1">
-              <div className="border-b border-border/30 pb-3">
-                <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
-                  <GitBranch className="h-3.5 w-3.5 text-primary" />
+            
+            {/* Data Overview Panel - Takes 1/3 width */}
+            <div className="space-y-3 lg:col-span-1">
+              {/* Bridge Status */}
+              <div className="rounded-lg border border-border/40 bg-card/50 p-4">
+                <h4 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <GitBranch className="h-3.5 w-3.5" />
                   {t('band.bridgeStatus.title')}
                 </h4>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">{t('band.bridgeStatus.total')}</span>
                     <span className="font-mono font-semibold">
                       {state.bridgesData?.summary?.total ?? 0}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">{t('band.bridgeStatus.active')}</span>
-                    <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                    <span className="font-mono font-semibold text-emerald-500">
                       {state.bridgesData?.summary?.active ?? 0}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">{t('band.bridgeStatus.inactive')}</span>
-                    <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                      {state.bridgesData?.summary?.inactive ?? 0}
-                    </span>
+                  <div className="h-1.5 w-full rounded-full bg-muted">
+                    <div
+                      className="h-1.5 rounded-full bg-emerald-500"
+                      style={{
+                        width: `${state.bridgesData?.summary?.total
+                          ? ((state.bridgesData.summary.active ?? 0) / state.bridgesData.summary.total) * 100
+                          : 0}%`,
+                      }}
+                    />
                   </div>
                 </div>
               </div>
 
-              <div className="border-b border-border/30 pb-3">
-                <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold">
-                  <Database className="h-3.5 w-3.5 text-primary" />
+              {/* Source Distribution */}
+              <div className="rounded-lg border border-border/40 bg-card/50 p-4">
+                <h4 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <Database className="h-3.5 w-3.5" />
                   {t('band.sourceDistribution.title')}
                 </h4>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                      <span className="h-2 w-2 rounded-full bg-blue-500" />
                       {t('band.sourceDistribution.evm')}
                     </span>
                     <span className="font-mono font-semibold">
@@ -518,8 +528,9 @@ export default function BandProtocolPage() {
                       }}
                     />
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                      <span className="h-2 w-2 rounded-full bg-purple-500" />
                       {t('band.sourceDistribution.cosmos')}
                     </span>
                     <span className="font-mono font-semibold">
@@ -549,6 +560,7 @@ export default function BandProtocolPage() {
                 </div>
               </div>
 
+              {/* Chain Connectivity */}
               <div className="flex flex-wrap gap-1.5">
                 {getChainConnectivity.slice(0, 6).map(({ chain, isActive }) => (
                   <span
@@ -556,19 +568,20 @@ export default function BandProtocolPage() {
                     className={cn(
                       'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize',
                       isActive
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
+                        ? 'bg-emerald-500/10 text-emerald-500'
+                        : 'bg-muted text-muted-foreground',
                     )}
                   >
                     {chain}
-                    {isActive && <span className="ml-1 text-xs">●</span>}
+                    {isActive && <span className="ml-1 h-1 w-1 rounded-full bg-emerald-500" />}
                   </span>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-2">
+          {/* Aggregation and Freshness */}
+          <div className="grid gap-4 lg:grid-cols-2">
             <Suspense fallback={<Skeleton className="h-48 w-full" />}>
               <AggregationValidationCard symbol="ETH/USD" chain="ethereum" />
             </Suspense>
@@ -577,31 +590,68 @@ export default function BandProtocolPage() {
             </Suspense>
           </div>
 
+          {/* Validator Health */}
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>
             <ValidatorHealthCard />
           </Suspense>
         </div>
       </TabPanelWrapper>
 
+      {/* Bridges Tab */}
       <TabPanelWrapper tabId="bridges">
         <div className="space-y-4">
-          {state.bridgesData?.bridges.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">
-              <GitBranch className="mx-auto h-12 w-12 opacity-50" />
-              <p className="mt-2">{t('band.bridgeList.empty')}</p>
+          {/* Bridge Stats Overview */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-lg border border-border/40 bg-card/50 p-3">
+              <p className="text-xs text-muted-foreground">{t('band.bridges.total')}</p>
+              <p className="mt-1 font-mono text-xl font-semibold">
+                {state.bridgesData?.summary?.total ?? 0}
+              </p>
             </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
+            <div className="rounded-lg border border-border/40 bg-card/50 p-3">
+              <p className="text-xs text-muted-foreground">{t('band.bridges.active')}</p>
+              <p className="mt-1 font-mono text-xl font-semibold text-emerald-500">
+                {state.bridgesData?.summary?.active ?? 0}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border/40 bg-card/50 p-3">
+              <p className="text-xs text-muted-foreground">{t('band.bridges.totalTransfers')}</p>
+              <p className="mt-1 font-mono text-xl font-semibold">
+                {(state.bridgesData?.summary?.totalTransfers ?? 0).toLocaleString()}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border/40 bg-card/50 p-3">
+              <p className="text-xs text-muted-foreground">{t('band.bridges.avgLatency')}</p>
+              <p className="mt-1 font-mono text-xl font-semibold">
+                {state.bridgesData?.summary?.avgLatency ?? 0}ms
+              </p>
+            </div>
+          </div>
+
+          {/* Bridge List Table */}
+          <div className="rounded-lg border border-border/40 bg-card/50">
+            <div className="border-b border-border/30 px-4 py-3">
+              <h3 className="flex items-center gap-2 text-sm font-semibold">
+                <GitBranch className="h-4 w-4 text-primary" />
+                {t('band.bridges.listTitle')}
+              </h3>
+            </div>
+            <div className="overflow-x-auto p-4">
+              {state.bridgesData?.bridges.length === 0 ? (
+                <div className="py-12 text-center text-muted-foreground">
+                  <GitBranch className="mx-auto h-12 w-12 opacity-50" />
+                  <p className="mt-2">{t('band.bridgeList.empty')}</p>
+                </div>
+              ) : (
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border/30 text-xs text-muted-foreground">
-                      <th className="pb-2 text-left font-medium">桥接</th>
-                      <th className="pb-2 text-right font-medium">转账数</th>
-                      <th className="pb-2 text-right font-medium">交易量</th>
-                      <th className="pb-2 text-right font-medium">延迟</th>
-                      <th className="pb-2 text-right font-medium">成功率</th>
-                      <th className="pb-2 text-center font-medium">状态</th>
+                      <th className="pb-2 text-left font-medium">{t('band.bridges.bridge')}</th>
+                      <th className="pb-2 text-right font-medium">{t('band.bridges.transfers')}</th>
+                      <th className="pb-2 text-right font-medium">{t('band.bridges.volume')}</th>
+                      <th className="pb-2 text-right font-medium">{t('band.bridges.latency')}</th>
+                      <th className="pb-2 text-right font-medium">{t('band.bridges.successRate')}</th>
+                      <th className="pb-2 text-center font-medium">{t('common.status.status')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -635,23 +685,41 @@ export default function BandProtocolPage() {
                             : '-'}
                         </td>
                         <td className="py-3 text-right font-mono text-sm">
-                          {bridge.avgLatency ? `${bridge.avgLatency}ms` : '-'}
+                          {bridge.avgLatencyMs ? `${bridge.avgLatencyMs}ms` : '-'}
                         </td>
                         <td className="py-3 text-right font-mono text-sm">
-                          {bridge.successRate ? `${bridge.successRate.toFixed(1)}%` : '-'}
+                          <span
+                            className={cn(
+                              bridge.successRate >= 99
+                                ? 'text-emerald-500'
+                                : bridge.successRate >= 95
+                                  ? 'text-amber-500'
+                                  : 'text-red-500'
+                            )}
+                          >
+                            {bridge.successRate ? `${bridge.successRate.toFixed(1)}%` : '-'}
+                          </span>
                         </td>
                         <td className="py-3 text-center">
                           <span
                             className={cn(
-                              'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                              'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
                               bridge.status === 'active' &&
-                                'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                                'bg-emerald-500/10 text-emerald-500',
                               bridge.status === 'inactive' &&
-                                'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                                'bg-amber-500/10 text-amber-500',
                               bridge.status === 'degraded' &&
-                                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                                'bg-red-500/10 text-red-500',
                             )}
                           >
+                            <span
+                              className={cn(
+                                'h-1.5 w-1.5 rounded-full',
+                                bridge.status === 'active' && 'bg-emerald-500',
+                                bridge.status === 'inactive' && 'bg-amber-500',
+                                bridge.status === 'degraded' && 'bg-red-500',
+                              )}
+                            />
                             {bridge.status}
                           </span>
                         </td>
@@ -659,10 +727,11 @@ export default function BandProtocolPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
-            </>
-          )}
+              )}
+            </div>
+          </div>
 
+          {/* Selected Bridge Trend */}
           {selectedBridge && (
             <Suspense fallback={<Skeleton className="h-64 w-full" />}>
               <BridgeTrendChart
@@ -672,15 +741,17 @@ export default function BandProtocolPage() {
             </Suspense>
           )}
 
+          {/* Transfer History */}
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>
             <TransferHistory limit={20} />
           </Suspense>
         </div>
       </TabPanelWrapper>
 
+      {/* Sources Tab */}
       <TabPanelWrapper tabId="sources">
-        <div className="space-y-3">
-          <div className="grid gap-3 lg:grid-cols-12">
+        <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-12">
             <div className="lg:col-span-8">
               <Suspense fallback={<Skeleton className="h-72 w-full" />}>
                 <BandPriceChart symbol="ETH/USD" chain="ethereum" timeRange="24h" />
@@ -692,7 +763,7 @@ export default function BandProtocolPage() {
               </Suspense>
             </div>
           </div>
-          <div className="grid gap-3 lg:grid-cols-12">
+          <div className="grid gap-4 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <Suspense fallback={<Skeleton className="h-64 w-full" />}>
                 <DataSourceReliabilityCard />
@@ -715,85 +786,177 @@ export default function BandProtocolPage() {
         </div>
       </TabPanelWrapper>
 
+      {/* Validators Tab */}
       <TabPanelWrapper tabId="validators">
-        <div className="space-y-6">
-          <ContentSection>
-            <Suspense fallback={<Skeleton className="h-48 w-full" />}>
-              <ValidatorHealthCard />
-            </Suspense>
-          </ContentSection>
-          <ContentSection>
-            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-              <ValidatorList />
-            </Suspense>
-          </ContentSection>
+        <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-12">
+            <div className="lg:col-span-8">
+              <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+                <ValidatorHealthCard />
+              </Suspense>
+            </div>
+            <div className="lg:col-span-4">
+              <div className="rounded-lg border border-border/40 bg-card/50 p-4">
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                  <Shield className="h-4 w-4 text-primary" />
+                  Network Statistics
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Total Validators</span>
+                    <span className="font-mono font-semibold">{state.validatorSummary?.totalValidators ?? 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Active</span>
+                    <span className="font-mono font-semibold text-emerald-500">
+                      {state.validatorSummary?.activeValidators ?? 0}
+                      <span className="ml-1 h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Jailed</span>
+                    <span className="font-mono font-semibold text-red-500">
+                      {state.validatorSummary?.jailedValidators ?? 0}
+                      <span className="ml-1 h-1.5 w-1.5 rounded-full bg-red-500 inline-block" />
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Participation Rate</span>
+                    <span className="font-mono font-semibold">
+                      {state.validatorSummary?.networkParticipationRate.toFixed(1) ?? 0}%
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Avg Uptime</span>
+                    <span className="font-mono font-semibold">
+                      {state.validatorSummary?.avgUptimePercent.toFixed(1) ?? 0}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+            <ValidatorList />
+          </Suspense>
         </div>
       </TabPanelWrapper>
 
+      {/* Cosmos Tab */}
       <TabPanelWrapper tabId="cosmos">
         <div className="space-y-4">
-          <ContentSection title="Cosmos 链数据">
+          <div className="rounded-lg border border-border/40 bg-card/50 p-4">
             <Suspense fallback={<Skeleton className="h-64 w-full" />}>
               <div className="space-y-4">
                 <CosmosChainSelector
                   selectedChain={selectedCosmosChain}
                   onChainChange={setSelectedCosmosChain}
                   showDetails={true}
-                  showIBCStatus={false}
+                  showIBCStatus={true}
                   filterType="mainnet"
                 />
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <div>
-                    <span className="text-xs text-muted-foreground">
-                      {t('band.blockInfo.height')}
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="flex items-center justify-between rounded-md border border-border/40 bg-muted/20 p-3">
+                    <span className="text-xs text-muted-foreground">{t('band.blockInfo.height')}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm font-semibold">
+                        {Math.floor(Math.random() * 10000000).toLocaleString()}
+                      </span>
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between rounded-md border border-border/40 bg-muted/20 p-3">
+                    <span className="text-xs text-muted-foreground">{t('band.blockInfo.timestamp')}</span>
+                    <span className="text-sm">{new Date().toLocaleTimeString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-md border border-border/40 bg-muted/20 p-3">
+                    <span className="text-xs text-muted-foreground">IBC Connections</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">{state.ibcData?.connections.total ?? 0}</span>
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between rounded-md border border-border/40 bg-muted/20 p-3">
+                    <span className="text-xs text-muted-foreground">Active Channels</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">{state.ibcData?.channels.open ?? 0}</span>
+                      <span className="h-2 w-2 rounded-full bg-blue-500" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="flex items-center justify-between rounded-md border border-border/40 bg-muted/20 p-3">
+                    <span className="text-xs text-muted-foreground">24h Transfers</span>
+                    <span className="font-mono text-sm font-semibold">
+                      {(state.ibcData?.summary?.estimatedTransfers ?? 0).toLocaleString()}
                     </span>
-                    <div className="mt-1 font-mono text-base">
-                      {Math.floor(Math.random() * 10000000).toLocaleString()}
-                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">
-                      {t('band.blockInfo.timestamp')}
+                  <div className="flex items-center justify-between rounded-md border border-border/40 bg-muted/20 p-3">
+                    <span className="text-xs text-muted-foreground">24h Volume</span>
+                    <span className="font-mono text-sm font-semibold">
+                      ${((state.ibcData?.summary?.estimatedTransfers ?? 0) * 1.5).toFixed(2)}M
                     </span>
-                    <div className="mt-1 text-sm">{new Date().toLocaleString()}</div>
                   </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">IBC 连接</span>
-                    <div className="mt-1 text-base font-semibold">
-                      {state.ibcData?.connections.total ?? 0}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">活跃通道</span>
-                    <div className="mt-1 text-base font-semibold">
-                      {state.ibcData?.channels.open ?? 0}
-                    </div>
+                  <div className="flex items-center justify-between rounded-md border border-border/40 bg-muted/20 p-3">
+                    <span className="text-xs text-muted-foreground">Avg Latency</span>
+                    <span className="font-mono text-sm font-semibold">~2.5s</span>
                   </div>
                 </div>
               </div>
             </Suspense>
-          </ContentSection>
+          </div>
         </div>
       </TabPanelWrapper>
 
+      {/* Analysis Tab */}
       <TabPanelWrapper tabId="analysis">
         <div className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-3">
-            <div className="lg:col-span-2">
+          {/* Price Trend Section */}
+          <div className="rounded-lg border border-border/40 bg-card/50">
+            <div className="border-b border-border/30 bg-muted/30 px-4 py-3">
+              <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                Data Analysis - Price Trend Analysis
+              </h3>
+            </div>
+            <div className="p-4">
               <Suspense fallback={<Skeleton className="h-80 w-full" />}>
                 <PriceTrendTab />
               </Suspense>
             </div>
-            <div className="space-y-4">
+          </div>
+
+          {/* Quality Analysis Section */}
+          <div className="rounded-lg border border-border/40 bg-card/50">
+            <div className="border-b border-border/30 bg-muted/30 px-4 py-3">
+              <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
+                <Activity className="h-4 w-4 text-primary" />
+                Data Quality Overview
+              </h3>
+            </div>
+            <div className="p-4">
               <Suspense fallback={<Skeleton className="h-64 w-full" />}>
                 <QualityAnalysisTab />
               </Suspense>
             </div>
           </div>
-          <Suspense fallback={<Skeleton className="h-80 w-full" />}>
-            <PriceComparisonTab />
-          </Suspense>
+
+          {/* Price Comparison Section */}
+          <div className="rounded-lg border border-border/40 bg-card/50">
+            <div className="border-b border-border/30 bg-muted/30 px-4 py-3">
+              <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
+                <Scale className="h-4 w-4 text-primary" />
+                Oracle Price Comparison
+              </h3>
+            </div>
+            <div className="p-4">
+              <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+                <PriceComparisonTab />
+              </Suspense>
+            </div>
+          </div>
         </div>
       </TabPanelWrapper>
     </ProtocolPageLayout>

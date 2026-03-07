@@ -1,21 +1,31 @@
+/**
+ * Responsive Components - Web Only Version
+ *
+ * 简化的响应式组件库 - 仅支持桌面端
+ */
+
 'use client';
 
 import type { ReactNode } from 'react';
 
-import { GAP_CLASSES } from '@/lib/design-system/tokens/layout';
 import { cn } from '@/shared/utils';
 
-import { Container, ResponsiveGrid } from './Layout';
+import { ResponsiveGrid } from './Layout';
 
 // ============================================================================
 // Types
 // ============================================================================
 
+interface ResponsiveProps {
+  children: ReactNode;
+  className?: string;
+}
+
 interface ResponsiveStackProps {
   children: ReactNode;
   className?: string;
   direction?: 'row' | 'column';
-  gap?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  gap?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   align?: 'start' | 'center' | 'end' | 'stretch';
   justify?: 'start' | 'center' | 'end' | 'between' | 'around';
 }
@@ -38,6 +48,15 @@ export function ResponsiveStack({
   align = 'stretch',
   justify = 'start',
 }: ResponsiveStackProps) {
+  const gapClasses = {
+    none: 'gap-0',
+    xs: 'gap-1',
+    sm: 'gap-2',
+    md: 'gap-4',
+    lg: 'gap-6',
+    xl: 'gap-8',
+  };
+
   const alignClasses = {
     start: 'items-start',
     center: 'items-center',
@@ -58,7 +77,7 @@ export function ResponsiveStack({
       className={cn(
         'flex',
         direction === 'column' ? 'flex-col' : 'flex-row',
-        GAP_CLASSES[gap],
+        gapClasses[gap],
         alignClasses[align],
         justifyClasses[justify],
         className,
@@ -91,4 +110,10 @@ export function ResponsiveTable({ children, className, scrollable = true }: Resp
   return <table className={cn('w-full', className)}>{children}</table>;
 }
 
-export { Container };
+// ============================================================================
+// Container - 容器
+// ============================================================================
+
+export function Container({ children, className }: ResponsiveProps) {
+  return <div className={cn('container mx-auto px-4', className)}>{children}</div>;
+}

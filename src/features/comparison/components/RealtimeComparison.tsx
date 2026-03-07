@@ -6,7 +6,7 @@ import { ContentSection, ContentGrid } from '@/components/common';
 import { Badge } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { cn, getStatusColor } from '@/shared/utils';
+import { cn } from '@/shared/utils';
 import { formatPrice } from '@/shared/utils/format';
 import type { RealtimeComparisonItem, ComparisonFilter } from '@/types/oracle/comparison';
 
@@ -30,6 +30,17 @@ export function RealtimeComparisonView({
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString();
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+      case 'stale':
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+      default:
+        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+    }
   };
 
   if (isLoading && !data?.length) {
@@ -116,13 +127,14 @@ export function RealtimeComparisonView({
                         {(protocol.deviationFromConsensus * 100).toFixed(3)}%
                       </span>
                     </div>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-
             <div className="mt-3 flex items-center justify-between border-t border-border/30 pt-2 text-xs text-muted-foreground">
-              <span>
+            <div className="mt-3 flex items-center justify-between border-t border-border/30 pt-2 text-xs text-muted-foreground">
+                {t('comparison.consensus')}: {formatPrice(item.consensus.median)}
                 {t('comparison.consensus')}: {formatPrice(item.consensus.median)}
               </span>
               <div className="flex items-center gap-1">
@@ -134,18 +146,18 @@ export function RealtimeComparisonView({
         ))}
       </div>
 
-      {data.length > 0 && (
+        <div className="mt-6 border-t border-border/30 pt-4">
         <div className="mt-6 border-t border-border/30 pt-4">
           <p className="mb-3 text-sm font-medium text-muted-foreground">
             {t('comparison.realtime.summary')}
           </p>
-          <ContentGrid columns={4}>
             <div className="rounded-lg border border-border/30 bg-muted/20 p-3 text-center">
-              <p className="text-xs text-muted-foreground">{t('comparison.totalPairs')}</p>
+            <div className="rounded-lg border border-border/30 bg-muted/20 p-3 text-center">
               <p className="mt-1 text-lg font-bold">{data.length}</p>
-            </div>
+              <p className="mt-1 text-lg font-bold">{data.length}</p>
             <div className="rounded-lg border border-border/30 bg-muted/20 p-3 text-center">
-              <p className="text-xs text-muted-foreground">{t('comparison.avgSpread')}</p>
+            <div className="rounded-lg border border-border/30 bg-muted/20 p-3 text-center">
+              <p className="mt-1 text-lg font-bold">
               <p className="mt-1 text-lg font-bold">
                 {(
                   (data.reduce((sum, item) => sum + item.spread.percent, 0) / data.length) *
@@ -153,15 +165,15 @@ export function RealtimeComparisonView({
                 ).toFixed(3)}
                 %
               </p>
-            </div>
             <div className="rounded-lg border border-border/30 bg-muted/20 p-3 text-center">
-              <p className="text-xs text-muted-foreground">{t('comparison.activeProtocols')}</p>
+            <div className="rounded-lg border border-border/30 bg-muted/20 p-3 text-center">
+              <p className="mt-1 text-lg font-bold">
               <p className="mt-1 text-lg font-bold">
                 {new Set(data.flatMap((item) => item.protocols.map((p) => p.protocol))).size}
               </p>
-            </div>
             <div className="rounded-lg border border-border/30 bg-muted/20 p-3 text-center">
-              <p className="text-xs text-muted-foreground">{t('comparison.healthyFeeds')}</p>
+            <div className="rounded-lg border border-border/30 bg-muted/20 p-3 text-center">
+              <p className="mt-1 text-lg font-bold text-emerald-500">
               <p className="mt-1 text-lg font-bold text-emerald-500">
                 {data.flatMap((item) => item.protocols).filter((p) => p.status === 'active').length}
               </p>

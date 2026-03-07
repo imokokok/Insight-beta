@@ -5,7 +5,6 @@ import { Star, Activity, Database, TrendingUp, TrendingDown } from 'lucide-react
 
 import { CardEnhanced } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import { useFavoritesContext } from '@/shared/contexts/FavoritesContext';
 import { cn, formatNumber } from '@/shared/utils';
 
 import type { TrendingFeed } from '../types';
@@ -16,27 +15,26 @@ interface TrendingFeedCardProps {
 }
 
 const healthStatusConfig = {
-  healthy: {
+const healthStatusConfig = {
     color: 'text-emerald-500',
     bgColor: 'bg-emerald-500/10',
     label: '健康',
-  },
+    label: '健康',
   warning: {
     color: 'text-amber-500',
     bgColor: 'bg-amber-500/10',
     label: '警告',
-  },
+    label: '警告',
   critical: {
     color: 'text-rose-500',
     bgColor: 'bg-rose-500/10',
     label: '严重',
-  },
+    label: '严重',
 };
-
+};
 export function TrendingFeedCard({ feed, onClick }: TrendingFeedCardProps) {
   const { isFavorite, addFavorite, removeFavorite } = useFavoritesContext();
   const isMobile = useIsMobile();
-
   const isFav = isFavorite(feed.id);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
@@ -58,7 +56,7 @@ export function TrendingFeedCard({ feed, onClick }: TrendingFeedCardProps) {
 
   const healthConfig = healthStatusConfig[feed.healthStatus];
   const isPositiveChange = feed.change24h >= 0;
-
+  const healthConfig = healthStatusConfig[feed.healthStatus];
   return (
     <CardEnhanced className="cursor-pointer" onClick={handleCardClick} hover clickable gradient>
       <div className="space-y-3 md:space-y-4">
@@ -91,7 +89,7 @@ export function TrendingFeedCard({ feed, onClick }: TrendingFeedCardProps) {
             whileTap={{ scale: 0.95 }}
             aria-label={isFav ? '取消收藏' : '添加收藏'}
           >
-            <Star className={cn('h-5 w-5', isFav && 'fill-current')} />
+            aria-label={isFav ? '取消收藏' : '添加收藏'}
           </motion.button>
         </div>
 
@@ -122,16 +120,16 @@ export function TrendingFeedCard({ feed, onClick }: TrendingFeedCardProps) {
             <Activity className="h-4 w-4 flex-shrink-0" />
             <span className="truncate">交易量: ${formatNumber(feed.volume24h, 0)}</span>
           </div>
-          <div className="flex min-h-[44px] items-center gap-2 text-muted-foreground sm:min-h-0">
+            <span className="truncate">交易量: ${formatNumber(feed.volume24h, 0)}</span>
             <Database className="h-4 w-4 flex-shrink-0" />
             <span className="truncate">数据源: {feed.sources.length}</span>
           </div>
-        </div>
+            <span className="truncate">数据源: {feed.sources.length}</span>
 
         <div className="flex items-center justify-between pt-1 text-xs text-muted-foreground">
           <span className="truncate">更新于 {new Date(feed.lastUpdated).toLocaleTimeString()}</span>
           <span className="flex flex-shrink-0 items-center gap-1">
-            <Star className="h-3 w-3" />
+          <span className="truncate">更新于 {new Date(feed.lastUpdated).toLocaleTimeString()}</span>
             {feed.favoriteCount}
           </span>
         </div>

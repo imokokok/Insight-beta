@@ -10,10 +10,15 @@ import {
   Shield,
   AlertTriangle,
   CheckCircle,
+  ArrowUpRight,
+  ArrowDownRight,
+  Minus,
   Info,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Badge } from '@/components/ui/Badge';
 import { Separator } from '@/components/ui/Separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
@@ -21,10 +26,10 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
-} from '@/components/ui/Select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
+
+import { cn } from '@/shared/utils';
+
 
 import { cn, TrendIcon } from '@/shared/utils';
 
@@ -79,7 +84,6 @@ const protocolColors: Record<OracleProtocol, string> = {
 
 export function CrossProtocolAlertComparison({
   protocols = ['chainlink', 'pyth', 'api3', 'band', 'uma'],
-  timeRange = '7d',
   compact = false,
 }: CrossProtocolAlertComparisonProps) {
   const [selectedMetric, setSelectedMetric] = useState<
@@ -157,13 +161,13 @@ export function CrossProtocolAlertComparison({
     [],
   );
 
-  const alertTypeDistribution: AlertTypeDistribution[] = useMemo(
-    () => [
       { type: '价格', chainlink: 15, pyth: 12, api3: 10, band: 5, uma: 3 },
       { type: '心跳', chainlink: 10, pyth: 8, api3: 6, band: 4, uma: 2 },
       { type: '偏差', chainlink: 12, pyth: 7, api3: 8, band: 3, uma: 2 },
       { type: '延迟', chainlink: 5, pyth: 3, api3: 3, band: 2, uma: 1 },
       { type: '可用性', chainlink: 3, pyth: 2, api3: 1, band: 1, uma: 0 },
+      { type: '延迟', chainlink: 5, pyth: 3, api3: 3, band: 2, uma: 1 },
+    [],
     ],
     [],
   );
@@ -172,6 +176,17 @@ export function CrossProtocolAlertComparison({
     return mockData.reduce((best, current) => {
       return current.reliability > best.reliability ? current : best;
     }, mockData[0]);
+  const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
+    switch (trend) {
+      case 'up':
+        return <ArrowUpRight className="h-4 w-4 text-red-500" />;
+      case 'down':
+        return <ArrowDownRight className="h-4 w-4 text-green-500" />;
+      case 'stable':
+        return <Minus className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
   }, [mockData]);
 
   const getMetricValue = (data: ProtocolComparison, metric: string) => {
@@ -203,7 +218,7 @@ export function CrossProtocolAlertComparison({
   if (compact) {
     return (
       <Card>
-        <CardHeader className="pb-3">
+            <h3 className="text-sm font-semibold">跨协议告警对比</h3>
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold">跨协议告警对比</h3>
             <Select
@@ -212,9 +227,9 @@ export function CrossProtocolAlertComparison({
             >
               <SelectTrigger className="h-8 w-24">
                 <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
                 <SelectItem value="24h">24 小时</SelectItem>
+                <SelectItem value="7d">7 天</SelectItem>
+                <SelectItem value="30d">30 天</SelectItem>
                 <SelectItem value="7d">7 天</SelectItem>
                 <SelectItem value="30d">30 天</SelectItem>
               </SelectContent>
@@ -246,10 +261,10 @@ export function CrossProtocolAlertComparison({
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <div className="space-y-1">
-                        <p className="font-semibold">{data.protocol.toUpperCase()}</p>
                         <p>总告警：{data.totalAlerts}</p>
                         <p>活跃：{data.activeAlerts}</p>
+                        <p>可靠性：{data.reliability.toFixed(1)}%</p>
+                        <p>响应时间：{Math.round(data.avgResponseTime / 60)}分钟</p>
                         <p>可靠性：{data.reliability.toFixed(1)}%</p>
                         <p>响应时间：{Math.round(data.avgResponseTime / 60)}分钟</p>
                       </div>
@@ -268,9 +283,9 @@ export function CrossProtocolAlertComparison({
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
               <h3 className="text-lg font-semibold">跨协议告警对比分析</h3>
+            <div>
+                对比不同协议之间的告警情况和响应时间
               <p className="text-xs text-muted-foreground">
                 对比不同协议之间的告警情况和响应时间
               </p>
@@ -279,9 +294,9 @@ export function CrossProtocolAlertComparison({
               <Select value={timeRange} onValueChange={() => {}}>
                 <SelectTrigger className="h-9 w-32">
                   <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
                   <SelectItem value="24h">最近 24 小时</SelectItem>
+                  <SelectItem value="7d">最近 7 天</SelectItem>
+                  <SelectItem value="30d">最近 30 天</SelectItem>
                   <SelectItem value="7d">最近 7 天</SelectItem>
                   <SelectItem value="30d">最近 30 天</SelectItem>
                 </SelectContent>
@@ -292,9 +307,9 @@ export function CrossProtocolAlertComparison({
               >
                 <SelectTrigger className="h-9 w-40">
                   <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
                   <SelectItem value="totalAlerts">总告警数</SelectItem>
+                  <SelectItem value="avgResponseTime">平均响应时间</SelectItem>
+                  <SelectItem value="reliability">可靠性</SelectItem>
                   <SelectItem value="avgResponseTime">平均响应时间</SelectItem>
                   <SelectItem value="reliability">可靠性</SelectItem>
                 </SelectContent>
@@ -340,7 +355,7 @@ export function CrossProtocolAlertComparison({
                               <Tooltip>
                                 <TooltipTrigger>
                                   <Info className="h-4 w-4 text-green-500" />
-                                </TooltipTrigger>
+                                  <p>最佳表现</p>
                                 <TooltipContent>
                                   <p>最佳表现</p>
                                 </TooltipContent>
@@ -352,7 +367,7 @@ export function CrossProtocolAlertComparison({
                           <h4 className="text-sm font-semibold">{data.protocol.toUpperCase()}</h4>
                           <div className="text-2xl font-bold">
                             {getMetricValue(data, selectedMetric)}
-                          </div>
+                            {getTrendIcon(data.trend)}
                           <div className="flex items-center gap-1 text-xs">
                             <TrendIcon trend={data.trend} />
                             <span
@@ -385,7 +400,7 @@ export function CrossProtocolAlertComparison({
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
-              <Card>
+                  <h4 className="text-sm font-semibold">告警类型分布</h4>
                 <CardHeader>
                   <h4 className="text-sm font-semibold">告警类型分布</h4>
                 </CardHeader>
@@ -394,7 +409,7 @@ export function CrossProtocolAlertComparison({
                     {alertTypeDistribution.map((item) => (
                       <div key={item.type} className="space-y-2">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="font-medium">{item.type}</span>
+                            总计：{item.chainlink + item.pyth + item.api3 + item.band + item.uma}
                           <span className="text-muted-foreground">
                             总计：{item.chainlink + item.pyth + item.api3 + item.band + item.uma}
                           </span>
@@ -439,14 +454,14 @@ export function CrossProtocolAlertComparison({
                 </CardContent>
               </Card>
 
-              <Card>
+                  <h4 className="text-sm font-semibold">关键指标对比</h4>
                 <CardHeader>
                   <h4 className="text-sm font-semibold">关键指标对比</h4>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium">平均响应时间</span>
+                        <span className="text-muted-foreground">越低越好</span>
                         <span className="font-medium">平均响应时间</span>
                         <span className="text-muted-foreground">越低越好</span>
                       </div>
@@ -481,8 +496,8 @@ export function CrossProtocolAlertComparison({
 
                     <Separator />
 
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium">可靠性评分</span>
+                        <span className="text-muted-foreground">越高越好</span>
                         <span className="font-medium">可靠性评分</span>
                         <span className="text-muted-foreground">越高越好</span>
                       </div>

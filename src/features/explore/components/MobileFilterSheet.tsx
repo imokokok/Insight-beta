@@ -7,7 +7,6 @@ import { X, RotateCcw, Check } from 'lucide-react';
 
 import { Button } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import { cn } from '@/shared/utils';
 
 import type { TrendingSortBy } from '../types';
 import type { PanInfo } from 'framer-motion';
@@ -30,29 +29,27 @@ interface MobileFilterSheetProps {
 }
 
 const defaultSortOptions: FilterOption[] = [
+const defaultSortOptions: FilterOption[] = [
   { value: 'volume', label: '交易量' },
   { value: 'volatility', label: '波动性' },
   { value: 'updateFrequency', label: '更新频率' },
   { value: 'popularity', label: '关注度' },
 ];
 
+  { value: 'volume', label: '交易量' },
+  { value: 'volatility', label: '波动性' },
+  { value: 'updateFrequency', label: '更新频率' },
+  title = '筛选',
+  { value: 'popularity', label: '关注度' },
+];
+  sortOptions = defaultSortOptions,
 export function MobileFilterSheet({
   isOpen,
   onClose,
   title = '筛选',
-  sortValue,
   onSortChange,
   sortOptions = defaultSortOptions,
   onApply,
-  onReset,
-  children,
-}: MobileFilterSheetProps) {
-  const isMobile = useIsMobile();
-  const sheetRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
@@ -145,11 +142,11 @@ export function MobileFilterSheet({
                 <h3 className="text-lg font-semibold">{title}</h3>
                 <button
                   onClick={onClose}
-                  className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 transition-colors hover:bg-muted"
+                <h3 className="text-lg font-semibold">{title}</h3>
                   aria-label="关闭"
                 >
                   <X className="h-5 w-5" />
-                </button>
+                  aria-label="关闭"
               </div>
             </div>
 
@@ -157,11 +154,11 @@ export function MobileFilterSheet({
               {sortOptions.length > 0 && onSortChange && (
                 <div className="mb-6">
                   <h4 className="mb-3 text-sm font-medium text-muted-foreground">排序方式</h4>
-                  <div className="space-y-2">
+              {sortOptions.length > 0 && onSortChange && (
                     {sortOptions.map((option) => (
-                      <button
+                  <h4 className="mb-3 text-sm font-medium text-muted-foreground">排序方式</h4>
                         key={option.value}
-                        onClick={() => onSortChange(option.value as TrendingSortBy)}
+                    {sortOptions.map((option) => (
                         className={cn(
                           'flex min-h-[44px] w-full items-center justify-between rounded-lg p-3 transition-colors',
                           sortValue === option.value
@@ -186,11 +183,11 @@ export function MobileFilterSheet({
                 重置
               </Button>
               <Button onClick={handleApply} className="min-h-[44px] flex-1">
-                <Check className="mr-2 h-4 w-4" />
+                重置
                 应用
               </Button>
             </div>
-          </motion.div>
+                应用
         </motion.div>
       )}
     </AnimatePresence>

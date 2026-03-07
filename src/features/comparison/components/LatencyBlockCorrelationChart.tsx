@@ -16,8 +16,9 @@ import {
 } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
-import { useI18n } from '@/i18n';
+import { cn } from '@/shared/utils';
 import { logger } from '@/shared/logger';
 import { buildApiUrl } from '@/shared/utils';
 import { formatLatency } from '@/shared/utils/format';
@@ -46,22 +47,20 @@ export function LatencyBlockCorrelationChart({
     if (propData) {
       setData(propData);
     } else {
-      setIsLoading(true);
-      fetch(
-        buildApiUrl('/api/comparison/latency/events', {
-          symbol,
-          protocol,
-          chain,
-          timeRange: '24h',
-          type: 'correlation',
-        }),
+      fetch(buildApiUrl('/api/comparison/latency/events', {
+        symbol,
+        protocol,
+        chain,
+        timeRange: '24h',
+        type: 'correlation',
+      }))
       )
         .then((res) => res.json())
         .then((result) => {
           if (result.data) {
             setData(result.data);
           }
-        })
+        .catch(console.error)
         .catch((error) => logger.error('Failed to fetch latency block correlation data', { error }))
         .finally(() => setIsLoading(false));
     }
@@ -105,7 +104,6 @@ export function LatencyBlockCorrelationChart({
   }, [data]);
 
   if (isLoading) {
-    return (
       <Card className="w-full">
         <CardHeader>
           <Skeleton className="h-6 w-48" />
@@ -115,11 +113,11 @@ export function LatencyBlockCorrelationChart({
           <Skeleton className="h-80" />
         </CardContent>
       </Card>
+      </Card>
     );
   }
 
   if (!data || data.length === 0) {
-    return (
       <Card className="w-full">
         <CardHeader>
           <CardTitle>{t('comparison.latency.blockCorrelationTitle')}</CardTitle>
@@ -130,10 +128,10 @@ export function LatencyBlockCorrelationChart({
           {t('comparison.latency.selectAssetPair')}
         </CardContent>
       </Card>
+        </CardContent>
+      </Card>
     );
   }
-
-  return (
     <Card className="w-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
@@ -144,7 +142,7 @@ export function LatencyBlockCorrelationChart({
             <CardDescription className="mt-1 text-sm text-muted-foreground">
               {t('comparison.latency.blockCorrelationDesc')}
             </CardDescription>
-          </div>
+            </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -161,13 +159,19 @@ export function LatencyBlockCorrelationChart({
               </p>
             </div>
             <div className="rounded-lg border border-border/50 bg-muted/20 p-3">
-              <p className="text-xs text-muted-foreground">{t('comparison.latency.avgTxCount')}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('comparison.latency.avgTxCount')}
+              </p>
               <p className="mt-1 text-lg font-bold">{correlationStats.avgTxCount.toFixed(0)}</p>
             </div>
             <div className="rounded-lg border border-border/50 bg-muted/20 p-3">
-              <p className="text-xs text-muted-foreground">{t('comparison.latency.correlation')}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('comparison.latency.correlation')}
+              </p>
               <div className="mt-1 flex items-center gap-1">
-                <p className="text-lg font-bold">{correlationStats.correlation.toFixed(2)}</p>
+                <p className="text-lg font-bold">
+                  {correlationStats.correlation.toFixed(2)}
+                </p>
                 {correlationStats.correlation > 0.5 ? (
                   <TrendingUp className="h-4 w-4 text-red-600" />
                 ) : correlationStats.correlation < -0.5 ? (
@@ -177,7 +181,7 @@ export function LatencyBlockCorrelationChart({
             </div>
           </div>
         )}
-
+                <p className="text-lg font-bold">{correlationStats.correlation.toFixed(2)}</p>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -254,13 +258,24 @@ export function LatencyBlockCorrelationChart({
             </ScatterChart>
           </ResponsiveContainer>
         </div>
-
+                        ? '#f59e0b'
         {correlationStats && correlationStats.correlation > 0.5 && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
               <div className="text-sm">
                 <p className="font-medium text-amber-900">
+                  {t('comparison.latency.highCorrelationWarning')}
+                </p>
+                <p className="mt-1 text-amber-700">
+                  {t('comparison.latency.highCorrelationDesc')}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
                   {t('comparison.latency.highCorrelationWarning')}
                 </p>
                 <p className="mt-1 text-amber-700">{t('comparison.latency.highCorrelationDesc')}</p>
@@ -270,7 +285,7 @@ export function LatencyBlockCorrelationChart({
         )}
       </CardContent>
     </Card>
-  );
+  const sumXY = x.reduce((total, xi, i) => total + xi * y[i], 0);
 }
 
 function calculateCorrelation(x: number[], y: number[]): number {

@@ -19,14 +19,6 @@ interface AggregationStatus {
   status: 'healthy' | 'degraded' | 'error';
 }
 
-interface PriceHistoryResponse {
-  symbol: string;
-  chain: string;
-  timeRange: string;
-  priceHistory: PriceHistoryPoint[];
-  aggregationStatus: AggregationStatus;
-}
-
 const TIME_RANGE_CONFIG = {
   '1h': { intervalMs: 60000, points: 60 },
   '24h': { intervalMs: 900000, points: 96 },

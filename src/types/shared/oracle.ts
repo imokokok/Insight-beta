@@ -4,10 +4,6 @@
  * 共享的 Oracle 类型定义，各协议模块可扩展这些基础类型
  */
 
-import type { TimeRangePreset } from './timeRange';
-
-export type TimeRange = Exclude<TimeRangePreset, 'ALL' | 'custom'>;
-
 export interface GasCostTrendPoint {
   timestamp: string;
   gasUsed: number;
@@ -60,6 +56,8 @@ export interface ReliabilityScoreBase {
   responseTime: number;
   trend: 'up' | 'down' | 'stable';
 }
+
+export type TimeRange = '1h' | '24h' | '7d' | '30d';
 
 export interface AlertBase {
   id: string;

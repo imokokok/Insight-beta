@@ -7,6 +7,7 @@ import { ArrowUpRight, ArrowDownRight, RefreshCw, Globe, Info } from 'lucide-rea
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
@@ -67,13 +68,13 @@ export interface OracleCrossChainComparisonProps {
 }
 
 function LoadingSkeleton() {
-  return (
+    <div className="space-y-4">
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className="h-24 w-full" />
           <Skeleton key={i} className="h-24 w-full" />
         ))}
-      </div>
+      <Skeleton className="h-64 w-full" />
       <Skeleton className="h-64 w-full" />
     </div>
   );
@@ -215,7 +216,6 @@ export function OracleCrossChainComparison({
   };
 
   if (isLoading || externalLoading) {
-    return (
       <Card className={className}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -227,20 +227,20 @@ export function OracleCrossChainComparison({
           <LoadingSkeleton />
         </CardContent>
       </Card>
+      </Card>
     );
   }
 
   if (!data) {
-    return (
       <Card className={className}>
         <CardContent className="pt-6">
           <div className="py-8 text-center text-muted-foreground">{t('common.noData')}</div>
         </CardContent>
       </Card>
+          <div className="py-8 text-center text-muted-foreground">{t('common.noData')}</div>
+        </CardContent>
+      </Card>
     );
-  }
-
-  return (
     <div className={cn('space-y-6', className)}>
       <Card>
         <CardHeader>
@@ -383,12 +383,29 @@ export function OracleCrossChainComparison({
           <CardDescription>{t('crossChain.priceDetails.description')}</CardDescription>
         </CardHeader>
         <CardContent>
+                  <span className="text-2xl font-bold">{data.prices.length}</span>
+                  <span className="ml-1 text-sm text-muted-foreground">
+                    / {supportedChains.length}
+                <TableRow>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('crossChain.priceDetails.title')}</CardTitle>
+          <CardDescription>{t('crossChain.priceDetails.description')}</CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{t('crossChain.table.chain')}</TableHead>
-                  <TableHead className="text-right">{t('crossChain.table.price')}</TableHead>
+                    <TableRow key={chainPrice.chain}>
                   <TableHead className="text-right">{t('crossChain.table.diffFromAvg')}</TableHead>
                   <TableHead className="text-right">
                     {t('crossChain.table.deviationPercent')}
@@ -448,27 +465,10 @@ export function OracleCrossChainComparison({
                         </Badge>
                       </TableCell>
                       {showConfidence && (
-                        <TableCell className="text-right">
-                          <span className="text-muted-foreground">
-                            {(chainPrice.confidence ?? 0).toFixed(2)}%
-                          </span>
-                        </TableCell>
-                      )}
-                      {showStatus && (
-                        <TableCell className="text-center">
-                          {getStatusBadge(chainPrice.status)}
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
         </CardContent>
       </Card>
-
-      {showConsistencyScore && (
+                            {(chainPrice.confidence ?? 0).toFixed(2)}%
+                          </span>
         <Card>
           <CardHeader>
             <CardTitle>{t('crossChain.summary.title')}</CardTitle>
@@ -509,6 +509,27 @@ export function OracleCrossChainComparison({
                         : riskLevel === 'medium'
                           ? 'warning'
                           : 'destructive'
+                    }
+                    className="px-3 py-1 text-base"
+                  >
+                    {riskLevel === 'low'
+                      ? t('crossChain.stats.riskLow')
+                      : riskLevel === 'medium'
+                        ? t('crossChain.stats.riskMedium')
+                        : t('crossChain.stats.riskHigh')}
+                  </Badge>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {riskLevel === 'low'
+                      ? t('crossChain.stats.riskLowDescription')
+                      : riskLevel === 'medium'
+                        ? t('crossChain.stats.riskMediumDescription')
+                        : t('crossChain.stats.riskHighDescription')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
                     }
                     className="px-3 py-1 text-base"
                   >

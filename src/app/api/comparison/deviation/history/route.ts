@@ -2,13 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { ok, error } from '@/lib/api/apiResponse';
 import { logger } from '@/shared/logger';
-import type {
-  PriceDeviationHistory,
-  PriceDeviationTimeline,
-  PriceDeviationHistoryPoint,
-  PriceDeviationEvent,
-} from '@/types/oracle/comparison';
-import type { OracleProtocol } from '@/types/oracle/protocol';
+import type { PriceDeviationHistory, PriceDeviationTimeline } from '@/types/oracle/comparison';
 
 export async function GET(request: NextRequest) {
   const requestStartTime = performance.now();
@@ -85,7 +79,7 @@ async function fetchDeviationHistory(
 
   return {
     symbol,
-    protocol: protocol as OracleProtocol,
+    protocol: protocol as any,
     data: dataPoints,
     summary: {
       avgDeviation,
@@ -94,8 +88,6 @@ async function fetchDeviationHistory(
       deviationCount,
       criticalCount,
       avgDuration: 15,
-      maxDuration: 120,
-      minDuration: 5,
     },
   };
 }
@@ -120,8 +112,8 @@ function generateHistoricalDataPoints(
   protocol: string,
   timeRange: string,
   now: Date,
-): PriceDeviationHistoryPoint[] {
-  const points: PriceDeviationHistoryPoint[] = [];
+) {
+  const points = [];
   let numPoints = 24;
   let intervalMs = 3600000;
 
@@ -143,7 +135,7 @@ function generateHistoricalDataPoints(
 
     points.push({
       timestamp: timestamp.toISOString(),
-      protocol: protocol as OracleProtocol,
+      protocol: protocol as any,
       symbol,
       deviation,
       deviationPercent,
@@ -156,13 +148,8 @@ function generateHistoricalDataPoints(
   return points.reverse();
 }
 
-function generateDeviationEvents(
-  symbol: string,
-  protocol: string,
-  timeRange: string,
-  now: Date,
-): PriceDeviationEvent[] {
-  const events: PriceDeviationEvent[] = [];
+function generateDeviationEvents(symbol: string, protocol: string, timeRange: string, now: Date) {
+  const events = [];
   const numEvents = Math.floor(Math.random() * 5) + 3;
   let timeRangeMs = 86400000;
 
@@ -185,7 +172,7 @@ function generateDeviationEvents(
     events.push({
       id: `event-${i}-${Date.now()}`,
       timestamp: timestamp.toISOString(),
-      protocol: protocol as OracleProtocol,
+      protocol: protocol as any,
       symbol,
       deviation,
       deviationPercent,

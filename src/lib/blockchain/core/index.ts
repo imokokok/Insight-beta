@@ -10,14 +10,12 @@ export type {
   OracleClientConfig,
   RequiredOracleClientConfig,
   OracleHealthStatus,
+  HealthStatus,
   OracleClientCapabilities,
   PriceFetchOptions,
   BatchPriceResult,
   OracleClientLogger,
 } from './types';
-
-// 从 types/common/status 重新导出 HealthStatus
-export type { HealthStatus } from '@/types/common/status';
 
 // 类导出
 export { BaseOracleClient } from './BaseOracleClient';

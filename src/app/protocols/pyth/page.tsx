@@ -13,30 +13,28 @@ import {
   AlertTriangle,
   LayoutDashboard,
   BarChart3,
-  Info,
 } from 'lucide-react';
 
-import { type SortState, SortableTableHeader } from '@/components/common';
+import {
+  ContentSection,
+  ContentGrid,
+  type SortState,
+  SortableTableHeader,
+} from '@/components/common';
 import { useProtocolData } from '@/components/oracle/hooks/useProtocolData';
 import {
   ProtocolPageLayout,
   TabPanelWrapper,
   type TabItem,
 } from '@/components/oracle/layouts/ProtocolPageLayout';
-import { Badge, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
+import { Badge } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
-import { PublisherSourceTypeLegend } from '@/features/oracle/pyth/components/PublisherSourceTypeLegend';
-import { PythStreamStatus } from '@/features/oracle/pyth/components/PythStreamStatus';
-import { RefreshRateSelector } from '@/features/oracle/pyth/components/RefreshRateSelector';
-import { usePythStream } from '@/features/oracle/pyth/hooks/usePythStream';
 import { useI18n } from '@/i18n';
 import { formatLatency } from '@/shared/utils/format';
 import { cn } from '@/shared/utils/ui';
 import type { NetworkHealthStatus } from '@/types/common';
 import type { KpiCardData } from '@/types/shared/kpi';
-
-// Pyth SSE 相关组件和 Hook
 
 const ConfidenceComparisonChart = lazy(() =>
   import('@/features/oracle/pyth/components').then((mod) => ({
@@ -313,22 +311,6 @@ export default function PythPage() {
   const [priceFeedSort, setPriceFeedSort] = useState<SortState | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<PriceFeedCategory | 'All'>('All');
 
-  // SSE 实时价格推送
-  const [refreshRate, setRefreshRate] = useState<number>(30000); // 默认 30 秒
-  const {
-    isConnected,
-    isConnecting,
-    prices: streamPrices,
-    lastUpdate: streamLastUpdate,
-    error: streamError,
-    stats,
-  } = usePythStream({
-    symbols: ['BTC', 'ETH', 'SOL', 'AVAX', 'LINK'],
-    autoReconnect: true,
-    reconnectInterval: 5000,
-    maxReconnectAttempts: 3,
-  });
-
   const {
     data: dashboardData,
     isLoading,
@@ -433,6 +415,11 @@ export default function PythPage() {
       },
     ];
   }, [dashboardData, t]);
+
+  const breadcrumbItems = useMemo(
+    () => [{ label: t('nav.protocols'), href: '/protocols' }, { label: 'Pyth' }],
+    [t],
+  );
 
   const handlePublisherSort = useCallback((key: string) => {
     setPublisherSort((prev) => {
@@ -558,6 +545,7 @@ export default function PythPage() {
       healthStatus={healthStatus}
       kpiCards={kpiCards}
       tabs={TABS}
+      breadcrumbItems={breadcrumbItems}
       loading={isLoading || isRefreshing}
       error={isError ? error?.message : null}
       lastUpdated={lastUpdated}
@@ -566,104 +554,57 @@ export default function PythPage() {
       exportFilename={`pyth-dashboard-${new Date().toISOString().split('T')[0]}.json`}
     >
       <TabPanelWrapper tabId="overview">
-        <div className="space-y-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="mb-1 flex items-center gap-2">
-                <h3 className="text-lg font-semibold">{t('pyth.tabs.overview')}</h3>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-md">
-                      <div className="space-y-2 text-sm">
-                        <p className="font-semibold">{t('pyth.overview.pullOracleInfo')}</p>
-                        <p>{t('pyth.overview.pullOracleDescription')}</p>
-                        <ul className="list-disc space-y-1 pl-4">
-                          <li>
-                            ✅ <strong>{t('pyth.overview.lowCost')}</strong>：
-                            {t('pyth.overview.lowCostDesc')}
-                          </li>
-                          <li>
-                            ✅ <strong>{t('pyth.overview.lowLatency')}</strong>：
-                            {t('pyth.overview.lowLatencyDesc')}
-                          </li>
-                          <li>
-                            ✅ <strong>{t('pyth.overview.highEfficiency')}</strong>：
-                            {t('pyth.overview.highEfficiencyDesc')}
-                          </li>
-                        </ul>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              <p className="text-sm text-muted-foreground">{t('pyth.overview.description')}</p>
-              <p className="mt-2 text-xs text-muted-foreground">
-                {t('pyth.overview.introduction')}
-              </p>
-            </div>
+        <div className="space-y-3">
+          <ContentSection
+            title={t('pyth.overview.title')}
+            description={t('pyth.overview.description')}
+          >
+            <p className="text-sm text-muted-foreground">{t('pyth.overview.introduction')}</p>
+          </ContentSection>
 
-            <div className="flex shrink-0 items-center gap-3">
-              <PythStreamStatus
-                isConnected={isConnected}
-                isConnecting={isConnecting}
-                lastUpdate={streamLastUpdate}
-                updateCount={stats.updateCount}
-                reconnectCount={stats.reconnectCount}
-              />
-              <RefreshRateSelector currentRate={refreshRate} onChange={setRefreshRate} />
-            </div>
-          </div>
-
-          {streamError && (
-            <div className="text-xs text-red-500">
-              ⚠️ {t('pyth.stream.connectionError')}: {streamError.message}
-            </div>
-          )}
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="flex items-center gap-2.5">
-              <div className="rounded-lg bg-yellow-500/10 p-1.5">
-                <Zap className="h-4 w-4 text-yellow-500" />
+          <ContentSection title={t('pyth.features.title')}>
+            <ContentGrid columns={3} gap="sm">
+              <div className="flex items-center gap-2.5 border-b border-border/30 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
+                <div className="rounded-lg bg-yellow-500/10 p-2">
+                  <Zap className="h-5 w-5 text-yellow-500" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {t('pyth.features.highFrequency.label')}
+                  </p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {t('pyth.features.highFrequency.value')}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  {t('pyth.features.highFrequency.label')}
-                </p>
-                <p className="text-sm font-semibold text-foreground">
-                  {t('pyth.features.highFrequency.value')}
-                </p>
+              <div className="flex items-center gap-2.5 border-b border-border/30 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3">
+                <div className="rounded-lg bg-green-500/10 p-2">
+                  <Users className="h-5 w-5 text-green-500" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {t('pyth.features.publishers.label')}
+                  </p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {t('pyth.features.publishers.value')}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="rounded-lg bg-green-500/10 p-1.5">
-                <Users className="h-4 w-4 text-green-500" />
+              <div className="flex items-center gap-2.5">
+                <div className="rounded-lg bg-purple-500/10 p-2">
+                  <Shield className="h-5 w-5 text-purple-500" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {t('pyth.features.dataIntegrity.label')}
+                  </p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {t('pyth.features.dataIntegrity.value')}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  {t('pyth.features.publishers.label')}
-                </p>
-                <p className="text-sm font-semibold text-foreground">
-                  {t('pyth.features.publishers.value')}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="rounded-lg bg-purple-500/10 p-1.5">
-                <Shield className="h-4 w-4 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  {t('pyth.features.dataIntegrity.label')}
-                </p>
-                <p className="text-sm font-semibold text-foreground">
-                  {t('pyth.features.dataIntegrity.value')}
-                </p>
-              </div>
-            </div>
-          </div>
+            </ContentGrid>
+          </ContentSection>
 
           <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
             <div className="lg:col-span-1 xl:col-span-2">
@@ -767,13 +708,6 @@ export default function PythPage() {
           <p className="mb-3 text-sm text-muted-foreground">
             {t('pyth.publisher.detailedListDesc')}
           </p>
-
-          {/* 数据源类型图例 */}
-          <div className="mb-4 flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">数据源类型:</span>
-            <PublisherSourceTypeLegend />
-          </div>
-
           <div className="overflow-x-auto">
             {isLoading ? (
               <div className="space-y-2 p-4">

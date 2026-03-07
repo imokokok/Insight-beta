@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 
-import { TrendingUp, TrendingDown, AlertTriangle, Clock, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertTriangle, Clock } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -20,10 +20,9 @@ import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { logger } from '@/shared/logger';
 import { cn } from '@/shared/utils';
 import { buildApiUrl } from '@/shared/utils';
-import type { PriceDeviationHistory } from '@/types/oracle/comparison';
+import type { PriceDeviationHistory, PriceDeviationLevel } from '@/types/oracle/comparison';
 
 interface PriceDeviationHistoryChartProps {
   data?: PriceDeviationHistory;
@@ -33,6 +32,13 @@ interface PriceDeviationHistoryChartProps {
   symbol?: string;
   protocol?: string;
 }
+
+const deviationColors: Record<PriceDeviationLevel, string> = {
+  low: '#10b981',
+  medium: '#f59e0b',
+  high: '#ef4444',
+  critical: '#dc2626',
+};
 
 function formatDeviation(value: number): string {
   const percentValue = Math.abs(value) * 100;
@@ -66,21 +72,19 @@ export function PriceDeviationHistoryChart({
       setData(propData);
     } else if (symbol && protocol) {
       setIsLoading(true);
-      fetch(
-        buildApiUrl('/api/comparison/deviation/history', {
-          symbol,
-          protocol,
-          timeRange: selectedRange,
-          type: 'history',
-        }),
-      )
+      fetch(buildApiUrl('/api/comparison/deviation/history', {
+        symbol,
+        protocol,
+        timeRange: selectedRange,
+        type: 'history',
+      }))
         .then((res) => res.json())
         .then((result) => {
           if (result.data) {
             setData(result.data);
           }
         })
-        .catch((error) => logger.error('Failed to fetch price deviation history', { error }))
+        .catch(console.error)
         .finally(() => setIsLoading(false));
     }
   }, [symbol, protocol, selectedRange, propData]);
@@ -112,57 +116,36 @@ export function PriceDeviationHistoryChart({
         icon: TrendingUp,
         color: 'text-blue-600',
         bgColor: 'bg-blue-50',
-      },
       {
         title: t('comparison.deviation.maxDeviation'),
         value: formatDeviation(summary.maxDeviation),
         icon: AlertTriangle,
         color: 'text-red-600',
         bgColor: 'bg-red-50',
-      },
-      {
+        bgColor: 'bg-red-50',
         title: t('comparison.deviation.deviationCount'),
         value: summary.deviationCount.toString(),
         icon: TrendingDown,
         color: 'text-amber-600',
         bgColor: 'bg-amber-50',
       },
-      {
-        title: t('comparison.deviation.avgDuration'),
+        bgColor: 'bg-amber-50',
         value: `${summary.avgDuration.toFixed(0)}m`,
         icon: Clock,
         color: 'text-purple-600',
         bgColor: 'bg-purple-50',
       },
     ];
-  }, [data, t]);
-
-  const durationCards = useMemo(() => {
-    if (!data) return [];
-    const { summary } = data;
-    return [
-      {
-        title: t('comparison.deviation.maxDuration'),
-        value: `${(summary.maxDuration || 0).toFixed(0)}m`,
-        icon: AlertTriangle,
-        color: 'text-red-600',
-        bgColor: 'bg-red-50',
-      },
-      {
-        title: t('comparison.deviation.minDuration'),
-        value: `${(summary.minDuration || 0).toFixed(0)}m`,
-        icon: CheckCircle2,
-        color: 'text-green-600',
+        bgColor: 'bg-purple-50',
         bgColor: 'bg-green-50',
       },
     ];
   }, [data, t]);
 
   if (isLoading) {
-    return (
       <Card className="w-full">
         <CardHeader>
-          <Skeleton className="h-6 w-48" />
+        <CardHeader>
           <Skeleton className="h-4 w-72" />
         </CardHeader>
         <CardContent>
@@ -174,25 +157,25 @@ export function PriceDeviationHistoryChart({
           <Skeleton className="h-64" />
         </CardContent>
       </Card>
+          <Skeleton className="h-64" />
+        </CardContent>
+      </Card>
     );
   }
-
-  if (!data || data.data.length === 0) {
-    return (
       <Card className="w-full">
         <CardHeader>
           <CardTitle>{t('comparison.deviation.historyTitle')}</CardTitle>
           <CardDescription>{t('comparison.status.noData')}</CardDescription>
         </CardHeader>
         <CardContent className="flex h-64 items-center justify-center text-muted-foreground">
+        <CardContent className="flex h-64 items-center justify-center text-muted-foreground">
           <Clock className="mr-2 h-5 w-5" />
-          {t('comparison.deviation.selectAssetPair')}
         </CardContent>
+      </Card>
       </Card>
     );
   }
 
-  return (
     <Card className="w-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
@@ -204,10 +187,7 @@ export function PriceDeviationHistoryChart({
               {data.symbol} - {data.protocol}
             </CardDescription>
           </div>
-          <Tabs
-            value={selectedRange}
-            onValueChange={(v) => handleTimeRangeChange(v as '24h' | '7d' | '30d')}
-          >
+          <Tabs value={selectedRange} onValueChange={(v) => handleTimeRangeChange(v as any)}>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="24h">24h</TabsTrigger>
               <TabsTrigger value="7d">7d</TabsTrigger>
@@ -235,26 +215,7 @@ export function PriceDeviationHistoryChart({
             </div>
           ))}
         </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {durationCards.map((card) => (
-            <div
-              key={card.title}
-              className={cn('rounded-lg border p-4 transition-all hover:shadow-md', card.bgColor)}
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{card.title}</p>
-                  <p className={cn('mt-1 text-2xl font-bold', card.color)}>{card.value}</p>
-                </div>
-                <div className={cn('rounded-full bg-white/50 p-2', card.color)}>
-                  <card.icon className="h-4 w-4" />
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
-
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -281,9 +242,7 @@ export function PriceDeviationHistoryChart({
                         <div className="space-y-1">
                           <p>
                             {t('comparison.deviation.deviation')}:{' '}
-                            <span className="font-medium">
-                              {formatDeviation(data.deviation / 100)}
-                            </span>
+                            <span className="font-medium">{formatDeviation(data.deviation / 100)}</span>
                           </p>
                           <p>
                             {t('comparison.price')}:{' '}
@@ -329,6 +288,27 @@ export function PriceDeviationHistoryChart({
               <Legend />
             </LineChart>
           </ResponsiveContainer>
+        </div>
+                    );
+        {data.summary.criticalCount > 0 && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
+              <div className="text-sm">
+                <p className="font-medium text-red-900">
+                  {t('comparison.deviation.criticalWarning')}
+                </p>
+                <p className="mt-1 text-red-700">
+                  {t('comparison.deviation.criticalWarningDesc', {
+                    count: data.summary.criticalCount,
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
         </div>
 
         {data.summary.criticalCount > 0 && (

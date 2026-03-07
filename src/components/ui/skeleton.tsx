@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 
-import { itemVariants, containerVariants } from '@/lib/design-system/tokens/animation';
 import { cn } from '@/shared/utils';
 
 /**

@@ -37,6 +37,12 @@ const groupByOptions: { value: GroupBy; label: string }[] = [
   { value: 'source', label: 'Source' },
 ];
 
+const groupByOptions: { value: GroupBy; label: string }[] = [
+  { value: 'none', label: 'Total' },
+  { value: 'severity', label: 'Severity' },
+  { value: 'source', label: 'Source' },
+];
+
 const severityColors: Record<string, string> = {
   critical: CHART_COLORS.error,
   high: '#f97316',
@@ -55,12 +61,12 @@ function formatTimestamp(timestamp: string, timeRange: TimeRange): string {
   if (timeRange === '1h' || timeRange === '6h') {
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   } else if (timeRange === '24h') {
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+function TrendIndicator({ trend, percent }: { trend: string; percent: number }) {
   } else {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 }
-
+        <span className="text-sm">Stable</span>
 function TrendIndicator({ trend, percent }: { trend: string; percent: number }) {
   if (trend === 'stable') {
     return (
@@ -125,12 +131,6 @@ export function AlertTrendChart({
   onGroupByChange,
   loading,
   className,
-  previousStats,
-}: AlertTrendChartProps) {
-  const { t } = useI18n();
-
-  const chartData = useMemo(() => {
-    return data.map((point) => ({
       ...point,
       label: formatTimestamp(point.timestamp, timeRange),
     }));
@@ -266,7 +266,7 @@ export function AlertTrendChart({
             <p className="text-xs text-muted-foreground">{t('alerts.analysis.trend')}</p>
             <TrendIndicator trend={stats.trend} percent={stats.trendPercent} />
           </div>
-        </div>
+            <TrendIndicator trend={stats.trend} percent={stats.trendPercent} />
       )}
       {renderChart}
     </ContentSection>

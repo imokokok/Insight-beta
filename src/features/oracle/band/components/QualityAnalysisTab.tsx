@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-import { RefreshCw } from 'lucide-react';
+import { Activity, Clock, CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
-import { Card, CardContent } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { Progress } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
@@ -106,10 +106,12 @@ export function QualityAnalysisTab() {
   const metrics = qualityData?.symbols[selectedSymbol];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Summary Cards */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between gap-3">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-lg font-medium">{t('band.qualityAnalysis.title')}</CardTitle>
+          <div className="flex items-center gap-2">
             <Select value={selectedSymbol} onValueChange={setSelectedSymbol}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
@@ -123,159 +125,166 @@ export function QualityAnalysisTab() {
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" onClick={fetchQualityData} disabled={loading}>
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              {t('common.refresh')}
             </Button>
           </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full" />
+              ))}
+            </div>
+          ) : qualityData?.summary ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('band.qualityAnalysis.overallScore')}
+                    </span>
+                    <Activity className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div
+                    className={`mt-2 text-3xl font-bold ${getScoreColor(qualityData.summary.overallScore)}`}
+                  >
+                    {qualityData.summary.overallScore}
+                  </div>
+                  <Badge variant={getScoreBadge(qualityData.summary.overallScore)} className="mt-1">
+                    {qualityData.summary.overallScore >= 90
+                      ? t('band.qualityAnalysis.healthy')
+                      : t('band.qualityAnalysis.degraded')}
+                  </Badge>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('band.qualityAnalysis.dataIntegrity')}
+                    </span>
+                    <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="mt-2 text-3xl font-bold">
+                    {qualityData.summary.avgCompleteness}%
+                  </div>
+                  <Progress value={qualityData.summary.avgCompleteness} className="mt-2" />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('band.qualityAnalysis.avgLatency')}
+                    </span>
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="mt-2 text-3xl font-bold">{qualityData.summary.avgLatency}ms</div>
+                  <span className="text-xs text-muted-foreground">
+                    P95: {metrics?.latency.p95LatencyMs}ms
+                  </span>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('band.qualityAnalysis.consistencyScore')}
+                    </span>
+                    {qualityData.summary.avgConsistency >= 90 ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                    )}
+                  </div>
+                  <div
+                    className={`mt-2 text-3xl font-bold ${getScoreColor(qualityData.summary.avgConsistency)}`}
+                  >
+                    {qualityData.summary.avgConsistency}%
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {t('band.qualityAnalysis.deviationFromMedian', {
+                      value: metrics?.consistency.deviationFromMedian ?? 0,
+                    })}
+                  </span>
+                </CardContent>
+              </Card>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 
-      {loading ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full" />
-          ))}
-        </div>
-      ) : qualityData?.summary ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Detail Cards */}
+      {metrics && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {/* Latency Distribution */}
           <Card>
-            <CardContent className="p-3">
-              <span className="text-xs font-medium text-muted-foreground">
-                {t('band.qualityAnalysis.overallScore')}
-              </span>
-              <div
-                className={`mt-1 text-2xl font-bold ${getScoreColor(qualityData.summary.overallScore)}`}
-              >
-                {qualityData.summary.overallScore}
-              </div>
-              <Badge
-                variant={getScoreBadge(qualityData.summary.overallScore)}
-                className="mt-1 text-xs"
-              >
-                {qualityData.summary.overallScore >= 90
-                  ? t('band.qualityAnalysis.healthy')
-                  : t('band.qualityAnalysis.degraded')}
-              </Badge>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-3">
-              <span className="text-xs font-medium text-muted-foreground">
-                {t('band.qualityAnalysis.dataIntegrity')}
-              </span>
-              <div className="mt-1 text-2xl font-bold">{qualityData.summary.avgCompleteness}%</div>
-              <Progress value={qualityData.summary.avgCompleteness} className="mt-2 h-1.5" />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-3">
-              <span className="text-xs font-medium text-muted-foreground">
-                {t('band.qualityAnalysis.avgLatency')}
-              </span>
-              <div className="mt-1 text-2xl font-bold">{qualityData.summary.avgLatency}ms</div>
-              <span className="text-xs text-muted-foreground">
-                P95: {metrics?.latency.p95LatencyMs}ms
-              </span>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-3">
-              <span className="text-xs font-medium text-muted-foreground">
-                {t('band.qualityAnalysis.consistencyScore')}
-              </span>
-              <div
-                className={`mt-1 text-2xl font-bold ${getScoreColor(qualityData.summary.avgConsistency)}`}
-              >
-                {qualityData.summary.avgConsistency}%
-              </div>
-              <span className="text-xs text-muted-foreground">
-                {t('band.qualityAnalysis.deviationFromMedian', {
-                  value: metrics?.consistency.deviationFromMedian ?? 0,
-                })}
-              </span>
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardContent className="p-4">
-            <h3 className="mb-3 text-sm font-medium">
-              {t('band.qualityAnalysis.responseTimeDistribution')}
-            </h3>
-            {loading ? (
-              <Skeleton className="h-[180px] w-full" />
-            ) : metrics ? (
-              <div className="space-y-2">
+            <CardHeader>
+              <CardTitle className="text-lg font-medium">
+                {t('band.qualityAnalysis.latencyDistribution')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
                 {metrics.latency.latencyDistribution.map((item, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span className="w-14 text-xs text-muted-foreground">{item.range}</span>
-                    <Progress value={item.percentage} className="h-1.5 flex-1" />
-                    <span className="w-10 text-right text-xs">{item.percentage.toFixed(1)}%</span>
+                  <div key={index} className="flex items-center gap-3">
+                    <span className="w-16 text-sm text-muted-foreground">{item.range}</span>
+                    <Progress value={item.percentage} className="flex-1" />
+                    <span className="w-12 text-right text-sm">{item.percentage.toFixed(1)}%</span>
                   </div>
                 ))}
-                <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+                <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">P50:</span>
-                    <span className="ml-1 font-medium">{metrics.latency.p50LatencyMs}ms</span>
+                    <span className="ml-2 font-medium">{metrics.latency.p50LatencyMs}ms</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">P95:</span>
-                    <span className="ml-1 font-medium">{metrics.latency.p95LatencyMs}ms</span>
+                    <span className="ml-2 font-medium">{metrics.latency.p95LatencyMs}ms</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">P99:</span>
-                    <span className="ml-1 font-medium">{metrics.latency.p99LatencyMs}ms</span>
+                    <span className="ml-2 font-medium">{metrics.latency.p99LatencyMs}ms</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">{t('band.qualityAnalysis.max')}</span>
-                    <span className="ml-1 font-medium">{metrics.latency.maxLatencyMs}ms</span>
+                    <span className="text-muted-foreground">Max:</span>
+                    <span className="ml-2 font-medium">{metrics.latency.maxLatencyMs}ms</span>
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="text-center text-sm text-muted-foreground">
-                {t('band.qualityAnalysis.noData')}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <h3 className="mb-3 text-sm font-medium">
-              {t('band.qualityAnalysis.dataConsistencyCheck')}
-            </h3>
-            {loading ? (
-              <Skeleton className="h-[180px] w-full" />
-            ) : metrics ? (
-              <div className="space-y-3">
+          {/* Consistency & Freshness */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-medium">
+                {t('band.qualityAnalysis.consistencyAndFreshness')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {t('band.qualityAnalysis.crossSourceConsistency')}
                   </span>
-                  <Badge
-                    variant={metrics.consistency.crossSourceAgreement >= 95 ? 'success' : 'warning'}
-                    className="text-xs"
-                  >
-                    {metrics.consistency.crossSourceAgreement}%
-                  </Badge>
+                  <Badge className="text-xs">{metrics.consistency.crossSourceAgreement}%</Badge>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {t('band.qualityAnalysis.deviationFromMedianLabel')}
                   </span>
-                  <span className="text-sm font-medium">
-                    ±{metrics.consistency.deviationFromMedian}%
-                  </span>
+                  <span className="font-medium">±{metrics.consistency.deviationFromMedian}%</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {t('band.qualityAnalysis.outlierDataPoints')}
                   </span>
                   <Badge
@@ -287,42 +296,36 @@ export function QualityAnalysisTab() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {t('band.qualityAnalysis.consistencyScore')}
                   </span>
                   <span
-                    className={`text-sm font-bold ${getScoreColor(metrics.consistency.consistencyScore)}`}
+                    className={`font-bold ${getScoreColor(metrics.consistency.consistencyScore)}`}
                   >
                     {metrics.consistency.consistencyScore}%
                   </span>
                 </div>
 
-                <div className="mt-3 border-t pt-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
+                <div className="mt-4 border-t pt-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <Badge variant={metrics.freshness.freshnessScore >= 95 ? 'success' : 'warning'}>
                       {t('band.qualityAnalysis.freshnessScore')}
-                    </span>
-                    <Badge
-                      variant={metrics.freshness.freshnessScore >= 95 ? 'success' : 'warning'}
-                      className="text-xs"
-                    >
-                      {metrics.freshness.freshnessScore}%
                     </Badge>
+                    <span className="font-medium">{metrics.freshness.freshnessScore}%</span>
                   </div>
-                  <div className="mt-2 text-[10px] text-muted-foreground">
-                    {t('band.qualityAnalysis.lastUpdate')}:{' '}
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    {t('band.qualityAnalysis.updateFrequency')}: {t('band.qualityAnalysis.every')}{' '}
+                    {metrics.freshness.updateFrequency} {t('band.qualityAnalysis.seconds')}
+                  </div>
+                  <div className="mt-1 text-[10px] text-muted-foreground">
                     {new Date(metrics.freshness.lastUpdateTimestamp).toLocaleString()}
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="text-center text-sm text-muted-foreground">
-                {t('band.qualityAnalysis.noData')}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

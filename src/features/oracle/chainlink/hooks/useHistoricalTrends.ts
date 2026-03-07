@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import useSWR from 'swr';
 
@@ -16,26 +16,22 @@ const TIME_RANGE_LIMITS: Record<TimeRange, number> = {
   '90d': 180,
 };
 
+const MAX_DATA_POINTS = 500;
+
 export function useHistoricalTrends(
   initialTimeRange: TimeRange = '24h',
   options?: {
     refreshInterval?: number;
     dedupingInterval?: number;
     revalidateOnFocus?: boolean;
-    revalidateOnReconnect?: boolean;
     enableSampling?: boolean;
-    errorRetryInterval?: number;
-    errorRetryCount?: number;
   }
 ) {
   const {
-    refreshInterval = 300000,
-    dedupingInterval = 60000,
+    refreshInterval = 60000,
+    dedupingInterval = 30000,
     revalidateOnFocus = false,
-    revalidateOnReconnect = true,
     enableSampling = true,
-    errorRetryInterval = 30000,
-    errorRetryCount = 3,
   } = options || {};
 
   const buildUrl = useCallback(
@@ -60,18 +56,16 @@ export function useHistoricalTrends(
       refreshInterval,
       dedupingInterval,
       revalidateOnFocus,
-      revalidateOnReconnect,
       keepPreviousData: true,
-      errorRetryInterval,
-      errorRetryCount,
     }
   );
 
   const setTimeRange = useCallback(
-    async (_timeRange: TimeRange) => {
+    async (timeRange: TimeRange) => {
+      const url = buildUrl(timeRange);
       await mutate();
     },
-    [mutate]
+    [buildUrl, mutate]
   );
 
   return {

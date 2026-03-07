@@ -2,10 +2,19 @@
 
 import React, { memo, useMemo } from 'react';
 
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { motion } from 'framer-motion';
-import { RefreshCw, Download, MoreHorizontal, Settings, Menu } from 'lucide-react';
+import {
+  RefreshCw,
+  Download,
+  MoreHorizontal,
+  Settings,
+  Menu,
+  ChevronRight,
+  Home,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui';
 import {
@@ -17,6 +26,9 @@ import {
 } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
+import type { BreadcrumbItem } from '@/types/common';
+
+export type { BreadcrumbItem } from '@/types/common';
 
 export interface PageHeaderProps {
   title: string;
@@ -25,6 +37,7 @@ export interface PageHeaderProps {
   onRefresh?: () => void;
   onExport?: () => void;
   exportDisabled?: boolean;
+  breadcrumbs?: BreadcrumbItem[];
   refreshDisabled?: boolean;
   loading?: boolean;
   extraActions?: React.ReactNode;
@@ -89,6 +102,7 @@ export const PageHeader = memo(function PageHeader({
   onRefresh,
   onExport,
   exportDisabled = false,
+  breadcrumbs,
   refreshDisabled = false,
   loading = false,
   extraActions,
@@ -101,9 +115,38 @@ export const PageHeader = memo(function PageHeader({
     <motion.div
       initial={{ opacity: 0, y: -5 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-      className={cn('space-y-5', className)}
+      className={className}
     >
+      {breadcrumbs && breadcrumbs.length > 0 && (
+        <nav className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+          <Link
+            href="/"
+            className="flex items-center gap-1 rounded px-1.5 py-0.5 transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
+          >
+            <Home className="h-4 w-4" />
+          </Link>
+          {breadcrumbs.map((item, index) => (
+            <React.Fragment key={index}>
+              <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+              {item.href ? (
+                <a
+                  href={item.href}
+                  className="flex items-center gap-1 rounded px-1.5 py-0.5 transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
+                >
+                  {item.icon}
+                  {item.label}
+                </a>
+              ) : (
+                <span className="flex items-center gap-1 font-medium text-foreground">
+                  {item.icon}
+                  {item.label}
+                </span>
+              )}
+            </React.Fragment>
+          ))}
+        </nav>
+      )}
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
@@ -189,12 +232,12 @@ export const PageHeader = memo(function PageHeader({
                 {onExport && (
                   <DropdownMenuItem onClick={onExport} disabled={exportDisabled}>
                     <Download className="mr-2 h-4 w-4" />
-                    {t('common.export')}
+                    Export
+                    <span className="ml-auto text-xs text-muted-foreground">⌘E</span>
                   </DropdownMenuItem>
                 )}
                 {(onRefresh || onExport) && <DropdownMenuSeparator />}
               </div>
-
               <DropdownMenuItem>
                 <Settings className="mr-2 h-4 w-4" />
                 Settings

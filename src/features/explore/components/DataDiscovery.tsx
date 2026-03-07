@@ -53,7 +53,9 @@ export function DataDiscovery() {
         <p className="text-red-600">
           {lang === 'zh' ? '加载数据发现失败' : 'Failed to load data discovery'}
         </p>
-        <Button variant="outline" size="sm" onClick={() => mutate()} className="mt-4">
+          {lang === 'zh' ? '加载数据发现失败' : 'Failed to load data discovery'}
+        </p>
+          {lang === 'zh' ? '重试' : 'Retry'}
           <RefreshCw className="mr-2 h-4 w-4" />
           {lang === 'zh' ? '重试' : 'Retry'}
         </Button>
@@ -70,19 +72,23 @@ export function DataDiscovery() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-semibold">{lang === 'zh' ? '数据发现' : 'Data Discovery'}</h2>
           <Compass className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-semibold">{lang === 'zh' ? '数据发现' : 'Data Discovery'}</h2>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => mutate()} disabled={isLoading}>
+          {lang === 'zh' ? '刷新' : 'Refresh'}
           <RefreshCw className={cn('mr-2 h-4 w-4', isLoading && 'animate-spin')} />
           {lang === 'zh' ? '刷新' : 'Refresh'}
         </Button>
       </div>
 
       {!hasData && !isLoading && (
-        <EmptyDataState
-          icon={Compass}
+          title={lang === 'zh' ? '暂无数据发现内容' : 'No discovery data available'}
+          description={
+            lang === 'zh'
+              ? '当前没有发现任何数据模式或趋势'
+              : 'No data patterns or trends discovered at the moment'
+          }
           title={lang === 'zh' ? '暂无数据发现内容' : 'No discovery data available'}
           description={
             lang === 'zh'

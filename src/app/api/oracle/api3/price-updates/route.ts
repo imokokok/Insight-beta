@@ -19,15 +19,6 @@ interface PriceUpdateEvent {
   severity: 'normal' | 'warning' | 'critical';
 }
 
-interface PriceUpdatesResponse {
-  updates: PriceUpdateEvent[];
-  metadata: {
-    total: number;
-    timeRange: string;
-    fetchedAt: string;
-  };
-}
-
 // Mock 数据生成器
 function generateMockUpdates(hours: number = 24): PriceUpdateEvent[] {
   const updates: PriceUpdateEvent[] = [];

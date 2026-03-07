@@ -41,27 +41,6 @@ interface ProtocolNode {
   accuracy: number;
 }
 
-interface ProtocolDetailResponse {
-  id: OracleProtocol;
-  name: string;
-  description: string;
-  website: string;
-  supportedChains: string[];
-  features: string[];
-  category: string;
-  feeds: ProtocolFeed[];
-  nodes: ProtocolNode[];
-  stats: ProtocolStats;
-  tvl: number;
-  tvlChange24h: number;
-  avgLatency: number;
-  uptime: number;
-  priceFeeds: number;
-  lastUpdate: string;
-  usageCount: number;
-  status: 'active' | 'inactive' | 'maintenance';
-}
-
 function isValidProtocol(protocol: string): protocol is OracleProtocol {
   return protocol in PROTOCOL_CONFIGS;
 }
@@ -143,7 +122,7 @@ function generateMockStats(protocol: OracleProtocol): ProtocolStats {
   };
 }
 
-async function getProtocolDetails(protocol: OracleProtocol): Promise<ProtocolDetailResponse> {
+async function getProtocolDetails(protocol: OracleProtocol) {
   const config = getProtocolConfig(protocol);
   const info = PROTOCOL_INFO[protocol];
   const stats = generateMockStats(protocol);

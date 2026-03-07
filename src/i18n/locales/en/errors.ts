@@ -20,7 +20,6 @@ export const errors = {
   userRejected: 'You rejected the wallet request.',
   walletNotConnected: 'Wallet not connected',
   wrongNetwork: 'Wrong network. Please switch to the target chain.',
-  checkNetwork: 'Please check your network connection and try again',
   failedToFetchPriceHistory: 'Unable to retrieve price history data',
   failedToFetchOhlcvData: 'Unable to retrieve OHLCV market data',
   failedToFetchCurrentPrices: 'Unable to retrieve current market prices',

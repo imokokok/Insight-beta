@@ -23,22 +23,22 @@ interface ShortcutItem {
 const shortcuts: ShortcutItem[] = [
   {
     keys: ['⌘', 'K'],
-    descriptionKey: 'keyboard.openSearch',
+    descriptionKey: 'keyboard.search',
     category: 'navigation',
   },
   {
     keys: ['R'],
-    descriptionKey: 'keyboard.refreshPage',
+    descriptionKey: 'keyboard.refresh',
     category: 'navigation',
   },
   {
     keys: ['Esc'],
-    descriptionKey: 'keyboard.closeModal',
+    descriptionKey: 'keyboard.close',
     category: 'navigation',
   },
   {
     keys: ['⌘', 'Shift', '?'],
-    descriptionKey: 'keyboard.showHelp',
+    descriptionKey: 'keyboard.help',
     category: 'help',
   },
 ];
@@ -98,10 +98,7 @@ export function KeyboardShortcutsHelp({ open = false, onOpenChange }: KeyboardSh
               <div className="flex items-center gap-2">
                 <Keyboard className="h-5 w-5 text-primary" />
                 <h2 className="text-lg font-bold text-foreground">
-                  {t('keyboard.shortcuts')}{' '}
-                  <span className="text-sm font-normal text-muted-foreground">
-                    Keyboard Shortcuts
-                  </span>
+                  {t('keyboard.title')}
                 </h2>
               </div>
               <button

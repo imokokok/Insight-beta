@@ -3,9 +3,8 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
-import type { KpiTrendDirection } from '@/types/shared/kpi';
 
-export type Trend = KpiTrendDirection;
+export type Trend = 'up' | 'down' | 'neutral';
 
 export interface TrendIndicatorProps {
   trend: Trend;

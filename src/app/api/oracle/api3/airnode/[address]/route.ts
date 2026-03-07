@@ -25,33 +25,7 @@ interface UpdateRecord {
   newValue: string;
 }
 
-interface AirnodeDetailResponse {
-  airnode: {
-    address: string;
-    xpub: string;
-    ipfsEndpoint: string;
-    oevEndpoint: string;
-    chain: string;
-    online: boolean;
-    lastHeartbeat: string | null;
-    responseTime: number;
-    uptime: number;
-  };
-  dapis: DapiInfo[];
-  updateHistory: UpdateRecord[];
-  responseTimeHistory: Array<{
-    timestamp: string;
-    responseTime: number;
-  }>;
-  metadata: {
-    totalDapis: number;
-    activeDapis: number;
-    totalUpdates: number;
-    fetchedAt: string;
-  };
-}
-
-function generateMockData(address: string): AirnodeDetailResponse {
+function generateMockData(address: string) {
   const chains = ['ethereum', 'arbitrum', 'optimism', 'polygon', 'avalanche'];
   const chainIndex = Math.floor(Math.random() * chains.length);
   const chain = chains[chainIndex] ?? 'ethereum';

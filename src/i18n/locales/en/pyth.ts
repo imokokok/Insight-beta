@@ -13,14 +13,7 @@ export const pyth = {
     introduction:
       'Pyth Network is a high-frequency oracle protocol that provides real-time price data from first-party publishers, supporting DeFi applications across multiple chains.',
     pullOracleInfo: 'Pull Oracle Mechanism',
-  },
-  features: {
-    title: 'Core Features',
-    highFrequency: {
-      label: 'High-frequency Updates',
-      value: 'Sub-second Price Updates',
-    },
-    publishers: {
+    firstParty: {
       label: 'First-party Publishers',
       value: 'Direct Data from Exchanges',
     },
@@ -65,7 +58,6 @@ export const pyth = {
     avgUpdateFrequency: 'Avg Update Frequency',
     avgLatency: 'Avg Latency',
     statistics: 'Price Feed Statistics',
-    detailedStats: 'Price Feed Detailed Statistics',
     detailedStatsDesc: 'Real-time price update frequency and latency analysis',
     feedName: 'Feed Name',
     categoryName: 'Category',
@@ -86,21 +78,12 @@ export const pyth = {
   status: {
     active: 'Active',
     degraded: 'Degraded',
-    offline: 'Offline',
     delayed: 'Delayed',
     abnormal: 'Abnormal',
   },
-  priceHistoryChart: {
-    title: 'Price Trend Analysis',
+  priceHistory: {
     description: 'Pyth price history and volatility analysis',
-    selectPriceSource: 'Select price source',
-    currentPrice: 'Current Price',
-    changeRate: 'Change Rate',
-    highestPrice: 'Highest Price',
     lowestPrice: 'Lowest Price',
-    volatility: 'Volatility',
-    price: 'Price',
-    time: 'Time',
     average: 'Average',
     noData: 'No price history data',
   },

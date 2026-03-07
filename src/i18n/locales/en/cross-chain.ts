@@ -1,12 +1,7 @@
 export const crossChain = {
-  title: 'Cross-Chain Bridge Monitor',
+  title: 'Cross-Chain Analysis',
   description:
     'Cross-chain bridge status, inter-chain price deviation and transaction volume analysis',
-  page: {
-    title: 'Cross-Chain Bridge Monitor',
-    description:
-      'Cross-chain bridge status, inter-chain price deviation and transaction volume analysis',
-  },
   controls: {
     symbol: 'Symbol',
     chains: 'Chains',
@@ -64,7 +59,6 @@ export const crossChain = {
     title: 'Statistical Summary',
     description: 'Cross-chain price consistency analysis metrics',
   },
-  priceAlerts: 'Price Deviation Alerts',
-  compareHint: 'Want to compare prices between different oracles?',
   goToCompare: 'Go to Oracle Comparison Hub',
+  compareHint: 'Want to compare prices between different oracles?',
 };

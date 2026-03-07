@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bell,
   AlertTriangle,
@@ -22,12 +23,13 @@ import {
   Pause,
 } from 'lucide-react';
 
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/Badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
+import { Switch } from '@/components/ui/Switch';
 import {
   Select,
   SelectContent,
@@ -35,14 +37,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select';
-import { Switch } from '@/components/ui/Switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { Textarea } from '@/components/ui/Textarea';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn, formatTime } from '@/shared/utils';
-import type { AlertSeverity, AlertStatus } from '@/types/oracle/alert';
+
 import type { OracleProtocol } from '@/types/oracle/protocol';
+import type { AlertSeverity, AlertStatus } from '@/types/oracle/alert';
 
 export type AlertType =
   | 'price'
@@ -181,9 +183,9 @@ export function UnifiedAlertPanel({
   const [filterProtocol, setFilterProtocol] = useState<OracleProtocol | 'all'>('all');
   const [filterSeverity, setFilterSeverity] = useState<AlertSeverity | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<AlertStatus | 'all'>('all');
+  const [selectedRule, setSelectedRule] = useState<AlertRule | null>(null);
   const [isRuleDialogOpen, setIsRuleDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedRule, setSelectedRule] = useState<AlertRule | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(30);
 
@@ -328,7 +330,8 @@ export function UnifiedAlertPanel({
     return mockRules.filter((rule) => {
       if (filterProtocol !== 'all' && rule.protocol !== filterProtocol) return false;
       if (filterSeverity !== 'all' && rule.severity !== filterSeverity) return false;
-      if (searchQuery && !rule.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (searchQuery && !rule.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        return false;
       return true;
     });
   }, [mockRules, filterProtocol, filterSeverity, searchQuery]);
@@ -360,12 +363,18 @@ export function UnifiedAlertPanel({
     setIsRuleDialogOpen(true);
   }, []);
 
-  const handleDeleteRule = useCallback((_ruleId: string) => {}, []);
+  const handleDeleteRule = useCallback((ruleId: string) => {
+    console.log('Delete rule:', ruleId);
 
   const handleToggleRule = useCallback((_ruleId: string, _enabled: boolean) => {}, []);
-
+  const handleToggleRule = useCallback((ruleId: string, enabled: boolean) => {
+    console.log('Toggle rule:', ruleId, enabled);
   const activeAlerts = useMemo(
     () => mockStats.reduce((sum, stat) => sum + stat.activeAlerts, 0),
+  const totalAlerts = useMemo(
+    () => mockStats.reduce((sum, stat) => sum + stat.totalAlerts, 0),
+    [mockStats],
+  );
     [mockStats],
   );
 
@@ -401,9 +410,7 @@ export function UnifiedAlertPanel({
                     <TooltipContent>
                       <p>
                         {protocol.toUpperCase()}: {stats?.activeAlerts ?? 0} 活跃告警
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
+                      <p>{protocol.toUpperCase()}: {stats?.activeAlerts ?? 0} 活跃告警</p>
                 </TooltipProvider>
               );
             })}
@@ -483,9 +490,7 @@ export function UnifiedAlertPanel({
                   <div className="flex items-center gap-2">
                     <div
                       className={cn('rounded p-1', protocolColors[stat.protocol as OracleProtocol])}
-                    >
-                      <Icon className="h-4 w-4 text-white" />
-                    </div>
+                    <div className={cn('rounded p-1', protocolColors[stat.protocol as OracleProtocol])}>
                     <span className="text-xs font-semibold">
                       {stat.protocol === 'all' ? '全部' : stat.protocol.toUpperCase()}
                     </span>
@@ -644,7 +649,11 @@ export function UnifiedAlertPanel({
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleDeleteRule(rule.id)}>
                           <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteRule(rule.id)}
+                        >
                       </div>
                     </div>
                   </CardContent>

@@ -121,9 +121,3 @@ export function getDeviationBadgeVariant(percent: number): 'success' | 'warning'
   if (percent < 0.5) return 'warning';
   return 'destructive';
 }
-
-export function formatDeviationSmall(value: number): string {
-  const percentValue = Math.abs(value) * 100;
-  if (percentValue < 0.01) return '<0.01%';
-  return `${percentValue.toFixed(2)}%`;
-}

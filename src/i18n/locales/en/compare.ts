@@ -1,9 +1,8 @@
 export const compare = {
   crossChainHint: 'Want to see price differences of the same oracle across different chains?',
-  goToCrossChain: 'Go to Cross-Chain Bridge Monitor',
-  pageTitle: 'Oracle Comparison Hub',
-  pageDescription:
-    'Unified oracle protocol comparison - Price, latency, cost, and reliability analysis',
+  goToCrossChain: 'Go to Cross-Chain Analysis',
+  pageTitle: 'Comparison Center',
+  pageDescription: 'Unified oracle comparison analysis hub for all protocols',
   redirecting: 'Redirecting to price comparison...',
   filters: 'Filters',
   filterConditions: 'Filter Conditions',
@@ -30,25 +29,10 @@ export const compare = {
     title: 'Price Comparison Analysis',
     description: 'Real-time price comparison, price heatmap, and price trend comparison',
     scenario: 'Ideal for selecting the most accurate oracle',
-  },
-  latency: {
-    title: 'Latency Analysis',
-    description: 'Latency comparison chart and latency distribution',
-    scenario: 'Ideal for applications requiring high real-time performance',
-  },
-  cost: {
     title: 'Cost Efficiency Analysis',
     description: 'Gas cost comparison and cost trend charts',
     scenario: 'Ideal for optimizing oracle usage costs',
   },
   reliability: {
-    title: 'Reliability Analysis',
-    description: 'Reliability score rankings and reliability trend charts',
-    scenario: 'Ideal for evaluating long-term oracle stability',
-  },
-  deviation: {
-    title: 'Deviation Analysis',
-    description: 'Cross-oracle price deviation comparison analysis',
-    scenario: 'Ideal for monitoring oracle price consistency',
   },
 };

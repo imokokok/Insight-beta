@@ -34,19 +34,6 @@ interface DataQualityMetrics {
   };
 }
 
-interface QualityResponse {
-  summary: {
-    overallScore: number;
-    totalSymbols: number;
-    healthySymbols: number;
-    degradedSymbols: number;
-    avgCompleteness: number;
-    avgLatency: number;
-    avgConsistency: number;
-  };
-  symbols: Record<string, DataQualityMetrics>;
-}
-
 function generateLatencyDistribution(): DataQualityMetrics['latency']['latencyDistribution'] {
   return [
     { range: '0-50ms', count: Math.floor(Math.random() * 500) + 300, percentage: 0 },

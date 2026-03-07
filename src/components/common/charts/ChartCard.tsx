@@ -18,7 +18,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
@@ -64,33 +63,30 @@ export const ChartCard = memo(function ChartCard({
     <>
       <Card className={cn('overflow-hidden border-border/30 bg-background/50', className)}>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <div className="flex min-w-0 items-center gap-2">
-            <div>
-              <CardTitle className="flex items-center gap-2 truncate text-base">
-                {icon}
-                {title}
-                {tooltip && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 cursor-help text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="max-w-xs">{tooltip}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </CardTitle>
-              {description && (
-                <CardDescription className="mt-0.5 text-xs">{description}</CardDescription>
+          <div>
+            <CardTitle className="flex items-center gap-2 truncate text-base">
+              {icon}
+              {title}
+              {tooltip && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 cursor-help text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">{tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
-            </div>
+            </CardTitle>
+            {description && (
+              <CardDescription className="mt-0.5 text-xs">{description}</CardDescription>
+            )}
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
             <ExportButton
-              chartRef={chartRef}
               data={data}
               filename={filename || title.toLowerCase().replace(/\s+/g, '-')}
             />
@@ -111,7 +107,6 @@ export const ChartCard = memo(function ChartCard({
                   <Maximize2 className="mr-2 h-4 w-4" />
                   Fullscreen View
                 </DropdownMenuItem>
-                {extraActions && <DropdownMenuSeparator />}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

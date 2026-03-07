@@ -17,17 +17,6 @@ interface DataSourceReliability {
   historicalAccuracy: number[];
 }
 
-interface ReliabilityResponse {
-  sources: DataSourceReliability[];
-  summary: {
-    avgReliability: number;
-    totalSources: number;
-    totalRequests: number;
-    avgUptime: number;
-  };
-  lastUpdated: string;
-}
-
 export async function GET() {
   try {
     const mockSources: DataSourceReliability[] = [

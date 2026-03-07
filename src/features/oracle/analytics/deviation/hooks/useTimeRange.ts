@@ -2,9 +2,19 @@
 
 import { useState, useCallback, useMemo } from 'react';
 
-import type { TimeRangePreset, TimeRange, TimeRangeOption } from '@/types/shared/timeRange';
+export type TimeRangePreset = '1h' | '6h' | '24h' | '7d' | '30d' | 'custom';
 
-export type { TimeRangePreset, TimeRange, TimeRangeOption };
+export interface TimeRange {
+  preset: TimeRangePreset;
+  startTime: Date;
+  endTime: Date;
+}
+
+export interface TimeRangeOption {
+  value: TimeRangePreset;
+  labelKey: string;
+  hours: number;
+}
 
 export const TIME_RANGE_PRESETS: TimeRangeOption[] = [
   { value: '1h', labelKey: 'analytics.deviation.timeRange.1h', hours: 1 },

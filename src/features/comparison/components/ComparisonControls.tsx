@@ -23,6 +23,7 @@ import {
 } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui';
+import { Card, CardContent } from '@/components/ui';
 import { Input } from '@/components/ui';
 import { Label } from '@/components/ui';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui';
@@ -132,7 +133,6 @@ export const ComparisonControls = memo(function ComparisonControls({
     s.toLowerCase().includes(symbolSearch.toLowerCase()),
   );
 
-  return (
     <Card className="w-full">
       <CardContent className="p-3 sm:p-4">
         <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center">
@@ -164,9 +164,9 @@ export const ComparisonControls = memo(function ComparisonControls({
               </Button>
             ))}
           </div>
-
+          {/* Action Buttons */}
           <div className="flex-1" />
-
+            {/* Filter Popover */}
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {/* Filter Popover */}
@@ -201,7 +201,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                       </Button>
                     )}
                   </div>
-
+                    <Label className="text-xs">{t('comparison.controls.protocol')}</Label>
                   {/* Protocol Filter */}
                   <div className="space-y-2">
                     <Label className="text-xs">{t('comparison.controls.protocol')}</Label>
@@ -218,7 +218,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                       ))}
                     </div>
                   </div>
-
+                    <div className="space-y-2">
                   {/* Symbol Filter */}
                   {availableSymbols.length > 0 && (
                     <div className="space-y-2">
@@ -249,7 +249,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                       </div>
                     </div>
                   )}
-
+                    <Label className="text-xs">{t('comparison.controls.minDeviation')}</Label>
                   {/* Deviation Filter */}
                   <div className="space-y-2">
                     <Label className="text-xs">{t('comparison.controls.minDeviation')}</Label>
@@ -266,7 +266,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                       className="h-8 text-sm"
                     />
                   </div>
-
+                    <Label className="text-xs">{t('comparison.controls.showStaleData')}</Label>
                   {/* Stale Filter */}
                   <div className="flex items-center justify-between">
                     <Label className="text-xs">{t('comparison.controls.showStaleData')}</Label>
@@ -286,7 +286,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                 </div>
               </PopoverContent>
             </Popover>
-
+              <PopoverTrigger asChild>
             {/* Settings Popover */}
             <Popover open={showSettings} onOpenChange={setShowSettings}>
               <PopoverTrigger asChild>
@@ -299,7 +299,7 @@ export const ComparisonControls = memo(function ComparisonControls({
               <PopoverContent className="w-72" align="end">
                 <div className="space-y-4">
                   <h4 className="font-medium">{t('comparison.controls.displaySettings')}</h4>
-
+                    <Label className="text-xs">{t('comparison.controls.timeRange')}</Label>
                   {/* Time Range */}
                   <div className="space-y-2">
                     <Label className="text-xs">{t('comparison.controls.timeRange')}</Label>
@@ -326,7 +326,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                       </SelectContent>
                     </Select>
                   </div>
-
+                    <Label className="text-xs">{t('comparison.controls.refreshInterval')}</Label>
                   {/* Refresh Interval */}
                   <div className="space-y-2">
                     <Label className="text-xs">{t('comparison.controls.refreshInterval')}</Label>
@@ -351,7 +351,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                       </SelectContent>
                     </Select>
                   </div>
-
+                    <Label className="text-xs">
                   {/* Reference Price Method */}
                   <div className="space-y-2">
                     <Label className="text-xs">
@@ -378,7 +378,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                       </SelectContent>
                     </Select>
                   </div>
-
+                    <Label className="text-xs">{t('comparison.controls.deviationThreshold')}</Label>
                   {/* Deviation Thresholds */}
                   <div className="space-y-2">
                     <Label className="text-xs">{t('comparison.controls.deviationThreshold')}</Label>
@@ -426,7 +426,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                 </div>
               </PopoverContent>
             </Popover>
-
+              size="sm"
             <Button
               variant="outline"
               size="sm"
@@ -440,7 +440,7 @@ export const ComparisonControls = memo(function ComparisonControls({
               <span className="hidden sm:inline">{t('comparison.controls.refresh')}</span>
               <span className="sm:hidden">{t('comparison.controls.refreshMobile')}</span>
             </Button>
-
+                <Button variant="outline" size="sm" className="px-2 text-xs sm:px-3 sm:text-sm">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="px-2 text-xs sm:px-3 sm:text-sm">
@@ -460,7 +460,7 @@ export const ComparisonControls = memo(function ComparisonControls({
             </DropdownMenu>
           </div>
         </div>
-
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
         {/* Active Filters Display */}
         {activeFilterCount > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
@@ -494,5 +494,3 @@ export const ComparisonControls = memo(function ComparisonControls({
         )}
       </CardContent>
     </Card>
-  );
-});

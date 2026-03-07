@@ -85,20 +85,3 @@ export function formatUsd(usd: number): string {
   if (usd >= 1000) return `$${(usd / 1000).toFixed(2)}K`;
   return `$${usd.toFixed(2)}`;
 }
-
-export function formatHeatmapPrice(value: number): string {
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(2)}k`;
-  }
-  if (value >= 1) {
-    return `$${value.toFixed(2)}`;
-  }
-  return `$${value.toFixed(4)}`;
-}
-
-export function formatCost(value: number, freeLabel?: string): string {
-  if (value === 0) return freeLabel || '免费';
-  if (value < 1) return `$${(value * 100).toFixed(0)}¢`;
-  if (value < 1000) return `$${value.toFixed(0)}`;
-  return `$${(value / 1000).toFixed(1)}k`;
-}

@@ -64,8 +64,6 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-popover',
       '@radix-ui/react-select',
       '@radix-ui/react-tooltip',
-      '@radix-ui/react-dialog',
-      'framer-motion',
     ],
     staleTimes: {
       dynamic: 30,
@@ -325,11 +323,6 @@ const nextConfig: NextConfig = {
       '@solana/web3.js': false,
       // 阻止 ioredis 被打包到客户端
       ioredis: false,
-      // viem tree-shaking 优化：使用更轻量的子模块
-      'viem/chains': 'viem/chains',
-      'viem/abi': 'viem/abi',
-      // 优化 lodash 导入（如果使用）
-      lodash: 'lodash-es',
     };
 
     // Tree-shaking 和代码分割优化
@@ -338,8 +331,7 @@ const nextConfig: NextConfig = {
 
       // Tree Shaking: 启用 usedExports 和 sideEffects
       config.optimization.usedExports = true;
-      // 保留 package.json 中声明的 sideEffects
-      config.optimization.sideEffects = true;
+      config.optimization.sideEffects = false;
 
       // 启用模块合并优化
       config.optimization.mergeDuplicateChunks = true;

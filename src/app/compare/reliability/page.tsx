@@ -5,7 +5,9 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { RefreshCw } from 'lucide-react';
 
+import { Breadcrumb } from '@/components/common';
 import { Button } from '@/components/ui';
+import { Card, CardContent } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import { ReliabilityScoreBreakdown } from '@/features/comparison/components/ReliabilityScoreBreakdown';
@@ -51,9 +53,15 @@ export default function ReliabilityComparePage() {
   };
 
   const selectedRanking = rankings.find((r) => r.protocol === selectedProtocol);
+  const breadcrumbItems = [
+    { label: t('nav.compare'), href: '/compare' },
+    { label: t('compare.tabs.reliability') },
+  ];
+
 
   return (
-    <ComparePageLayout activeTab="reliability">
+      <Breadcrumb items={breadcrumbItems} />
+
       <div className="mb-4">
         <h1 className="text-xl font-semibold">{t('compare.reliability.title')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t('compare.reliability.description')}</p>
@@ -91,20 +99,9 @@ export default function ReliabilityComparePage() {
           </div>
         </CardContent>
       </Card>
-
-      {showBreakdown && selectedRanking && (
-        <div className="mt-4">
-          <ReliabilityScoreBreakdown
-            protocol={selectedRanking.protocol}
-            score={selectedRanking.score}
-            accuracyScore={selectedRanking.metrics.accuracyScore}
-            latencyScore={selectedRanking.metrics.latencyScore}
-            availabilityScore={selectedRanking.metrics.availabilityScore}
-            deviationAvg={selectedRanking.metrics.deviationAvg}
-            sampleCount={selectedRanking.metrics.sampleCount}
           />
         </div>
-      )}
+        <div className="mt-4">
 
       <div className="rounded-xl border border-border/30 bg-card/30 p-4">
         <Tabs value={period} onValueChange={(v) => setPeriod(v as TimePeriod)}>
@@ -117,6 +114,23 @@ export default function ReliabilityComparePage() {
           </TabsList>
         </Tabs>
         {periodStart && periodEnd && (
+      <div className="rounded-xl border border-border/30 bg-card/30 p-4">
+        <Tabs value={period} onValueChange={(v) => setPeriod(v as TimePeriod)}>
+          <TabsList className="grid w-full grid-cols-3">
+            {periods.map((p) => (
+              <TabsTrigger key={p.value} value={p.value}>
+                {t(p.labelKey)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        {periodStart && periodEnd && (
+          <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <span>{`${formatDate(periodStart)} - ${formatDate(periodEnd)}`}</span>
+          </div>
+        )}
+      </div>
+
           <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
             <span>{`${formatDate(periodStart)} - ${formatDate(periodEnd)}`}</span>
           </div>
@@ -141,12 +155,6 @@ export default function ReliabilityComparePage() {
             availabilityScore={ranking.metrics.availabilityScore}
             deviationAvg={ranking.metrics.deviationAvg}
             sampleCount={ranking.metrics.sampleCount}
-          />
-        ))}
-      </div>
-
-      <ReliabilityComparisonTable rankings={rankings} isLoading={reliabilityLoading} />
-
       <Card className="border-border/50">
         <CardContent className="p-4">
           <h4 className="mb-4 text-base font-medium">{t('oracle.reliability.trendAnalysis')}</h4>
@@ -172,6 +180,14 @@ export default function ReliabilityComparePage() {
                       data={trendData}
                       protocol={r.protocol}
                       isLoading={trendLoading}
+                    />
+                  </TabsContent>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </Tabs>
+        </CardContent>
+      </Card>
                     />
                   </TabsContent>
                 ))}

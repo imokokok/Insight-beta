@@ -17,6 +17,7 @@ import {
 
 import { Checkbox } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { CHART_GRID } from '@/lib/chart-config';
 
@@ -138,14 +139,16 @@ export function ConfidenceComparisonChart({ isLoading }: ConfidenceComparisonCha
   }, [selectedSources, mockData]);
 
   if (isLoading) {
-    return (
       <Card>
         <CardHeader>
           <CardTitle>
-            {t('oracle.pyth.confidenceComparisonTitle') || '多价格源置信区间对比'}
+          <CardTitle>
           </CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="h-80 animate-pulse rounded bg-muted" />
+        </CardContent>
+      </Card>
           <div className="h-80 animate-pulse rounded bg-muted" />
         </CardContent>
       </Card>
@@ -154,10 +157,7 @@ export function ConfidenceComparisonChart({ isLoading }: ConfidenceComparisonCha
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-    >
       <Card>
         <CardHeader>
           <CardTitle>
@@ -187,7 +187,7 @@ export function ConfidenceComparisonChart({ isLoading }: ConfidenceComparisonCha
               </div>
             ))}
           </div>
-
+              </div>
           {chartData.length === 0 ? (
             <div className="flex h-64 items-center justify-center text-muted-foreground">
               请选择至少一个价格源进行对比
@@ -229,7 +229,7 @@ export function ConfidenceComparisonChart({ isLoading }: ConfidenceComparisonCha
                   {selectedSources.map((sourceName) => {
                     const source = mockData.find((s) => s.name === sourceName);
                     if (!source) return null;
-
+                  {selectedSources.map((sourceName) => {
                     return (
                       <Area
                         key={sourceName}
@@ -246,7 +246,7 @@ export function ConfidenceComparisonChart({ isLoading }: ConfidenceComparisonCha
                   {selectedSources.map((sourceName) => {
                     const source = mockData.find((s) => s.name === sourceName);
                     if (!source) return null;
-
+                  {selectedSources.map((sourceName) => {
                     return (
                       <Line
                         key={`${sourceName}_line`}
@@ -261,6 +261,11 @@ export function ConfidenceComparisonChart({ isLoading }: ConfidenceComparisonCha
                     );
                   })}
                 </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </CardContent>
+      </Card>
               </ResponsiveContainer>
             </div>
           )}

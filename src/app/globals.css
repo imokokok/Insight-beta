@@ -37,7 +37,6 @@
   --color-primary-700: 29 78 216;
   --color-primary-800: 30 64 175;
   --color-primary-900: 30 58 138;
-  --color-primary-950: 23 37 84;
 
   /* 强调色 - 青色系 (Cyan) */
   --color-accent: 6 182 212;
@@ -61,55 +60,15 @@
 
   /* 语义化颜色 - 数据状态 */
   --success: 34 197 94;
-  --success-50: 240 253 244;
-  --success-100: 220 252 231;
-  --success-200: 187 247 208;
-  --success-300: 134 239 172;
-  --success-400: 74 222 128;
-  --success-500: 34 197 94;
-  --success-600: 22 163 74;
-  --success-700: 21 128 61;
-  --success-800: 22 101 52;
-  --success-900: 20 83 45;
   --success-light: 220 252 231;
   --success-dark: 21 128 61;
   --warning: 245 158 11;
-  --warning-50: 255 251 235;
-  --warning-100: 254 243 199;
-  --warning-200: 253 230 138;
-  --warning-300: 252 211 77;
-  --warning-400: 251 191 36;
-  --warning-500: 245 158 11;
-  --warning-600: 217 119 6;
-  --warning-700: 180 83 9;
-  --warning-800: 146 64 14;
-  --warning-900: 120 53 15;
   --warning-light: 254 243 199;
   --warning-dark: 180 83 9;
   --error: 239 68 68;
-  --error-50: 254 242 242;
-  --error-100: 254 226 226;
-  --error-200: 254 202 202;
-  --error-300: 252 165 165;
-  --error-400: 248 113 113;
-  --error-500: 239 68 68;
-  --error-600: 220 38 38;
-  --error-700: 185 28 28;
-  --error-800: 153 27 27;
-  --error-900: 127 29 29;
   --error-light: 254 226 226;
   --error-dark: 185 28 28;
   --info: 59 130 246;
-  --info-50: 239 246 255;
-  --info-100: 219 234 254;
-  --info-200: 191 219 254;
-  --info-300: 147 197 253;
-  --info-400: 96 165 250;
-  --info-500: 59 130 246;
-  --info-600: 37 99 235;
-  --info-700: 29 78 216;
-  --info-800: 30 64 175;
-  --info-900: 30 58 138;
   --info-light: 219 234 254;
   --info-dark: 29 78 216;
 
@@ -2372,29 +2331,4 @@ body::before {
 
 .dynamic-header-actions {
   @apply flex items-center gap-3;
-}
-
-/* ============================================================================
-   概览页面优化 - 统一背景色
-   ============================================================================ */
-
-/* 图表卡片淡网格线 */
-.grid-lines-light .recharts-cartesian-grid-horizontal line,
-.grid-lines-light .recharts-cartesian-grid-vertical line {
-  stroke: rgba(167, 183, 199, 0.15);
-  stroke-dasharray: 3 3;
-}
-
-/* 图表卡片微妙的边框 */
-.grid-lines-light {
-  border-color: rgba(167, 183, 199, 0.2);
-}
-
-/* KPI 卡片微妙的渐变背景 */
-.kpi-card-subtle {
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.03) 0%,
-    rgba(6, 182, 212, 0.02) 100%
-  );
 }

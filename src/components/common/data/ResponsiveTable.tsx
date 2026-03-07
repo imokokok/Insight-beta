@@ -18,21 +18,21 @@ import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
-export interface Column<T> {
-  key: Extract<keyof T, string>;
+export interface Column {
+  key: string;
   header: string;
   width?: string | number;
   align?: 'left' | 'center' | 'right';
-  render?: (value: T[keyof T], row: T, index: number) => React.ReactNode;
+  render?: (value: any, row: any, index: number) => React.ReactNode;
   sortable?: boolean;
 }
 
-export interface ResponsiveTableProps<T> {
-  columns: Column<T>[];
-  data: T[];
+export interface ResponsiveTableProps {
+  columns: Column[];
+  data: any[];
   primaryColumns?: string[];
-  rowKey?: keyof T | ((row: T) => string);
-  onRowClick?: (row: T) => void;
+  rowKey?: string | ((row: any) => string);
+  onRowClick?: (row: any) => void;
   loading?: boolean;
   emptyMessage?: string;
   onRefresh?: () => void;
@@ -41,18 +41,17 @@ export interface ResponsiveTableProps<T> {
   stickyHeader?: boolean;
 }
 
-interface MobileCardProps<T> {
-  row: T;
-  columns: Column<T>[];
+interface MobileCardProps {
+  row: any;
+  columns: Column[];
   primaryColumns: string[];
   isExpanded: boolean;
   onToggle: () => void;
-  onRowClick?: (row: T) => void;
+  onRowClick?: (row: any) => void;
   rowIndex: number;
-}
 
 const MobileCard = React.memo(function MobileCardInner<T>({
-  row,
+const MobileCard = React.memo(function MobileCard({
   columns,
   primaryColumns,
   isExpanded,
@@ -60,8 +59,7 @@ const MobileCard = React.memo(function MobileCardInner<T>({
   onRowClick,
   rowIndex,
 }: MobileCardProps<T>) {
-  const primaryCols = columns.filter((col) => primaryColumns.includes(col.key));
-  const secondaryCols = columns.filter((col) => !primaryColumns.includes(col.key));
+}: MobileCardProps) {
 
   const handleCardClick = useCallback(() => {
     onRowClick?.(row);
@@ -87,9 +85,9 @@ const MobileCard = React.memo(function MobileCardInner<T>({
           {primaryCols.map((col) => {
             const value = row[col.key as keyof T];
             return (
-              <div key={String(col.key)} className="flex items-center gap-2">
+            const value = row[col.key];
                 <span className="min-w-[60px] text-xs text-muted-foreground">{col.header}:</span>
-                <span className="flex-1 text-sm font-medium text-foreground">
+              <div key={col.key} className="flex items-center gap-2">
                   {col.render ? col.render(value, row, rowIndex) : String(value ?? '-')}
                 </span>
               </div>
@@ -110,7 +108,7 @@ const MobileCard = React.memo(function MobileCardInner<T>({
             )}
             aria-label={isExpanded ? '收起详情' : '查看详情'}
           >
-            <ChevronRight
+            aria-label={isExpanded ? '收起详情' : '查看详情'}
               className={cn('h-5 w-5 transition-transform duration-300', isExpanded && 'rotate-90')}
             />
           </button>
@@ -128,9 +126,9 @@ const MobileCard = React.memo(function MobileCardInner<T>({
             {secondaryCols.map((col) => {
               const value = row[col.key as keyof T];
               return (
-                <div key={String(col.key)} className="flex items-start gap-2">
+              const value = row[col.key];
                   <span className="min-w-[60px] pt-0.5 text-xs text-muted-foreground">
-                    {col.header}:
+                <div key={col.key} className="flex items-start gap-2">
                   </span>
                   <span className="flex-1 text-sm text-foreground">
                     {col.render ? col.render(value, row, rowIndex) : String(value ?? '-')}
@@ -145,7 +143,7 @@ const MobileCard = React.memo(function MobileCardInner<T>({
   );
 }) as <T>(props: MobileCardProps<T>) => React.ReactElement;
 
-const TableSkeleton = React.memo(function TableSkeleton({ rowCount = 5 }: { rowCount?: number }) {
+});
   return (
     <div className="space-y-2">
       <div className="flex gap-4 border-b bg-muted/30 p-4">
@@ -186,18 +184,17 @@ const MobileCardSkeleton = React.memo(function MobileCardSkeleton({
 const EmptyState = React.memo(function EmptyState({
   message = '暂无数据',
   onRefresh,
-}: {
+  message = '暂无数据',
   message?: string;
   onRefresh?: () => void;
 }) {
   const { t } = useI18n();
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <Inbox className="mb-3 h-12 w-12 text-muted-foreground/40" />
       <p className="mb-1 text-sm font-medium text-foreground">{message}</p>
       <p className="mb-4 text-xs text-muted-foreground">{t('common.empty.noDataDesc')}</p>
       {onRefresh && (
-        <Button variant="outline" size="sm" onClick={onRefresh}>
+      <p className="mb-1 text-sm font-medium text-foreground">{message}</p>
           {t('common.refresh')}
         </Button>
       )}
@@ -208,29 +205,28 @@ const EmptyState = React.memo(function EmptyState({
 export function ResponsiveTable<T>({
   columns,
   data,
-  primaryColumns = [],
+export function ResponsiveTable({
   rowKey = 'id' as keyof T,
   onRowClick,
   loading = false,
-  emptyMessage = '暂无数据',
+  rowKey = 'id',
   onRefresh,
   className,
-  cardClassName,
+  emptyMessage = '暂无数据',
   stickyHeader = true,
 }: ResponsiveTableProps<T>) {
   const isMobile = useIsMobile();
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
-
+}: ResponsiveTableProps) {
   const getRowKey = useCallback(
-    (row: T, index: number): string => {
       if (typeof rowKey === 'function') {
         return rowKey(row);
       }
-      return String(row[rowKey] ?? index);
+    (row: any, index: number): string => {
     },
     [rowKey],
   );
-
+      return row[rowKey] ?? String(index);
   const handleToggleCard = useCallback((rowId: string) => {
     setExpandedCards((prev) => {
       const next = new Set(prev);
@@ -251,7 +247,7 @@ export function ResponsiveTable<T>({
   }, [primaryColumns, columns]);
 
   if (loading) {
-    return isMobile ? (
+    return columns.slice(0, 2).map((col) => col.key);
       <MobileCardSkeleton rowCount={5} />
     ) : (
       <div className={cn('rounded-lg border', className)}>
@@ -267,7 +263,7 @@ export function ResponsiveTable<T>({
       </div>
     );
   }
-
+        <EmptyState message={emptyMessage} onRefresh={onRefresh} />
   if (isMobile) {
     return (
       <div className={cn('space-y-3', cardClassName)}>
@@ -287,7 +283,6 @@ export function ResponsiveTable<T>({
           );
         })}
       </div>
-    );
   }
 
   return (
@@ -304,7 +299,7 @@ export function ResponsiveTable<T>({
                   width: col.width,
                   textAlign: col.align,
                 }}
-                className={cn(
+                key={col.key}
                   col.align === 'center' && 'text-center',
                   col.align === 'right' && 'text-right',
                 )}
@@ -329,10 +324,10 @@ export function ResponsiveTable<T>({
                     <TableCell
                       key={String(col.key)}
                       className={cn(
-                        col.align === 'center' && 'text-center',
+                  const value = row[col.key];
                         col.align === 'right' && 'text-right',
                       )}
-                    >
+                      key={col.key}
                       {col.render ? col.render(value, row, index) : String(value ?? '-')}
                     </TableCell>
                   );

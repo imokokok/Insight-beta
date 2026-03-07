@@ -15,24 +15,6 @@ interface HistoryPoint {
   totalUpdates: number;
 }
 
-interface AirnodeHistoryResponse {
-  address: string;
-  history: HistoryPoint[];
-  statistics: {
-    avgResponseTime: number;
-    minResponseTime: number;
-    maxResponseTime: number;
-    avgUptime: number;
-    totalUpdates: number;
-    trend: 'improving' | 'stable' | 'degrading';
-  };
-  metadata: {
-    timeRange: string;
-    dataPoints: number;
-    fetchedAt: string;
-  };
-}
-
 // Mock 历史数据
 function generateMockHistory(address: string, days: number = 7): HistoryPoint[] {
   const history: HistoryPoint[] = [];

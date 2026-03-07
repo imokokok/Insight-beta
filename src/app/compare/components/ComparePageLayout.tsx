@@ -2,11 +2,15 @@
 
 import { useState, useCallback, useMemo } from 'react';
 
+import Link from 'next/link';
+
+import { motion } from 'framer-motion';
 import { DollarSign, Clock, Gauge, TrendingUp, Shield, Filter, X } from 'lucide-react';
 
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui';
 import { Label } from '@/components/ui';
 import { Input } from '@/components/ui';
@@ -35,13 +39,15 @@ interface ComparePageLayoutProps {
   activeTab: CompareTab;
 }
 
-const TAB_ICONS: Record<CompareTab, React.ElementType> = {
-  price: DollarSign,
-  latency: Clock,
-  cost: Gauge,
-  deviation: TrendingUp,
-  reliability: Shield,
-  crossChain: TrendingUp,
+import type { Route } from 'next';
+
+const tabRoutes: Record<CompareTab, Route> = {
+  price: '/compare/price',
+  latency: '/compare/latency',
+  cost: '/compare/cost',
+  deviation: '/compare/deviation',
+  reliability: '/compare/reliability',
+  crossChain: '/compare/cross-chain',
 };
 
 export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProps) {
@@ -51,8 +57,6 @@ export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProp
 
   const [symbolSearch, setSymbolSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-
-  const ActiveTabIcon = TAB_ICONS[activeTab] || DollarSign;
 
   const handleProtocolToggle = useCallback(
     (protocol: OracleProtocol) => {
@@ -227,10 +231,99 @@ export function ComparePageLayout({ children, activeTab }: ComparePageLayoutProp
         </Card>
       )}
 
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <ActiveTabIcon className="h-4 w-4" />
-        <span>{t(`compare.tabs.${activeTab}`) || activeTab}</span>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="rounded-xl border border-border/30 bg-muted/50 p-1.5 backdrop-blur-sm"
+      >
+        <Tabs value={activeTab} className="w-full">
+          <TabsList className="flex w-full gap-1 overflow-x-auto bg-transparent">
+            <Link href={tabRoutes.price}>
+              <TabsTrigger
+                value="price"
+                className={cn(
+                  'h-11 w-full text-xs transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:h-10 sm:text-sm',
+                  activeTab === 'price' && 'border-border/50 bg-background shadow-sm',
+                )}
+              >
+                <DollarSign className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">{t('compare.tabs.price') || '价格比较'}</span>
+                <span className="sm:hidden">{t('compare.tabs.priceShort') || '价格'}</span>
+              </TabsTrigger>
+            </Link>
+            <Link href={tabRoutes.latency}>
+              <TabsTrigger
+                value="latency"
+                className={cn(
+                  'h-11 w-full text-xs transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:h-10 sm:text-sm',
+                  activeTab === 'latency' && 'border-border/50 bg-background shadow-sm',
+                )}
+              >
+                <Clock className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">{t('compare.tabs.latency') || '延迟分析'}</span>
+                <span className="sm:hidden">{t('compare.tabs.latencyShort') || '延迟'}</span>
+              </TabsTrigger>
+            </Link>
+            <Link href={tabRoutes.cost}>
+              <TabsTrigger
+                value="cost"
+                className={cn(
+                  'h-11 w-full text-xs transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:h-10 sm:text-sm',
+                  activeTab === 'cost' && 'border-border/50 bg-background shadow-sm',
+                )}
+              >
+                <Gauge className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">{t('compare.tabs.cost') || '成本效率'}</span>
+                <span className="sm:hidden">{t('compare.tabs.costShort') || '成本'}</span>
+              </TabsTrigger>
+            </Link>
+            <Link href={tabRoutes.deviation}>
+              <TabsTrigger
+                value="deviation"
+                className={cn(
+                  'h-11 w-full text-xs transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:h-10 sm:text-sm',
+                  activeTab === 'deviation' && 'border-border/50 bg-background shadow-sm',
+                )}
+              >
+                <TrendingUp className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">
+                  {t('compare.tabs.deviation') || '偏差分析'}
+                </span>
+                <span className="sm:hidden">{t('compare.tabs.deviationShort') || '偏差'}</span>
+              </TabsTrigger>
+            </Link>
+            <Link href={tabRoutes.reliability}>
+              <TabsTrigger
+                value="reliability"
+                className={cn(
+                  'h-11 w-full text-xs transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:h-10 sm:text-sm',
+                  activeTab === 'reliability' && 'border-border/50 bg-background shadow-sm',
+                )}
+              >
+                <Shield className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">
+                  {t('compare.tabs.reliability') || '可靠性'}
+                </span>
+                <span className="sm:hidden">{t('compare.tabs.reliabilityShort') || '可靠'}</span>
+              </TabsTrigger>
+            </Link>
+            <Link href={tabRoutes.crossChain}>
+              <TabsTrigger
+                value="crossChain"
+                className={cn(
+                  'h-11 w-full text-xs transition-all duration-200 hover:bg-background/80 data-[state=active]:border-border/50 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:h-10 sm:text-sm',
+                  activeTab === 'crossChain' && 'border-border/50 bg-background shadow-sm',
+                )}
+              >
+                <TrendingUp className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">{t('compare.tabs.crossChain') || '跨链'}</span>
+                <span className="sm:hidden">{t('compare.tabs.crossChainShort') || '跨链'}</span>
+              </TabsTrigger>
+            </Link>
+          </TabsList>
+        </Tabs>
+      </motion.div>
 
       {children}
     </div>

@@ -2,7 +2,7 @@
 
 import { useMemo, memo } from 'react';
 
-import { Server, TrendingUp, TrendingDown } from 'lucide-react';
+import { Clock, Server, TrendingUp, TrendingDown } from 'lucide-react';
 import {
   Line,
   LineChart,
@@ -16,7 +16,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
-import { cn, formatChartLabel, formatNumber } from '@/shared/utils';
+import { cn, formatNumber, formatTime } from '@/shared/utils';
 
 import { TimeRangeSelector } from '../historical/TimeRangeSelector';
 
@@ -68,6 +68,23 @@ export const ResponseTimeTrendChart = memo(function ResponseTimeTrendChart({
       (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }, [data, showPercentiles]);
+  const formatLabel = (timestamp: string) => {
+    const date = new Date(timestamp);
+    switch (timeRange) {
+      case '1h':
+        return formatTime(date, 'HH:mm');
+      case '24h':
+        return formatTime(date, 'HH:mm');
+      case '7d':
+        return formatTime(date, 'MM/DD HH:mm');
+      case '30d':
+      case '90d':
+        return formatTime(date, 'MM/DD');
+      default:
+        return formatTime(date, 'MM/DD');
+    }
+  };
+
 
   const getNodeStats = (node: NodeResponseTimeTrend) => {
     const responseTimeTrend =
@@ -88,6 +105,12 @@ export const ResponseTimeTrendChart = memo(function ResponseTimeTrendChart({
       responseTimeTrend,
     };
   };
+  const getResponseTimeVariant = (ms: number): 'success' | 'warning' | 'danger' => {
+    if (ms <= 500) return 'success';
+    if (ms <= 2000) return 'warning';
+    return 'danger';
+  };
+
 
   return (
     <Card className={cn('w-full', className)}>
@@ -182,7 +205,7 @@ export const ResponseTimeTrendChart = memo(function ResponseTimeTrendChart({
               <XAxis
                 dataKey="timestamp"
                 tickFormatter={(ts) => formatChartLabel(timeRange, ts)}
-                stroke="rgba(148, 163, 184, 0.5)"
+                tickFormatter={formatLabel}
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -206,7 +229,7 @@ export const ResponseTimeTrendChart = memo(function ResponseTimeTrendChart({
                     <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
                       <p className="mb-2 text-xs font-medium text-muted-foreground">
                         {formatChartLabel(timeRange, label as string)}
-                      </p>
+                        {formatLabel(label as string)}
                       <div className="space-y-1">
                         {payload.map((entry: any) => {
                           const nodeName = entry.dataKey
