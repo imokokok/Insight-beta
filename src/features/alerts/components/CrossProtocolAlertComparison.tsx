@@ -10,14 +10,12 @@ import {
   Shield,
   AlertTriangle,
   CheckCircle,
-  ArrowUpRight,
-  ArrowDownRight,
-  Minus,
   Info,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Separator } from '@/components/ui/Separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import {
   Select,
@@ -28,7 +26,7 @@ import {
 } from '@/components/ui/Select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
 
-import { cn } from '@/shared/utils';
+import { cn, TrendIcon } from '@/shared/utils';
 
 import type { OracleProtocol } from '@/types/oracle/protocol';
 
@@ -175,17 +173,6 @@ export function CrossProtocolAlertComparison({
       return current.reliability > best.reliability ? current : best;
     }, mockData[0]);
   }, [mockData]);
-
-  const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
-    switch (trend) {
-      case 'up':
-        return <ArrowUpRight className="h-4 w-4 text-red-500" />;
-      case 'down':
-        return <ArrowDownRight className="h-4 w-4 text-green-500" />;
-      case 'stable':
-        return <Minus className="h-4 w-4 text-gray-500" />;
-    }
-  };
 
   const getMetricValue = (data: ProtocolComparison, metric: string) => {
     switch (metric) {
@@ -367,7 +354,7 @@ export function CrossProtocolAlertComparison({
                             {getMetricValue(data, selectedMetric)}
                           </div>
                           <div className="flex items-center gap-1 text-xs">
-                            {getTrendIcon(data.trend)}
+                            <TrendIcon trend={data.trend} />
                             <span
                               className={cn(
                                 data.trend === 'up' && 'text-red-500',

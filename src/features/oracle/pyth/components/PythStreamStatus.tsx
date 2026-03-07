@@ -6,7 +6,7 @@
 
 'use client';
 
-import { Activity, CheckCircle, Wifi, WifiOff } from 'lucide-react';
+import { Wifi, WifiOff, Activity } from 'lucide-react';
 
 import { Badge } from '@/components/ui';
 import { cn } from '@/shared/utils/ui';

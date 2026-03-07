@@ -103,6 +103,9 @@ export { Progress } from './Progress';
 // Scroll Area
 export { ScrollArea, ScrollBar } from './ScrollArea';
 
+// Separator
+export { Separator, type SeparatorProps } from './Separator';
+
 // Select
 export { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from './Select';
 

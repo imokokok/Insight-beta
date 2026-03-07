@@ -6,7 +6,7 @@ import { ContentSection, ContentGrid } from '@/components/common';
 import { Badge } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { cn } from '@/shared/utils';
+import { cn, getStatusColor } from '@/shared/utils';
 import { formatPrice } from '@/shared/utils/format';
 import type { RealtimeComparisonItem, ComparisonFilter } from '@/types/oracle/comparison';
 
@@ -30,17 +30,6 @@ export function RealtimeComparisonView({
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString();
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
-      case 'stale':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
-      default:
-        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-    }
   };
 
   if (isLoading && !data?.length) {

@@ -2,12 +2,11 @@
 
 import { useState, useMemo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
-import { Trophy, TrendingUp, Activity, Shield, Search } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Trophy, Activity, Shield, Search, TrendingUp } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { cn } from '@/shared/utils';
+import { cn, getStatusColor, TrendIcon } from '@/shared/utils';
 
 export interface Validator {
   address: string;
@@ -31,7 +30,7 @@ interface ValidatorListProps {
   limit?: number;
 }
 
-export function ValidatorList({ validators, loading = false, limit = 20 }: ValidatorListProps) {
+export function ValidatorList({ validators, loading = false }: ValidatorListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'rank' | 'votingPower' | 'commission' | 'uptime'>('rank');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -112,17 +111,6 @@ export function ValidatorList({ validators, loading = false, limit = 20 }: Valid
   };
 
   const isExpanded = (address: string) => expandedValidators.has(address);
-
-  const getStatusColor = (status: Validator['status']) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
-      case 'inactive':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
-      case 'jailed':
-        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-    }
-  };
 
   const getUptimeColor = (uptime: number) => {
     if (uptime >= 99) return 'text-green-600 dark:text-green-400';

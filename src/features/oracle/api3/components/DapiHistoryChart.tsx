@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 
-import { TrendingUp, Clock, Activity } from 'lucide-react';
+import { Clock, Activity, TrendingUp } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -19,7 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { CHART_GRID } from '@/lib/chart-config';
-import { formatTime } from '@/shared/utils';
+import { formatTime, TrendIcon } from '@/shared/utils';
 
 interface DapiHistoryPoint {
   timestamp: string;
@@ -36,16 +36,7 @@ interface DapiHistoryChartProps {
 
 type TimeRange = '1h' | '24h' | '7d' | '30d';
 
-interface FilteredDataPoint {
-  time: string;
-  timestamp: string;
-  value: number;
-  updateCount: number;
-  avgDelay: number;
-}
-
 export function DapiHistoryChart({ dapiName, history, isLoading }: DapiHistoryChartProps) {
-  const { t } = useI18n();
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
 
   const chartData = useMemo(() => {

@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { CHART_GRID } from '@/lib/chart-config';
-import { cn } from '@/shared/utils';
+import { cn, TrendIcon } from '@/shared/utils';
 
 interface ChainDataPoint {
   chain: string;
@@ -51,7 +51,6 @@ interface ComparisonChartData {
 }
 
 export function CrossChainConsistency({ dapiName, data, isLoading }: CrossChainConsistencyProps) {
-  const { t } = useI18n();
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
 
   const consistencyScore = useMemo<ConsistencyScore | null>(() => {

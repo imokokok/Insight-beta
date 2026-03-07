@@ -41,7 +41,7 @@ import { Button } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { fetchApiData, formatNumber, cn, formatFreshness, formatTimeAgo } from '@/shared/utils';
+import { fetchApiData, formatNumber, cn, formatFreshness, formatTimeAgo, getStatusColor } from '@/shared/utils';
 import { calculateHealthScore } from '@/shared/utils/math';
 import { useOnChainActivity } from '@/features/overview/hooks/useOnChainActivity';
 
@@ -414,17 +414,6 @@ export default function OverviewPage() {
   );
 
   const quickLinks = useMemo(() => getQuickLinks(t), [t]);
-
-  const getStatusColor = (status: ProtocolHealth['status']) => {
-    switch (status) {
-      case 'healthy':
-        return 'bg-success/20 text-success';
-      case 'warning':
-        return 'bg-warning/20 text-warning';
-      case 'critical':
-        return 'bg-error/20 text-error';
-    }
-  };
 
   const getStatusLabel = (status: ProtocolHealth['status']) => {
     switch (status) {

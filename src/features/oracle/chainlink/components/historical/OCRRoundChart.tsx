@@ -20,7 +20,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { CHART_COLORS, CHART_COLOR_PALETTE } from '@/lib/chart-config';
-import { cn, formatNumber, formatTime, formatLatency } from '@/shared/utils';
+import { cn, formatChartLabel, formatNumber, formatLatency } from '@/shared/utils';
 
 import type { OCRRoundStats, TimeRange } from '../../types';
 import { TimeRangeSelector } from './TimeRangeSelector';
@@ -66,23 +66,6 @@ export const OCRRoundChart = memo(function OCRRoundChart({
       percentage: ((count / data.totalRounds) * 100).toFixed(1),
     }));
   }, [data]);
-
-  const formatLabel = (timestamp: string) => {
-    const date = new Date(timestamp);
-    switch (timeRange) {
-      case '1h':
-        return formatTime(date, 'HH:mm');
-      case '24h':
-        return formatTime(date, 'HH:mm');
-      case '7d':
-        return formatTime(date, 'MM/DD HH:mm');
-      case '30d':
-      case '90d':
-        return formatTime(date, 'MM/DD');
-      default:
-        return formatTime(date, 'MM/DD');
-    }
-  };
 
   const stats = [
     {
@@ -181,7 +164,7 @@ export const OCRRoundChart = memo(function OCRRoundChart({
 
                     <XAxis
                       dataKey="timestamp"
-                      tickFormatter={formatLabel}
+                      tickFormatter={(ts) => formatChartLabel(timeRange, ts)}
                       stroke="rgba(148, 163, 184, 0.5)"
                       fontSize={12}
                       tickLine={false}
@@ -206,7 +189,7 @@ export const OCRRoundChart = memo(function OCRRoundChart({
                         return (
                           <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
                             <p className="mb-2 text-xs font-medium text-muted-foreground">
-                              {formatLabel(label as string)}
+                              {formatChartLabel(timeRange, label as string)}
                             </p>
                             <div className="space-y-1 text-xs">
                               <div className="flex justify-between gap-4">
@@ -267,7 +250,7 @@ export const OCRRoundChart = memo(function OCRRoundChart({
 
                       <XAxis
                         dataKey="timestamp"
-                        tickFormatter={formatLabel}
+                        tickFormatter={(ts) => formatChartLabel(timeRange, ts)}
                         stroke="rgba(148, 163, 184, 0.5)"
                         fontSize={12}
                         tickLine={false}
@@ -292,7 +275,7 @@ export const OCRRoundChart = memo(function OCRRoundChart({
                           return (
                             <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
                               <p className="mb-2 text-xs font-medium text-muted-foreground">
-                                {formatLabel(label as string)}
+                                {formatChartLabel(timeRange, label as string)}
                               </p>
                               <p className="text-xs">
                                 <span className="text-muted-foreground">聚合时间:</span>{' '}

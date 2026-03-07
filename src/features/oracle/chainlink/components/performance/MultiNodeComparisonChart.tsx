@@ -6,10 +6,6 @@ import {
   Award,
   Clock,
   Activity,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Server,
   CheckCircle2,
 } from 'lucide-react';
 import {
@@ -29,7 +25,7 @@ import {
   Legend,
 } from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
 import { cn, formatNumber } from '@/shared/utils';
 
@@ -111,27 +107,10 @@ export const MultiNodeComparisonChart = memo(function MultiNodeComparisonChart({
 
   const comparisonMetrics = data?.comparisonMetrics;
 
-  const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
-    switch (trend) {
-      case 'up':
-        return <TrendingUp className="h-3 w-3 text-success" />;
-      case 'down':
-        return <TrendingDown className="h-3 w-3 text-error" />;
-      default:
-        return <Minus className="h-3 w-3 text-muted-foreground" />;
-    }
-  };
-
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'text-success';
     if (score >= 70) return 'text-warning';
     return 'text-error';
-  };
-
-  const getResponseTimeVariant = (ms: number): 'success' | 'warning' | 'danger' => {
-    if (ms <= 500) return 'success';
-    if (ms <= 2000) return 'warning';
-    return 'danger';
   };
 
   return (

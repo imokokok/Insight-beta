@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import type { TableRowData } from '@/features/comparison/components/VirtualTable';
 import { useI18n } from '@/i18n';
-import { cn } from '@/shared/utils';
+import { cn, getStatusColor } from '@/shared/utils';
 import {
   formatPrice,
   formatLatency,
@@ -38,19 +38,6 @@ const formatDeviation = (value: number): string => {
   const percentValue = Math.abs(value) * 100;
   if (percentValue < 0.01) return '<0.01%';
   return `${percentValue.toFixed(2)}%`;
-};
-
-const getStatusColor = (status: string): string => {
-  switch (status) {
-    case 'active':
-      return 'bg-emerald-500';
-    case 'stale':
-      return 'bg-amber-500';
-    case 'error':
-      return 'bg-red-500';
-    default:
-      return 'bg-gray-500';
-  }
 };
 
 export const RowDetailPanel = React.memo(function RowDetailPanel({

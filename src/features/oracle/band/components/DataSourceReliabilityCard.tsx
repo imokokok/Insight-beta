@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Shield, Star, TrendingUp, CheckCircle, Clock } from 'lucide-react';
+import { Shield, Star, CheckCircle, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Progress } from '@/components/ui/Progress';
-import { cn } from '@/shared/utils';
+import { cn, TrendIcon } from '@/shared/utils';
 
 interface DataSourceReliability {
   sourceId: string;
@@ -149,17 +149,6 @@ export function DataSourceReliabilityCard({ sources, loading = false }: DataSour
     return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
   };
 
-  const getTrendIcon = (trend: DataSourceReliability['trend']) => {
-    switch (trend) {
-      case 'up':
-        return <TrendingUp className="h-3 w-3 text-green-600" />;
-      case 'down':
-        return <TrendingUp className="h-3 w-3 rotate-180 text-red-600" />;
-      case 'stable':
-        return <Shield className="h-3 w-3 text-blue-600" />;
-    }
-  };
-
   const getStarRating = (score: number) => {
     if (score >= 98) return 5;
     if (score >= 95) return 4;
@@ -270,15 +259,15 @@ export function DataSourceReliabilityCard({ sources, loading = false }: DataSour
                       <p className="font-semibold">{source.name}</p>
                       <Badge variant="outline">{source.category}</Badge>
                       <div className="flex items-center gap-1">
-                        {getTrendIcon(source.trend)}
-                        <span className={cn(
-                          'text-xs font-medium',
-                          source.trend === 'up' ? 'text-green-600' :
-                          source.trend === 'down' ? 'text-red-600' : 'text-blue-600'
-                        )}>
-                          {source.trend}
-                        </span>
-                      </div>
+                      <TrendIcon trend={source.trend} />
+                      <span className={cn(
+                        'text-xs font-medium',
+                        source.trend === 'up' ? 'text-green-600' :
+                        source.trend === 'down' ? 'text-red-600' : 'text-blue-600'
+                      )}>
+                        {source.trend}
+                      </span>
+                    </div>
                     </div>
                     <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
                       <span>{(source.totalRequests / 1000000).toFixed(1)}M requests</span>

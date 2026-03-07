@@ -4,18 +4,14 @@ import { useMemo, memo, useState } from 'react';
 
 import {
   AlertCircle,
-  AlertTriangle,
   CheckCircle2,
   Clock,
   TrendingUp,
   TrendingDown,
-  Activity,
   Zap,
   XCircle,
 } from 'lucide-react';
 import {
-  Area,
-  AreaChart,
   CartesianGrid,
   ReferenceLine,
   ResponsiveContainer,
@@ -25,11 +21,12 @@ import {
   Scatter,
   ScatterChart,
   ZAxis,
+  Cell,
 } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import { CHART_COLORS } from '@/lib/chart-config';
-import { cn, formatNumber, formatTime } from '@/shared/utils';
+import { cn, formatChartLabel, formatTime } from '@/shared/utils';
 
 import type { AnomalyEvent, AnomalyStats, TimeRange } from '../../types';
 import { TimeRangeSelector } from './TimeRangeSelector';
@@ -148,23 +145,6 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
     ];
   }, [stats]);
 
-  const formatLabel = (timestamp: string) => {
-    const date = new Date(timestamp);
-    switch (timeRange) {
-      case '1h':
-        return formatTime(date, 'HH:mm');
-      case '24h':
-        return formatTime(date, 'HH:mm');
-      case '7d':
-        return formatTime(date, 'MM/DD HH:mm');
-      case '30d':
-      case '90d':
-        return formatTime(date, 'MM/DD');
-      default:
-        return formatTime(date, 'MM/DD');
-    }
-  };
-
   const getEventIcon = (type: string) => {
     const Icon = ANOMALY_ICONS[type] || AlertCircle;
     return <Icon className="h-4 w-4" />;
@@ -254,7 +234,7 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
 
                     <XAxis
                       dataKey="timestamp"
-                      tickFormatter={formatLabel}
+                      tickFormatter={(ts) => formatChartLabel(timeRange, ts)}
                       stroke="rgba(148, 163, 184, 0.5)"
                       fontSize={12}
                       tickLine={false}
@@ -292,7 +272,7 @@ export const AnomalyTimeline = memo(function AnomalyTimeline({
                             </div>
                             <div className="space-y-1 text-xs">
                               <p className="text-muted-foreground">
-                                {formatLabel(entry.timestamp)}
+                                {formatChartLabel(timeRange, entry.timestamp)}
                               </p>
                               <p>
                                 <span className="text-muted-foreground">严重性:</span>{' '}

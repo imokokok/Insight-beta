@@ -8,7 +8,7 @@ import { Button } from '@/components/ui';
 import { Badge, StatusBadge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
-import { cn } from '@/shared/utils';
+import { cn, getStatusColor } from '@/shared/utils';
 import { formatRelativeTime } from '@/shared/utils/format/date';
 
 export interface FreshnessData {
@@ -31,19 +31,6 @@ interface DataFreshnessCardProps {
   chain?: string;
   className?: string;
 }
-
-const getStatusColor = (status: FreshnessData['status']): string => {
-  switch (status) {
-    case 'healthy':
-      return 'text-emerald-500';
-    case 'warning':
-      return 'text-amber-500';
-    case 'critical':
-      return 'text-red-500';
-    default:
-      return 'text-gray-500';
-  }
-};
 
 const getStatusBgColor = (status: FreshnessData['status']): string => {
   switch (status) {

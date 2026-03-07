@@ -2,7 +2,6 @@
 
 import { useMemo, memo, useState } from 'react';
 
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -12,12 +11,11 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  ReferenceLine,
 } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
-import { cn, formatNumber, formatPrice, formatTime } from '@/shared/utils';
+import { cn, formatChartLabel, formatPrice, formatNumber, TrendIcon } from '@/shared/utils';
 
 import type { FeedTrendData, TimeRange } from '../../types';
 import { TimeRangeSelector } from './TimeRangeSelector';
@@ -40,7 +38,6 @@ export const FeedTrendChart = memo(function FeedTrendChart({
   className,
   title = 'Feed 价格趋势',
   description = '多喂价历史价格趋势对比',
-  showVolume = false,
   height = 400,
 }: FeedTrendChartProps) {
   const [selectedFeeds, setSelectedFeeds] = useState<string[]>(
@@ -69,33 +66,10 @@ export const FeedTrendChart = memo(function FeedTrendChart({
     );
   }, [data]);
 
-  const formatLabel = (timestamp: string) => {
-    const date = new Date(timestamp);
-    switch (timeRange) {
-      case '1h':
-        return formatTime(date, 'HH:mm');
-      case '24h':
-        return formatTime(date, 'HH:mm');
-      case '7d':
-        return formatTime(date, 'MM/DD HH:mm');
-      case '30d':
-      case '90d':
-        return formatTime(date, 'MM/DD');
-      default:
-        return formatTime(date, 'MM/DD');
-    }
-  };
-
   const formatYAxis = (value: number) => {
     if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
     if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
     return value.toFixed(2);
-  };
-
-  const getPriceChangeIcon = (change: number) => {
-    if (change > 0) return <TrendingUp className="h-4 w-4 text-success" />;
-    if (change < 0) return <TrendingDown className="h-4 w-4 text-error" />;
-    return <Minus className="h-4 w-4 text-muted-foreground" />;
   };
 
   const toggleFeed = (feedId: string) => {
@@ -104,6 +78,12 @@ export const FeedTrendChart = memo(function FeedTrendChart({
         ? prev.filter((id) => id !== feedId)
         : [...prev, feedId].slice(0, 5)
     );
+  };
+
+  const getPriceChangeIcon = (change: number) => {
+    if (change > 0) return <TrendIcon trend="up" className="h-3 w-3" />;
+    if (change < 0) return <TrendIcon trend="down" className="h-3 w-3" />;
+    return <TrendIcon trend="stable" className="h-3 w-3" />;
   };
 
   return (
@@ -198,7 +178,7 @@ export const FeedTrendChart = memo(function FeedTrendChart({
 
               <XAxis
                 dataKey="timestamp"
-                tickFormatter={formatLabel}
+                tickFormatter={(ts) => formatChartLabel(timeRange, ts)}
                 stroke="rgba(148, 163, 184, 0.5)"
                 fontSize={12}
                 tickLine={false}
@@ -223,7 +203,7 @@ export const FeedTrendChart = memo(function FeedTrendChart({
                   return (
                     <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
                       <p className="mb-2 text-xs font-medium text-muted-foreground">
-                        {formatLabel(label as string)}
+                        {formatChartLabel(timeRange, label as string)}
                       </p>
                       <div className="space-y-1">
                         {payload.map((entry: any) => {

@@ -7,16 +7,14 @@ import {
   Activity,
   Clock,
   Server,
-  TrendingUp,
   BarChart3,
   Zap,
 } from 'lucide-react';
 
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui';
 import { Badge } from '@/components/ui';
-import { useI18n } from '@/i18n';
-import { cn, formatNumber } from '@/shared/utils';
+import { cn } from '@/shared/utils';
 
 import type {
   NodeUptimeTimeSeries,
@@ -57,7 +55,6 @@ export function NodePerformancePanel({
   defaultTimeRange = '24h',
   defaultTab = 'uptime',
 }: NodePerformancePanelProps) {
-  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<TabValue>(defaultTab as TabValue);
   const [timeRange, setTimeRange] = useState<TimeRange>(defaultTimeRange);
 

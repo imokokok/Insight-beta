@@ -2,7 +2,7 @@
 
 import { useMemo, memo } from 'react';
 
-import { Activity, Clock, TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import {
   Line,
   LineChart,
@@ -14,11 +14,13 @@ import {
   ReferenceLine,
   Area,
   AreaChart,
+  Activity,
+  Clock,
 } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
-import { cn, formatNumber, formatTime } from '@/shared/utils';
+import { cn, formatChartLabel, formatNumber } from '@/shared/utils';
 
 import type { FeedUpdateFrequencyTrend, TimeRange } from '../../types';
 import { TimeRangeSelector } from '../historical/TimeRangeSelector';
@@ -67,23 +69,6 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
       (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
   }, [data, showInterval]);
-
-  const formatLabel = (timestamp: string) => {
-    const date = new Date(timestamp);
-    switch (timeRange) {
-      case '1h':
-        return formatTime(date, 'HH:mm');
-      case '24h':
-        return formatTime(date, 'HH:mm');
-      case '7d':
-        return formatTime(date, 'MM/DD HH:mm');
-      case '30d':
-      case '90d':
-        return formatTime(date, 'MM/DD');
-      default:
-        return formatTime(date, 'MM/DD');
-    }
-  };
 
   const getFeedStats = (feed: FeedUpdateFrequencyTrend) => {
     const frequencyTrend =
@@ -222,7 +207,7 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
 
                   <XAxis
                     dataKey="timestamp"
-                    tickFormatter={formatLabel}
+                    tickFormatter={(ts) => formatChartLabel(timeRange, ts)}
                     stroke="rgba(148, 163, 184, 0.5)"
                     fontSize={12}
                     tickLine={false}
@@ -246,7 +231,7 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                       return (
                         <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
                           <p className="mb-2 text-xs font-medium text-muted-foreground">
-                            {formatLabel(label as string)}
+                            {formatChartLabel(timeRange, label as string)}
                           </p>
                           <div className="space-y-1">
                             {payload.map((entry: any) => {
@@ -323,7 +308,7 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
 
                     <XAxis
                       dataKey="timestamp"
-                      tickFormatter={formatLabel}
+                      tickFormatter={(ts) => formatChartLabel(timeRange, ts)}
                       stroke="rgba(148, 163, 184, 0.5)"
                       fontSize={12}
                       tickLine={false}
@@ -347,7 +332,7 @@ export const FeedUpdateFrequencyChart = memo(function FeedUpdateFrequencyChart({
                         return (
                           <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
                             <p className="mb-2 text-xs font-medium text-muted-foreground">
-                              {formatLabel(label as string)}
+                              {formatChartLabel(timeRange, label as string)}
                             </p>
                             <div className="space-y-1">
                               {payload.map((entry: any) => {

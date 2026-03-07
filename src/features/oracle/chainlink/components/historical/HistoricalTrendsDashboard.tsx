@@ -6,7 +6,6 @@ import { Activity, TrendingUp, Users, AlertTriangle } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
-import { useI18n } from '@/i18n';
 
 import { FeedTrendChart } from './FeedTrendChart';
 import { NodePerformanceChart } from './NodePerformanceChart';
@@ -16,17 +15,14 @@ import { useHistoricalTrends } from '@/features/oracle/chainlink/hooks/useHistor
 import type { TimeRange } from '../types';
 
 export interface HistoricalTrendsDashboardProps {
-  className?: string;
   defaultTimeRange?: TimeRange;
 }
 
 type TabValue = 'feeds' | 'nodes' | 'ocr' | 'anomalies';
 
 export const HistoricalTrendsDashboard = memo(function HistoricalTrendsDashboard({
-  className,
   defaultTimeRange = '24h',
 }: HistoricalTrendsDashboardProps) {
-  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<TabValue>('feeds');
   const [timeRange, setTimeRange] = useState<TimeRange>(defaultTimeRange);
 

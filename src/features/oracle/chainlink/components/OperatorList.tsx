@@ -8,9 +8,6 @@ import {
   Server,
   Clock,
   Activity,
-  TrendingUp,
-  TrendingDown,
-  Minus,
   Info,
   BarChart3,
 } from 'lucide-react';
@@ -22,7 +19,7 @@ import { Progress } from '@/components/ui';
 import { SkeletonList } from '@/components/ui';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { formatTime } from '@/shared/utils';
+import { formatTime, TrendIcon } from '@/shared/utils';
 import { fetchApiData } from '@/shared/utils/api';
 
 import { getScoreColor } from '../utils/reliabilityScore';
@@ -70,6 +67,8 @@ export function OperatorList({ className, collapsible = false }: OperatorListPro
     fetchOperators();
   }, [fetchOperators]);
 
+  const onlineCount = operators.filter((op) => op.online).length;
+
   const formatResponseTime = (ms: number): string => {
     if (ms < 1000) return `${ms}ms`;
     return `${(ms / 1000).toFixed(1)}s`;
@@ -80,19 +79,6 @@ export function OperatorList({ className, collapsible = false }: OperatorListPro
     if (ms <= 2000) return 'warning';
     return 'danger';
   };
-
-  const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
-    switch (trend) {
-      case 'up':
-        return <TrendingUp className="h-3 w-3 text-green-500" />;
-      case 'down':
-        return <TrendingDown className="h-3 w-3 text-red-500" />;
-      default:
-        return <Minus className="h-3 w-3 text-muted-foreground" />;
-    }
-  };
-
-  const onlineCount = operators.filter((op) => op.online).length;
 
   const performanceData = useMemo(() => {
     if (!operators.length) return null;
@@ -283,7 +269,7 @@ export function OperatorList({ className, collapsible = false }: OperatorListPro
                   >
                     {operator.reliabilityScore.overall}
                   </span>
-                  {getTrendIcon(operator.reliabilityScore.trend)}
+                  <TrendIcon trend={operator.reliabilityScore.trend} />
                 </div>
               </div>
               <Progress value={operator.reliabilityScore.overall} className="h-2" />

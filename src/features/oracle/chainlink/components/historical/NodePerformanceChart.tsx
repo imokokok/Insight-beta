@@ -2,7 +2,7 @@
 
 import { useMemo, memo } from 'react';
 
-import { Activity, Clock, Server } from 'lucide-react';
+import { Server } from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -14,11 +14,13 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  Clock,
+  Activity,
 } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui';
 import { CHART_COLORS, getChartColor } from '@/lib/chart-config';
-import { cn, formatNumber, formatTime } from '@/shared/utils';
+import { cn, formatChartLabel, formatNumber } from '@/shared/utils';
 
 import type { NodePerformanceHistory, TimeRange } from '../../types';
 import { TimeRangeSelector } from './TimeRangeSelector';
@@ -63,23 +65,6 @@ export const NodePerformanceChart = memo(function NodePerformanceChart({
       (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
   }, [data]);
-
-  const formatLabel = (timestamp: string) => {
-    const date = new Date(timestamp);
-    switch (timeRange) {
-      case '1h':
-        return formatTime(date, 'HH:mm');
-      case '24h':
-        return formatTime(date, 'HH:mm');
-      case '7d':
-        return formatTime(date, 'MM/DD HH:mm');
-      case '30d':
-      case '90d':
-        return formatTime(date, 'MM/DD');
-      default:
-        return formatTime(date, 'MM/DD');
-    }
-  };
 
   const getNodeStats = (node: NodePerformanceHistory) => {
     const uptimeColor =
@@ -183,7 +168,7 @@ export const NodePerformanceChart = memo(function NodePerformanceChart({
 
                     <XAxis
                       dataKey="timestamp"
-                      tickFormatter={formatLabel}
+                      tickFormatter={(ts) => formatChartLabel(timeRange, ts)}
                       stroke="rgba(148, 163, 184, 0.5)"
                       fontSize={12}
                       tickLine={false}
@@ -208,7 +193,7 @@ export const NodePerformanceChart = memo(function NodePerformanceChart({
                         return (
                           <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
                             <p className="mb-2 text-xs font-medium text-muted-foreground">
-                              {formatLabel(label as string)}
+                              {formatChartLabel(timeRange, label as string)}
                             </p>
                             <div className="space-y-1">
                               {payload.map((entry: any) => {
@@ -285,7 +270,7 @@ export const NodePerformanceChart = memo(function NodePerformanceChart({
 
                     <XAxis
                       dataKey="timestamp"
-                      tickFormatter={formatLabel}
+                      tickFormatter={(ts) => formatChartLabel(timeRange, ts)}
                       stroke="rgba(148, 163, 184, 0.5)"
                       fontSize={12}
                       tickLine={false}
@@ -309,7 +294,7 @@ export const NodePerformanceChart = memo(function NodePerformanceChart({
                         return (
                           <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
                             <p className="mb-2 text-xs font-medium text-muted-foreground">
-                              {formatLabel(label as string)}
+                              {formatChartLabel(timeRange, label as string)}
                             </p>
                             <div className="space-y-1">
                               {payload.map((entry: any) => {

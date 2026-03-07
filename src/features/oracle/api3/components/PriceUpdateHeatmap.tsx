@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
-import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 interface UpdateDataPoint {
@@ -27,14 +26,11 @@ interface HeatmapCell {
 }
 
 export function PriceUpdateHeatmap({ data, isLoading }: PriceUpdateHeatmapProps) {
-  const { t } = useI18n();
-
   const heatmapData = useMemo(() => {
     if (!data || data.length === 0) return [];
 
     // 按小时和天聚合数据
     const cellMap = new Map<string, HeatmapCell>();
-    const daysOfWeek = ['一', '二', '三', '四', '五', '六', '日'];
 
     data.forEach((point) => {
       const date = new Date(point.timestamp);
@@ -89,8 +85,6 @@ export function PriceUpdateHeatmap({ data, isLoading }: PriceUpdateHeatmapProps)
         return '正常';
     }
   };
-
-  const maxCount = Math.max(...heatmapData.map((c) => c.count), 1);
 
   if (isLoading) {
     return (

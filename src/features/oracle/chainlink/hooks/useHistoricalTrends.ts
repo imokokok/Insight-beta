@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 
 import useSWR from 'swr';
 
@@ -15,8 +15,6 @@ const TIME_RANGE_LIMITS: Record<TimeRange, number> = {
   '30d': 180,
   '90d': 180,
 };
-
-const MAX_DATA_POINTS = 500;
 
 export function useHistoricalTrends(
   initialTimeRange: TimeRange = '24h',
@@ -70,11 +68,10 @@ export function useHistoricalTrends(
   );
 
   const setTimeRange = useCallback(
-    async (timeRange: TimeRange) => {
-      const url = buildUrl(timeRange);
+    async (_timeRange: TimeRange) => {
       await mutate();
     },
-    [buildUrl, mutate]
+    [mutate]
   );
 
   return {
