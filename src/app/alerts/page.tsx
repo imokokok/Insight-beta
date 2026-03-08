@@ -1,7 +1,6 @@
 'use client';
 
-import { forwardRef, lazy, Suspense, useMemo } from 'react';
-import { lazy, Suspense, useMemo } from 'react';
+import { forwardRef, lazy, Suspense, useMemo, type ComponentPropsWithoutRef } from 'react';
 
 import { AnimatePresence, motion } from 'framer-motion';
 import {

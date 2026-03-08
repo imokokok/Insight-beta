@@ -25,12 +25,6 @@ const sourceLabels: Record<AlertSource, string> = {
   security: 'Security',
 };
 
-const sourceLabels: Record<AlertSource, string> = {
-  price_anomaly: 'Price Anomaly',
-  cross_chain: 'Cross Chain',
-  security: 'Security',
-};
-
 const severityColors: Record<AlertSeverity, string> = {
   critical: '#dc2626',
   high: '#ea580c',
@@ -49,6 +43,12 @@ function getCellColor(count: number, severity: AlertSeverity): string {
 function getCellOpacity(count: number): number {
   if (count === 0) return 0.3;
   return Math.min(0.4 + count * 0.15, 1);
+}
+
+export function AlertHeatmap({ data, loading, className }: AlertHeatmapProps) {
+  const { t } = useI18n();
+  const [hoveredCell, setHoveredCell] = useState<AlertHeatmapCell | null>(null);
+
   const heatmapGrid = useMemo(() => {
     const sources: AlertSource[] = ['price_anomaly', 'cross_chain', 'security'];
     const hours = Array.from({ length: 24 }, (_, i) => i);

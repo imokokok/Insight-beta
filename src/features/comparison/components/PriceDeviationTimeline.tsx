@@ -15,28 +15,22 @@ import {
 
 import { Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Skeleton } from '@/components/ui';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 import { cn } from '@/shared/utils';
 import { buildApiUrl } from '@/shared/utils';
-import {
-  formatDurationMinutes,
-  formatTimeAgoShort,
-  formatFullTime,
-  formatFullDate,
-} from '@/shared/utils/format';
-import { formatDeviationSmall } from '@/shared/utils/format';
+import { formatDurationMinutes, formatTimeAgo, formatTime } from '@/shared/utils/format';
+import { formatDeviation } from '@/shared/utils/format';
+import type {
   PriceDeviationTimeline,
-  PriceDeviationTimeline as PriceDeviationTimelineType,
   PriceDeviationLevel,
   PriceDeviationEvent,
 } from '@/types/oracle/comparison';
 
+interface PriceDeviationTimelineProps {
   data?: PriceDeviationTimeline;
-  data?: PriceDeviationTimelineType;
   isLoading?: boolean;
   maxEvents?: number;
   timeRange?: '24h' | '7d' | '30d';
@@ -44,7 +38,7 @@ import { formatDeviationSmall } from '@/shared/utils/format';
   symbol?: string;
   protocol?: string;
 }
-const levelConfig: Record<
+
 const levelConfig: Record<
   PriceDeviationLevel,
   {
@@ -54,14 +48,14 @@ const levelConfig: Record<
     icon: React.ElementType;
     ringColor: string;
     levelLabel: string;
-> = {
+  }
 > = {
   low: {
     color: 'text-success',
     bgColor: 'bg-success/5',
     borderColor: 'border-success/30',
     icon: CheckCircle2,
-    levelLabel: 'Low',
+    ringColor: 'ring-success/20',
     levelLabel: 'Low',
   },
   medium: {
@@ -69,7 +63,7 @@ const levelConfig: Record<
     bgColor: 'bg-warning/5',
     borderColor: 'border-warning/30',
     icon: TrendingUp,
-    levelLabel: 'Medium',
+    ringColor: 'ring-warning/20',
     levelLabel: 'Medium',
   },
   high: {
@@ -77,7 +71,7 @@ const levelConfig: Record<
     bgColor: 'bg-orange-500/5',
     borderColor: 'border-orange-500/30',
     icon: TrendingDown,
-    levelLabel: 'High',
+    ringColor: 'ring-orange-500/20',
     levelLabel: 'High',
   },
   critical: {
@@ -85,14 +79,15 @@ const levelConfig: Record<
     bgColor: 'bg-error/5',
     borderColor: 'border-error/30',
     icon: AlertTriangle,
+    ringColor: 'ring-error/20',
     levelLabel: 'Critical',
-    levelLabel: 'Critical',
-};
+  },
 };
 
 interface TimelineEventProps {
   event: PriceDeviationEvent;
   isFirst: boolean;
+  isLast: boolean;
 }
 
 const TimelineEvent = memo(function TimelineEvent({ event, isFirst, isLast }: TimelineEventProps) {
@@ -156,7 +151,7 @@ const TimelineEvent = memo(function TimelineEvent({ event, isFirst, isLast }: Ti
               </Badge>
               <Badge variant={deviationBadgeVariant} className="text-xs font-semibold">
                 <Icon className="mr-1 h-3 w-3" />
-                {formatDeviationSmall(event.deviationPercent)}
+                {formatDeviation(event.deviationPercent)}
               </Badge>
             </div>
             <div className="flex flex-col items-end gap-1">
@@ -176,15 +171,14 @@ const TimelineEvent = memo(function TimelineEvent({ event, isFirst, isLast }: Ti
               <div className="flex flex-col items-end">
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock3 className="h-3 w-3" />
-                  {formatFullTime(event.timestamp)}
+                  {formatTime(event.timestamp)}
                 </div>
                 <span className="text-[11px] text-muted-foreground/70">
-                  {formatFullDate(event.timestamp)} · {formatTimeAgoShort(event.timestamp)}
+                  {formatTime(event.timestamp)} · {formatTimeAgo(event.timestamp)}
                 </span>
               </div>
             </div>
           </div>
-                  {formatFullTime(event.timestamp)}
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
             <div className="rounded-lg border border-border/50 bg-background/50 p-3">
               <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
@@ -215,20 +209,10 @@ const TimelineEvent = memo(function TimelineEvent({ event, isFirst, isLast }: Ti
               <p className="text-sm font-semibold">${event.referencePrice.toFixed(4)}</p>
             </div>
           </div>
-            <div className="rounded-lg border border-border/50 bg-background/50 p-3">
           {!event.resolved && (
             <div className="mt-4 flex items-center gap-2 rounded-lg border border-error/20 bg-error/5 p-3 text-error">
               <AlertTriangle className="h-4 w-4 animate-pulse" />
               <span className="text-sm font-medium">{t('comparison.deviation.ongoing')}</span>
-            </div>
-          )}
-        </div>
-          </div>
-
-          {!event.resolved && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg border border-error/20 bg-error/5 p-3 text-error">
-              <AlertTriangle className="h-4 w-4 animate-pulse" />
-export function PriceDeviationTimeline({
             </div>
           )}
         </div>
@@ -237,20 +221,31 @@ export function PriceDeviationTimeline({
   );
 });
 
-export const PriceDeviationTimeline = memo(function PriceDeviationTimeline({
-  const [data, setData] = useState<PriceDeviationTimeline | undefined>(propData);
+export const PriceDeviationTimelineChart = memo(function PriceDeviationTimelineChart({
+  data: propData,
   isLoading: propLoading,
   maxEvents = 10,
   timeRange: propTimeRange = '24h',
   protocol = 'chainlink',
+  symbol,
 }: PriceDeviationTimelineProps) {
   const { t } = useI18n();
-  const [data, setData] = useState<PriceDeviationTimelineType | undefined>(propData);
+  const [data, setData] = useState<PriceDeviationTimeline | undefined>(propData);
   const [isLoading, setIsLoading] = useState(propLoading ?? false);
   const [selectedRange, setSelectedRange] = useState<'24h' | '7d' | '30d'>(propTimeRange);
 
   const handleTimeRangeChange = (range: '24h' | '7d' | '30d') => {
-    } else if (symbol && protocol) {
+    setSelectedRange(range);
+  };
+
+  useEffect(() => {
+    if (propData) {
+      setData(propData);
+      return;
+    }
+
+    if (symbol && protocol) {
+      const abortController = new AbortController();
       setIsLoading(true);
       fetch(
         buildApiUrl('/api/comparison/deviation/history', {
@@ -259,6 +254,7 @@ export const PriceDeviationTimeline = memo(function PriceDeviationTimeline({
           timeRange: selectedRange,
           type: 'timeline',
         }),
+        { signal: abortController.signal },
       )
         .then((res) => res.json())
         .then((result) => {
@@ -268,29 +264,39 @@ export const PriceDeviationTimeline = memo(function PriceDeviationTimeline({
         })
         .catch((error) => logger.error('Failed to fetch price deviation timeline', { error }))
         .finally(() => setIsLoading(false));
+
+      return () => {
+        abortController.abort();
+      };
     }
   }, [symbol, protocol, selectedRange, propData]);
-        }
-      });
-    
-    return () => {
-      abortController.abort();
-    };
-  }, [symbol, protocol, selectedRange, propData, buildApiUrl]);
 
-    const total = data.events.length;
-    const critical = data.events.filter((e) => e.deviationLevel === 'critical').length;
-    const high = data.events.filter((e) => e.deviationLevel === 'high').length;
-    const resolved = data.events.filter((e) => e.resolved).length;
+  const eventStats = useMemo(() => {
+    if (!data?.events) return null;
 
-    return { total, critical, high, resolved };
+    const stats = data.events.reduce(
+      (acc, e) => {
+        acc.total++;
+        if (e.deviationLevel === 'critical') acc.critical++;
+        if (e.deviationLevel === 'high') acc.high++;
         if (e.resolved) acc.resolved++;
         return acc;
       },
-      { total: 0, critical: 0, high: 0, resolved: 0 }
+      { total: 0, critical: 0, high: 0, resolved: 0 },
+    );
+
+    return stats;
+  }, [data]);
+
+  const displayEvents = useMemo(() => {
+    if (!data?.events) return [];
+    return data.events.slice(0, maxEvents);
+  }, [data, maxEvents]);
+
+  if (isLoading) {
+    return (
       <Card className="w-full">
         <CardHeader>
-    return stats;
           <Skeleton className="h-4 w-72" />
         </CardHeader>
         <CardContent>
@@ -307,25 +313,25 @@ export const PriceDeviationTimeline = memo(function PriceDeviationTimeline({
           </div>
         </CardContent>
       </Card>
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-16 w-full" />
-                </div>
-              </div>
+    );
+  }
+
+  if (!data || data.events.length === 0) {
+    return (
       <Card className="w-full">
         <CardHeader>
           <CardTitle>{t('comparison.deviation.timelineTitle')}</CardTitle>
           <CardDescription>{t('comparison.status.noData')}</CardDescription>
         </CardHeader>
         <CardContent className="flex h-64 items-center justify-center text-muted-foreground">
-    return (
-      <Card className="w-full">
+          <Clock className="mr-2 h-5 w-5" />
+          {t('comparison.status.noData')}
         </CardContent>
       </Card>
-          <CardDescription>{t('comparison.status.noData')}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex h-64 items-center justify-center text-muted-foreground">
-          <Clock className="mr-2 h-5 w-5" />
+    );
+  }
+
+  return (
     <Card className="w-full">
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -374,7 +380,6 @@ export const PriceDeviationTimeline = memo(function PriceDeviationTimeline({
       <CardContent>
         <div className="relative">
           <div className="absolute bottom-2 left-5 top-2 w-0.5 bg-gradient-to-b from-border via-muted-foreground/30 to-border" />
-                    {eventStats.resolved} Resolved
           <div className="space-y-8">
             {displayEvents.map((event, index) => (
               <TimelineEvent
@@ -386,20 +391,8 @@ export const PriceDeviationTimeline = memo(function PriceDeviationTimeline({
             ))}
           </div>
         </div>
-            {displayEvents.map((event, index) => (
         {data.events.length > maxEvents && (
           <div className="mt-6 flex items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-center text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" />
-            {t('comparison.deviation.showingEvents', {
-              count: maxEvents,
-              total: data.events.length,
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-        {data.events.length > maxEvents && (
-}
             <Clock className="h-4 w-4" />
             {t('comparison.deviation.showingEvents', {
               count: maxEvents,

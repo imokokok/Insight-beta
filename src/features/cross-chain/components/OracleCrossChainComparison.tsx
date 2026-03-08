@@ -4,9 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { ArrowUpRight, ArrowDownRight, RefreshCw, Globe, Info } from 'lucide-react';
 
-import { Button } from '@/components/ui';
-import { Badge } from '@/components/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { Button, Badge } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
@@ -68,13 +66,13 @@ export interface OracleCrossChainComparisonProps {
 }
 
 function LoadingSkeleton() {
-    <div className="space-y-4">
+  return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Skeleton key={i} className="h-24 w-full" />
+        {[1, 2, 3, 4].map((i) => (
           <Skeleton key={i} className="h-24 w-full" />
         ))}
-      <Skeleton className="h-64 w-full" />
+      </div>
       <Skeleton className="h-64 w-full" />
     </div>
   );
@@ -216,6 +214,7 @@ export function OracleCrossChainComparison({
   };
 
   if (isLoading || externalLoading) {
+    return (
       <Card className={className}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -227,20 +226,20 @@ export function OracleCrossChainComparison({
           <LoadingSkeleton />
         </CardContent>
       </Card>
-      </Card>
     );
   }
 
   if (!data) {
+    return (
       <Card className={className}>
         <CardContent className="pt-6">
           <div className="py-8 text-center text-muted-foreground">{t('common.noData')}</div>
         </CardContent>
       </Card>
-          <div className="py-8 text-center text-muted-foreground">{t('common.noData')}</div>
-        </CardContent>
-      </Card>
     );
+  }
+
+  return (
     <div className={cn('space-y-6', className)}>
       <Card>
         <CardHeader>
@@ -383,29 +382,12 @@ export function OracleCrossChainComparison({
           <CardDescription>{t('crossChain.priceDetails.description')}</CardDescription>
         </CardHeader>
         <CardContent>
-                  <span className="text-2xl font-bold">{data.prices.length}</span>
-                  <span className="ml-1 text-sm text-muted-foreground">
-                    / {supportedChains.length}
-                <TableRow>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('crossChain.priceDetails.title')}</CardTitle>
-          <CardDescription>{t('crossChain.priceDetails.description')}</CardDescription>
-        </CardHeader>
-        <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{t('crossChain.table.chain')}</TableHead>
-                    <TableRow key={chainPrice.chain}>
+                  <TableHead className="text-right">{t('crossChain.table.price')}</TableHead>
                   <TableHead className="text-right">{t('crossChain.table.diffFromAvg')}</TableHead>
                   <TableHead className="text-right">
                     {t('crossChain.table.deviationPercent')}
@@ -465,93 +447,87 @@ export function OracleCrossChainComparison({
                         </Badge>
                       </TableCell>
                       {showConfidence && (
-        </CardContent>
-      </Card>
+                        <TableCell className="text-right">
+                          <span className="text-sm text-muted-foreground">
                             {(chainPrice.confidence ?? 0).toFixed(2)}%
                           </span>
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('crossChain.summary.title')}</CardTitle>
-            <CardDescription>{t('crossChain.summary.description')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-lg border p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    {t('crossChain.stats.consistencyScore')}
-                  </span>
-                </div>
-                <div className="mt-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-3xl font-bold">{consistencyScore.toFixed(1)}</span>
-                    <span className="text-lg text-muted-foreground">/ 100</span>
-                  </div>
-                  <div className="mt-2 h-2 w-full rounded-full bg-muted">
-                    <div
-                      className="h-2 rounded-full bg-green-500"
-                      style={{ width: `${consistencyScore}%` }}
-                    />
-                  </div>
-                </div>
+                        </TableCell>
+                      )}
+                      {showStatus && (
+                        <TableCell className="text-center">
+                          {getStatusBadge(chainPrice.status)}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('crossChain.summary.title')}</CardTitle>
+          <CardDescription>{t('crossChain.summary.description')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-lg border p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {t('crossChain.stats.consistencyScore')}
+                </span>
               </div>
-              <div className="rounded-lg border p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    {t('crossChain.stats.riskLevel')}
-                  </span>
+              <div className="mt-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl font-bold">{consistencyScore.toFixed(1)}</span>
+                  <span className="text-lg text-muted-foreground">/ 100</span>
                 </div>
-                <div className="mt-2">
-                  <Badge
-                    variant={
-                      riskLevel === 'low'
-                        ? 'success'
-                        : riskLevel === 'medium'
-                          ? 'warning'
-                          : 'destructive'
-                    }
-                    className="px-3 py-1 text-base"
-                  >
-                    {riskLevel === 'low'
-                      ? t('crossChain.stats.riskLow')
-                      : riskLevel === 'medium'
-                        ? t('crossChain.stats.riskMedium')
-                        : t('crossChain.stats.riskHigh')}
-                  </Badge>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {riskLevel === 'low'
-                      ? t('crossChain.stats.riskLowDescription')
-                      : riskLevel === 'medium'
-                        ? t('crossChain.stats.riskMediumDescription')
-                        : t('crossChain.stats.riskHighDescription')}
-                  </p>
+                <div className="mt-2 h-2 w-full rounded-full bg-muted">
+                  <div
+                    className="h-2 rounded-full bg-green-500"
+                    style={{ width: `${consistencyScore}%` }}
+                  />
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-                    }
-                    className="px-3 py-1 text-base"
-                  >
-                    {riskLevel === 'low'
-                      ? t('crossChain.stats.riskLow')
+            <div className="rounded-lg border p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {t('crossChain.stats.riskLevel')}
+                </span>
+              </div>
+              <div className="mt-2">
+                <Badge
+                  variant={
+                    riskLevel === 'low'
+                      ? 'success'
                       : riskLevel === 'medium'
-                        ? t('crossChain.stats.riskMedium')
-                        : t('crossChain.stats.riskHigh')}
-                  </Badge>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {riskLevel === 'low'
-                      ? t('crossChain.stats.riskLowDescription')
-                      : riskLevel === 'medium'
-                        ? t('crossChain.stats.riskMediumDescription')
-                        : t('crossChain.stats.riskHighDescription')}
-                  </p>
-                </div>
+                        ? 'warning'
+                        : 'destructive'
+                  }
+                  className="px-3 py-1 text-base"
+                >
+                  {riskLevel === 'low'
+                    ? t('crossChain.stats.riskLow')
+                    : riskLevel === 'medium'
+                      ? t('crossChain.stats.riskMedium')
+                      : t('crossChain.stats.riskHigh')}
+                </Badge>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {riskLevel === 'low'
+                    ? t('crossChain.stats.riskLowDescription')
+                    : riskLevel === 'medium'
+                      ? t('crossChain.stats.riskMediumDescription')
+                      : t('crossChain.stats.riskHighDescription')}
+                </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
