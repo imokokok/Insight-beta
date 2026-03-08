@@ -5,10 +5,8 @@ import { Suspense, useState } from 'react';
 import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/common';
-import Link from 'next/link';
 import { Alert, AlertDescription, ChartSkeleton } from '@/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
-import { Alert, AlertDescription, ChartSkeleton } from '@/components/ui';
 import { ComparisonContent } from '@/features/comparison/components/ComparisonContent';
 import { PriceDeviationHistoryChart } from '@/features/comparison/components/PriceDeviationHistoryChart';
 import { PriceDeviationTimeline } from '@/features/comparison/components/PriceDeviationTimeline';
@@ -16,7 +14,6 @@ import { useI18n } from '@/i18n';
 
 import { ComparePageLayout } from '../components/ComparePageLayout';
 
-  const [showHint, setShowHint] = useState(true);
 export default function PriceComparePage() {
   const { t } = useI18n();
   const [showHint, setShowHint] = useState(true);
@@ -27,6 +24,9 @@ export default function PriceComparePage() {
 
   const [selectedSymbol, setSelectedSymbol] = useState<string>('ETH/USD');
   const [selectedProtocol, setSelectedProtocol] = useState<string>('chainlink');
+
+  return (
+    <ComparePageLayout>
       <Breadcrumb items={breadcrumbItems} />
       <div className="mb-4">
         <h1 className="text-xl font-semibold">{t('compare.price.title')}</h1>
@@ -34,7 +34,7 @@ export default function PriceComparePage() {
         <p className="mt-1 text-sm text-blue-600 dark:text-blue-400">
           🎯 {t('compare.price.scenario')}
         </p>
-      <div className="mb-4">
+      </div>
       {showHint && (
         <Alert className="mb-4 border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/30">
           <AlertDescription className="flex items-center justify-between">
@@ -59,34 +59,6 @@ export default function PriceComparePage() {
       )}
 
       <Tabs defaultValue="realtime" className="space-y-4">
-        <p className="mt-1 text-sm text-blue-600 dark:text-blue-400">
-          🎯 {t('compare.price.scenario')}
-        </p>
-      </div>
-      {showHint && (
-        <Alert className="mb-4 border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/30">
-          <AlertDescription className="flex items-center justify-between">
-            <span>
-              💡 {t('compare.crossChainHint')}{' '}
-              <Link
-                href="/cross-chain"
-                className="font-medium text-blue-600 hover:underline dark:text-blue-400"
-              >
-                {t('compare.goToCrossChain')}
-            <div className="rounded-lg border border-border/50 bg-muted/20 p-4">
-            </span>
-            <button
-              onClick={() => setShowHint(false)}
-              className="ml-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              aria-label="Close"
-            >
-              ✕
-            </button>
-                    className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-        </Alert>
-      )}
-
-      <Tabs defaultValue="realtime" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="realtime">{t('compare.price.realtimeView')}</TabsTrigger>
           <TabsTrigger value="history">{t('compare.price.historyView')}</TabsTrigger>
@@ -97,7 +69,7 @@ export default function PriceComparePage() {
           <Suspense fallback={<ChartSkeleton className="h-96" />}>
             <ComparisonContent />
           </Suspense>
-                    className="rounded-md border border-gray-300 px-3 py-2 text-sm capitalize"
+        </TabsContent>
 
         <TabsContent value="history">
           <div className="space-y-4">

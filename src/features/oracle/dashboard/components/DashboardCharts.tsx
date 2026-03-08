@@ -169,7 +169,7 @@ export function DashboardCharts({
             <EnhancedAreaChart
               data={priceTrendData}
               dataKey="value"
-              color={CHART_COLORS.primary}
+              color={CHART_COLORS.primary.DEFAULT}
               height={300}
               valueFormatter={(v) => `$${formatNumber(v, 2)}`}
               showGrid
@@ -188,7 +188,7 @@ export function DashboardCharts({
                 {
                   dataKey: 'value',
                   name: t('dashboard.metrics.latency'),
-                  color: CHART_COLORS.warning,
+                  color: CHART_COLORS.semantic.warning.DEFAULT,
                 },
               ]}
               height={300}
